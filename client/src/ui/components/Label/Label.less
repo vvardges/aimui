@@ -1,0 +1,58 @@
+@import '../../vars';
+
+.Label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0.35em 1em;
+  line-height: 1em;
+  border: 1px solid transparent;
+  border-radius: calc(var(--border-radius));
+  color: rgb(0, 0, 0);
+  text-shadow: rgb(255, 255, 255) 0px 0px 5px;
+
+  /*
+  &.primary {
+    background: var(--primary-bg);
+    border-color: var(--primary-lighter);
+    color: var(--primary-dark);
+  }
+
+  &.secondary {
+    background: var(--grey-bg);
+    border-color: var(--grey-lighter);
+    color: var(--grey-dark);
+  }
+
+  &.negative {
+    background: var(--negative-bg);
+    border-color: var(--negative-lighter);
+    color: var(--negative-dark);
+  }
+
+  &.positive {
+    background: var(--positive-bg);
+    border-color: var(--positive-lighter);
+    color: var(--positive-dark);
+  }
+   */
+
+  &.tiny {
+    font-size: var(--button-xs);
+  }
+
+  &.small {
+    font-size: var(--button-sm);
+  }
+
+  &.medium {
+    font-size: var(--button-md);
+  }
+
+  &.large {
+    font-size: var(--button-lg);
+    padding: 0.95em 2.2em;
+  }
+}

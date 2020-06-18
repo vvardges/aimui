@@ -1,0 +1,404 @@
+@import '../../../vars';
+
+.HubExperimentScreen__header {
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  grid-column-gap: var(--component-spacing-md);
+  align-items: center;
+
+  @media @sm-max {
+    grid-template-columns: 1fr;
+    grid-row-gap: var(--component-spacing-md);
+  }
+}
+
+.HubExperimentScreen__header {
+  + .HubExperimentScreen__grid {
+    margin-top: var(--component-spacing-md);
+  }
+}
+
+.HubExperimentScreen__grid {
+  display: block;
+  overflow: hidden;
+
+  &:after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+.HubExperimentScreen__grid__wrapper {
+  margin: calc(-1 * var(--component-spacing-sm));
+}
+
+.HubExperimentScreen__init__markdown {
+  .HubExperimentScreen__markdown__block:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.HubExperimentScreen__markdown__block {
+  margin-bottom: var(--component-spacing-md);
+
+  .Text {
+    margin-bottom: var(--component-spacing-sm);
+  }
+}
+
+.ExperimentCell__body__loader {
+  height: 100%;
+  width: 100%;
+  padding: var(--component-spacing-sm);
+  box-sizing: border-box;
+  background: var(--primary-bg);
+  background: linear-gradient(90deg,
+  var(--primary-bg) 0%,
+  var(--primary-bg) 35%,
+  var(--primary-lighter) 55%,
+  var(--primary-bg) 75%,
+  var(--primary-bg) 100%);
+  background-size: 300% 100%;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+
+  /* Animate */
+  @keyframes bg-square-loader {
+    0% {
+      background-position: 100% 0;
+    }
+
+    100% {
+      background-position: 0 0;
+    }
+  }
+
+  animation: bg-square-loader 1.7s cubic-bezier(0, 0, 0.2, 1) infinite 300ms;
+}
+
+.ExperimentMisClassification__block {
+  display: grid;
+  height: inherit;
+  grid-template-columns: 1fr;
+
+  &.open_sub {
+    grid-template-columns: 1fr 1fr;
+
+    .ExperimentMisClassification__cluster {
+      display: block;
+    }
+  }
+}
+
+.ExperimentMisClassification__labels {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.ExperimentMisClassification__label {
+  position: relative;
+  margin: var(--component-spacing-xs);
+  border: var(--border);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: border 110ms linear;
+
+  &.active {
+    border-color: var(--primary-light);
+
+    .ExperimentMisClassification__label__bg {
+      border-right-color: var(--primary-light);
+      background-color: var(--primary-lighter);
+    }
+  }
+}
+
+.ExperimentMisClassification__label__bg {
+  position: absolute;
+  left: 0;
+  right: 100%;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  border-right: 1px solid var(--grey-lighter);
+  background-color: var(--grey-bg);
+  transition: background-color 110ms linear, border-right-color 110ms linear;
+}
+
+.ExperimentMisClassification__label__cont {
+  position: relative;
+  z-index: 2;
+  font-size: var(--text-xs);
+  padding: var(--component-spacing-sm);
+}
+
+.ExperimentMisClassification__cluster {
+  display: none;
+  height: 100%;
+  overflow-y: auto;
+  background-color: var(--grey-bg);
+  border-left: var(--border);
+}
+
+.ExperimentMisClassification__cluster__item {
+  display: none;
+
+  &.active {
+    display: block;
+  }
+}
+
+.ExperimentMisClassification__cluster__cont {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  grid-column-gap: var(--component-spacing-xs);
+  margin: var(--component-spacing-xs);
+}
+
+.ExperimentMisClassification__img {
+  height: 50px;
+  width: 50px;
+}
+
+.ExperimentMisClassification__meta {
+  display: flex;
+  align-items: center;
+}
+
+.ExperimentMetric__parent {
+  height: inherit;
+  overflow: hidden;
+}
+
+.ExperimentModel__body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  @media @md-max {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ExperimentModel__list {
+  max-height: 350px;
+  min-height: 200px;
+  overflow-y: auto;
+}
+
+.ExperimentModel__detail {
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  border-left: 1px solid var(--primary-lighter);
+
+  @media @md-max {
+    border-left: none;
+    border-top: 1px solid var(--primary-lighter);
+  }
+}
+
+.ExperimentModel__detail__item {
+  padding: var(--component-spacing-sm);
+}
+
+.ExperimentModel__detail__default {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ExperimentModel__detail__icon {
+  display: block;
+  margin-bottom: 15px;
+  font-size: 30px;
+  color: #CCC;
+}
+
+.ExperimentCheckpoint {
+  border-bottom: 1px solid var(--primary-lighter);
+  pointer-events: none;
+  transition: background-color 110ms ease;
+
+  &:active, &.active {
+    background-color: var(--primary-bg);
+  }
+}
+
+.ExperimentCheckpoint__area {
+  padding: var(--component-spacing-sm);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.ExperimentCheckpoint__header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.HubExperimentScreen__empty {
+  padding: var(--component-spacing-md);
+}
+
+.HubExperimentScreen__empty__illustration {
+  margin: var(--component-spacing-xl) 0;
+  text-align: center;
+
+  svg {
+    max-width: 240px;
+    max-height: 240px;
+  }
+}
+
+.ExperimentWeights {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+
+  @media @md-max {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ExperimentWeights__navigation {
+  max-height: 350px;
+  min-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.ExperimentWeights__body {
+  overflow-y: auto;
+  border-left: var(--border);
+  height: 350px;
+
+  @media @md-max {
+    border-left: none;
+    border-top: var(--border);
+  }
+}
+
+.ExperimentWeights__nodata {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: inherit;
+  box-sizing: border-box;
+  padding: var(--component-spacing-sm);
+}
+
+.ExperimentWeights__nodata__layer {
+  color: var(--grey-darker);
+  font-size: var(--text-xl);
+  margin-bottom: var(--text-spacing-unit);
+}
+
+.ExperimentDiff {
+  .ExperimentCell__body {
+    background-color: var(--grey-bg-light);
+  }
+}
+
+.ExperimentDiff__body {
+  padding: var(--component-spacing-sm);
+  max-height: 450px;
+  overflow-y: auto;
+
+  @media @md-max {
+    max-height: 300px;
+  }
+}
+
+.ExperimentDiff__item {
+  padding: 0;
+}
+
+.ExperimentDiff__item__header {
+  padding: var(--component-spacing-sm);
+}
+
+.ExperimentDiff__item__icon {
+  margin-right: var(--component-spacing-xs);
+}
+
+.ExperimentParams {
+  .ExperimentParams__item {
+    background-color: #FFF;
+    color: var(--primary-darker);
+
+    .ExperimentParams__item__idx {
+      color: var(--primary-dark);
+    }
+  }
+
+  .ExperimentParams__item:nth-child(2n+1) {
+    background-color: var(--grey-bg);
+    color: var(--grey-darker);
+
+    .ExperimentParams__item__idx {
+      color: var(--grey);
+    }
+  }
+}
+
+.ExperimentParams__item {
+  display: grid;
+  grid-template-columns: 30px 1fr minmax(100px, 1fr);
+  grid-column-gap: var(--component-spacing-sm);
+  align-items: center;
+  padding: var(--component-spacing-sm);
+  border-bottom: 1px solid var(--grey-lighter);
+  word-break: break-word;
+
+  &.title {
+    background-color: var(--primary-bg) !important;
+    border-bottom-color: var(--primary-lighter);
+    padding: var(--component-spacing-xs) var(--component-spacing-sm);
+  }
+}
+
+.ExperimentParams__item__idx {
+  user-select: none;
+  text-align: right;
+  font-size: var(--text-md);
+  font-family: var(--number-font);
+}
+
+.ExperimentStat__head {
+  overflow-y: auto;
+  width: auto;
+  white-space: nowrap;
+  background: var(--primary-bg);
+  border-bottom: 1px solid var(--primary-lighter);
+
+  > * {
+    margin: var(--component-spacing-sm);
+    margin-right: 0;
+
+    &:last-child {
+      margin-right: var(--component-spacing-sm);
+    }
+  }
+}
+
+.ExperimentStat__body {
+  height: 350px;
+  overflow: hidden;
+}
+
+.ExperimentStat__resource__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: inherit;
+  box-sizing: border-box;
+  padding: var(--component-spacing-sm);
+  background-color: var(--grey-bg-light);
+}

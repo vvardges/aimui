@@ -1,0 +1,84 @@
+@import '../../../vars';
+
+@horiz-breakpoint: 380px;
+
+.ProjectWrapper__header {
+  padding-top: var(--component-spacing-md);
+  background-color: var(--grey-bg-light);
+  border-bottom: var(--border);
+}
+
+.ProjectWrapper__breadcrumb {
+  * {
+    display: inline;
+  }
+}
+
+.ProjectWrapper__navbar__wrapper {
+  @media (max-width: @horiz-breakpoint) {
+    overflow-x: auto;
+    margin-left: calc(-1 * var(--component-spacing-md));
+    margin-right: calc(-1 * var(--component-spacing-md));
+    padding-left: var(--component-spacing-xs);
+    padding-right: var(--component-spacing-xs);
+  }
+}
+
+.ProjectWrapper__navbar {
+  margin-top: var(--component-spacing-md);
+  display: flex;
+  flex-direction: row;
+  width: auto;
+
+  @media (max-width: @horiz-breakpoint) {
+    width: 400px;
+  }
+}
+
+.ProjectWrapper__navbar__item {
+  position: relative;
+  top: 1px;
+  padding: var(--component-spacing-xs) var(--component-spacing-md);
+  cursor: pointer;
+  color: var(--grey) !important;
+  border: 1px solid transparent;
+  border-top: 3px solid transparent;
+
+  &:hover {
+    text-decoration: none;
+    color: var(--grey-darker) !important;
+  }
+
+  &.active {
+    border-color: var(--border-color);
+    border-top-color: var(--primary);
+    border-bottom: none;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    background-color: var(--white);
+    color: var(--grey-darker) !important;
+  }
+
+  .Icon {
+    margin-right: var(--component-spacing-xs);
+  }
+}
+
+.ProjectWrapper__body {
+  padding-top: var(--component-spacing-md);
+
+  &:after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+.ProjectWrapper__navigation {
+  float: left;
+}
+
+.ProjectWrapper__cont {}
+
+.ProjectWrapper__icon {
+  padding: 0 4px 0 0;
+}

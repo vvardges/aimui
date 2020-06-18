@@ -1,0 +1,34 @@
+@import '../../../vars';
+
+.Dropdown__body {
+  &.right {
+    margin-left: auto;
+  }
+}
+
+.Dropdown__menu {
+  z-index: 3!important;
+}
+
+.Dropdown__control {
+  background: #FFF !important;
+  box-sizing: border-box;
+  border: 1px solid var(--grey-lighter) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transition: all 110ms ease;
+
+  &:hover {
+    border-color: var(--grey-light-xx) !important;
+  }
+
+  &.Dropdown__control--is-focused {
+    border: 1px solid var(--primary) !important;
+    box-shadow: inset 0 0 0 1px var(--primary) !important;
+    transition: all 110ms ease;
+  }
+}
+
+.Dropdown__option {
+  transition: all 110ms ease;
+}

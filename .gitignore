@@ -1,0 +1,8 @@
+.aim
+.DS_Store
+.idea
+
+examples/.aim
+examples/data
+examples/models
+examples/venv

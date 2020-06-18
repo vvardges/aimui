@@ -1,0 +1,52 @@
+@import '../../vars';
+
+.Container {
+  width: auto;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 0 var(--component-spacing-md);
+
+  @media @xs-min {
+    width: auto;
+  }
+
+  @media @sm-min {
+    width: ~'@{sm-breakpoint}px';
+
+    &.small {
+      width: ~'@{sm-breakpoint}px';
+    }
+  }
+
+  @media @md-min {
+    width: ~'@{md-breakpoint}px';
+
+    &.small {
+      width: ~'@{md-breakpoint}px';
+    }
+  }
+
+  @media @lg-min {
+    width: ~'@{lg-breakpoint}px';
+
+    &.small {
+      width: ~'calc(0.75 * @{lg-breakpoint}px)';
+    }
+  }
+
+  @media @xl-min {
+    width: 1200px;
+
+    &.small {
+      width: 900px;
+    }
+  }
+
+  @media @xxl-min {
+    width: 1600px;
+
+    &.small {
+      width: 1150px;
+    }
+  }
+}

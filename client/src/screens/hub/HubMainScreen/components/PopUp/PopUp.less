@@ -1,0 +1,49 @@
+@import '../../../../../vars.less';
+
+@gap: 10px;
+
+.PopUp {
+  position: absolute;
+  box-sizing: border-box;
+
+  &.xGap {
+    padding: 0 @gap;
+  }
+}
+
+.ChartPopUp { z-index: 999; }
+.TagPopUp { z-index: 99; }
+.TooltipPopUp { z-index: 9; }
+
+.PopUp__body {
+  position: relative;
+  padding: var(--component-spacing-xs);
+  box-sizing: border-box;
+  height: inherit;
+  max-height: inherit;
+  overflow-y: auto;
+  background-color: #FFF;
+  border: 1px solid var(--primary-lighter);
+  border-radius: var(--border-radius);
+  z-index: 90;
+  user-select: text;
+}
+
+.PopUp__body__arrow {
+  position: absolute;
+  top: 15px;
+  width: 15px;
+  height: 15px;
+  background: #FFF;
+  border: 1px solid var(--primary-lighter);
+  transform: rotate(45deg);
+  z-index: 9;
+
+  &.left {
+    left: calc(@gap - 7px);
+  }
+
+  &.right {
+    right: calc(@gap - 7px);
+  }
+}

@@ -1,0 +1,137 @@
+@import '../../../../../vars.less';
+
+.ControlPanel {
+  position: relative;
+  border: 1px solid var(--primary-lighter);
+  border-radius: var(--border-radius);
+  background-color: var(--primary-bg);
+  overflow: hidden;
+  user-select: none;
+}
+
+.ControlPanel__svg {
+  user-select: none;
+}
+
+.ControlPanel__body {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.PopUp__area {
+  position: absolute;
+}
+
+.ControlPanel__popup__tags__wrapper {
+  width: 100%;
+  overflow-y: auto;
+}
+
+.ControlPanel__popup__tags {
+  display: flex;
+  align-items: center;
+  width: auto;
+  white-space: nowrap;
+
+  > * {
+    margin-right: var(--component-spacing-sm);
+  }
+  > *:last-child {
+    margin-right: 0;
+  }
+}
+
+.TooltipPopUp {
+  .TooltipPopUp__line:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.TooltipPopUp__line {
+  padding: 2px var(--space-xs);
+  margin-bottom: 1px;
+  background: var(--primary-bg);
+  border: 1px solid transparent;
+  transition: all 110ms ease;
+
+  &.active {
+    border-color: var(--primary-lighter);
+    border-radius: var(--border-radius);
+  }
+}
+
+.CommitPopUp__process {
+  display: flex;
+  align-items: center;
+
+  .Button {
+    margin-left: var(--component-spacing-sm);
+  }
+}
+
+.TagPopUp__tags {
+}
+
+.TagPopUp__tags__title {
+  margin-bottom: var(--component-spacing-xs) !important;
+}
+
+.TagPopUp__tags__item {
+  margin: var(--component-spacing-sm) var(--component-spacing-sm) 0 0;
+  cursor: pointer;
+
+  &.active {
+    box-shadow: 0 0 0 1px #FFF, 0 0 0 2px var(--primary);
+  }
+}
+
+.ControlPanel__popup__tags__update {
+  cursor: pointer;
+  color: var(--primary);
+
+  &:hover {
+    color: var(--primary-dark);
+  }
+}
+
+.ControlPanel__svg {
+  .HoverCircle {
+    stroke: var(--primary);
+    stroke-width: 1 !important;
+    transition: all 200ms ease;
+    cursor: pointer;
+
+    &.active {
+      stroke: var(--primary-light);
+      stroke-width: 5 !important;
+    }
+
+    &:active {
+      stroke: var(--primary);
+      stroke-width: 2 !important;
+    }
+
+    &.focus {
+      stroke: var(--primary-dark) !important;
+      stroke-width: 3 !important;
+    }
+  }
+
+  .PlotLine {
+    stroke-width: 1 !important;
+
+    &.active {
+      stroke-width: 3 !important;
+    }
+
+    &.fade {
+      stroke-width: 1 !important;
+      opacity: 0.3;
+    }
+  }
+
+  .HoverLine {
+    stroke: var(--primary-darker);
+  }
+}
