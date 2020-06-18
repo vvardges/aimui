@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.0.0 Jun 18 2020
 - Ability to select and attach a tag to a training run from popup (gorarakelyan)
 - Implement tags list screen to retrieve and show added tags (gorarakelyan)
 - Add ability to create a new tag (gorarakelyan)
