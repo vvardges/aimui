@@ -185,10 +185,11 @@ class ControlPanel extends Component {
         .range([0, width - margin.left - margin.right]);
 
       let yMax = d3.max(this.props.data.map((i) => Math.max(...i.data.map(i => i.value))));
-      yMax += yMax * 0.15;
-
       let yMin = d3.min(this.props.data.map((i) => Math.min(...i.data.map(i => i.value))));
-      yMin -= yMin * 0.15;
+      const diff = yMax - yMin;
+
+      yMax += diff * 0.1;
+      yMin -= diff * 0.1;
 
       const yScale = d3.scaleLinear()
         .domain([yMin, yMax])
@@ -1011,7 +1012,7 @@ class ControlPanel extends Component {
             >
               <UI.Segment bordered={false} spacing={false}>
                 {this.props.data.map((i, iKey) => (
-                  i.num_steps >= this.state.tooltipPopUp.index &&
+                  i.num_steps > this.state.tooltipPopUp.index &&
                     <div
                       className={classNames({
                         TooltipPopUp__line: true,
@@ -1019,12 +1020,10 @@ class ControlPanel extends Component {
                       })}
                       key={iKey}
                     >
-                      {this.state.tooltipPopUp.index <= i.num_steps &&
                       <UI.Text color={this.getCommitColor(i)} small>
                         {i.tag ? `${i.tag}: ` : ''}
                         {Math.round(this.getLineValueByStep(i.data, this.state.tooltipPopUp.index) * 10e6)/10e6}
                       </UI.Text>
-                      }
                     </div>
                 ))}
               </UI.Segment>
