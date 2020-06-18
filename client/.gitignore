@@ -27,4 +27,4 @@ package-lock.json
 build/*
 dist/*
 public/generated.json
-_ops/.htpasswd
+ops/.htpasswd

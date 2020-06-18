@@ -33,7 +33,7 @@ RUN set -eux; \
 ENV LANG en_US.utf8
 
 RUN mkdir /docker-entrypoint-initdb.d
-COPY ./_ops/init-db.sh /docker-entrypoint-initdb.d/10-init-db.sh
+COPY ./ops/init-db.sh /docker-entrypoint-initdb.d/10-init-db.sh
 
 ENV PG_MAJOR 11
 ENV PG_VERSION 11.8
@@ -163,7 +163,7 @@ RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PG
 ENV POSTGRES_HOST_AUTH_METHOD trust
 VOLUME /var/lib/postgresql/data
 
-COPY ./_ops/docker-db-entrypoint.alpine.sh /docker-db-entrypoint.sh
+COPY ./ops/docker-db-entrypoint.alpine.sh /docker-db-entrypoint.sh
 RUN chmod +x /docker-db-entrypoint.sh
 
 # ============================================================
@@ -306,12 +306,12 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 # RUN apk add --no-cache uwsgi-python3
 
 # Copy the base uWSGI ini file to enable default dynamic uwsgi process number
-COPY ./_ops/uwsgi.ini /etc/uwsgi/
+COPY ./ops/uwsgi.ini /etc/uwsgi/
 
 # Install Supervisord
 RUN apk add --no-cache supervisor
 # Custom Supervisord config
-COPY ./_ops/supervisord.ini /etc/supervisor.d/supervisord.ini
+COPY ./ops/supervisord.ini /etc/supervisor.d/supervisord.ini
 
 # Which uWSGI .ini file should be used, to make it customizable
 ENV UWSGI_INI /server/uwsgi.ini
@@ -356,15 +356,15 @@ RUN virtualenv /env && /env/bin/pip install -r /server/requirements.txt && /env/
 COPY ./server ./
 
 # Copy nginx config files
-COPY ./_ops/nginx.conf /etc/nginx/nginx.conf
+COPY ./ops/nginx.conf /etc/nginx/nginx.conf
 
 # Copy client build
 COPY --from=client-build-stage /client/build/ /usr/share/nginx/html
 
-COPY ./_ops/nginx-app.conf /etc/nginx/conf.d/app.conf
+COPY ./ops/nginx-app.conf /etc/nginx/conf.d/app.conf
 
 # Copy the entrypoint that will generate Nginx additional configs
-COPY ./_ops/docker-entrypoint.sh /docker-entrypoint.sh
+COPY ./ops/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 ENTRYPOINT ["sh", "/docker-entrypoint.sh"]
