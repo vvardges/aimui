@@ -24,5 +24,5 @@ AimDE should be accessible at http://aim-dev.loc:43800/
 ├── client  <--------------  front end code
 ├── server  <--------------  back end code
 ├── examples  <------------  aim repo and examples for testing
-└── ops    <---------------  build files and configurations
+└── ops  <-----------------  build files and configurations
 ```
