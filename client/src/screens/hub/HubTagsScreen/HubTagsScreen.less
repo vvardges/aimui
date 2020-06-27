@@ -16,7 +16,22 @@
 
 .HubTagsScreen__tags__item {
   border-bottom: var(--border);
-  padding-bottom: var(--component-spacing-sm);
+  padding: 0 !important;
+
+  a  {
+    text-decoration: none;
+  }
+}
+
+.HubTagsScreen__tags__item__body {
+  padding: var(--component-spacing-sm) 0;
+  transition: all 90ms ease;
+  cursor: pointer;
+
+  &:hover {
+    padding-left: var(--component-spacing-sm);
+    background-color: var(--grey-bg);
+  }
 }
 
 .HubTagsScreen__tags__item__commits {
