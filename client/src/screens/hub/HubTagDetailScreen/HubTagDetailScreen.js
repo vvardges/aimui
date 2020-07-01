@@ -2,7 +2,7 @@ import './HubTagDetailScreen.less';
 
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import { Redirect, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import moment from 'moment';
 
 import { buildUrl } from '../../../utils';

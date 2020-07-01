@@ -515,7 +515,7 @@ class Panel extends Component {
           continue;
         }
 
-        this.hoverCircles.append(`circle`)
+        this.hoverCircles.append('circle')
           .attr('class', `HoverCircle HoverCircle-${pIndex}`)
           .attr('cx', lineX)
           .attr('cy', y)
