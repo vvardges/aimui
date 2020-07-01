@@ -1,5 +1,7 @@
 # Changelog
 
+- Change the panel structure to be wider and become the primary space (gorarakelyan)
+
 ## 1.0.1 Jun 22 2020
 - Save experiment name in commit table when attaching a tag (gorarakelyan)
 

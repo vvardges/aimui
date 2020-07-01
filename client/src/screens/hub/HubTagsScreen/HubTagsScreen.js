@@ -22,11 +22,17 @@ class HubTagsScreen extends React.Component {
     };
   }
 
-  componentDidMount() {
-    this.getTags();
+  componentWillMount() {
+    this.props.resetProgress();
   }
 
-  getTags = () => {
+  componentDidMount() {
+    this.props.incProgress();
+
+    this.getTags(this.props.completeProgress);
+  }
+
+  getTags = (finallyCallback) => {
     this.setState(prevState => ({
       ...prevState,
       isLoading: true,
@@ -42,6 +48,10 @@ class HubTagsScreen extends React.Component {
         ...prevState,
         isLoading: false,
       }));
+
+      if (finallyCallback) {
+        finallyCallback();
+      }
     });
   };
 

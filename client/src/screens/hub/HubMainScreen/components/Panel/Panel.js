@@ -1,4 +1,4 @@
-import './ControlPanel.less';
+import './Panel.less';
 
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
@@ -20,13 +20,14 @@ const popUpDefaultHeight = 200;
 const circleRadius = 4;
 const circleActiveRadius = 7;
 
-class ControlPanel extends Component {
+
+class Panel extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       visBox: {
-        ratio: 0.5,
+        ratio: this.props.ratio,
         margin: {
           top: 20, right: 20, bottom: 30, left: 60,
         },
@@ -88,7 +89,6 @@ class ControlPanel extends Component {
     this.bgRect = null;
     this.hoverLine = null;
     this.hoverCircles = null;
-    this.isInit = false;
 
     this.curves =  [
       'curveLinear',
@@ -134,10 +134,10 @@ class ControlPanel extends Component {
     this.draw();
   };
 
-  draw = () => {
+  draw = (init=true) => {
     if (!this.isEmpty()) {
       // Clear panel
-      if (this.isInit) {
+      if (init) {
         this.hideHoverLine();
         if (this.hoverCircles) {
           this.hoverCircles.selectAll('*.focus').remove();
@@ -146,7 +146,6 @@ class ControlPanel extends Component {
           this.initArea().then(() => this.plotData());
         });
       } else {
-        this.isInit = true;
         this.initArea().then(() => this.plotData());
       }
     }
@@ -158,15 +157,20 @@ class ControlPanel extends Component {
 
   initArea = () => {
     return new Promise((resolve) => {
-      const parent = d3.select(this.parentRef.current);
-      const parentWidth = parent.node().getBoundingClientRect().width;
-
       const visArea = d3.select(this.visRef.current);
       visArea.selectAll('*').remove();
+      visArea.attr('style', null);
+
+      const parent = d3.select(this.parentRef.current);
+      const parentRect = parent.node().getBoundingClientRect();
+      const parentWidth = parentRect.width;
+      const parentHeight = parentRect.height;
 
       const { margin, ratio } = this.state.visBox;
-      const width = parentWidth;
-      const height = parentWidth * ratio;
+      const width = this.props.width ? this.props.width : parentWidth;
+      const height = this.props.height ? this.props.height : (
+        this.props.ratio ? width * ratio : parentHeight
+      );
 
       let xNum = 0, xMax = 0, xSteps = [];
       this.props.data.forEach(i => {
@@ -189,7 +193,7 @@ class ControlPanel extends Component {
       const diff = yMax - yMin;
 
       yMax += diff * 0.1;
-      yMin -= diff * 0.1;
+      yMin -= diff * 0.05;
 
       const yScale = d3.scaleLinear()
         .domain([yMin, yMax])
@@ -1038,14 +1042,22 @@ class ControlPanel extends Component {
     );
   };
 
+  _renderPanelMsg = (TextElem) => {
+    return (
+      <div className='ControlPanel__msg__wrapper'>
+        {TextElem}
+      </div>
+    );
+  };
+
   render() {
     return (
       <div className='ControlPanel' ref={this.parentRef}>
         {this.props.isLoading
-          ? <UI.Text spacing spacingTop center>Loading..</UI.Text>
+          ? this._renderPanelMsg(<UI.Text type='grey' center>Loading..</UI.Text>)
           : <>
             {this.isEmpty()
-              ? <UI.Text spacing spacingTop center>No data</UI.Text>
+              ? this._renderPanelMsg(<UI.Text type='grey' center>No data</UI.Text>)
               : this._renderContent()
             }
           </>
@@ -1055,9 +1067,21 @@ class ControlPanel extends Component {
   }
 }
 
-ControlPanel.propTypes = {};
+Panel.defaultProps = {
+  data: [],
+  width: null,
+  height: null,
+  ratio: null,
+};
+
+Panel.propTypes = {
+  data: PropTypes.array,
+  width: PropTypes.number,
+  height: PropTypes.number,
+  ratio: PropTypes.number,
+};
 
 export default storeUtils.getWithState(
   classes.CONTROL_PANEL,
-  ControlPanel
+  Panel
 );

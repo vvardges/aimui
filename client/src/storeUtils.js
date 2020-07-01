@@ -20,6 +20,9 @@ export function getWithState(caseName, caseClass) {
   switch (caseName) {
     // App
     case classes.APP:
+      mapState2Props = (state) => ({
+        loadProgress: state.default.loadProgress,
+      });
       break;
     // Wrappers
     case classes.BASE_WRAPPER:
@@ -39,9 +42,6 @@ export function getWithState(caseName, caseClass) {
       break;
     // Components
     case classes.HEADER:
-      mapState2Props = (state) => ({
-        loadProgress: state.default.loadProgress,
-      });
       break;
     case classes.SEARCH_BAR:
       mapState2Props = (state) => ({

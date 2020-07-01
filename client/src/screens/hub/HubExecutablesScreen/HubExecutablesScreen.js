@@ -27,7 +27,13 @@ class HubExecutablesScreen extends React.Component {
     this.runningExecsRef = React.createRef();
   }
 
+  componentWillMount() {
+    this.props.resetProgress();
+  }
+
   componentDidMount() {
+    this.props.incProgress();
+
     this.props.getExecutables().then((data) => {
       this.setState({
         isLoading: false,
@@ -37,7 +43,7 @@ class HubExecutablesScreen extends React.Component {
           disabled: false,
         })),
       })
-    });
+    }).finally(() => this.props.completeProgress());
   }
 
   handleExecuteBtnClick = (execIdx, executableId) => {

@@ -6,6 +6,7 @@ import UI from '../../../../../ui';
 import * as storeUtils from '../../../../../storeUtils';
 import * as classes from '../../../../../constants/classes';
 
+
 class SearchBar extends Component {
   constructor(props) {
     super(props);
@@ -49,8 +50,8 @@ class SearchBar extends Component {
     return (
       <div className='SearchBar'>
         <UI.Input
-          classNameWrapper='HubMainScreen__filter__page__inp'
-          size='medium'
+          className='SearchBar__search__input'
+          classNameWrapper='SearchBar__search__input__wrapper'
           placeholder='Type search query..'
           value={this.state.commitSearchQuery}
           onChange={(evt) => this.setState({ commitSearchQuery: evt.target.value })}

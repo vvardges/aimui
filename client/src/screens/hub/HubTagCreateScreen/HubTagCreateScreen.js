@@ -7,9 +7,10 @@ import UI from '../../../ui';
 import TagSettingForm from '../../../components/hub/TagSettingForm/TagSettingForm';
 import * as classes from '../../../constants/classes';
 import * as screens from '../../../constants/screens';
-import HubWrapper from '../../../wrappers/hub/HubWrapper/HubWrapper';
+import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import * as storeUtils from '../../../storeUtils';
 import { Link } from 'react-router-dom';
+
 
 class HubTagCreateScreen extends React.Component {
   constructor(props) {
@@ -58,7 +59,7 @@ class HubTagCreateScreen extends React.Component {
   _renderContent = () => {
     return (
       <div className='HubTagCreateScreen__FormGroup__wrapper'>
-        <UI.Text size={4} header divided>
+        <UI.Text size={6} header divided>
           Create New Tag
         </UI.Text>
         <TagSettingForm
@@ -87,11 +88,11 @@ class HubTagCreateScreen extends React.Component {
     }
 
     return (
-      <HubWrapper>
+      <ProjectWrapper>
         <UI.Container size='small' ref={this.contentRef}>
           {this._renderContent()}
         </UI.Container>
-      </HubWrapper>
+      </ProjectWrapper>
     );
   }
 }

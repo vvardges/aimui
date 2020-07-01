@@ -33,6 +33,7 @@ class ProjectApi(Resource):
 
         return jsonify({
             'name': project.name,
+            'path': project.path,
             'description': project.description,
             'branches': project_branches,
         })

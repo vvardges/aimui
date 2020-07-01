@@ -2,6 +2,7 @@ import './App.less';
 
 import React from 'react';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
+import LoadingBar from 'react-top-loading-bar';
 
 import * as screens from './constants/screens';
 import * as classes from './constants/classes';
@@ -39,6 +40,14 @@ class App extends React.Component {
   render() {
     return (
       <BrowserRouter>
+        <div className='LoadingBar__wrapper'>
+          <LoadingBar
+            height={3}
+            color='#3B5896'
+            progress={this.props.loadProgress}
+            className='LoadingBar'
+          />
+        </div>
         <Header />
         <Switch>
           <Route exact path={screens.MAIN} component={HubMainScreen}/>

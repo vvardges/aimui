@@ -1,8 +1,7 @@
 import './Header.less';
 
 import React from 'react';
-import { Link, withRouter } from 'react-router-dom';
-import LoadingBar from 'react-top-loading-bar';
+import { NavLink, withRouter } from 'react-router-dom';
 
 import { classNames } from '../../../utils';
 import UI from '../../../ui';
@@ -27,28 +26,57 @@ class Header extends React.Component {
     return (
       <>
         <div className={className}>
-          <div className='LoadingBar__wrapper'>
-            <LoadingBar
-              height={3}
-              color='#7A94CC'
-              progress={this.props.loadProgress}
-              className='LoadingBar'
-            />
-          </div>
-          <UI.Container>
-            <div className='Header__cont'>
-              <div className='Header__items'>
-                <Link to={screens.MAIN}>
-                  <div className='Header__item logo' />
-                </Link>
+          <div className='Header__cont'>
+            <div className='Header__items top'>
+              <div className='Header__item__wrapper'>
+                <div className='Header__item'>
+                  <div className='Header__item__img' />
+                </div>
               </div>
-              <div className='Header__items'>
-                <a className='Header__item clickable' href='https://docs.aimhub.io' target='_blank' rel='noreferrer noopener'>
-                  Docs
+              <div className='Header__item__wrapper'>
+                <NavLink exact to={screens.MAIN}>
+                  <div className='Header__item'>
+                    <UI.Icon i='nc-preferences' className='Header__item__icon' />
+                    <UI.Text className='Header__item__title'>Panel</UI.Text>
+                  </div>
+                </NavLink>
+              </div>
+              <div className='Header__item__wrapper'>
+                <NavLink exact to={screens.HUB_PROJECT_EXPERIMENT_INDEX}>
+                  <div className='Header__item'>
+                    <UI.Icon i='nc-layers-3' className='Header__item__icon' />
+                    <UI.Text className='Header__item__title'>Runs</UI.Text>
+                  </div>
+                </NavLink>
+              </div>
+              <div className='Header__item__wrapper'>
+                <NavLink to={screens.HUB_PROJECT_TAGS}>
+                  <div className='Header__item'>
+                    <UI.Icon i='nc-flag-points-32' className='Header__item__icon' />
+                    <UI.Text className='Header__item__title'>Tags</UI.Text>
+                  </div>
+                </NavLink>
+              </div>
+              <div className='Header__item__wrapper'>
+                <NavLink to={screens.HUB_PROJECT_EXECUTABLES}>
+                  <div className='Header__item'>
+                    <UI.Icon i='nc-archive-2' className='Header__item__icon' />
+                    <UI.Text className='Header__item__title'>Processes</UI.Text>
+                  </div>
+                </NavLink>
+              </div>
+            </div>
+            <div className='Header__items bottom'>
+              <div className='Header__item__wrapper'>
+                <a className='link' href='https://docs.aimstack.io' target='_blank' rel='noreferrer noopener'>
+                  <div className='Header__item'>
+                    <UI.Icon i='nc-single-folded-content' className='Header__item__icon' />
+                    <UI.Text className='Header__item__title'>Docs</UI.Text>
+                  </div>
                 </a>
               </div>
             </div>
-          </UI.Container>
+          </div>
         </div>
       </>
     )

@@ -2,10 +2,21 @@
 
 @horiz-breakpoint: 380px;
 
+.ProjectWrapper {
+  &.gap {
+    .ProjectWrapper__body {
+      padding: var(--component-spacing-md) 0;
+    }
+  }
+}
+
 .ProjectWrapper__header {
-  padding-top: var(--component-spacing-md);
   background-color: var(--grey-bg-light);
   border-bottom: var(--border);
+}
+
+.ProjectWrapper__header__cont {
+  padding: var(--component-spacing-sm) 0;
 }
 
 .ProjectWrapper__breadcrumb {
@@ -25,7 +36,6 @@
 }
 
 .ProjectWrapper__navbar {
-  margin-top: var(--component-spacing-md);
   display: flex;
   flex-direction: row;
   width: auto;
@@ -37,25 +47,19 @@
 
 .ProjectWrapper__navbar__item {
   position: relative;
-  top: 1px;
   padding: var(--component-spacing-xs) var(--component-spacing-md);
   cursor: pointer;
   color: var(--grey) !important;
-  border: 1px solid transparent;
-  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
 
   &:hover {
     text-decoration: none;
-    color: var(--grey-darker) !important;
+    color: var(--primary-dark) !important;
   }
 
   &.active {
-    border-color: var(--border-color);
-    border-top-color: var(--primary);
-    border-bottom: none;
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
-    background-color: var(--white);
-    color: var(--grey-darker) !important;
+    border-bottom-color: var(--primary);
+    color: var(--primary) !important;
   }
 
   .Icon {
@@ -64,8 +68,6 @@
 }
 
 .ProjectWrapper__body {
-  padding-top: var(--component-spacing-md);
-
   &:after {
     content: '';
     display: table;
@@ -75,6 +77,12 @@
 
 .ProjectWrapper__navigation {
   float: left;
+
+  &:after {
+    content: '';
+    display: table;
+    clear: both;
+  }
 }
 
 .ProjectWrapper__cont {}

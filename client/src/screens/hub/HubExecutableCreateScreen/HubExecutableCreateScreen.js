@@ -6,7 +6,7 @@ import { Link, Redirect } from 'react-router-dom';
 import UI from '../../../ui';
 import * as classes from '../../../constants/classes';
 import * as screens from '../../../constants/screens';
-import HubWrapper from '../../../wrappers/hub/HubWrapper/HubWrapper';
+import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import * as storeUtils from '../../../storeUtils';
 import ExecutableViewForm from '../../../components/hub/ExecutableViewForm/ExecutableViewForm';
 
@@ -110,7 +110,7 @@ class HubExecutableCreateScreen extends React.Component {
   _renderContent = () => {
     return (
       <div className='HubExecutableCreateScreen__FormGroup__wrapper'>
-        <UI.Text size={4} header divided> Create Process Template </UI.Text>
+        <UI.Text size={6} header divided> Create Process Template </UI.Text>
         <ExecutableViewForm ref={this.form} />
         <UI.Buttons>
           <UI.Button
@@ -141,11 +141,11 @@ class HubExecutableCreateScreen extends React.Component {
     }
 
     return (
-      <HubWrapper>
+      <ProjectWrapper>
         <UI.Container size='small' ref={this.contentRef}>
           {this._renderContent()}
         </UI.Container>
-      </HubWrapper>
+      </ProjectWrapper>
     );
   }
 }
