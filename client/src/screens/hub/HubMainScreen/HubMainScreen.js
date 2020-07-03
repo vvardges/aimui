@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet';
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import * as classes from '../../../constants/classes';
 import * as storeUtils from '../../../storeUtils';
-import UI from '../../../ui';
+import HubMainScreenProvider from './HubMainScreenProvider/HubMainScreenProvider';
 import Panel from './components/Panel/Panel';
 import SearchBar from './components/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
@@ -22,6 +22,7 @@ class HubMainScreen extends React.Component {
     };
 
     this.projectWrapperRef = React.createRef();
+    this.panelRef = React.createRef();
   }
 
   componentWillMount() {
@@ -50,6 +51,40 @@ class HubMainScreen extends React.Component {
     }
   };
 
+  dataDidUpdate = () => {
+    this.panelRef.current.dataDidUpdate();
+  };
+
+  _renderContent = () => {
+    return (
+      <div
+        className='HubMainScreen__wrapper'
+        style={{
+          height: this.state.height,
+        }}
+      >
+        <div className='HubMainScreen'>
+          <div className='HubMainScreen__grid'>
+            <div className='HubMainScreen__grid__body'>
+              <div className='HubMainScreen__grid__search'>
+                <SearchBar />
+              </div>
+              <div className='HubMainScreen__grid__panel'>
+                <Panel ref={this.panelRef} />
+              </div>
+              <div className='HubMainScreen__grid__context'>
+                <ContextBox />
+              </div>
+            </div>
+            <div className='HubMainScreen__grid__controls'>
+              <ControlsSidebar />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   render() {
     return (
       <ProjectWrapper
@@ -61,33 +96,11 @@ class HubMainScreen extends React.Component {
           <meta title='' content='' />
         </Helmet>
 
-        <div
-          className='HubMainScreen__wrapper'
-          style={{
-            height: this.state.height,
-          }}
+        <HubMainScreenProvider
+          dataDidUpdate={() => this.dataDidUpdate()}
         >
-          <div className='HubMainScreen'>
-            <div className='HubMainScreen__grid'>
-              <div className='HubMainScreen__grid__body'>
-                <div className='HubMainScreen__grid__search'>
-                  <SearchBar />
-                </div>
-                <div className='HubMainScreen__grid__panel'>
-                  <Panel
-                    data={Object.values(this.props.data)}
-                  />
-                </div>
-                <div className='HubMainScreen__grid__context'>
-                  <ContextBox />
-                </div>
-              </div>
-              <div className='HubMainScreen__grid__controls'>
-                <ControlsSidebar />
-              </div>
-            </div>
-          </div>
-        </div>
+          {this._renderContent()}
+        </HubMainScreenProvider>
       </ProjectWrapper>
     )
   }

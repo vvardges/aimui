@@ -43,20 +43,14 @@ export function getWithState(caseName, caseClass) {
     // Components
     case classes.HEADER:
       break;
-    case classes.SEARCH_BAR:
-      mapState2Props = (state) => ({
-        ...state.controlPanel,
-      });
+    case classes.HUB_MAIN_SCREEN_PROVIDER:
       Object.assign(mapDispatch2Props, {
-        getProjectInsight: controlPanelActions.getProjectInsight,
         getCommitsByQuery: commitActions.getCommitsByQuery,
       });
       break;
+    case classes.SEARCH_BAR:
+      break;
     case classes.CONTROL_PANEL:
-      mapState2Props = (state) => ({
-        isLoading: state.controlPanel.isLoading,
-        data: Object.values(state.controlPanel.data),
-      });
       Object.assign(mapDispatch2Props, {
         getCommitTags: commitActions.getCommitTags,
         getCommitInfo: commitActions.getCommitInfo,
@@ -72,9 +66,6 @@ export function getWithState(caseName, caseClass) {
       });
     // Screens
     case classes.HUB_MAIN_SCREEN:
-      mapState2Props = (state) => ({
-        ...state.controlPanel,
-      });
       Object.assign(mapDispatch2Props, {
         getRunningExecutables: executablesActions.getRunningExecutables,
         killRunningExecutable: executablesActions.killRunningExecutable,

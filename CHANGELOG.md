@@ -1,5 +1,6 @@
 # Changelog
 
+- Move chart hover tooltip information to context area (gorarakelyan)
 - Change the panel structure to be wider and become the primary space (gorarakelyan)
 
 ## 1.0.1 Jun 22 2020
