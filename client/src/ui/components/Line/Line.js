@@ -27,7 +27,7 @@ Line.defaultProps = {
 
 Line.propTypes = {
   size: PropTypes.oneOf(['thin', 'thick']),
-  color: PropTypes.oneOf(['primary', 'secondary']),
+  color: PropTypes.oneOf(['primary', 'secondary', 'negative']),
   spacing: PropTypes.bool,
 };
 

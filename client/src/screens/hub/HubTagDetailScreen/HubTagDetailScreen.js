@@ -8,6 +8,7 @@ import moment from 'moment';
 import { buildUrl } from '../../../utils';
 
 import TagSettingForm from '../../../components/hub/TagSettingForm/TagSettingForm';
+import TagDangerZone from './components/TagDangerZone';
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import UI from '../../../ui';
 import * as storeUtils from '../../../storeUtils';
@@ -26,6 +27,7 @@ class HubTagDetailScreen extends React.Component {
       form: {
         name: '',
         color: '',
+        is_hidden: null,
       },
       actualFormValues: {
         name: '',
@@ -79,6 +81,23 @@ class HubTagDetailScreen extends React.Component {
       this.setState({
         relatedRuns: data.data,
       });
+    });
+  };
+
+  setHiddenStatus = (tag_id, is_hidden) => {
+    let form = {
+      id: tag_id,
+      is_hidden,
+    };
+
+    this.props.updateTag(form).then(data => {
+      this.setState(prevState => ({
+        ...prevState,
+        tag: {
+          ...prevState.tag,
+          is_hidden,
+        },
+      }));
     });
   };
 
@@ -182,32 +201,53 @@ class HubTagDetailScreen extends React.Component {
 
   _renderSettings = () => {
     return (
-      <>
-        <TagSettingForm
-          name={this.state.form.name}
-          color={this.state.form.color}
-          tag_id={this.props.match.params.tag_id}
-          onUpdate={() => this.handleFormUpdate()}
-          ref={this.form}
+      <div className='HubTagDetailScreen__settings'>
+        <UI.Text
+          className='HubTagDetailScreen__form__title'
+          size={6}
+        >
+          Edit
+        </UI.Text>
+        <UI.Segment>
+          <TagSettingForm
+            name={this.state.form.name}
+            color={this.state.form.color}
+            tag_id={this.props.match.params.tag_id}
+            onUpdate={() => this.handleFormUpdate()}
+            ref={this.form}
+          />
+          <UI.Line />
+          <UI.Buttons>
+            <UI.Button
+              onClick={() => this.handleSaveButtonClick()}
+              type='primary'
+              {...this.state.saveButtonStatus}
+            >
+              Save
+            </UI.Button>
+            <UI.Button
+              onClick={() => this.handleCancelButtonClick()}
+              type='secondary'
+              {...this.state.cancelButtonStatus}
+            >
+              Cancel
+            </UI.Button>
+          </UI.Buttons>
+        </UI.Segment>
+        <UI.Text
+          className='HubTagDetailScreen__form__title'
+          type='negative'
+          size={6}
+        >
+          Danger Zone
+        </UI.Text>
+        <TagDangerZone
+          tag_name={this.state.tag.name}
+          is_hidden={this.state.tag.is_hidden}
+          onDelete={() => this.setHiddenStatus(this.props.match.params.tag_id, true)}
+          onRevert={() => this.setHiddenStatus(this.props.match.params.tag_id, false)}
         />
-        <UI.Line />
-        <UI.Buttons>
-          <UI.Button
-            onClick={() => this.handleSaveButtonClick()}
-            type='primary'
-            {...this.state.saveButtonStatus}
-          >
-            Save
-          </UI.Button>
-          <UI.Button
-            onClick={() => this.handleCancelButtonClick()}
-            type='secondary'
-            {...this.state.cancelButtonStatus}
-          >
-            Cancel
-          </UI.Button>
-        </UI.Buttons>
-      </>
+      </div>
     );
   };
 

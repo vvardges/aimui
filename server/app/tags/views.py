@@ -19,7 +19,8 @@ tags_api = Api(tags_bp)
 @tags_api.resource('/list')
 class TagListApi(Resource):
     def get(self):
-        tags = Tag.query.order_by(Tag.created_at.desc()).all()
+        tags = Tag.query.filter(Tag.is_hidden.isnot(True)) \
+            .order_by(Tag.created_at.desc()).all()
 
         result = []
         for t in tags:
@@ -54,7 +55,8 @@ class TagCreateApi(Resource):
         return jsonify({
             'id': t.uuid,
         })
-        
+
+
 @tags_api.resource('/update')
 class TagUpdateApi(Resource):
     def post(self):
@@ -63,20 +65,21 @@ class TagUpdateApi(Resource):
         uuid = command_form.get('id') or ''
         uuid = uuid.strip()
 
-        name = command_form.get('name') or ''
-        name = name.strip()
-
-        color = command_form.get('color') or ''
-        color = color.strip()
-
-        if not name or not color:
-            return make_response(jsonify({}), 403)
-
         tag = Tag.query.filter_by(uuid=uuid).first()
         if not tag:
             return make_response(jsonify({}), 404)
-        tag.name = name;
-        tag.color = color;
+        
+        if 'name' in command_form:
+            tag.name = command_form.get('name').strip()
+            if not tag.name:
+                return make_response(jsonify({}), 403)
+        if 'color' in command_form:
+            tag.color = command_form.get('color').strip()
+            if not tag.color:
+                return make_response(jsonify({}), 403)
+        if 'is_hidden' in command_form:
+            tag.is_hidden = command_form.get('is_hidden') == 'true'
+
         db.session.commit()
 
         return jsonify({
@@ -105,6 +108,7 @@ class TagGetRelatedRuns(Resource):
             'data': related_runs,
         })
 
+
 @tags_api.resource('/<tag_id>')
 class TagGetSingle(Resource):
     def get(self, tag_id):
@@ -116,4 +120,5 @@ class TagGetSingle(Resource):
         return jsonify({
             'name': tag.name,
             'color': tag.color,
+            'is_hidden': tag.is_hidden,
         })
