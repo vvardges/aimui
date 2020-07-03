@@ -55,6 +55,10 @@ class HubMainScreen extends React.Component {
     this.panelRef.current.dataDidUpdate();
   };
 
+  settingsDidUpdate = () => {
+    this.panelRef.current.draw();
+  };
+
   _renderContent = () => {
     return (
       <div
@@ -98,6 +102,7 @@ class HubMainScreen extends React.Component {
 
         <HubMainScreenProvider
           dataDidUpdate={() => this.dataDidUpdate()}
+          settingsDidUpdate={() => this.settingsDidUpdate()}
         >
           {this._renderContent()}
         </HubMainScreenProvider>

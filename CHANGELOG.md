@@ -1,5 +1,6 @@
 # Changelog
 
+- Add ability to set Y axis scale function (gorarakelyan)
 - Move chart hover tooltip information to context area (gorarakelyan)
 - Change the panel structure to be wider and become the primary space (gorarakelyan)
 

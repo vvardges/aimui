@@ -100,6 +100,11 @@ class Panel extends Component {
       'curveStepBefore',
       'curveBasisClosed',
     ];
+
+    this.scale = [
+      'scaleLinear',
+      'scaleLog',
+    ];
   }
 
   componentDidMount() {
@@ -188,12 +193,18 @@ class Panel extends Component {
 
       let yMax = d3.max(this.context.data.map((i) => Math.max(...i.data.map(i => i.value))));
       let yMin = d3.min(this.context.data.map((i) => Math.min(...i.data.map(i => i.value))));
-      const diff = yMax - yMin;
 
-      yMax += diff * 0.1;
-      yMin -= diff * 0.05;
+      let yScaleBase;
+      if (this.scale[this.context.settings.yScale] === 'scaleLinear') {
+        const diff = yMax - yMin;
+        yMax += diff * 0.1;
+        yMin -= diff * 0.05;
+        yScaleBase = d3.scaleLinear();
+      } else if (this.scale[this.context.settings.yScale] === 'scaleLog') {
+        yScaleBase = d3.scaleLog();
+      }
 
-      const yScale = d3.scaleLinear()
+      const yScale = yScaleBase
         .domain([yMin, yMax])
         .range([height - margin.top - margin.bottom, 0]);
 

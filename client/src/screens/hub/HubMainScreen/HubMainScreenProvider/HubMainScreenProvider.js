@@ -15,6 +15,9 @@ class HubMainScreenProvider extends Component {
       data: [],
       contextStepIndex: null,
       contextActiveStepIndex: null,
+      settings: {
+        yScale: 0,
+      },
     };
   }
 
@@ -81,6 +84,20 @@ class HubMainScreenProvider extends Component {
     this.setState({ contextActiveStepIndex });
   };
 
+  setSettings = (key, value, rerender=false) => {
+    this.setState(prevState => ({
+      ...prevState,
+      settings: {
+        ...prevState.settings,
+        [key]: value,
+      },
+    }), () => {
+      if (rerender) {
+        this.props.settingsDidUpdate();
+      }
+    });
+  };
+
   render() {
     return (
       <HubMainScreenContext.Provider
@@ -92,6 +109,7 @@ class HubMainScreenProvider extends Component {
           getLineColor: this.getLineColor,
           setContextStepIndex: this.setContextStepIndex,
           setContextActiveStepIndex: this.setContextActiveStepIndex,
+          setSettings: this.setSettings,
         }}
       >
         {this.props.children}
@@ -102,10 +120,12 @@ class HubMainScreenProvider extends Component {
 
 HubMainScreenProvider.defaultProps = {
   dataDidUpdate: () => {},
+  settingsDidUpdate: () => {},
 };
 
 HubMainScreenProvider.propTypes = {
   dataDidUpdate: PropTypes.func,
+  settingsDidUpdate: PropTypes.func,
 };
 
 export default storeUtils.getWithState(

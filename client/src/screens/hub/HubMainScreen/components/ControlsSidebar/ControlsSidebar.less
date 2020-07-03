@@ -1,3 +1,5 @@
+@item-size: 28px;
+
 .ControlsSidebar {
   width: 100%;
   height: 100%;
@@ -7,4 +9,79 @@
   background-color: #FFF;
   box-sizing: border-box;
   border-left: 4px solid var(--grey-lighter);
+}
+
+.ControlsSidebar__items {
+  margin: var(--component-spacing-sm) 0;
+}
+
+.ControlsSidebar__item__wrapper {
+  position: relative;
+}
+
+.ControlsSidebar__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  width: 28px;
+  padding: var(--component-spacing-sm);
+  border-radius: var(--border-radius);
+  color: var(--grey);
+  cursor: pointer;
+  transition: background-color 110ms ease, color 110ms ease;
+
+  &:hover {
+    background-color: var(--grey-bg);
+    color: var(--grey-dark);
+  }
+
+  &:active, &.active {
+    background-color: var(--primary-bg);
+    color: var(--primary);
+  }
+}
+
+.ControlsSidebar__menu {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: calc(@item-size + 3 * var(--component-spacing-sm));
+  width: 200px;
+  min-height: calc(@item-size + 2 * var(--component-spacing-sm));
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 9999;
+  border: 1px solid var(--primary-lighter);
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.1);
+  background-color: #FFF;
+
+  &.open {
+    display: block;
+  }
+}
+
+.ControlsSidebar__menu__list__header {
+  padding: var(--component-spacing-xs) var(--component-spacing-sm);
+  background-color: var(--primary-bg);
+  color: var(--primary-dark);
+  border-bottom: 1px solid var(--primary-lighter);
+}
+
+.ControlsSidebar__menu__list__items {
+  padding: var(--component-spacing-xs) 0;
+}
+
+.ControlsSidebar__menu__item {
+  font-size: var(--text-md);
+  padding: var(--component-spacing-xs) var(--component-spacing-sm);
+  color: var(--grey-dark);
+  cursor: pointer;
+  transition: background-color 110ms ease, color 110ms ease;
+
+  &:hover {
+    background-color: var(--grey-bg);
+    color: var(--grey-darker);
+  }
 }
