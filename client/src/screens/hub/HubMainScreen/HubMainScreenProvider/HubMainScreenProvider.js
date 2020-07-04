@@ -93,7 +93,11 @@ class HubMainScreenProvider extends Component {
       },
     }), () => {
       if (rerender) {
-        this.props.settingsDidUpdate();
+        this.setState(prevState => ({
+          ...prevState,
+          contextStepIndex: null,
+          contextActiveStepIndex: null,
+        }), () => this.props.settingsDidUpdate());
       }
     });
   };

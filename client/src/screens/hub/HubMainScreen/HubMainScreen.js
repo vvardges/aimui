@@ -56,7 +56,7 @@ class HubMainScreen extends React.Component {
   };
 
   settingsDidUpdate = () => {
-    this.panelRef.current.draw();
+    this.panelRef.current.settingsDidUpdate();
   };
 
   _renderContent = () => {

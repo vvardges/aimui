@@ -121,6 +121,10 @@ class Panel extends Component {
     this.draw();
   }
 
+  settingsDidUpdate() {
+    this.draw();
+  }
+
   initD3 = () => {
     d3.selection.prototype.moveToFront = function() {
       return this.each(function(){
@@ -351,10 +355,6 @@ class Panel extends Component {
   };
 
   showHoverLine = (x) => {
-    if (this.state.hoverLine.display) {
-      return;
-    }
-
     this.hoverLine
       .style('display', null);
   };
