@@ -432,10 +432,29 @@ paths:
             application/json:
               schema:
                 type: object
-  "/commits/search?q={query}":
+  "/commits/search/metric?q={query}":
     get:
-      operationId: getCommitsByQuery
-      summary: Search commits
+      operationId: getCommitsMetricsByQuery
+      summary: Get runs metrics
+      tags:
+        - Commit
+      parameters:
+          - name: query
+            in: path
+            required: false
+            schema:
+              type: string
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+  "/commits/search/dictionary?q={query}":
+    get:
+      operationId: getCommitsDictionariesByQuery
+      summary: Get runs dictionaries
       tags:
         - Commit
       parameters:

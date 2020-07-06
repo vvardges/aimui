@@ -522,6 +522,7 @@ class Panel extends Component {
           .attr('data-y', y)
           .attr('data-index', pIndex)
           .attr('data-line-index', lineIndex)
+          .attr('data-line-hash', line.hash)
           .style('fill', this.context.getLineColor(line))
           .on('click', function () {
             handlePointClick(lineIndex, x, y, pIndex, d3.select(this));
@@ -535,7 +536,7 @@ class Panel extends Component {
   targetHoverCircle = (x, y) => {
     this.hoverCircles.selectAll('*.focus').moveToFront();
 
-    let nearestY = null, nearestIndex = null, nearestCircle = null;
+    let nearestY = null, nearestIndex = null, nearestHash = null, nearestCircle = null;
 
     // Find the nearest circle
     this.hoverCircles.selectAll('.HoverCircle').each(function (d) {
@@ -546,6 +547,7 @@ class Panel extends Component {
       if (nearestY === null || r < nearestY) {
         nearestY = r;
         nearestIndex = parseInt(elem.attr('data-line-index'));
+        nearestHash = elem.attr('data-line-hash');
         nearestCircle = elem;
       }
 
@@ -572,6 +574,7 @@ class Panel extends Component {
     // .classed('fade', false);
 
     this.context.setContextActiveStepIndex(nearestIndex);
+    this.context.setContextActiveStepHash(nearestHash);
   };
 
   getCommitTags = (lineData) => {

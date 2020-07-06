@@ -19,6 +19,7 @@ class HubMainScreen extends React.Component {
 
     this.state = {
       height: 0,
+      width: 0,
     };
 
     this.projectWrapperRef = React.createRef();
@@ -45,6 +46,7 @@ class HubMainScreen extends React.Component {
     if (projectWrapperHeight) {
       this.setState({
         height: window.innerHeight - projectWrapperHeight - 1,
+        width: window.innerWidth,
       });
     } else {
       setTimeout(() => this.updateWindowDimensions(), 25);
@@ -60,6 +62,9 @@ class HubMainScreen extends React.Component {
   };
 
   _renderContent = () => {
+    const headerWidth = 70;
+    const controlsWidth = 80;
+
     return (
       <div
         className='HubMainScreen__wrapper'
@@ -77,7 +82,7 @@ class HubMainScreen extends React.Component {
                 <Panel ref={this.panelRef} />
               </div>
               <div className='HubMainScreen__grid__context'>
-                <ContextBox />
+                <ContextBox width={this.state.width - headerWidth - controlsWidth} />
               </div>
             </div>
             <div className='HubMainScreen__grid__controls'>

@@ -45,7 +45,8 @@ export function getWithState(caseName, caseClass) {
       break;
     case classes.HUB_MAIN_SCREEN_PROVIDER:
       Object.assign(mapDispatch2Props, {
-        getCommitsByQuery: commitActions.getCommitsByQuery,
+        getCommitsMetricsByQuery: commitActions.getCommitsMetricsByQuery,
+        getCommitsDictionariesByQuery: commitActions.getCommitsDictionariesByQuery,
       });
       break;
     case classes.SEARCH_BAR:

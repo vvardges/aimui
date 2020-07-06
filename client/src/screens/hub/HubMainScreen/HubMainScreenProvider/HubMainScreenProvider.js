@@ -12,9 +12,16 @@ class HubMainScreenProvider extends Component {
 
     this.state = {
       isLoading: false,
+      isLoadingContext: false,
       data: [],
+      contextInformation: {
+        unionNamespaces: [],
+        unionFields: {},
+        data: {},
+      },
       contextStepIndex: null,
       contextActiveStepIndex: null,
+      contextActiveStepHash: null,
       settings: {
         yScale: 0,
       },
@@ -31,9 +38,10 @@ class HubMainScreenProvider extends Component {
     this.setState(prevState => ({
       ...prevState,
       isLoading: true,
+      isLoadingContext: true,
     }));
 
-    this.props.getCommitsByQuery(query).then((data) => {
+    this.props.getCommitsMetricsByQuery(query).then((data) => {
       this.setState(prevState => ({
         ...prevState,
         data: Object.values(data),
@@ -44,6 +52,55 @@ class HubMainScreenProvider extends Component {
         isLoading: false,
       }));
     });
+
+    this.props.getCommitsDictionariesByQuery(query).then((runsData) => {
+      let unionNamespaces = [];
+      const unionFields = {};
+
+      for (let i in runsData) {
+        if (!!runsData[i].data && Object.keys(runsData[i].data).length) {
+          unionNamespaces = unionNamespaces.concat(...Object.keys(runsData[i].data));
+        }
+      }
+      unionNamespaces = Array.from(new Set(unionNamespaces));
+
+      if (unionNamespaces.length) {
+        for (let n in unionNamespaces) {
+          unionFields[unionNamespaces[n]] = [];
+        }
+        for (let i in runsData) {
+          Object.keys(runsData[i].data).forEach(n => {
+            unionFields[n] = unionFields[n].concat(...Object.keys(runsData[i].data[n]));
+          });
+        }
+        for (let n in unionNamespaces) {
+          unionFields[unionNamespaces[n]] = Array.from(new Set(unionFields[unionNamespaces[n]]));
+        }
+      }
+
+      this.setState(prevState => ({
+        ...prevState,
+        contextInformation: {
+          unionNamespaces,
+          unionFields,
+          data: runsData,
+        },
+      }));
+    }).finally(() => {
+      this.setState(prevState => ({
+        ...prevState,
+        isLoadingContext: false,
+      }));
+    });
+  };
+
+  getLineDataByHash = (lineHash) => {
+    for (let i in this.state.data) {
+      if (this.state.data[i].hash === lineHash) {
+        return this.state.data[i];
+      }
+    }
+    return null;
   };
 
   getLineValueByStep = (data, step) => {
@@ -76,14 +133,6 @@ class HubMainScreenProvider extends Component {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
 
-  setContextStepIndex = (contextStepIndex) => {
-    this.setState({ contextStepIndex });
-  };
-
-  setContextActiveStepIndex = (contextActiveStepIndex) => {
-    this.setState({ contextActiveStepIndex });
-  };
-
   setSettings = (key, value, rerender=false) => {
     this.setState(prevState => ({
       ...prevState,
@@ -111,9 +160,11 @@ class HubMainScreenProvider extends Component {
           getLineValueByStep: this.getLineValueByStep,
           getLineDataByStep: this.getLineDataByStep,
           getLineColor: this.getLineColor,
-          setContextStepIndex: this.setContextStepIndex,
-          setContextActiveStepIndex: this.setContextActiveStepIndex,
+          setContextStepIndex: (contextStepIndex) => this.setState({ contextStepIndex }),
+          setContextActiveStepIndex: (contextActiveStepIndex) => this.setState({ contextActiveStepIndex }),
+          setContextActiveStepHash: (contextActiveStepHash) => this.setState({ contextActiveStepHash }),
           setSettings: this.setSettings,
+          getLineDataByHash: this.getLineDataByHash,
         }}
       >
         {this.props.children}
