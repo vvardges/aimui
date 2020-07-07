@@ -1,17 +1,21 @@
-import './ControlPanel.less';
+import './Panel.less';
 
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 
 import * as classes from '../../../../../constants/classes';
 import * as storeUtils from '../../../../../storeUtils';
+import { classNames, buildUrl } from '../../../../../utils';
+import {
+  HUB_PROJECT_EXPERIMENT,
+  HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL,
+  HUB_PROJECT_CREATE_TAG,
+} from '../../../../../constants/screens';
 import UI from '../../../../../ui';
 import PopUp from '../PopUp/PopUp';
-import { buildUrl } from '../../../../../utils';
-import { HUB_PROJECT_EXPERIMENT, HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL } from '../../../../../constants/screens';
-import { classNames } from '../../../../../utils';
-import moment from 'moment';
+import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
 
 const d3 = require('d3');
 
@@ -20,13 +24,14 @@ const popUpDefaultHeight = 200;
 const circleRadius = 4;
 const circleActiveRadius = 7;
 
-class ControlPanel extends Component {
+
+class Panel extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       visBox: {
-        ratio: 0.5,
+        ratio: this.props.ratio,
         margin: {
           top: 20, right: 20, bottom: 30, left: 60,
         },
@@ -43,6 +48,9 @@ class ControlPanel extends Component {
         xSteps: [],
         xScale: null,
         yScale: null,
+      },
+      hoverLine: {
+        display: false,
       },
       chartPopUp: {
         display: false,
@@ -61,13 +69,6 @@ class ControlPanel extends Component {
         top: 0,
         tags: [],
       },
-      tooltipPopUp: {
-        display: false,
-        index: null,
-        width: 220,
-        height: 200,
-        active: null,
-      },
       commitPopUp: {
         display: false,
         left: 0,
@@ -82,13 +83,12 @@ class ControlPanel extends Component {
 
     this.parentRef = React.createRef();
     this.visRef = React.createRef();
-    this.tooltipPopUpRef = React.createRef();
     this.svg = null;
     this.plot = null;
     this.bgRect = null;
     this.hoverLine = null;
     this.hoverCircles = null;
-    this.isInit = false;
+    this.dataSnapshot = null;
 
     this.curves =  [
       'curveLinear',
@@ -104,6 +104,11 @@ class ControlPanel extends Component {
       'curveStepBefore',
       'curveBasisClosed',
     ];
+
+    this.scale = [
+      'scaleLinear',
+      'scaleLog',
+    ];
   }
 
   componentDidMount() {
@@ -116,10 +121,12 @@ class ControlPanel extends Component {
     window.removeEventListener('resize', () => this.resize());
   }
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (JSON.stringify(prevProps.data) !== JSON.stringify(this.props.data)) {
-      this.draw();
-    }
+  dataDidUpdate() {
+    this.draw();
+  }
+
+  settingsDidUpdate() {
+    this.draw();
   }
 
   initD3 = () => {
@@ -134,42 +141,50 @@ class ControlPanel extends Component {
     this.draw();
   };
 
-  draw = () => {
+  draw = (clear=true) => {
     if (!this.isEmpty()) {
-      // Clear panel
-      if (this.isInit) {
+      if (clear) {
+        // Clear panel: hide popups and remove hover
         this.hideHoverLine();
         if (this.hoverCircles) {
           this.hoverCircles.selectAll('*.focus').remove();
         }
-        this.hideActionTooltips(false, () => {
-          this.initArea().then(() => this.plotData());
-        });
-      } else {
-        this.isInit = true;
-        this.initArea().then(() => this.plotData());
+        this.hideActionPopUps(false);
       }
+
+      // FIX: Check if visRef has been mounted
+      if (!this.visRef.current) {
+        setTimeout( () => this.draw(clear), 20);
+        return;
+      }
+
+      this.initArea().then(() => this.plotData());
     }
   };
 
   isEmpty = () => {
-    return !this.props.data || !this.props.data.length;
+    return !this.context.data || !this.context.data.length;
   };
 
   initArea = () => {
     return new Promise((resolve) => {
-      const parent = d3.select(this.parentRef.current);
-      const parentWidth = parent.node().getBoundingClientRect().width;
-
       const visArea = d3.select(this.visRef.current);
       visArea.selectAll('*').remove();
+      visArea.attr('style', null);
+
+      const parent = d3.select(this.parentRef.current);
+      const parentRect = parent.node().getBoundingClientRect();
+      const parentWidth = parentRect.width;
+      const parentHeight = parentRect.height;
 
       const { margin, ratio } = this.state.visBox;
-      const width = parentWidth;
-      const height = parentWidth * ratio;
+      const width = this.props.width ? this.props.width : parentWidth;
+      const height = this.props.height ? this.props.height : (
+        this.props.ratio ? width * ratio : parentHeight
+      );
 
       let xNum = 0, xMax = 0, xSteps = [];
-      this.props.data.forEach(i => {
+      this.context.data.forEach(i => {
         if (i.num_steps > xMax) {
           xMax = i.num_steps;
         }
@@ -184,14 +199,20 @@ class ControlPanel extends Component {
         .domain([0, xMax])
         .range([0, width - margin.left - margin.right]);
 
-      let yMax = d3.max(this.props.data.map((i) => Math.max(...i.data.map(i => i.value))));
-      let yMin = d3.min(this.props.data.map((i) => Math.min(...i.data.map(i => i.value))));
-      const diff = yMax - yMin;
+      let yMax = d3.max(this.context.data.map((i) => Math.max(...i.data.map(i => i.value))));
+      let yMin = d3.min(this.context.data.map((i) => Math.min(...i.data.map(i => i.value))));
 
-      yMax += diff * 0.1;
-      yMin -= diff * 0.1;
+      let yScaleBase;
+      if (this.scale[this.context.settings.yScale] === 'scaleLinear') {
+        const diff = yMax - yMin;
+        yMax += diff * 0.1;
+        yMin -= diff * 0.05;
+        yScaleBase = d3.scaleLinear();
+      } else if (this.scale[this.context.settings.yScale] === 'scaleLog') {
+        yScaleBase = d3.scaleLog();
+      }
 
-      const yScale = d3.scaleLinear()
+      const yScale = yScaleBase
         .domain([yMin, yMax])
         .range([height - margin.top - margin.bottom, 0]);
 
@@ -257,7 +278,7 @@ class ControlPanel extends Component {
   };
 
   plotData = () => {
-    const data = this.props.data;
+    const data = this.context.data;
 
     if (!data || !data.length) {
       return;
@@ -300,7 +321,7 @@ class ControlPanel extends Component {
       this.plot.append('path')
         .datum(commit.data)
         .attr('data-hash', commit.hash)
-        .style('stroke', this.getCommitColor(commit))
+        .style('stroke', this.context.getLineColor(commit))
         .style('fill', 'none')
         .attr('class', `PlotLine PlotLine-${i}`)
         .attr('d', line);
@@ -316,13 +337,15 @@ class ControlPanel extends Component {
     });
 
     this.hoverCircles = this.plot.append('g');
-    // /*
-    //  * Glow effects (Optional)
-    //  */
+
+    this.showHoverLine(0);
+    this.moveHoverLine(0);
+
+    // Glow effect
+    //
     // const defs = svg.append('defs');
     // const glowDeviation = '2';
     //
-    // // Filter for the outside glow
     // const filter = defs.append('filter').attr('id', 'glow');
     // filter.append('feGaussianBlur')
     //   .attr('stdDeviation', glowDeviation)
@@ -332,28 +355,10 @@ class ControlPanel extends Component {
     // feMerge.append('feMergeNode').attr('in', 'coloredBlur');
     // feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
     //
-    // // Add the glow!!
     // d3.selectAll('.glowed').style('filter', 'url(#glow)');
   };
 
-  getCommitColor = (commit, alpha=1) => {
-    if (commit.color) {
-      return commit.color;
-    }
-
-    const index = commit.hash.split('').map((c, i) => commit.hash.charCodeAt(i)).reduce((a, b) => a + b);
-    const r = 50;
-    const g = ( index * 27 ) % 255;
-    const b = ( index * 13 ) % 255;
-
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  };
-
   showHoverLine = (x) => {
-    if (this.state.tooltipPopUp.display) {
-      return;
-    }
-
     this.hoverLine
       .style('display', null);
   };
@@ -361,16 +366,20 @@ class ControlPanel extends Component {
   moveHoverLine = (x) => {
     const data = this.state.chart.xSteps;
 
-    const xPoint = this.state.chart.xScale.invert(x);
-    const index = d3.bisect(data, xPoint, 1);
-    const a = data[index - 1];
-    const b = data[index];
+    let p = 0;
 
-    const p = xPoint - a > b - xPoint ? b : a;
+    if (x) {
+      const xPoint = this.state.chart.xScale.invert(x);
+      const index = d3.bisect(data, xPoint, 1);
+      const a = data[index - 1];
+      const b = data[index];
+
+      p = xPoint - a > b - xPoint ? b : a;
+    }
 
     const lineX = this.state.chart.xScale(p);
 
-    if (this.state.tooltipPopUp.index === p) {
+    if (this.context.contextStepIndex === p) {
       return;
     }
 
@@ -385,20 +394,17 @@ class ControlPanel extends Component {
 
     this.setState(prevState => ({
       ...prevState,
-      tooltipPopUp: {
-        ...prevState.tooltipPopUp,
-        index: p,
+      hoverLine: {
+        ...prevState.hoverLine,
         display: true,
-        left: this.positionPopUp(
-          lineX, 0, null,
-          prevState.tooltipPopUp.width,
-          prevState.tooltipPopUp.height).left,
       },
     }));
+
+    this.context.setContextStepIndex(p);
   };
 
   hideHoverLine = () => {
-    if (!this.state.tooltipPopUp.display) {
+    if (!this.state.hoverLine.display) {
       return;
     }
 
@@ -408,10 +414,10 @@ class ControlPanel extends Component {
 
     this.hoverLine
       .style('display', 'none');
-    this.setState(preState => ({
-      ...preState,
-      tooltipPopUp: {
-        ...preState.tooltipPopUp,
+    this.setState(prevState => ({
+      ...prevState,
+      hoverLine: {
+        ...prevState.hoverLine,
         display: false,
       },
     }));
@@ -456,7 +462,7 @@ class ControlPanel extends Component {
     };
   };
 
-  hideActionTooltips = (onlySecondary=false, callback=null) => {
+  hideActionPopUps = (onlySecondary=false, callback=null) => {
     this.setState(prevState => {
       const state = {
         ...prevState,
@@ -493,9 +499,9 @@ class ControlPanel extends Component {
     const handlePointClick = this.handlePointClick;
 
     // Draw circles
-    for (let lineIndex in this.props.data) {
-      const line = this.props.data[lineIndex];
-      const lineVal = this.getLineValueByStep(line.data, pIndex);
+    for (let lineIndex in this.context.data) {
+      const line = this.context.data[lineIndex];
+      const lineVal = this.context.getLineValueByStep(line.data, pIndex);
       if (lineVal) {
         const x = lineX;
         const y = this.state.chart.yScale(lineVal);
@@ -511,7 +517,7 @@ class ControlPanel extends Component {
           continue;
         }
 
-        this.hoverCircles.append(`circle`)
+        this.hoverCircles.append('circle')
           .attr('class', `HoverCircle HoverCircle-${pIndex}`)
           .attr('cx', lineX)
           .attr('cy', y)
@@ -520,7 +526,8 @@ class ControlPanel extends Component {
           .attr('data-y', y)
           .attr('data-index', pIndex)
           .attr('data-line-index', lineIndex)
-          .style('fill', this.getCommitColor(line))
+          .attr('data-line-hash', line.hash)
+          .style('fill', this.context.getLineColor(line))
           .on('click', function () {
             handlePointClick(lineIndex, x, y, pIndex, d3.select(this));
           });
@@ -533,7 +540,7 @@ class ControlPanel extends Component {
   targetHoverCircle = (x, y) => {
     this.hoverCircles.selectAll('*.focus').moveToFront();
 
-    let nearestY = null, nearestIndex = null, nearestCircle = null;
+    let nearestY = null, nearestIndex = null, nearestHash = null, nearestCircle = null;
 
     // Find the nearest circle
     this.hoverCircles.selectAll('.HoverCircle').each(function (d) {
@@ -543,7 +550,8 @@ class ControlPanel extends Component {
 
       if (nearestY === null || r < nearestY) {
         nearestY = r;
-        nearestIndex = elem.attr('data-line-index');
+        nearestIndex = parseInt(elem.attr('data-line-index'));
+        nearestHash = elem.attr('data-line-hash');
         nearestCircle = elem;
       }
 
@@ -569,30 +577,8 @@ class ControlPanel extends Component {
       .classed('active', true);
     // .classed('fade', false);
 
-    this.setState(prevState => ({
-      ...prevState,
-      tooltipPopUp: {
-        ...prevState.tooltipPopUp,
-        active: nearestIndex,
-      },
-    }));
-  };
-
-  getLineValueByStep = (data, step) => {
-    const item = this.getLineDataByStep(data, step);
-    return item ? item.value : null;
-  };
-
-  getLineDataByStep = (data, step) => {
-    for (let i = 0; i < data.length; i++) {
-      if (data[i].step === step) {
-        return data[i];
-      } else if (data[i].step > step) {
-        return null;
-      }
-    }
-
-    return null;
+    this.context.setContextActiveStepIndex(nearestIndex);
+    this.context.setContextActiveStepHash(nearestHash);
   };
 
   getCommitTags = (lineData) => {
@@ -635,7 +621,7 @@ class ControlPanel extends Component {
 
     if (mouse[0] < margin.left - padding || mouse[0] > width - margin.right + padding ||
       mouse[1] < margin.top - padding || mouse[1] > height - margin.bottom + padding) {
-      this.hideHoverLine();
+      // this.hideHoverLine();
     } else {
       this.showHoverLine(mouse[0]);
       this.moveHoverLine( mouse[0] - margin.left);
@@ -649,12 +635,12 @@ class ControlPanel extends Component {
 
     if (mouse[0] < margin.left - padding || mouse[0] > width - margin.right + padding ||
       mouse[1] < margin.top - padding || mouse[1] > height - margin.bottom + padding) {
-      this.hideHoverLine();
+      // this.hideHoverLine();
     }
   };
 
   handleBgRectClick = () => {
-    this.hideActionTooltips();
+    this.hideActionPopUps();
     this.hoverCircles.selectAll('*.focus').remove();
   };
 
@@ -688,7 +674,7 @@ class ControlPanel extends Component {
   };
 
   handleCommitInfoClick = (lineIndex) => {
-    const data = this.props.data;
+    const data = this.context.data;
     const lineData = data[lineIndex];
 
     const pos = this.positionPopUp(
@@ -696,7 +682,7 @@ class ControlPanel extends Component {
       this.state.chartPopUp.top,
       this.state.chartPopUp);
 
-    this.hideActionTooltips(true, () => {
+    this.hideActionPopUps(true, () => {
       this.setState(prevState => ({
         ...prevState,
         commitPopUp: {
@@ -751,12 +737,12 @@ class ControlPanel extends Component {
                   </Link>
                 }
                 <UI.Text type='grey' small>Process status: {data.process.finish ? 'finished' : 'running'}</UI.Text>
-                {!!data.start_date &&
+                {!!data.process.start_date &&
                   <UI.Text type='grey' small>
                     Time: {Math.round((
                       data.process.finish
-                        ? (data.date - data.start_date)
-                        : data.process.time
+                        ? (data.date - data.process.start_date)
+                        : (data.process.time || '-')
                     ))}s
                   </UI.Text>
                 }
@@ -791,9 +777,9 @@ class ControlPanel extends Component {
   };
 
   handlePointClick = (lineIndex, x, y, pointX, pointElem) => {
-    const data = this.props.data;
+    const data = this.context.data;
     const lineData = data[lineIndex];
-    const pointData = this.getLineDataByStep(lineData.data, pointX);
+    const pointData = this.context.getLineDataByStep(lineData.data, pointX);
 
     const pos = this.positionPopUp(x, y);
 
@@ -814,7 +800,7 @@ class ControlPanel extends Component {
       .attr('r', circleActiveRadius)
       .moveToFront();
 
-    this.hideActionTooltips(false, () => {
+    this.hideActionPopUps(false, () => {
       this.setState((prevState) => {
         return {
           ...prevState,
@@ -875,7 +861,7 @@ class ControlPanel extends Component {
       },
     }));
 
-    this.hideActionTooltips(true, () => {
+    this.hideActionPopUps(true, () => {
       this.props.getTags().then(data => {
         this.setState(prevState => ({
           ...prevState,
@@ -944,10 +930,12 @@ class ControlPanel extends Component {
                   Run details
                 </UI.Text>
                 <UI.Line />
-                <UI.Text color={this.getCommitColor(this.state.chartPopUp.lineData)}>
+                <UI.Text color={this.context.getLineColor(this.state.chartPopUp.lineData)}>
                   {Math.round(this.state.chartPopUp.pointData.value*10e9)/10e9}
                 </UI.Text>
-                <UI.Text type='grey' small>Epoch {this.state.chartPopUp.pointData.epoch}</UI.Text>
+                {this.state.chartPopUp.pointData.epoch !== null &&
+                  <UI.Text type='grey' small>Epoch {this.state.chartPopUp.pointData.epoch}</UI.Text>
+                }
                 <UI.Text type='grey' small>Step {this.state.chartPopUp.pointData.step}</UI.Text>
               </div>
             </PopUp>
@@ -966,9 +954,21 @@ class ControlPanel extends Component {
                 )
                 : (
                   <div className='TagPopUp__tags'>
-                    <UI.Text className='TagPopUp__tags__title' type='grey'>Select tag</UI.Text>
+                    <div className='TagPopUp__tags__title'>
+                      <UI.Text type='grey' inline>
+                        Select a tag
+                      </UI.Text>
+                      <Link to={HUB_PROJECT_CREATE_TAG}>
+                        <UI.Button type='positive' size='tiny'>Create</UI.Button>
+                      </Link>
+                    </div>
                     <UI.Line spacing={false} />
                     <div className='TagPopUp__tags__box'>
+                      {!this.state.tagPopUp.tags.length &&
+                        <UI.Text type='grey' center spacingTop spacing>
+                          Empty
+                        </UI.Text>
+                      }
                       {this.state.tagPopUp.tags.map((tag, tagKey) =>
                         <UI.Label
                           className={classNames({
@@ -1003,49 +1003,27 @@ class ControlPanel extends Component {
               }
             </PopUp>
           }
-          {this.state.tooltipPopUp.display &&
-            <PopUp
-              className='TooltipPopUp'
-              left={this.state.tooltipPopUp.left}
-              width={this.state.tooltipPopUp.width}
-              height={this.state.tooltipPopUp.height}
-              top={this.state.visBox.margin.top}
-              xGap={true}
-              ref={this.tooltipPopUpRef}
-              onClick={() => this.handleTooltipClick()}
-            >
-              <UI.Segment bordered={false} spacing={false}>
-                {this.props.data.map((i, iKey) => (
-                  i.num_steps > this.state.tooltipPopUp.index &&
-                    <div
-                      className={classNames({
-                        TooltipPopUp__line: true,
-                        active: this.state.tooltipPopUp.active == iKey,
-                      })}
-                      key={iKey}
-                    >
-                      <UI.Text color={this.getCommitColor(i)} small>
-                        {i.tag ? `${i.tag}: ` : ''}
-                        {Math.round(this.getLineValueByStep(i.data, this.state.tooltipPopUp.index) * 10e6)/10e6}
-                      </UI.Text>
-                    </div>
-                ))}
-              </UI.Segment>
-            </PopUp>
-          }
         </div>
       </>
+    );
+  };
+
+  _renderPanelMsg = (TextElem) => {
+    return (
+      <div className='ControlPanel__msg__wrapper'>
+        {TextElem}
+      </div>
     );
   };
 
   render() {
     return (
       <div className='ControlPanel' ref={this.parentRef}>
-        {this.props.isLoading
-          ? <UI.Text spacing spacingTop center>Loading..</UI.Text>
+        {this.context.isLoading
+          ? this._renderPanelMsg(<UI.Text type='grey' center>Loading..</UI.Text>)
           : <>
             {this.isEmpty()
-              ? <UI.Text spacing spacingTop center>No data</UI.Text>
+              ? this._renderPanelMsg(<UI.Text type='grey' center>No data</UI.Text>)
               : this._renderContent()
             }
           </>
@@ -1055,9 +1033,21 @@ class ControlPanel extends Component {
   }
 }
 
-ControlPanel.propTypes = {};
+Panel.defaultProps = {
+  width: null,
+  height: null,
+  ratio: null,
+};
+
+Panel.propTypes = {
+  width: PropTypes.number,
+  height: PropTypes.number,
+  ratio: PropTypes.number,
+};
+
+Panel.contextType = HubMainScreenContext;
 
 export default storeUtils.getWithState(
   classes.CONTROL_PANEL,
-  ControlPanel
+  Panel
 );

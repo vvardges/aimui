@@ -20,28 +20,54 @@ class CommitNavigation extends Component {
     };
 
     this.navbarRef = React.createRef();
+    this.headerWidth = 70;
+    this.xMargin = 5;
+    this.width = 230;
+
+    /*
     this.height = 0;
-    this.width = 0;
-    this.xMargin = 10;
-    this.topGap = 110;
-    this.topMargin = 90;
-    this.headerHeight = 55;
+    this.left = 0;
+    this.topGap = 90;
+    this.marginTop = 40;
     this.scrollable = false;
+     */
   }
 
   componentDidMount() {
     this.init();
-
     window.addEventListener('resize', this.handleResize);
-    window.addEventListener('scroll', this.handleScroll);
-    window.addEventListener('resize', this.handleScroll);
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
-    window.removeEventListener('scroll', this.handleScroll);
-    window.removeEventListener('resize', this.handleScroll);
   }
+
+  init = () => {
+    this.width = this.navbarRef.current.offsetWidth;
+
+    this.handleResize();
+  };
+
+
+  handleResize = () => {
+    if (!this.props.contentWidth) {
+      setTimeout(() => this.handleResize(), 50);
+      return;
+    }
+
+    const left = (window.innerWidth - this.headerWidth - this.props.contentWidth)
+      / 2 - this.width - this.xMargin;
+
+    if (left >= this.xMargin) {
+      this.setLeft(left);
+      this.navbarRef.current.style.display = 'block';
+    } else {
+      this.navbarRef.current.style.display = 'none';
+    }
+  };
+
+  /*
+  // Disable sticking to the top
 
   init = () => {
     this.height = this.navbarRef.current.offsetHeight;
@@ -63,10 +89,11 @@ class CommitNavigation extends Component {
       this.scrollable = true;
     }
 
-    const left = (window.innerWidth - this.props.contentWidth) / 2 - this.width - this.xMargin;
+    this.left = (window.innerWidth - this.headerWidth - this.props.contentWidth)
+      / 2 + this.headerWidth - this.width - this.xMargin;
 
-    if (left >= this.xMargin) {
-      this.setLeft(left);
+    if (this.left >= this.xMargin) {
+      this.setLeft(this.left);
       this.navbarRef.current.style.display = 'block';
     } else {
       this.navbarRef.current.style.display = 'none';
@@ -82,14 +109,14 @@ class CommitNavigation extends Component {
     this.navbarRef.current.style.maxHeight = '100vh';
     this.navbarRef.current.style.marginTop = '0';
 
-    if (scrollTop > this.topMargin + this.topGap + this.headerHeight) {
+    if (scrollTop > this.topGap) {
       this.navbarRef.current.style.position = 'fixed';
-      this.setScrollTop(scrollTop - (this.topMargin + this.topGap + this.headerHeight));
+      this.setScrollTop(scrollTop - (this.topGap));
       this.setTop(0);
     } else {
       this.navbarRef.current.style.position = 'absolute';
       this.setScrollTop(0);
-      this.setTop(this.topGap + this.topMargin);
+      this.setTop(this.topGap + this.marginTop);
     }
   };
 
@@ -100,6 +127,7 @@ class CommitNavigation extends Component {
   setScrollTop = (scrollTop) => {
     this.navbarRef.current.scrollTop = scrollTop;
   };
+   */
 
   setLeft = (left) => {
     this.navbarRef.current.style.left = `${left}px`;

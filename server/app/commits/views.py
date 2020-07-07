@@ -8,7 +8,7 @@ from flask_restful import Api, Resource
 
 from app import App
 from app.commits.models import Commit, Tag
-from app.commits.utils import get_commits
+from app.commits.utils import get_runs_metric, get_runs_dictionary
 from services.executables.action import Action
 from app.db import db
 
@@ -17,8 +17,8 @@ commits_bp = Blueprint('commits', __name__)
 commits_api = Api(commits_bp)
 
 
-@commits_api.resource('/search')
-class CommitSearchApi(Resource):
+@commits_api.resource('/search/metric')
+class CommitMetricSearchApi(Resource):
     def get(self):
         metric = ''
         tag = None
@@ -39,9 +39,32 @@ class CommitSearchApi(Resource):
                 _, _, experiment = sub_query.rpartition(':')
                 experiment = experiment.strip()
 
-        commits = get_commits(metric, tag, experiment)
+        commits = get_runs_metric(metric, tag, experiment)
 
         return jsonify(commits)
+
+
+@commits_api.resource('/search/dictionary')
+class CommitDictionarySearchApi(Resource):
+    def get(self):
+        metric = ''
+        tag = None
+        experiment = None
+
+        query = request.args.get('q').strip()
+        sub_queries = query.split(' ')
+        for sub_query in sub_queries:
+            if 'tag' in sub_query:
+                _, _, tag = sub_query.rpartition(':')
+                tag = tag.strip()
+
+            if 'experiment' in sub_query:
+                _, _, experiment = sub_query.rpartition(':')
+                experiment = experiment.strip()
+
+        dicts = get_runs_dictionary(tag, experiment)
+
+        return jsonify(dicts)
 
 
 @commits_api.resource('/tags/<commit_hash>')
@@ -118,6 +141,12 @@ class CommitInfoApi(Resource):
         process = info.get('process')
         if process:
             if not process['finish']:
+                if process.get('start_date'):
+                    process['time'] = time.time() - process['start_date']
+                else:
+                    process['time'] = None
+
+                # Get PID
                 action = Action(Action.SELECT, {
                     'experiment': experiment,
                     'commit_hash': commit_hash,
@@ -127,6 +156,5 @@ class CommitInfoApi(Resource):
                     processes = json.loads(processes_res)['processes']
                     if len(processes):
                         process['pid'] = processes[0]['pid']
-                        process['time'] = time.time() - info['start_date']
 
         return jsonify(info)

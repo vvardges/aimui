@@ -2,6 +2,7 @@ import './App.less';
 
 import React from 'react';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
+import LoadingBar from 'react-top-loading-bar';
 
 import * as screens from './constants/screens';
 import * as classes from './constants/classes';
@@ -16,6 +17,7 @@ import HubExecutableDetailScreen from './screens/hub/HubExecutableDetailScreen/H
 import HubExecutableProcessDetailScreen from './screens/hub/HubExecutableProcessDetailScreen/HubExecutableProcessDetailScreen';
 import HubTagsScreen from './screens/hub/HubTagsScreen/HubTagsScreen';
 import HubTagCreateScreen from './screens/hub/HubTagCreateScreen/HubTagCreateScreen';
+import HubTagDetailScreen from './screens/hub/HubTagDetailScreen/HubTagDetailScreen';
 
 
 class App extends React.Component {
@@ -38,6 +40,14 @@ class App extends React.Component {
   render() {
     return (
       <BrowserRouter>
+        <div className='LoadingBar__wrapper'>
+          <LoadingBar
+            height={3}
+            color='#3B5896'
+            progress={this.props.loadProgress}
+            className='LoadingBar'
+          />
+        </div>
         <Header />
         <Switch>
           <Route exact path={screens.MAIN} component={HubMainScreen}/>
@@ -45,6 +55,7 @@ class App extends React.Component {
           <Route exact path={screens.HUB_PROJECT_EXECUTABLE_DETAIL} component={HubExecutableDetailScreen}/>
           <Route exact path={screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL} component={HubExecutableProcessDetailScreen}/>
           <Route exact path={screens.HUB_PROJECT_CREATE_TAG} component={HubTagCreateScreen}/>
+          <Route exact path={screens.HUB_PROJECT_EDIT_TAG} component={HubTagDetailScreen}/>
           <Route exact path={screens.HUB_PROJECT_TAGS} component={HubTagsScreen}/>
           <Route exact path={screens.HUB_PROJECT_EXPERIMENT} component={HubExperimentScreen}/>
           <Route exact path={screens.HUB_PROJECT_EXECUTABLES} component={HubExecutablesScreen}/>

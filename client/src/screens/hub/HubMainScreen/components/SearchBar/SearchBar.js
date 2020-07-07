@@ -5,6 +5,8 @@ import PropTypes from 'prop-types';
 import UI from '../../../../../ui';
 import * as storeUtils from '../../../../../storeUtils';
 import * as classes from '../../../../../constants/classes';
+import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
+
 
 class SearchBar extends Component {
   constructor(props) {
@@ -34,7 +36,7 @@ class SearchBar extends Component {
     }
 
     if (query) {
-      this.props.getCommitsByQuery(query);
+      this.context.getDataByQuery(query);
     }
   };
 
@@ -49,8 +51,8 @@ class SearchBar extends Component {
     return (
       <div className='SearchBar'>
         <UI.Input
-          classNameWrapper='HubMainScreen__filter__page__inp'
-          size='medium'
+          className='SearchBar__search__input'
+          classNameWrapper='SearchBar__search__input__wrapper'
           placeholder='Type search query..'
           value={this.state.commitSearchQuery}
           onChange={(evt) => this.setState({ commitSearchQuery: evt.target.value })}
@@ -62,6 +64,8 @@ class SearchBar extends Component {
 }
 
 SearchBar.propTypes = {};
+
+SearchBar.contextType = HubMainScreenContext;
 
 export default storeUtils.getWithState(
   classes.SEARCH_BAR,

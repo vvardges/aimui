@@ -398,7 +398,7 @@ class HubExperimentScreen extends React.Component {
     return (
       <>
         <ExperimentCell
-          type='map'
+          type='dictionary'
           footerTitle={mapItem.name}
           key={mapKey * 10 + 9}
           width={1}
@@ -549,8 +549,20 @@ class HubExperimentScreen extends React.Component {
         {this._renderExperimentHeader()}
         <div className='HubExperimentScreen__grid'>
           <div className='HubExperimentScreen__grid__wrapper'>
-            {this.state.experiment.maps.map((item, key) =>
-              this._renderMap(item, key)
+            {this.state.experiment.maps.map((mapItem, mapKey) =>
+              <>
+                {mapItem.nested
+                  ? (
+                    Object.keys(mapItem.data).map((mapItemKeyName, mapItemKey) =>
+                      this._renderMap({
+                        data: mapItem.data[mapItemKeyName],
+                        name: `${mapItemKeyName}`,
+                      }, `${mapItemKeyName}-${mapItemKey}`)
+                    )
+                  )
+                  : this._renderMap(mapItem, mapKey)
+                }
+              </>
             )}
             {this.state.experiment.metrics.map((item, key) =>
               this._renderMetric(item, key)

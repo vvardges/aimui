@@ -37,10 +37,10 @@ class Tag(db.Model):
     commits = relationship('Commit', secondary=CommitTagAssociation)
     created_at = db.Column(db.DateTime, default=default_created_at)
     is_archived = db.Column(db.Boolean)
+    is_hidden = db.Column(db.Boolean, default=False)
 
     def __init__(self, name, color):
         self.uuid = str(uuid.uuid1())
         self.name = name
         self.color = color
         self.is_archived = False
-

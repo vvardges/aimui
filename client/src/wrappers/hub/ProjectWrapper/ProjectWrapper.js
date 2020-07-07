@@ -18,7 +18,10 @@ class ProjectWrapper extends React.Component {
 
     this.state = {
       notFound: false,
+      isLoading: true,
     };
+
+    this.projectWrapperHeaderRef = React.createRef();
   }
 
   componentWillMount() {
@@ -33,7 +36,43 @@ class ProjectWrapper extends React.Component {
         notFound: true,
       });
     });
+
+    this.setState(prevState => ({
+      ...prevState,
+      isLoading: false,
+    }));
   }
+
+  getHeaderHeight = () => {
+    if (!this.state.isLoading && this.projectWrapperHeaderRef.current) {
+      return this.projectWrapperHeaderRef.current.clientHeight;
+    }
+    return null;
+  };
+
+  _renderNav = () => {
+    if (!this.props.nav.length) {
+      return null;
+    }
+
+    return (
+      <nav className='ProjectWrapper__navbar'>
+        {this.props.nav.map((i, iKey) =>
+          <div
+            className={classNames({
+              ProjectWrapper__navbar__item: true,
+              active: i.active,
+            })}
+            key={iKey}
+            onClick={() => i.onClick || {}}
+          >
+            {i.icon}
+            {i.title}
+          </div>
+        )}
+      </nav>
+    );
+  };
 
   render() {
     let project = this.props.project;
@@ -50,58 +89,29 @@ class ProjectWrapper extends React.Component {
 
     return (
       <HubWrapper gap={false}>
-        <div className='ProjectWrapper'>
-          <div className='ProjectWrapper__header'>
-            <UI.Container size='small'>
-              <div className='ProjectWrapper__breadcrumb'>
-                <Link
-                  to={screens.MAIN}
-                >
-                  <UI.Text size={5}>{project.name}</UI.Text>
-                </Link>
+        <div
+          className={classNames({
+            ProjectWrapper: true,
+            gap: this.props.gap,
+          })}
+        >
+          <div
+            className='ProjectWrapper__header'
+            ref={this.projectWrapperHeaderRef}
+          >
+            <UI.Container size={this.props.size}>
+              <div className='ProjectWrapper__header__cont'>
+                <div className='ProjectWrapper__breadcrumb'>
+                  <Link
+                    to={screens.MAIN}
+                  >
+                    <UI.Icon i='nc-link-72' scale={1} spacingRight />
+                    <UI.Text>{project.path}</UI.Text>
+                  </Link>
+                </div>
               </div>
               <div className='ProjectWrapper__navbar__wrapper'>
-                <nav className='ProjectWrapper__navbar'>
-                  <NavLink
-                    to={screens.MAIN}
-                    className={classNames({
-                      ProjectWrapper__navbar__item: true,
-                    })}
-                    exact
-                  >
-                    <UI.Icon i='nc-preferences' scale={1} spacingRight />
-                    Panel
-                  </NavLink>
-                  <NavLink
-                    to={screens.HUB_PROJECT_EXPERIMENT_INDEX}
-                    className={classNames({
-                      ProjectWrapper__navbar__item: true,
-                      active: !!this.props.experimentName,
-                    })}
-                    exact
-                  >
-                    <UI.Icon i='nc-folder-15' scale={1} spacingRight />
-                    Experiments
-                  </NavLink>
-                  <NavLink
-                    to={screens.HUB_PROJECT_TAGS}
-                    className={classNames({
-                      ProjectWrapper__navbar__item: true,
-                    })}
-                  >
-                    <UI.Icon i='nc-flag-points-32' scale={1} spacingRight />
-                    Tags
-                  </NavLink>
-                  <NavLink
-                    to={screens.HUB_PROJECT_EXECUTABLES}
-                    className={classNames({
-                      ProjectWrapper__navbar__item: true,
-                    })}
-                  >
-                    <UI.Icon i='nc-archive-2' scale={1} spacingRight />
-                    Processes
-                  </NavLink>
-                </nav>
+                {this._renderNav()}
               </div>
             </UI.Container>
           </div>
@@ -123,10 +133,19 @@ class ProjectWrapper extends React.Component {
   }
 }
 
+ProjectWrapper.defaultProps = {
+  nav: [],
+  gap: true,
+  size: 'fluid',
+};
+
 ProjectWrapper.propTypes = {
   experimentName: PropTypes.string,
   navigation: PropTypes.node,
   contentWidth: PropTypes.number,
+  size: PropTypes.oneOf(['small', 'standard', 'fluid']),
+  nav: PropTypes.array,
+  gap: PropTypes.bool,
 };
 
 export default storeUtils.getWithState(

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2 Jul 7 2020
+- Add ability to go to create tag screen from panel popup (gorarakelyan)
+- Show runs parameters in context area (gorarakelyan)
+- Add ability to set Y axis scale function (gorarakelyan)
+- Move chart hover tooltip information to context area (gorarakelyan)
+- Change the panel structure to be wider and become the primary space (gorarakelyan)
+
 ## 1.0.1 Jun 22 2020
 - Save experiment name in commit table when attaching a tag (gorarakelyan)
 

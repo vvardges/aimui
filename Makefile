@@ -28,6 +28,7 @@ up:
 		-v $(repo):/store \
 		-v "aim_live_db_dev:/var/lib/postgresql/data" \
 		-e PROJECT_NAME=proj \
+		-e PROJECT_PATH=/root/my/project \
 		aimhub-live-dev
 
 down:

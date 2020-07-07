@@ -1,3 +1,58 @@
-.HubMainScreen__processes {
-  margin-top: var(--component-spacing-md);
+@import '../../../vars';
+
+@search-height: 50px;
+@controls-width: 80px;
+@padding: 0px;
+
+.HubMainScreen__wrapper {
+  position: relative;
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.HubMainScreen {
+  width: calc(100% - @padding);
+  height: calc(100% - @padding);
+  background-color: #FFF;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.HubMainScreen__grid {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr @controls-width;
+}
+
+.HubMainScreen__grid__controls {
+}
+
+.HubMainScreen__grid__body {
+  height: 100%;
+  overflow: hidden;
+  /*
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: @search-height 5fr 3fr;
+   */
+
+  > div {
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+}
+
+.HubMainScreen__grid__search {
+  height: @search-height;
+}
+
+.HubMainScreen__grid__panel {
+  height: calc(65% - @search-height);
+}
+
+.HubMainScreen__grid__context {
+  height: 35%;
 }

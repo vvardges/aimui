@@ -1,10 +1,10 @@
 @import '../../../../../vars.less';
 
 .ControlPanel {
+  width: 100%;
+  height: 100%;
   position: relative;
-  border: 1px solid var(--primary-lighter);
-  border-radius: var(--border-radius);
-  background-color: var(--primary-bg);
+  background-color: var(--grey-bg-light);
   overflow: hidden;
   user-select: none;
 }
@@ -17,6 +17,15 @@
   position: absolute;
   top: 0;
   left: 0;
+}
+
+.ControlPanel__msg__wrapper {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .PopUp__area {
@@ -42,25 +51,6 @@
   }
 }
 
-.TooltipPopUp {
-  .TooltipPopUp__line:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.TooltipPopUp__line {
-  padding: 2px var(--space-xs);
-  margin-bottom: 1px;
-  background: var(--primary-bg);
-  border: 1px solid transparent;
-  transition: all 110ms ease;
-
-  &.active {
-    border-color: var(--primary-lighter);
-    border-radius: var(--border-radius);
-  }
-}
-
 .CommitPopUp__process {
   display: flex;
   align-items: center;
@@ -74,7 +64,18 @@
 }
 
 .TagPopUp__tags__title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--component-spacing-xs) !important;
+
+  a {
+    text-decoration: none;
+  }
+}
+
+.TagPopUp__tags__title {
 }
 
 .TagPopUp__tags__item {

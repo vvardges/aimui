@@ -20,6 +20,9 @@ export function getWithState(caseName, caseClass) {
   switch (caseName) {
     // App
     case classes.APP:
+      mapState2Props = (state) => ({
+        loadProgress: state.default.loadProgress,
+      });
       break;
     // Wrappers
     case classes.BASE_WRAPPER:
@@ -39,24 +42,16 @@ export function getWithState(caseName, caseClass) {
       break;
     // Components
     case classes.HEADER:
-      mapState2Props = (state) => ({
-        loadProgress: state.default.loadProgress,
+      break;
+    case classes.HUB_MAIN_SCREEN_PROVIDER:
+      Object.assign(mapDispatch2Props, {
+        getCommitsMetricsByQuery: commitActions.getCommitsMetricsByQuery,
+        getCommitsDictionariesByQuery: commitActions.getCommitsDictionariesByQuery,
       });
       break;
     case classes.SEARCH_BAR:
-      mapState2Props = (state) => ({
-        ...state.controlPanel,
-      });
-      Object.assign(mapDispatch2Props, {
-        getProjectInsight: controlPanelActions.getProjectInsight,
-        getCommitsByQuery: commitActions.getCommitsByQuery,
-      });
       break;
     case classes.CONTROL_PANEL:
-      mapState2Props = (state) => ({
-        isLoading: state.controlPanel.isLoading,
-        data: Object.values(state.controlPanel.data),
-      });
       Object.assign(mapDispatch2Props, {
         getCommitTags: commitActions.getCommitTags,
         getCommitInfo: commitActions.getCommitInfo,
@@ -72,9 +67,6 @@ export function getWithState(caseName, caseClass) {
       });
     // Screens
     case classes.HUB_MAIN_SCREEN:
-      mapState2Props = (state) => ({
-        ...state.controlPanel,
-      });
       Object.assign(mapDispatch2Props, {
         getRunningExecutables: executablesActions.getRunningExecutables,
         killRunningExecutable: executablesActions.killRunningExecutable,
@@ -114,6 +106,13 @@ export function getWithState(caseName, caseClass) {
     case classes.HUB_PROJECT_TAGS:
       Object.assign(mapDispatch2Props, {
         getTags: tagsActions.getTags,
+      });
+      break;
+    case classes.HUB_PROJECT_EDIT_TAG:
+      Object.assign(mapDispatch2Props, {
+        getTag: tagsActions.getTag,
+        updateTag: tagsActions.updateTag,
+        getRelatedRuns: tagsActions.getRelatedRuns,
       });
       break;
     case classes.HUB_PROJECT_CREATE_TAG:

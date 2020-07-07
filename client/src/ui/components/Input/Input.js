@@ -17,6 +17,7 @@ class Input extends React.Component {
   render() {
     const className = classNames({
       Input: true,
+      [this.props.className]: !!this.props.className,
       multiLine: this.props.multiLine,
       negative: this.props.negative,
       [this.props.size]: true,

@@ -12,7 +12,7 @@ from app.projects.utils import get_project_branches, read_artifact_log, \
     get_dir_size, get_branch_commits
 from app.projects.project import Project
 from artifacts.artifact import Metric
-from app.commits.utils import get_commits
+from app.commits.utils import get_runs_metric
 
 
 projects_bp = Blueprint('projects', __name__)
@@ -33,6 +33,7 @@ class ProjectApi(Resource):
 
         return jsonify({
             'name': project.name,
+            'path': project.path,
             'description': project.description,
             'branches': project_branches,
         })
@@ -135,7 +136,7 @@ class ProjectExperimentApi(Resource):
                     'size': model_file_size,
                 })
             elif (obj['type'] == 'metrics' and obj['data_path'] != '__AIMRECORDS__') or \
-                    obj['type'] == 'map':
+                    ('map' in obj['type'] or obj['type'] == 'map'):
                     # obj['type'] == 'distribution':
                 # Get object's data file path
                 obj_data_file_path = os.path.join(objects_dir_path,
@@ -169,13 +170,14 @@ class ProjectExperimentApi(Resource):
                     'data': comp_content,
                     'format': format,
                 })
-            elif obj['type'] == 'map':
+            elif 'map' in obj['type'] or obj['type'] == 'map':
                 try:
                     params_str = read_artifact_log(obj_data_file_path, 1)
                     if params_str:
                         map_objects.append({
                             'name': obj['name'],
                             'data': json.loads(params_str[0]),
+                            'nested': 'nested_map' in obj['type']
                         })
                 except:
                     pass
@@ -203,7 +205,7 @@ class ProjectInsightApi(Resource):
         if not project.exists():
             return make_response(jsonify({}), 404)
 
-        commits = get_commits(insight_name)
+        commits = get_runs_metric(insight_name)
 
         return jsonify(commits)
 

@@ -1,14 +1,15 @@
 import './HubTagCreateScreen.less';
 
 import React from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 
 import UI from '../../../ui';
+import TagSettingForm from '../../../components/hub/TagSettingForm/TagSettingForm';
 import * as classes from '../../../constants/classes';
 import * as screens from '../../../constants/screens';
-import HubWrapper from '../../../wrappers/hub/HubWrapper/HubWrapper';
+import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import * as storeUtils from '../../../storeUtils';
-import { classNames } from '../../../utils';
+import { Link } from 'react-router-dom';
 
 
 class HubTagCreateScreen extends React.Component {
@@ -16,130 +17,60 @@ class HubTagCreateScreen extends React.Component {
     super(props);
 
     this.state = {
-      redirectMain: false,
-      createBtn: {
+      shouldRedirect: false,
+      buttonStatus: {
         loading: false,
         disabled: false,
       },
-      form: {
-        name: '',
-        color: '',
-      },
     };
 
-    this.colors = [
-      '#16A085',
-      '#27AE60',
-      '#2980B9',
-      '#8E44AD',
-      '#E67E22',
-      '#F1C40F',
-      '#E74C3C',
-      '#B33771',
-      '#BDC581',
-      '#FD7272',
-      '#546de5',
-      '#574b90',
-    ];
+    this.form = React.createRef();
   }
 
-  handleInputChange = (e, callback=null) => {
-    const value = e.target.value;
-    const name = e.target.name;
-    this.setState((prevState) => ({
-      ...prevState,
-      form: {
-        ...prevState.form,
-        [name]: value,
-      },
-    }), () => {
-      if (callback) {
-        callback(e);
-      }
-    });
-  };
-
-  handleColorClick = (color) => {
-    this.setState((prevState) => ({
-      ...prevState,
-      form: {
-        ...prevState.form,
-        color,
-      },
-    }));
-  };
-
-  handleCreateBtnClick = () => {
+  handleCreateClick = () => {
     this.setState({
-      createBtn: {
+      buttonStatus: {
         loading: true,
         disabled: true,
-      }
+      },
     });
 
-    this.props.postNewTag({
-      name: this.state.form.name,
-      color: this.state.form.color,
-    }).then((data) => {
-      this.setState(prevState => ({
-        ...prevState,
-        redirectMain: true,
-      }));
-    }).catch((err) => {
-    }).finally(() => {
-      this.setState(prevState => ({
-        ...prevState,
-        createBtn: {
-          loading: false,
-          disabled: false,
-        }
-      }));
-    });
+    const form = this.form.current.getForm();
+
+    this.props.postNewTag(form)
+      .then((data) => {
+        this.setState((prevState) => ({
+          ...prevState,
+          shouldRedirect: true,
+        }));
+      })
+      .catch((err) => {})
+      .finally(() => {
+        this.setState((prevState) => ({
+          ...prevState,
+          buttonStatus: {
+            loading: false,
+            disabled: false,
+          },
+        }));
+      });
   };
 
   _renderContent = () => {
     return (
       <div className='HubTagCreateScreen__FormGroup__wrapper'>
-        <UI.Text size={4} header divided> Create New Tag </UI.Text>
-        <div className='HubTagCreateScreen__FormGroup'>
-          <UI.Input
-            onChange={this.handleInputChange}
-            name='name'
-            value={this.state.form.name}
-            label='Tag Name'
-            placeholder={'best-cnn'}
-          />
-          <div className=''>
-            <UI.Input
-              onChange={this.handleInputChange}
-              name='color'
-              value={this.state.form.color}
-              label='Tag Color'
-              placeholder={'red'}
-            />
-            <div className='HubTagCreateScreen__colors'>
-              {this.colors.map((color, cKey) =>
-                <UI.Label
-                  className={classNames({
-                    HubTagCreateScreen__colors__item: true,
-                    active: this.state.form.color === color,
-                  })}
-                  color={color}
-                  key={cKey}
-                  onClick={() => this.handleColorClick(color)}
-                >
-                  {color}
-                </UI.Label>
-              )}
-            </div>
-            <UI.Line />
-          </div>
-        </div>
+        <UI.Text size={6} header divided>
+          Create New Tag
+        </UI.Text>
+        <TagSettingForm
+          ref={this.form}
+        />
+        <UI.Line />
         <UI.Buttons>
           <UI.Button
-            onClick={() => this.handleCreateBtnClick()}
+            onClick={() => this.handleCreateClick()}
             type='positive'
-            {...this.state.createBtn}
+            {...this.state.buttonStatus}
           >
             Create
           </UI.Button>
@@ -152,16 +83,16 @@ class HubTagCreateScreen extends React.Component {
   };
 
   render() {
-    if (this.state.redirectMain) {
+    if (this.state.shouldRedirect) {
       return <Redirect to={screens.HUB_PROJECT_TAGS} />
     }
 
     return (
-      <HubWrapper>
+      <ProjectWrapper>
         <UI.Container size='small' ref={this.contentRef}>
           {this._renderContent()}
         </UI.Container>
-      </HubWrapper>
+      </ProjectWrapper>
     );
   }
 }

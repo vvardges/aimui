@@ -44,6 +44,22 @@ export function useWindowSize() {
   return size;
 }
 
+export function sortOnKeys(dict) {
+  const sorted = [];
+
+  for (let key in dict) {
+    sorted[sorted.length] = key;
+  }
+  sorted.sort();
+
+  const tempDict = {};
+  for (let i = 0; i < sorted.length; i++) {
+    tempDict[sorted[i]] = dict[sorted[i]];
+  }
+
+  return tempDict;
+}
+
 export function buildUrl(pattern, { ...params }) {
   let url = pattern;
   for(let param in params) {
@@ -52,6 +68,18 @@ export function buildUrl(pattern, { ...params }) {
   }
 
   return url;
+}
+
+export function randomStr(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
 }
 
 export function formatSize(size) {

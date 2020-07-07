@@ -22,11 +22,17 @@ class HubTagsScreen extends React.Component {
     };
   }
 
-  componentDidMount() {
-    this.getTags();
+  componentWillMount() {
+    this.props.resetProgress();
   }
 
-  getTags = () => {
+  componentDidMount() {
+    this.props.incProgress();
+
+    this.getTags(this.props.completeProgress);
+  }
+
+  getTags = (finallyCallback) => {
     this.setState(prevState => ({
       ...prevState,
       isLoading: true,
@@ -42,6 +48,10 @@ class HubTagsScreen extends React.Component {
         ...prevState,
         isLoading: false,
       }));
+
+      if (finallyCallback) {
+        finallyCallback();
+      }
     });
   };
 
@@ -64,10 +74,16 @@ class HubTagsScreen extends React.Component {
         <UI.List>
           {this.state.tags.map((tag, tagKey) =>
             <UI.ListItem key={tagKey} className='HubTagsScreen__tags__item'>
-              <UI.Label color={tag.color}>{tag.name}</UI.Label>
-              <UI.Text className='HubTagsScreen__tags__item__commits' small inline type='grey'>
-                Commits: {tag.num_commits}
-              </UI.Text>
+              <Link to={buildUrl(screens.HUB_PROJECT_EDIT_TAG, {
+                tag_id: tag.id
+              })}>
+                <div className='HubTagsScreen__tags__item__body'>
+                  <UI.Label color={tag.color}>{tag.name}</UI.Label>
+                  <UI.Text className='HubTagsScreen__tags__item__commits' small inline type='grey'>
+                    Commits: {tag.num_commits}
+                  </UI.Text>
+                </div>
+              </Link>
             </UI.ListItem>
           )}
         </UI.List>

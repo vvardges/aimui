@@ -175,7 +175,7 @@ export default class LineChart extends React.Component {
       lineWidth: 2,
       tooltip: {
         headerFormat: '',
-        pointFormat: `Smoothed: {point.x} - <b>{point.y}</b>`,
+        pointFormat: 'Smoothed: {point.x} - <b>{point.y}</b>',
       },
       marker: {
         enabled: true,

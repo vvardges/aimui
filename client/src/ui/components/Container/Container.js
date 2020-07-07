@@ -32,7 +32,7 @@ Container.defaultProps = {
 };
 
 Container.propTypes = {
-  size: PropTypes.oneOf(['standard', 'small']),
+  size: PropTypes.oneOf(['standard', 'small', 'fluid']),
 };
 
 export default React.memo(Container);
