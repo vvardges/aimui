@@ -96,38 +96,40 @@ class ContextBox extends Component {
     console.log(this.context.contextInformation.unionNamespaces);
 
     return (
-      <div className='ContextBox__table__wrapper'>
-        <table className='ContextBox__table' cellSpacing={0} cellPadding={0}>
-          <thead>
-            {this.context.contextInformation.unionNamespaces.length > 0 &&
-              <tr className='ContextBox__table__header'>
-                <td key='run'/>
-                <td key='value' colSpan={3}/>
-                {Object.keys(this.context.contextInformation.unionFields).map((n, nKey) => (
-                  <td key={nKey} colSpan={this.context.contextInformation.unionFields[n].length}>
-                    {n}
+      <div className='ContextBox__content'>
+        <div className='ContextBox__table__wrapper'>
+          <table className='ContextBox__table' cellSpacing={0} cellPadding={0}>
+            <thead>
+              {this.context.contextInformation.unionNamespaces.length > 0 &&
+                <tr className='ContextBox__table__header'>
+                  <td key='run'/>
+                  <td key='value' colSpan={3}/>
+                  {Object.keys(this.context.contextInformation.unionFields).map((n, nKey) => (
+                    <td key={nKey} colSpan={this.context.contextInformation.unionFields[n].length}>
+                      {n}
+                    </td>
+                  ))}
+                </tr>
+              }
+              <tr className='ContextBox__table__subheader'>
+                <td>Run</td>
+                <td>Value</td>
+                <td>Step</td>
+                <td>Epoch</td>
+                {Object.values(this.context.contextInformation.unionFields).flat().map((f, fKey) => (
+                  <td key={fKey}>
+                    {f}
                   </td>
                 ))}
               </tr>
-            }
-            <tr className='ContextBox__table__subheader'>
-              <td>Run</td>
-              <td>Value</td>
-              <td>Step</td>
-              <td>Epoch</td>
-              {Object.values(this.context.contextInformation.unionFields).flat().map((f, fKey) => (
-                <td key={fKey}>
-                  {f}
-                </td>
+            </thead>
+            <tbody>
+              {Object.keys(this.context.contextInformation.data).map((runHash, runKey) => (
+                this._renderItem(this.context.contextInformation.data[runHash], runHash, runKey)
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {Object.keys(this.context.contextInformation.data).map((runHash, runKey) => (
-              this._renderItem(this.context.contextInformation.data[runHash], runHash, runKey)
-            ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
     );
 

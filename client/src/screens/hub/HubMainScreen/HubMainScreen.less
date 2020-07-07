@@ -31,13 +31,28 @@
 
 .HubMainScreen__grid__body {
   height: 100%;
+  overflow: hidden;
+  /*
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: @search-height 5fr 3fr;
+   */
+
+  > div {
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
 }
 
 .HubMainScreen__grid__search {
+  height: @search-height;
 }
 
 .HubMainScreen__grid__panel {
+  height: calc(65% - @search-height);
+}
+
+.HubMainScreen__grid__context {
+  height: 35%;
 }

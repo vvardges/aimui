@@ -82,7 +82,9 @@ class HubMainScreen extends React.Component {
                 <Panel ref={this.panelRef} />
               </div>
               <div className='HubMainScreen__grid__context'>
-                <ContextBox width={this.state.width - headerWidth - controlsWidth} />
+                <ContextBox
+                  width={this.state.width - headerWidth - controlsWidth}
+                />
               </div>
             </div>
             <div className='HubMainScreen__grid__controls'>
