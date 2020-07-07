@@ -8,7 +8,11 @@ import moment from 'moment';
 import * as classes from '../../../../../constants/classes';
 import * as storeUtils from '../../../../../storeUtils';
 import { classNames, buildUrl } from '../../../../../utils';
-import { HUB_PROJECT_EXPERIMENT, HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL } from '../../../../../constants/screens';
+import {
+  HUB_PROJECT_EXPERIMENT,
+  HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL,
+  HUB_PROJECT_CREATE_TAG,
+} from '../../../../../constants/screens';
 import UI from '../../../../../ui';
 import PopUp from '../PopUp/PopUp';
 import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
@@ -950,9 +954,21 @@ class Panel extends Component {
                 )
                 : (
                   <div className='TagPopUp__tags'>
-                    <UI.Text className='TagPopUp__tags__title' type='grey'>Select tag</UI.Text>
+                    <div className='TagPopUp__tags__title'>
+                      <UI.Text type='grey' inline>
+                        Select a tag
+                      </UI.Text>
+                      <Link to={HUB_PROJECT_CREATE_TAG}>
+                        <UI.Button type='positive' size='tiny'>Create</UI.Button>
+                      </Link>
+                    </div>
                     <UI.Line spacing={false} />
                     <div className='TagPopUp__tags__box'>
+                      {!this.state.tagPopUp.tags.length &&
+                        <UI.Text type='grey' center spacingTop spacing>
+                          Empty
+                        </UI.Text>
+                      }
                       {this.state.tagPopUp.tags.map((tag, tagKey) =>
                         <UI.Label
                           className={classNames({
