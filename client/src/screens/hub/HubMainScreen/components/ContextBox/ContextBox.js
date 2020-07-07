@@ -2,6 +2,8 @@ import './ContextBox.less';
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Color from 'color';
+import moment from 'moment';
 
 import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
 import { classNames } from '../../../../../utils';
@@ -16,12 +18,17 @@ class ContextBox extends Component {
   _renderItem = (runDictItem, hash, key) => {
     const index = this.context.contextStepIndex;
     const lineData = this.context.getLineDataByHash(hash);
-
     if (lineData === null || lineData.num_steps <= index) {
       return null;
     }
 
+    const stepData = this.context.getLineDataByStep(lineData.data, index);
+    if (stepData === null) {
+      return null;
+    }
+
     const color = this.context.getLineColor(lineData);
+    const colorObj = Color(color);
 
     const className = classNames({
       ContextBox__table__item: true,
@@ -32,22 +39,34 @@ class ContextBox extends Component {
     if (this.context.contextActiveStepHash === hash) {
       style = {
         borderLeftColor: color,
+        backgroundColor: colorObj.alpha(0.1).hsl().string(),
       };
     }
 
     return (
       <tr className={className} style={style} key={hash}>
-        <td>{this.formatValue(this.context.getLineValueByStep(lineData.data, index))}</td>
         <td>
           <div
-            className='ContextBox__table__item__tag'
+            className='ContextBox__table__item__run'
             style={{
               color: color,
             }}
           >
             <div className='ContextBox__table__item__tag__dot' style={{ backgroundColor: color }} />
-            {lineData.tag || '-'}
+            {!!lineData.tag &&
+              `${lineData.tag}: `
+            }
+            {!!lineData.date &&
+              moment.unix(lineData.date).format('HH:mm · D MMM, YY')
+            }
           </div>
+        </td>
+        <td>{this.formatValue(stepData.value)}</td>
+        <td>
+          {stepData.step}
+        </td>
+        <td>
+          {stepData.epoch !== null && stepData.epoch}
         </td>
         {Object.keys(this.context.contextInformation.unionFields).map((n, nKey) => (
           this.context.contextInformation.unionFields[n].map((f, fKey) => (
@@ -74,21 +93,28 @@ class ContextBox extends Component {
       return null;
     }
 
+    console.log(this.context.contextInformation.unionNamespaces);
+
     return (
       <div className='ContextBox__table__wrapper'>
         <table className='ContextBox__table' cellSpacing={0} cellPadding={0}>
           <thead>
-            <tr className='ContextBox__table__header'>
-              <td key='run' colSpan={2} />
-              {Object.keys(this.context.contextInformation.unionFields).map((n, nKey) => (
-                <td key={nKey} colSpan={this.context.contextInformation.unionFields[n].length}>
-                  {n}
-                </td>
-              ))}
-            </tr>
+            {this.context.contextInformation.unionNamespaces.length > 0 &&
+              <tr className='ContextBox__table__header'>
+                <td key='run'/>
+                <td key='value' colSpan={3}/>
+                {Object.keys(this.context.contextInformation.unionFields).map((n, nKey) => (
+                  <td key={nKey} colSpan={this.context.contextInformation.unionFields[n].length}>
+                    {n}
+                  </td>
+                ))}
+              </tr>
+            }
             <tr className='ContextBox__table__subheader'>
-              <td>Value</td>
               <td>Run</td>
+              <td>Value</td>
+              <td>Step</td>
+              <td>Epoch</td>
               {Object.values(this.context.contextInformation.unionFields).flat().map((f, fKey) => (
                 <td key={fKey}>
                   {f}

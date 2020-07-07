@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import HubMainScreenContext from '../HubMainScreenContext/HubMainScreenContext';
 import * as storeUtils from '../../../../storeUtils';
 import * as classes from '../../../../constants/classes';
+import { randomStr, sortOnKeys } from '../../../../utils';
 import PropTypes from 'prop-types';
 
 
@@ -14,6 +15,7 @@ class HubMainScreenProvider extends Component {
       isLoading: false,
       isLoadingContext: false,
       data: [],
+      dataSnapshotUniqueKey: null,
       contextInformation: {
         unionNamespaces: [],
         unionFields: {},
@@ -29,7 +31,7 @@ class HubMainScreenProvider extends Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (JSON.stringify(prevState.data) !== JSON.stringify(this.state.data)) {
+    if (prevState.dataSnapshotUniqueKey !== this.state.dataSnapshotUniqueKey) {
       this.props.dataDidUpdate();
     }
   }
@@ -45,6 +47,7 @@ class HubMainScreenProvider extends Component {
       this.setState(prevState => ({
         ...prevState,
         data: Object.values(data),
+        dataSnapshotUniqueKey: randomStr(16),
       }));
     }).finally(() => {
       this.setState(prevState => ({
@@ -55,7 +58,7 @@ class HubMainScreenProvider extends Component {
 
     this.props.getCommitsDictionariesByQuery(query).then((runsData) => {
       let unionNamespaces = [];
-      const unionFields = {};
+      let unionFields = {};
 
       for (let i in runsData) {
         if (!!runsData[i].data && Object.keys(runsData[i].data).length) {
@@ -74,9 +77,11 @@ class HubMainScreenProvider extends Component {
           });
         }
         for (let n in unionNamespaces) {
-          unionFields[unionNamespaces[n]] = Array.from(new Set(unionFields[unionNamespaces[n]]));
+          unionFields[unionNamespaces[n]] = Array.from(new Set(unionFields[unionNamespaces[n]])).sort();
         }
       }
+
+      unionFields = sortOnKeys(unionFields);
 
       this.setState(prevState => ({
         ...prevState,

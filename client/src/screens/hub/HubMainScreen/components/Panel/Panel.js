@@ -733,12 +733,12 @@ class Panel extends Component {
                   </Link>
                 }
                 <UI.Text type='grey' small>Process status: {data.process.finish ? 'finished' : 'running'}</UI.Text>
-                {!!data.start_date &&
+                {!!data.process.start_date &&
                   <UI.Text type='grey' small>
                     Time: {Math.round((
                       data.process.finish
-                        ? (data.date - data.start_date)
-                        : data.process.time
+                        ? (data.date - data.process.start_date)
+                        : (data.process.time || '-')
                     ))}s
                   </UI.Text>
                 }
@@ -929,7 +929,9 @@ class Panel extends Component {
                 <UI.Text color={this.context.getLineColor(this.state.chartPopUp.lineData)}>
                   {Math.round(this.state.chartPopUp.pointData.value*10e9)/10e9}
                 </UI.Text>
-                <UI.Text type='grey' small>Epoch {this.state.chartPopUp.pointData.epoch}</UI.Text>
+                {this.state.chartPopUp.pointData.epoch !== null &&
+                  <UI.Text type='grey' small>Epoch {this.state.chartPopUp.pointData.epoch}</UI.Text>
+                }
                 <UI.Text type='grey' small>Step {this.state.chartPopUp.pointData.step}</UI.Text>
               </div>
             </PopUp>

@@ -141,6 +141,12 @@ class CommitInfoApi(Resource):
         process = info.get('process')
         if process:
             if not process['finish']:
+                if process.get('start_date'):
+                    process['time'] = time.time() - process['start_date']
+                else:
+                    process['time'] = None
+
+                # Get PID
                 action = Action(Action.SELECT, {
                     'experiment': experiment,
                     'commit_hash': commit_hash,
@@ -150,6 +156,5 @@ class CommitInfoApi(Resource):
                     processes = json.loads(processes_res)['processes']
                     if len(processes):
                         process['pid'] = processes[0]['pid']
-                        process['time'] = time.time() - info['start_date']
 
         return jsonify(info)

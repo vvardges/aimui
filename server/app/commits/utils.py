@@ -96,8 +96,8 @@ def get_runs_metric(metric, tag=None, experiments=None):
                 base, metric_record = Metric.deserialize(r)
                 commit['data'].append({
                     'value': metric_record.value,
-                    'epoch': base.epoch,
                     'step': base.step,
+                    'epoch': base.epoch if base.has_epoch else None,
                 })
             records_storage.close()
         except:
