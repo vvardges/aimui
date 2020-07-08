@@ -1,12 +1,16 @@
 import './App.less';
 
 import React from 'react';
+import Helmet from 'react-helmet';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import LoadingBar from 'react-top-loading-bar';
 
 import * as screens from './constants/screens';
 import * as classes from './constants/classes';
 import * as storeUtils from './storeUtils';
+import * as cookies from './services/cookie';
+import * as configs from './config';
+import { isDev } from './utils';
 import HubExperimentScreen from './screens/hub/HubExperimentScreen/HubExperimentScreen';
 import SiteNotFoundScreen from './screens/site/SiteNotFoundScreen/SiteNotFoundScreen';
 import Header from './components/global/Header/Header';
@@ -18,6 +22,7 @@ import HubExecutableProcessDetailScreen from './screens/hub/HubExecutableProcess
 import HubTagsScreen from './screens/hub/HubTagsScreen/HubTagsScreen';
 import HubTagCreateScreen from './screens/hub/HubTagCreateScreen/HubTagCreateScreen';
 import HubTagDetailScreen from './screens/hub/HubTagDetailScreen/HubTagDetailScreen';
+import AnalyticsPermission from './components/global/AnalyticsPermission/AnalyticsPermission';
 
 
 class App extends React.Component {
@@ -27,6 +32,8 @@ class App extends React.Component {
     this.state = {
       isLoading: false,
     };
+
+    this.GAAnalytics = 'UA-154934260-2';
   }
 
   componentWillMount() {
@@ -35,7 +42,34 @@ class App extends React.Component {
 
   componentDidMount() {
     setTimeout(() => this.props.completeProgress(), 150);
+    this.setAnalytics();
   }
+
+  canSetAnalytics = () => {
+    return !isDev() && cookies.getCookie(configs.USER_ANALYTICS_COOKIE_NAME) == 1;
+  };
+
+  setAnalytics = () => {
+    if (!this.canSetAnalytics()) {
+      return;
+    }
+
+    // GA
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){window.dataLayer.push(arguments)}
+    gtag('js', new Date());
+    gtag('config', this.GAAnalytics);
+  };
+
+  _renderAnalytics = () => {
+    if (!this.canSetAnalytics()) {
+      return null;
+    }
+
+    return (
+      <script async src={`https://www.googletagmanager.com/gtag/js?id=${this.GAAnalytics}`} />
+    )
+  };
 
   render() {
     return (
@@ -49,6 +83,14 @@ class App extends React.Component {
           />
         </div>
         <Header />
+        {!isDev() &&
+          <>
+            <AnalyticsPermission />
+            <Helmet>
+              {this._renderAnalytics()}
+            </Helmet>
+          </>
+        }
         <Switch>
           <Route exact path={screens.MAIN} component={HubMainScreen}/>
           <Route exact path={screens.HUB_PROJECT_CREATE_EXECUTABLE} component={HubExecutableCreateScreen}/>

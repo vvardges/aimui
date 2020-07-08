@@ -37,7 +37,10 @@ function Button(props) {
 
 export function Buttons(props) {
   return (
-    <div className='Buttons'>
+    <div className={classNames({
+      Buttons: true,
+      [props.className]: !!props.className,
+    })}>
       {props.children}
     </div>
   )

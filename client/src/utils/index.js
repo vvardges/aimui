@@ -104,6 +104,6 @@ export function formatSize(size) {
   return [ceilSize, metric];
 }
 
-export function userImage(img) {
-  return img || require('../asset/user-ill.png');
+export function isDev() {
+  return window.location.hostname === 'aim-dev.loc';
 }
