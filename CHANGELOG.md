@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.3 Jul 8 2020
+- Integrate GA (gorarakelyan)
+
 ## 1.0.2 Jul 7 2020
 - Add ability to go to create tag screen from panel popup (gorarakelyan)
 - Show runs parameters in context area (gorarakelyan)

@@ -96,6 +96,7 @@ export function getWithState(caseName, caseClass) {
         executeExecutableForm: executablesActions.executeExecutableForm,
         getExecutable: executablesActions.getExecutable,
         saveExecutable: executablesActions.saveExecutable,
+        hideExecutable: executablesActions.hideExecutable,
       });
       break;
     case classes.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL:

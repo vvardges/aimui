@@ -33,11 +33,11 @@ class CommitMetricSearchApi(Resource):
 
             if 'tag' in sub_query:
                 _, _, tag = sub_query.rpartition(':')
-                tag = tag.strip()
+                tag = tag.lower().strip()
 
             if 'experiment' in sub_query:
                 _, _, experiment = sub_query.rpartition(':')
-                experiment = experiment.strip()
+                experiment = experiment.lower().strip()
 
         commits = get_runs_metric(metric, tag, experiment)
 
@@ -56,11 +56,11 @@ class CommitDictionarySearchApi(Resource):
         for sub_query in sub_queries:
             if 'tag' in sub_query:
                 _, _, tag = sub_query.rpartition(':')
-                tag = tag.strip()
+                tag = tag.lower().strip()
 
             if 'experiment' in sub_query:
                 _, _, experiment = sub_query.rpartition(':')
-                experiment = experiment.strip()
+                experiment = experiment.lower().strip()
 
         dicts = get_runs_dictionary(tag, experiment)
 

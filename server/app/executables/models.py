@@ -17,6 +17,7 @@ class Executable(db.Model):
     aim_experiment = db.Column(db.Text, default='')
     created_at = db.Column(db.DateTime,  default=default_created_at)
     is_archived = db.Column(db.Boolean)
+    is_hidden = db.Column(db.Boolean, default=False)
 
     def __init__(self, name, script_path, arguments=None, env_vars=None,
                  interpreter_path=None, working_dir=None, aim_experiment=None):
@@ -29,6 +30,7 @@ class Executable(db.Model):
         self.aim_experiment = aim_experiment
         self.uuid = str(uuid.uuid1())
         self.is_archived = False
+        self.is_hidden = False
 
 
 class Process(db.Model):

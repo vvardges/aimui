@@ -1,16 +1,16 @@
 import './HubExecutableDetailScreen.less';
 
 import React from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import UI from '../../../ui';
 import * as classes from '../../../constants/classes';
 import * as screens from '../../../constants/screens';
-import HubWrapper from '../../../wrappers/hub/HubWrapper/HubWrapper';
 import * as storeUtils from '../../../storeUtils';
 import ExecutableViewForm from '../../../components/hub/ExecutableViewForm/ExecutableViewForm';
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import { buildUrl } from '../../../utils';
+import DangerZone from '../../../components/hub/DangerZone/DangerZone'
 
 
 class HubExecutableDetailScreen extends React.Component {
@@ -57,6 +57,7 @@ class HubExecutableDetailScreen extends React.Component {
           interpreterPath: data.interpreter_path,
           workingDir: data.working_dir,
           aimExperiment: data.aim_experiment,
+          is_hidden: data.is_hidden,
         },
         processes: data.processes,
       }));
@@ -146,7 +147,40 @@ class HubExecutableDetailScreen extends React.Component {
     });
   };
 
+  setHiddenStatus = (id, is_hidden) => {
+    this.props.hideExecutable(id, { is_hidden }).then(data => {
+      this.setState(prevState => ({
+        ...prevState,
+        executableParams: {
+          ...prevState.executableParams,
+          is_hidden,
+        },
+      }));
+    });
+  };
+
   _renderSettings = () => {
+    return (
+      <div>
+        <UI.Text
+          className='HubExecutableDetailScreen__settings__title'
+          type='negative'
+          size={6}
+        >
+          Danger Zone
+        </UI.Text>
+        <DangerZone
+          message='Hide this process template from the main page'
+          name={this.state.executableParams.name}
+          is_hidden={this.state.executableParams.is_hidden}
+          onDelete={() => this.setHiddenStatus(this.props.match.params.executable_id, true)}
+          onRevert={() => this.setHiddenStatus(this.props.match.params.executable_id, false)}
+        />
+      </div>
+    )
+  };
+
+  _renderTemplate = () => {
     return (
       <>
         <ExecutableViewForm
@@ -250,10 +284,17 @@ class HubExecutableDetailScreen extends React.Component {
               </UI.Tab>
               <UI.Tab
                 className=''
+                active={this.state.activeTab === 'template'}
+                onClick={() => this.setState({ activeTab: 'template' })}
+              >
+                Template
+              </UI.Tab>
+              <UI.Tab
+                className=''
                 active={this.state.activeTab === 'settings'}
                 onClick={() => this.setState({ activeTab: 'settings' })}
               >
-                Template
+                Settings
               </UI.Tab>
             </>
           }
@@ -261,6 +302,7 @@ class HubExecutableDetailScreen extends React.Component {
         <div>
           {this.state.activeTab === 'processes' && this._renderProcesses()}
           {this.state.activeTab === 'new_process' && this._renderExecForm()}
+          {this.state.activeTab === 'template' && this._renderTemplate()}
           {this.state.activeTab === 'settings' && this._renderSettings()}
         </div>
       </div>

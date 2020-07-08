@@ -51,7 +51,7 @@ class CommitNavigation extends Component {
 
   handleResize = () => {
     if (!this.props.contentWidth) {
-      setTimeout(() => this.handleResize(), 50);
+      setTimeout(() => this.handleResize(), 20);
       return;
     }
 

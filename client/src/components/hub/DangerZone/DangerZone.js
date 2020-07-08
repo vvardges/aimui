@@ -1,7 +1,8 @@
 import React from 'react';
-import UI from '../../../../ui'
+import UI from '../../../ui'
 
-class TagDangerZone extends React.Component {
+
+class DangerZone extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -11,7 +12,7 @@ class TagDangerZone extends React.Component {
   }
 
   handleDeleteButtonClick = () => {
-    if (this.state.deleteNameMatch === this.props.tag_name) {
+    if (this.state.deleteNameMatch === this.props.name) {
       this.setState({
         deleteNameMatchStatus: null,
       });
@@ -44,20 +45,20 @@ class TagDangerZone extends React.Component {
   _renderDeleteContent = () => (
     <>
       <UI.Text type='grey-dark' spacing>
-        Hide this tag from the main page
+        {this.props.message}
       </UI.Text>
       <UI.Input
         onChange={this.handleInputChange}
         name='deleteNameMatch'
         value={this.state.deleteNameMatch}
-        label={`Please type "${this.props.tag_name}" to confirm`}
+        label={`Please type "${this.props.name}" to confirm`}
       />
       {!!this.state.deleteNameMatchStatus &&
         <UI.Text type='negative' spacingTop small> {this.state.deleteNameMatchStatus} </UI.Text>
       }
       <UI.Text spacingTop>
         <UI.Button
-          className='TagDangerZone__delete'
+          className='DangerZone__delete'
           onClick={() => this.handleDeleteButtonClick()}
           type='negative'
         >
@@ -70,11 +71,11 @@ class TagDangerZone extends React.Component {
   _renderRevertContent = () => (
     <>
       <UI.Text type='grey-dark' spacing>
-        Tag <strong>{this.props.tag_name}</strong> is hidden
+        <strong>{this.props.name}</strong> is hidden
       </UI.Text>
       <UI.Text spacingTop>
         <UI.Button
-          className='TagDangerZone__delete'
+          className='DangerZone__delete'
           onClick={() => this.handleRevertButtonClick()}
           type='secondary'
         >
@@ -87,7 +88,7 @@ class TagDangerZone extends React.Component {
   render() {
     return (
       <>
-        <UI.Segment className='TagDangerZone' type='negative'>
+        <UI.Segment className='DangerZone' type='negative'>
           {this.props.is_hidden ? this._renderRevertContent() : this._renderDeleteContent()}
         </UI.Segment>
       </>
@@ -95,4 +96,4 @@ class TagDangerZone extends React.Component {
   }
 }
 
-export default TagDangerZone;
+export default DangerZone;

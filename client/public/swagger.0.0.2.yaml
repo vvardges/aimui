@@ -231,7 +231,34 @@ paths:
             application/json:
               schema:
                 type: object
-  "/executables/execute/{executable_id}":
+  "/executables/{executable_id}/hide":
+    post:
+      operationId: hideExecutable
+      summary: hide or un-hide an executable
+      tags:
+        - Executable
+      parameters:
+        - name: executable_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: boolean
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+  "/executables/{executable_id}/execute":
     get:
       operationId: executeExecutableTemplate
       summary: Execute executable template

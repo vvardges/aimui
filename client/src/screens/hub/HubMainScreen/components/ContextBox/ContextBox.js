@@ -93,8 +93,6 @@ class ContextBox extends Component {
       return null;
     }
 
-    console.log(this.context.contextInformation.unionNamespaces);
-
     return (
       <div className='ContextBox__content'>
         <div className='ContextBox__table__wrapper'>
