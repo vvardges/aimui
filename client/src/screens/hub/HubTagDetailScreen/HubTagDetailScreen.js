@@ -8,7 +8,7 @@ import moment from 'moment';
 import { buildUrl } from '../../../utils';
 
 import TagSettingForm from '../../../components/hub/TagSettingForm/TagSettingForm';
-import TagDangerZone from './components/TagDangerZone';
+import DangerZone from '../../../components/hub/DangerZone/DangerZone';
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import UI from '../../../ui';
 import * as storeUtils from '../../../storeUtils';
@@ -241,8 +241,9 @@ class HubTagDetailScreen extends React.Component {
         >
           Danger Zone
         </UI.Text>
-        <TagDangerZone
-          tag_name={this.state.tag.name}
+        <DangerZone
+          message='Hide this tag from the main page'
+          name={this.state.tag.name}
           is_hidden={this.state.tag.is_hidden}
           onDelete={() => this.setHiddenStatus(this.props.match.params.tag_id, true)}
           onRevert={() => this.setHiddenStatus(this.props.match.params.tag_id, false)}

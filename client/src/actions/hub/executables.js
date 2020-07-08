@@ -12,6 +12,18 @@ export function executeExecutable(params) {
   }
 }
 
+export function hideExecutable(executable_id, params) {
+  return dispatch => {
+    return new Promise((resolve, reject) => {
+      callApi('Executable.hideExecutable', { executable_id, ...params }).then((data) => {
+        resolve(data);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
+  }
+}
+
 export function createExecutable(params) {
   return dispatch => {
     return new Promise((resolve, reject) => {

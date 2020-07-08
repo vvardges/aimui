@@ -44,3 +44,4 @@ class Tag(db.Model):
         self.name = name
         self.color = color
         self.is_archived = False
+        self.is_hidden = False
