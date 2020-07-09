@@ -1,5 +1,7 @@
 # Changelog
 
+- Add ability to filter runs by a parameter (gorarakelyan)
+
 ## 1.0.3 Jul 8 2020
 - Integrate GA (gorarakelyan)
 

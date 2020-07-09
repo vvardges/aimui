@@ -11,11 +11,11 @@ from artifacts.artifact import Metric
 PROJECT_PATH = '/store'
 
 
-def run_storage_path(b, c):
+def get_run_objects_path(b, c):
     return os.path.join(b, c, 'objects')
 
 
-def get_runs_hashes(tag=None, experiments=None):
+def get_runs_hashes(tag=None, experiments=None, params=None):
     project_branches = get_project_branches(PROJECT_PATH)
 
     # Filter by experiments
@@ -50,17 +50,52 @@ def get_runs_hashes(tag=None, experiments=None):
     else:
         filtered_runs = commit_objects
 
+    # Filter by params
+    if params is not None:
+        i = 0
+        while i < len(filtered_runs):
+            c_hash, c_obj = list(filtered_runs.items())[i]
+            branch_path = os.path.join(PROJECT_PATH, c_obj['branch'])
+            c_path = get_run_objects_path(branch_path, c_hash)
+            dict_path = os.path.join(c_path, 'map', 'dictionary.log')
+            if os.path.isfile(dict_path):
+                try:
+                    with open(dict_path, 'r') as c_config_file:
+                        c_params = json.loads((c_config_file.read() or '')
+                                              .strip())
+                        c_params_flat = {}
+                        for namespace, sub_params in c_params.items():
+                            for sub_k, sub_v in sub_params.items():
+                                c_params_flat[sub_k] = sub_v
+
+                        matched = True
+                        for s_param_k, s_param in params.items():
+                            val = s_param['value']
+                            if s_param_k not in c_params_flat \
+                                or str(c_params_flat[s_param_k]) != str(val):
+                                matched = False
+                                break
+                        if matched:
+                            i += 1
+                            continue
+                except:
+                    pass
+            del filtered_runs[c_hash]
+
     return filtered_runs
 
 
-def get_runs_metric(metric, tag=None, experiments=None):
-    filtered_runs = get_runs_hashes(tag, experiments)
+def get_runs_metric(metric, tag=None, experiments=None, params=None):
+    if not metric:
+        return {}
+
+    filtered_runs = get_runs_hashes(tag, experiments, params)
 
     # Get commits data length
     max_commit_len = 0
     for commit_hash, commit in filtered_runs.items():
         branch_path = os.path.join(PROJECT_PATH, commit['branch'])
-        storage_path = run_storage_path(branch_path, commit['hash'])
+        storage_path = get_run_objects_path(branch_path, commit['hash'])
         records_storage = Storage(storage_path, 'r')
         try:
             records_storage.open(metric,
@@ -85,7 +120,7 @@ def get_runs_metric(metric, tag=None, experiments=None):
     # Retrieve actual values from commits
     for commit_hash, commit in filtered_runs.items():
         branch_path = os.path.join(PROJECT_PATH, commit['branch'])
-        storage_path = run_storage_path(branch_path, commit['hash'])
+        storage_path = get_run_objects_path(branch_path, commit['hash'])
         commit['data'] = []
         records_storage = Storage(storage_path, 'r')
         try:
@@ -135,7 +170,7 @@ def get_runs_dictionary(tag=None, experiments=None):
             'data': {},
         }
         branch_path = os.path.join(PROJECT_PATH, commit['branch'])
-        storage_path = run_storage_path(branch_path, commit['hash'])
+        storage_path = get_run_objects_path(branch_path, commit['hash'])
         dict_file_path = os.path.join(storage_path, 'map', 'dictionary.log')
         if os.path.isfile(dict_file_path):
             try:
@@ -146,3 +181,43 @@ def get_runs_dictionary(tag=None, experiments=None):
                 pass
 
     return runs_dicts
+
+
+def parse_query(query):
+    sub_queries = query.split(' ')
+    metric = tag = experiment = params = None
+    for sub_query in sub_queries:
+        if 'metric' in sub_query:
+            _, _, metric = sub_query.rpartition(':')
+            metric = metric.strip()
+
+        if 'tag' in sub_query:
+            _, _, tag = sub_query.rpartition(':')
+            tag = tag.lower().strip()
+
+        if 'experiment' in sub_query:
+            _, _, experiment = sub_query.rpartition(':')
+            experiment = experiment.lower().strip()
+
+        if 'experiment' in sub_query:
+            _, _, experiment = sub_query.rpartition(':')
+            experiment = experiment.lower().strip()
+
+        if 'param' in sub_query:
+            if params is None:
+                params = {}
+            _, _, param = sub_query.rpartition(':')
+            if '=' in param:
+                param_key, param_op, param_val = param.rpartition('=')
+                params[param_key] = {
+                    'op': param_op,
+                    'key': param_key,
+                    'value': param_val,
+                }
+
+    return {
+        'metric': metric,
+        'tag': tag,
+        'experiment': experiment,
+        'params': params,
+    }
