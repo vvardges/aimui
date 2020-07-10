@@ -4,53 +4,42 @@
 [![Image pulls](https://img.shields.io/docker/pulls/aimhubio/aim-board)](https://hub.docker.com/r/aimhubio/aim-board)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-Development Environment for AI Engineers.
+A super-easy way to search and compare recorded AI experiments.
 
-See the documentation [here](https://docs.aimstack.io).
+<img src="https://user-images.githubusercontent.com/3179216/86801320-eea18400-c084-11ea-8480-87ee60ae95cd.png">
 
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your 
-local machine for development and testing purposes.
-
-### Requirements
-
- - docker >= 18.06.1
- - GNU Make
-
-To start development run:
-
-```bash
-make [repo={full-aim-repo-path}] dev
+## Getting started in three steps
+1. Install Aim in your training environment
+```shell
+pip3 install aim-cli
+```
+2. Import Aim in your training code
+```py
+import aim
+aim.init() # initialize aim recorder
+...
+aim.track(metric_value, name='my-meaningful-metric-name', epoch=the_epoch)
+aim.track(hyperparam_dict, namespace='hyperparams-name-that-makes-sense')
+```
+3. Run the training and start the AI Dev Environment
+```shell
+aim up
 ```
 
-AimDE should be accessible at `http://aim-dev.loc:43800/`
+## Docs
+See the [docs at Aim](https://github.com/aimhubio/aim#contents).
 
-You can do IP-host mapping by adding the following line to the end of  `/etc/hosts` file:
+## Sneak Peak on AimDE
+Demo AimDE: [http://demo-1.aimstack.io/](http://demo-1.aimstack.io/)
 
-```
-127.0.0.1    aim-dev.loc
-```
+#### The search and compare panel
+![AimDE Panel](https://user-images.githubusercontent.com/3179216/87037877-fe90a380-c1fd-11ea-9242-05ea1798a176.gif)
 
-### Project Structure
+#### All experiments at hand
+![AimDE Experiments](https://user-images.githubusercontent.com/3179216/87040316-95129400-c201-11ea-97e5-519ac6ffba94.gif)
 
-```
-├── client  <--------------  front end code
-├── server  <--------------  back end code
-├── examples  <------------  aim repo and examples for testing
-└── ops  <-----------------  build files and configurations
-```
+#### Easily start new experiments
+![AimDE Processes](https://user-images.githubusercontent.com/3179216/87042902-57176f00-c205-11ea-830e-e69168b9d269.gif)
 
-## Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our 
-code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available,
-see the [tags on this repository](https://github.com/aimhubio/aim/tags).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+#### Tag the experiments / training runs for better search
+![AimDE Tags](https://user-images.githubusercontent.com/3179216/87041412-3fd78200-c203-11ea-8cca-27a26752df99.gif)
