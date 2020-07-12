@@ -93,6 +93,7 @@ class App extends React.Component {
         }
         <Switch>
           <Route exact path={screens.MAIN} component={HubMainScreen}/>
+          <Route exact path={screens.MAIN_SEARCH} component={HubMainScreen}/>
           <Route exact path={screens.HUB_PROJECT_CREATE_EXECUTABLE} component={HubExecutableCreateScreen}/>
           <Route exact path={screens.HUB_PROJECT_EXECUTABLE_DETAIL} component={HubExecutableDetailScreen}/>
           <Route exact path={screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL} component={HubExecutableProcessDetailScreen}/>

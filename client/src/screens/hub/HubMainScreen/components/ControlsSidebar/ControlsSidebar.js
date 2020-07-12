@@ -45,6 +45,10 @@ class ControlsSidebar extends Component {
     e.stopPropagation();
   };
 
+  handleYScaleChange = (yScale) => {
+    this.context.setChartSettingsState({ 'yScale': yScale }, () => this.context.updateURL());
+  };
+
   render() {
     return (
       <div className='ControlsSidebar'>
@@ -73,13 +77,13 @@ class ControlsSidebar extends Component {
                 <div className='ControlsSidebar__menu__list__items'>
                   <div
                     className='ControlsSidebar__menu__item'
-                    onClick={() => this.context.setSettings('yScale', 0, true)}
+                    onClick={() => this.handleYScaleChange(0)}
                   >
                     Linear
                   </div>
                   <div
                     className='ControlsSidebar__menu__item'
-                    onClick={() => this.context.setSettings('yScale', 1, true)}
+                    onClick={() => this.handleYScaleChange(1)}
                   >
                     Log
                   </div>

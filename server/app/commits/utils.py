@@ -82,30 +82,32 @@ def get_runs_hashes(tag=None, experiments=None, params=None):
                     pass
             del filtered_runs[c_hash]
 
-    return filtered_runs
+    return filtered_runs.values()
 
 
-def get_runs_metric(metric, tag=None, experiments=None, params=None):
-    if not metric:
-        return {}
+def get_runs_metric(metrics, tag=None, experiments=None, params=None):
+    if not metrics:
+        return []
 
     filtered_runs = get_runs_hashes(tag, experiments, params)
 
     # Get commits data length
     max_commit_len = 0
-    for commit_hash, commit in filtered_runs.items():
+    for commit in filtered_runs:
+        commit_hash = commit['hash']
         branch_path = os.path.join(PROJECT_PATH, commit['branch'])
         storage_path = get_run_objects_path(branch_path, commit['hash'])
         records_storage = Storage(storage_path, 'r')
-        try:
-            records_storage.open(metric,
-                                 uncommitted_bucket_visible=True)
-            commit['num_steps'] = records_storage.get_records_num(metric)
-            records_storage.close()
-        except:
-            commit['num_steps'] = 0
-        if commit['num_steps'] > max_commit_len:
-            max_commit_len = commit['num_steps']
+        for metric in metrics:
+            try:
+                records_storage.open(metric,
+                                     uncommitted_bucket_visible=True)
+                commit['num_steps'] = records_storage.get_records_num(metric)
+                records_storage.close()
+            except:
+                commit['num_steps'] = 0
+            if commit['num_steps'] > max_commit_len:
+                max_commit_len = commit['num_steps']
 
     # Get commits data
     scaled_steps_len = 50
@@ -118,45 +120,47 @@ def get_runs_metric(metric, tag=None, experiments=None, params=None):
         scaled_steps = slice(0, 0)
 
     # Retrieve actual values from commits
-    for commit_hash, commit in filtered_runs.items():
+    for commit in filtered_runs:
+        commit_hash = commit['hash']
         branch_path = os.path.join(PROJECT_PATH, commit['branch'])
         storage_path = get_run_objects_path(branch_path, commit['hash'])
         commit['data'] = []
         records_storage = Storage(storage_path, 'r')
-        try:
-            records_storage.open(metric,
-                                 uncommitted_bucket_visible=True)
-            for r in records_storage.read_records(metric,
-                                                  scaled_steps):
-                base, metric_record = Metric.deserialize(r)
-                commit['data'].append({
-                    'value': metric_record.value,
-                    'step': base.step,
-                    'epoch': base.epoch if base.has_epoch else None,
-                })
-            records_storage.close()
-        except:
-            pass
+        for metric in metrics:
+            try:
+                records_storage.open(metric,
+                                     uncommitted_bucket_visible=True)
+                for r in records_storage.read_records(metric,
+                                                      scaled_steps):
+                    base, metric_record = Metric.deserialize(r)
+                    commit['data'].append({
+                        'value': metric_record.value,
+                        'step': base.step,
+                        'epoch': base.epoch if base.has_epoch else None,
+                    })
+                records_storage.close()
+            except:
+                pass
 
     # Remove empty commits
-    filtered_runs = {c_hash: filtered_runs[c_hash]
-                     for c_hash in filtered_runs.keys()
-                     if len(filtered_runs[c_hash]['data']) > 0}
+    filtered_runs = list(filter(lambda r: len(r['data']) > 0, filtered_runs))
 
     # Get tags and colors
     commit_models = db.session.query(Commit, Tag) \
         .join(Tag, Commit.tags) \
-        .filter(Commit.hash.in_(filtered_runs.keys())).all()
+        .filter(Commit.hash.in_(map(lambda r: r['hash'], filtered_runs))).all()
     for i in commit_models:
         if len(i) <= 1 or not i[1].color:
             continue
 
         commit_model = i[0]
         commit_tag = i[1]
-        for commit_hash, commit in filtered_runs.items():
-            if commit_hash == commit_model.hash:
-                commit['color'] = commit_tag.color
-                commit['tag'] = commit_tag.name
+        for commit in filtered_runs:
+            if commit['hash'] == commit_model.hash:
+                commit['tag'] = {
+                    'name': commit_tag.name,
+                    'color': commit_tag.color,
+                }
 
     return filtered_runs
 
@@ -165,7 +169,8 @@ def get_runs_dictionary(tag=None, experiments=None):
     filtered_runs = get_runs_hashes(tag, experiments)
     runs_dicts = {}
 
-    for commit_hash, commit in filtered_runs.items():
+    for commit in filtered_runs:
+        commit_hash = commit['hash']
         runs_dicts[commit_hash] = {
             'data': {},
         }
@@ -185,11 +190,12 @@ def get_runs_dictionary(tag=None, experiments=None):
 
 def parse_query(query):
     sub_queries = query.split(' ')
-    metric = tag = experiment = params = None
+    metrics = tag = experiment = params = None
     for sub_query in sub_queries:
-        if 'metric' in sub_query:
-            _, _, metric = sub_query.rpartition(':')
-            metric = metric.strip()
+        if metrics is None:
+            metrics = []
+        _, _, metric = sub_query.rpartition(':')
+        metrics.append(metric.strip())
 
         if 'tag' in sub_query:
             _, _, tag = sub_query.rpartition(':')
@@ -216,7 +222,7 @@ def parse_query(query):
                 }
 
     return {
-        'metric': metric,
+        'metrics': metrics,
         'tag': tag,
         'experiment': experiment,
         'params': params,

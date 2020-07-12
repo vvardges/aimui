@@ -23,12 +23,12 @@ class CommitMetricSearchApi(Resource):
         query = request.args.get('q').strip()
         parsed_query = parse_query(query)
 
-        metric = parsed_query['metric']
+        metrics = parsed_query['metrics']
         tag = parsed_query['tag']
         experiment = parsed_query['experiment']
         params = parsed_query['params']
 
-        commits = get_runs_metric(metric, tag, experiment, params)
+        commits = get_runs_metric(metrics, tag, experiment, params)
 
         return jsonify(commits)
 
