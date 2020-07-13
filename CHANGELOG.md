@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.0.4 Jul 13 2020
+- Ability to recover panel state from URL (gorarakelyan)
 - Add ability to filter runs by a parameter (gorarakelyan)
 
 ## 1.0.3 Jul 8 2020
