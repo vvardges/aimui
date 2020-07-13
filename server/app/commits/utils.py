@@ -192,10 +192,11 @@ def parse_query(query):
     sub_queries = query.split(' ')
     metrics = tag = experiment = params = None
     for sub_query in sub_queries:
-        if metrics is None:
-            metrics = []
-        _, _, metric = sub_query.rpartition(':')
-        metrics.append(metric.strip())
+        if 'metric' in sub_query:
+            if metrics is None:
+                metrics = []
+            _, _, metric = sub_query.rpartition(':')
+            metrics.append(metric.strip())
 
         if 'tag' in sub_query:
             _, _, tag = sub_query.rpartition(':')
