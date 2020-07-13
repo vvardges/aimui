@@ -8,7 +8,7 @@ from flask_restful import Api, Resource
 
 from app import App
 from app.commits.models import Commit, Tag
-from app.commits.utils import get_runs_metric, get_runs_dictionary
+from app.commits.utils import get_runs_metric, get_runs_dictionary, parse_query
 from services.executables.action import Action
 from app.db import db
 
@@ -20,26 +20,15 @@ commits_api = Api(commits_bp)
 @commits_api.resource('/search/metric')
 class CommitMetricSearchApi(Resource):
     def get(self):
-        metric = ''
-        tag = None
-        experiment = None
-
         query = request.args.get('q').strip()
-        sub_queries = query.split(' ')
-        for sub_query in sub_queries:
-            if 'metric' in sub_query:
-                _, _, metric = sub_query.rpartition(':')
-                metric = metric.strip()
+        parsed_query = parse_query(query)
 
-            if 'tag' in sub_query:
-                _, _, tag = sub_query.rpartition(':')
-                tag = tag.lower().strip()
+        metrics = parsed_query['metrics']
+        tag = parsed_query['tag']
+        experiment = parsed_query['experiment']
+        params = parsed_query['params']
 
-            if 'experiment' in sub_query:
-                _, _, experiment = sub_query.rpartition(':')
-                experiment = experiment.lower().strip()
-
-        commits = get_runs_metric(metric, tag, experiment)
+        commits = get_runs_metric(metrics, tag, experiment, params)
 
         return jsonify(commits)
 
@@ -47,20 +36,11 @@ class CommitMetricSearchApi(Resource):
 @commits_api.resource('/search/dictionary')
 class CommitDictionarySearchApi(Resource):
     def get(self):
-        metric = ''
-        tag = None
-        experiment = None
-
         query = request.args.get('q').strip()
-        sub_queries = query.split(' ')
-        for sub_query in sub_queries:
-            if 'tag' in sub_query:
-                _, _, tag = sub_query.rpartition(':')
-                tag = tag.lower().strip()
+        parsed_query = parse_query(query)
 
-            if 'experiment' in sub_query:
-                _, _, experiment = sub_query.rpartition(':')
-                experiment = experiment.lower().strip()
+        tag = parsed_query['tag']
+        experiment = parsed_query['experiment']
 
         dicts = get_runs_dictionary(tag, experiment)
 

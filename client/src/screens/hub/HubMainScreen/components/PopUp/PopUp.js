@@ -20,7 +20,6 @@ class PopUp extends Component {
           left: this.props.left,
           top: this.props.top,
           width: this.props.width,
-          maxHeight: this.props.height,
         }}
       >
         {this.props.chainArrow &&
@@ -29,7 +28,12 @@ class PopUp extends Component {
             [this.props.chainArrow]: !!this.props.chainArrow,
           })} />
         }
-        <div className='PopUp__body'>
+        <div
+          className='PopUp__body'
+          style={{
+            maxHeight: this.props.height,
+          }}
+        >
           {this.props.children}
         </div>
       </div>

@@ -30,8 +30,8 @@ class Panel extends Component {
     super(props);
 
     this.state = {
+      // Chart
       visBox: {
-        ratio: this.props.ratio,
         margin: {
           top: 20, right: 20, bottom: 30, left: 60,
         },
@@ -49,9 +49,9 @@ class Panel extends Component {
         xScale: null,
         yScale: null,
       },
-      hoverLine: {
-        display: false,
-      },
+      key: null,
+
+      // PopUps
       chartPopUp: {
         display: false,
         left: 0,
@@ -64,16 +64,17 @@ class Panel extends Component {
       },
       tagPopUp: {
         display: false,
-        loading: false,
+        isLoading: false,
         left: 0,
         top: 0,
         tags: [],
       },
       commitPopUp: {
         display: false,
+        isLoading: false,
         left: 0,
         top: 0,
-        content: null,
+        data: null,
         processKillBtn: {
           loading: false,
           disabled: false,
@@ -87,8 +88,7 @@ class Panel extends Component {
     this.plot = null;
     this.bgRect = null;
     this.hoverLine = null;
-    this.hoverCircles = null;
-    this.dataSnapshot = null;
+    this.circles = null;
 
     this.curves =  [
       'curveLinear',
@@ -109,11 +109,13 @@ class Panel extends Component {
       'scaleLinear',
       'scaleLog',
     ];
+
+    this.key = null;
   }
 
   componentDidMount() {
     this.initD3();
-    this.draw();
+    this.renderChart();
     window.addEventListener('resize', () => this.resize());
   }
 
@@ -121,13 +123,9 @@ class Panel extends Component {
     window.removeEventListener('resize', () => this.resize());
   }
 
-  dataDidUpdate() {
-    this.draw();
-  }
-
-  settingsDidUpdate() {
-    this.draw();
-  }
+  resize = () => {
+    this.renderChart();
+  };
 
   initD3 = () => {
     d3.selection.prototype.moveToFront = function() {
@@ -137,84 +135,52 @@ class Panel extends Component {
     };
   };
 
-  resize = () => {
+  renderChart = () => {
+    console.log('rerender', this.context.key);
+    this.key = this.context.key;
+
+    this.clear();
+
+    if (this.context.metrics.isLoading || this.context.metrics.isEmpty) {
+      return;
+    }
+
     this.draw();
   };
 
-  draw = (clear=true) => {
-    if (!this.isEmpty()) {
-      if (clear) {
-        // Clear panel: hide popups and remove hover
-        this.hideHoverLine();
-        if (this.hoverCircles) {
-          this.hoverCircles.selectAll('*.focus').remove();
-        }
-        this.hideActionPopUps(false);
-      }
-
-      // FIX: Check if visRef has been mounted
-      if (!this.visRef.current) {
-        setTimeout( () => this.draw(clear), 20);
-        return;
-      }
-
-      this.initArea().then(() => this.plotData());
+  clear = () => {
+    if (!this.visRef.current) {
+      return;
     }
+
+    const visArea = d3.select(this.visRef.current);
+    visArea.selectAll('*').remove();
+    visArea.attr('style', null);
   };
 
-  isEmpty = () => {
-    return !this.context.data || !this.context.data.length;
+  draw = () => {
+    if (!this.visRef.current) {
+      return;
+    }
+
+    this.drawArea().then(() => this.drawAxes()).then(() => {
+      this.drawLines();
+      this.drawHoverAttributes();
+      this.bindInteractions();
+    });
   };
 
-  initArea = () => {
-    return new Promise((resolve) => {
-      const visArea = d3.select(this.visRef.current);
-      visArea.selectAll('*').remove();
-      visArea.attr('style', null);
-
+  drawArea = () => {
+    return new Promise(resolve => {
       const parent = d3.select(this.parentRef.current);
+      const visArea = d3.select(this.visRef.current);
       const parentRect = parent.node().getBoundingClientRect();
       const parentWidth = parentRect.width;
       const parentHeight = parentRect.height;
 
-      const { margin, ratio } = this.state.visBox;
+      const { margin } = this.state.visBox;
       const width = this.props.width ? this.props.width : parentWidth;
-      const height = this.props.height ? this.props.height : (
-        this.props.ratio ? width * ratio : parentHeight
-      );
-
-      let xNum = 0, xMax = 0, xSteps = [];
-      this.context.data.forEach(i => {
-        if (i.num_steps > xMax) {
-          xMax = i.num_steps;
-        }
-        if (i.data.length > xNum) {
-          xNum = i.data.length;
-          xSteps = i.data.map(s => s.step);
-        }
-      });
-
-      // X and Y scales
-      const xScale = d3.scaleLinear()
-        .domain([0, xMax])
-        .range([0, width - margin.left - margin.right]);
-
-      let yMax = d3.max(this.context.data.map((i) => Math.max(...i.data.map(i => i.value))));
-      let yMin = d3.min(this.context.data.map((i) => Math.min(...i.data.map(i => i.value))));
-
-      let yScaleBase;
-      if (this.scale[this.context.settings.yScale] === 'scaleLinear') {
-        const diff = yMax - yMin;
-        yMax += diff * 0.1;
-        yMin -= diff * 0.05;
-        yScaleBase = d3.scaleLinear();
-      } else if (this.scale[this.context.settings.yScale] === 'scaleLog') {
-        yScaleBase = d3.scaleLog();
-      }
-
-      const yScale = yScaleBase
-        .domain([yMin, yMax])
-        .range([height - margin.top - margin.bottom, 0]);
+      const height = this.props.height ? this.props.height : parentHeight;
 
       this.setState({
         ...this.state,
@@ -228,46 +194,20 @@ class Panel extends Component {
           width: width - margin.left - margin.right,
           height: height - margin.top - margin.bottom,
         },
-        chart: {
-          ...this.state.chart,
-          xNum,
-          xMax,
-          xSteps,
-          xScale,
-          yScale,
-        },
       }, () => {
         visArea.style('width', `${this.state.visBox.width}px`)
           .style('height', `${this.state.visBox.height}px`);
 
-        const handleAreaMouseOver = this.handleAreaMouseOver;
-        const handleAreaMouseMove = this.handleAreaMouseMove;
-        const handleAreaMouseOut = this.handleAreaMouseOut;
-
         this.svg = visArea.append('svg')
           .attr('width', width)
-          .attr('height', height)
-          .on('mouseover', function () {
-            handleAreaMouseOver();
-          })
-          .on('mousemove', function () {
-            handleAreaMouseMove(d3.mouse(this));
-          })
-          .on('mouseout', function () {
-            handleAreaMouseOut(d3.mouse(this));
-          });
-
-        const handleBgRectClick = this.handleBgRectClick;
+          .attr('height', height);
 
         this.bgRect = this.svg.append('rect')
           .attr('x', margin.left)
           .attr('y', margin.top)
           .attr('width', width - margin.left - margin.right)
           .attr('height', height - margin.top - margin.bottom)
-          .style('fill', 'transparent')
-          .on('click', function () {
-            handleBgRectClick();
-          });
+          .style('fill', 'transparent');
 
         this.plot = this.svg.append('g')
           .attr('transform', `translate(${margin.left}, ${margin.top})`);
@@ -277,152 +217,348 @@ class Panel extends Component {
     });
   };
 
-  plotData = () => {
-    const data = this.context.data;
+  drawAxes = () => {
+    return new Promise(resolve => {
+      const data = this.context.metrics.data;
+      const { width, height, margin } = this.state.visBox;
 
-    if (!data || !data.length) {
-      return;
-    }
+      let xNum = 0, xMax = 0, xSteps = [];
+      data.forEach(i => {
+        if (i.num_steps > xMax) {
+          xMax = i.num_steps;
+        }
+        if (i.data.length > xNum) {
+          xNum = i.data.length;
+          xSteps = i.data.map(s => s.step);
+        }
+      });
 
-    const { height } = this.state.plotBox;
+      const xScale = d3.scaleLinear()
+        .domain([0, xMax])
+        .range([0, width - margin.left - margin.right]);
 
-    // X and Y axis
-    this.plot.append('g')
-      .attr('class', 'x axis')
-      .attr('transform', `translate(0, ${height})`)
-      .call(d3.axisBottom(this.state.chart.xScale));
+      let yMax = d3.max(data.map((i) => Math.max(...i.data.map(i => i.value))));
+      let yMin = d3.min(data.map((i) => Math.min(...i.data.map(i => i.value))));
 
-    this.plot.append('g')
-      .attr('class', 'y axis')
-      .call(d3.axisLeft(this.state.chart.yScale));
+      let yScaleBase;
+      if (this.scale[this.context.chart.settings.yScale] === 'scaleLinear') {
+        const diff = yMax - yMin;
+        yMax += diff * 0.1;
+        yMin -= diff * 0.05;
+        yScaleBase = d3.scaleLinear();
+      } else if (this.scale[this.context.chart.settings.yScale] === 'scaleLog') {
+        yScaleBase = d3.scaleLog();
+      }
 
-    // const handleLineClick = this.handleLineClick;
-    // const handlePointClick = this.handlePointClick;
-    // const handleLineMouseOver = this.handleLineMouseOver;
-    // const handleLineMouseOut = this.handleLineMouseOut;
+      const yScale = yScaleBase
+        .domain([yMin, yMax])
+        .range([height - margin.top - margin.bottom, 0]);
 
-    this.hoverLine = this.plot.append('line')
-      .attr('x1', 0)
-      .attr('y1', 0)
-      .attr('x2', 0)
-      .attr('y2', height)
-      .attr('class', 'HoverLine')
-      .style('stroke-width', 1)
-      .style('fill', 'none')
-      .style('display', 'none');
+      this.plot.append('g')
+        .attr('class', 'x axis')
+        .attr('transform', `translate(0, ${this.state.plotBox.height})`)
+        .call(d3.axisBottom(xScale));
 
-    // Lines
-    data.forEach((commit, i) => {
+      this.plot.append('g')
+        .attr('class', 'y axis')
+        .call(d3.axisLeft(yScale));
+
+      this.setState({
+        ...this.state,
+        chart: {
+          ...this.state.chart,
+          xNum,
+          xMax,
+          xSteps,
+          xScale,
+          yScale,
+        },
+      }, () => resolve());
+    });
+  };
+
+  drawLines = () => {
+    const metrics = this.context.metrics.data;
+    const handleLineClick = this.handleLineClick;
+
+    metrics.forEach((metric, i) => {
       const line = d3.line()
-        .x((d, i) => this.state.chart.xScale(d.step))
+        .x(d => this.state.chart.xScale(d.step))
         .y(d => this.state.chart.yScale(d.value))
         .curve(d3[this.curves[5]]);
 
       this.plot.append('path')
-        .datum(commit.data)
-        .attr('data-hash', commit.hash)
-        .style('stroke', this.context.getLineColor(commit))
+        .datum(metric.data)
+        .attr('data-hash', metric.hash)
+        .style('stroke', this.context.getMetricColor(metric))
         .style('fill', 'none')
         .attr('class', `PlotLine PlotLine-${i}`)
-        .attr('d', line);
-      // .on('click', function () {
-      //   handleLineClick(d3.select(this), d3.mouse(this));
-      // })
-      // .on('mouseover', function () {
-      //   handleLineMouseOver(d3.select(this));
-      // })
-      // .on('mouseout', function () {
-      //   handleLineMouseOut(d3.select(this));
-      // });
+        .attr('d', line)
+        .on('click', function () {
+          handleLineClick(d3.mouse(this));
+        });
     });
-
-    this.hoverCircles = this.plot.append('g');
-
-    this.showHoverLine(0);
-    this.moveHoverLine(0);
-
-    // Glow effect
-    //
-    // const defs = svg.append('defs');
-    // const glowDeviation = '2';
-    //
-    // const filter = defs.append('filter').attr('id', 'glow');
-    // filter.append('feGaussianBlur')
-    //   .attr('stdDeviation', glowDeviation)
-    //   .attr('result', 'coloredBlur');
-    //
-    // const feMerge = filter.append('feMerge');
-    // feMerge.append('feMergeNode').attr('in', 'coloredBlur');
-    // feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
-    //
-    // d3.selectAll('.glowed').style('filter', 'url(#glow)');
   };
 
-  showHoverLine = (x) => {
-    this.hoverLine
-      .style('display', null);
-  };
-
-  moveHoverLine = (x) => {
-    const data = this.state.chart.xSteps;
-
-    let p = 0;
-
-    if (x) {
-      const xPoint = this.state.chart.xScale.invert(x);
-      const index = d3.bisect(data, xPoint, 1);
-      const a = data[index - 1];
-      const b = data[index];
-
-      p = xPoint - a > b - xPoint ? b : a;
-    }
-
-    const lineX = this.state.chart.xScale(p);
-
-    if (this.context.contextStepIndex === p) {
+  drawHoverAttributes = () => {
+    const { index } = this.context.chart.focused;
+    if (index === null) {
+      this.hideActionPopUps(false);
       return;
     }
 
-    // Remove circles
-    this.hoverCircles.selectAll('*:not(.focus)').remove();
+    const x = this.state.chart.xScale(index);
+    const { height } = this.state.plotBox;
 
-    this.hoverLine
-      .attr('x1', lineX)
-      .attr('x2', lineX);
+    // Draw hover line
+    this.hoverLine = this.plot.append('line')
+      .attr('x1', x)
+      .attr('y1', 0)
+      .attr('x2', x)
+      .attr('y2', height)
+      .attr('class', 'HoverLine')
+      .style('stroke-width', 1)
+      .style('stroke-dasharray', '4 2')
+      .style('fill', 'none');
 
-    this.drawHoverCircles(lineX, p);
+    // Draw circles
+    const metrics = this.context.metrics.data;
+    const focusedCircle = this.context.chart.focused.circle;
+    const { metric, circle } = this.context.chart.focused;
+    const handlePointClick = this.handlePointClick;
+    let focusedCircleElem = null;
 
-    this.setState(prevState => ({
-      ...prevState,
-      hoverLine: {
-        ...prevState.hoverLine,
-        display: true,
-      },
-    }));
+    this.circles = this.plot.append('g');
+    for (let metricIndex in metrics) {
+      const metric = metrics[metricIndex];
+      const val = this.context.getMetricStepValueByStepIdx(metric.data, index);
+      if (val) {
+        const y = this.state.chart.yScale(val);
+        const circle = this.circles.append('circle')
+          .attr('class', `HoverCircle HoverCircle-${metricIndex}`)
+          .attr('cx', x)
+          .attr('cy', y)
+          .attr('r', circleRadius)
+          .attr('data-x', x)
+          .attr('data-y', y)
+          .attr('data-index', index)
+          .attr('data-line-index', metricIndex)
+          .attr('data-line-hash', metric.hash)
+          .style('fill', this.context.getMetricColor(metric))
+          .on('click', function () {
+            handlePointClick(index, parseInt(metricIndex));
+          });
 
-    this.context.setContextStepIndex(p);
+        if (focusedCircle.metricIndex === metricIndex && focusedCircle.stepIndex === index) {
+          focusedCircleElem = circle;
+        }
+      }
+    }
+
+    // Apply active state to line and circle
+    if (circle.metricIndex !== null || metric.index !== null) {
+      this.plot.selectAll(`.PlotLine-${(circle.metricIndex !== null ? circle.metricIndex : metric.index)}`)
+        .classed('active', true);
+    }
+    if (metric.index !== null) {
+      this.circles.selectAll('*.focus').moveToFront();
+
+      this.circles.selectAll(`.HoverCircle-${metric.index}`)
+        .classed('active', true)
+        .attr('r', circleActiveRadius)
+        .moveToFront();
+    }
+
+    // Add focused circle and/or apply focused state
+    if (focusedCircle.metricIndex !== null) {
+      if (focusedCircleElem !== null) {
+        focusedCircleElem
+          .classed('focus', true)
+          .classed('active', false)
+          .attr('r', circleActiveRadius)
+          .moveToFront();
+      } else {
+        const focusedCircleX = this.state.chart.xScale(focusedCircle.stepIndex);
+        const focusedCircleVal = this.context.getMetricStepValueByStepIdx(
+          metrics[focusedCircle.metricIndex].data,
+          focusedCircle.stepIndex);
+        const focusedCircleY = this.state.chart.yScale(focusedCircleVal);
+
+        this.circles.append('circle')
+          .attr('class', `HoverCircle HoverCircle-${focusedCircle.metricIndex} focus`)
+          .attr('cx', focusedCircleX)
+          .attr('cy', focusedCircleY)
+          .attr('r', circleActiveRadius)
+          .attr('data-x', focusedCircleX)
+          .attr('data-y', focusedCircleY)
+          .attr('data-index', focusedCircle.stepIndex)
+          .attr('data-line-index', focusedCircle.metricIndex)
+          .attr('data-line-hash', metrics[focusedCircle.metricIndex].hash)
+          .style('fill', this.context.getMetricColor(metrics[focusedCircle.metricIndex]))
+          .on('click', function () {
+            handlePointClick(focusedCircle.stepIndex, focusedCircle.metricIndex);
+          })
+          .moveToFront();
+      }
+
+      // Open chart pop up
+      const lineData = this.context.metrics.data[focusedCircle.metricIndex];
+      const pointData = this.context.getMetricStepDataByStepIdx(lineData.data, focusedCircle.stepIndex);
+      const pos = this.positionPopUp(this.state.chart.xScale(focusedCircle.stepIndex),
+        this.state.chart.yScale(pointData.value));
+      this.hideActionPopUps(false, () => {
+        this.setState((prevState) => {
+          return {
+            ...prevState,
+            chartPopUp: {
+              left: pos.left,
+              top: pos.top,
+              display: true,
+              selectedTags: [],
+              selectedTagsLoading: true,
+              lineIndex: focusedCircle.metricIndex,
+              lineData,
+              pointData,
+            },
+          };
+        });
+
+        this.getCommitTags(lineData);
+      });
+    } else {
+      this.hideActionPopUps(false);
+    }
   };
 
-  hideHoverLine = () => {
-    if (!this.state.hoverLine.display) {
+  bindInteractions = () => {
+    const handleAreaMouseMove = this.handleAreaMouseMove;
+    const handleBgRectClick = this.handleBgRectClick;
+
+    this.svg
+      .on('mousemove', function () {
+        handleAreaMouseMove(d3.mouse(this));
+      });
+
+    this.bgRect
+      .on('click', function () {
+        handleBgRectClick(d3.mouse(this));
+      });
+  };
+
+  handleAreaMouseMove = (mouse) => {
+    // Disable hover effects if circle is focused
+    if (this.context.chart.focused.circle.metricIndex !== null) {
+      return false;
+    }
+
+    this.setActiveLineAndCircle(mouse);
+  };
+
+  handleBgRectClick = (mouse) => {
+    if (this.context.chart.focused.circle.metricIndex === null) {
       return;
     }
 
-    this.plot.selectAll('.PlotLine').classed('active', false);
-
-    this.hoverCircles.selectAll('*:not(.focus)').remove();
-
-    this.hoverLine
-      .style('display', 'none');
-    this.setState(prevState => ({
-      ...prevState,
-      hoverLine: {
-        ...prevState.hoverLine,
-        display: false,
+    this.context.setChartFocusedState({
+      circle: {
+        metricIndex: null,
+        stepIndex: null,
       },
-    }));
+      index: null,
+    }, () => this.context.updateURL());
+
+    // Update active state
+    this.setActiveLineAndCircle(mouse);
   };
 
+  handleLineClick = (mouse) => {
+    if (this.context.chart.focused.circle.metricIndex === null) {
+      return;
+    }
+
+    this.context.setChartFocusedState({
+      circle: {
+        metricIndex: null,
+        stepIndex: null,
+      },
+      index: null,
+    }, () => this.context.updateURL());
+
+    // Update active state
+    this.setActiveLineAndCircle(mouse, false);
+  };
+
+  handlePointClick = (stepIndex, metricIndex) => {
+    this.context.setChartFocusedState({
+      circle: {
+        stepIndex,
+        metricIndex,
+      },
+      metric: {
+        hash: null,
+        index: null,
+      },
+    }, () => this.context.updateURL());
+  };
+
+  setActiveLineAndCircle = (mouse, marginInc=true) => {
+    const { width, height, margin } = this.state.visBox;
+    const padding = 10;
+
+    if (mouse[0] > margin.left - padding && mouse[0] < width - margin.right + padding &&
+      mouse[1] > margin.top - padding && mouse[1] < height - margin.bottom + padding) {
+      const data = this.state.chart.xSteps;
+      const x = marginInc ? mouse[0] - margin.left : mouse[0];
+      const y = marginInc ? mouse[1] - margin.top : mouse[1];
+      let index = 0;
+
+      if (x >= 0) {
+        // Line
+        const xPoint = this.state.chart.xScale.invert(x);
+        const relIndex = d3.bisect(data, xPoint, 1);
+        const a = data[relIndex - 1];
+        const b = data[relIndex];
+
+        index = xPoint - a > b - xPoint ? b : a;
+
+        if (index !== this.context.chart.focused.index) {
+          this.context.setChartFocusedState({
+            index,
+          });
+        }
+
+        // Circles
+        let nearestCircleY = null, nearestCircleRunIndex = null, nearestCircleRunHash = null;
+
+        // Find the nearest circle
+        if (this.circles) {
+          this.circles.selectAll('.HoverCircle').each(function () {
+            const elem = d3.select(this);
+            const elemY = parseFloat(elem.attr('data-y'));
+            const r = Math.abs(elemY - y);
+
+            if (nearestCircleY === null || r < nearestCircleY) {
+              nearestCircleY = r;
+              nearestCircleRunIndex = parseInt(elem.attr('data-line-index'));
+              nearestCircleRunHash = elem.attr('data-line-hash');
+            }
+          });
+
+          if (nearestCircleRunIndex !== null
+            && nearestCircleRunIndex !== this.context.chart.focused.metric.index) {
+            this.context.setChartFocusedState({
+              metric: {
+                index: nearestCircleRunIndex,
+                hash: nearestCircleRunHash,
+              },
+            });
+          }
+        }
+      }
+    }
+  };
+
+  /* PopUp Actions */
   positionPopUp = (x, y, chained=null, popUpWidth=popUpDefaultWidth, popUpHeight=popUpDefaultHeight) => {
     const { margin } = this.state.visBox;
     const { width, height } = this.state.plotBox;
@@ -493,94 +629,6 @@ class Panel extends Component {
     });
   };
 
-  drawHoverCircles = (lineX, pIndex) => {
-    // TODO: rerender only when pIndex is changed
-
-    const handlePointClick = this.handlePointClick;
-
-    // Draw circles
-    for (let lineIndex in this.context.data) {
-      const line = this.context.data[lineIndex];
-      const lineVal = this.context.getLineValueByStep(line.data, pIndex);
-      if (lineVal) {
-        const x = lineX;
-        const y = this.state.chart.yScale(lineVal);
-
-        let focusElemExists = false;
-        this.hoverCircles.select('*.focus').each(function (d) {
-          const focusElem = d3.select(this);
-          if (focusElem.attr('data-x') == lineX && focusElem.attr('data-y') == y) {
-            focusElemExists = true;
-          }
-        });
-        if (focusElemExists) {
-          continue;
-        }
-
-        this.hoverCircles.append('circle')
-          .attr('class', `HoverCircle HoverCircle-${pIndex}`)
-          .attr('cx', lineX)
-          .attr('cy', y)
-          .attr('r', circleRadius)
-          .attr('data-x', lineX)
-          .attr('data-y', y)
-          .attr('data-index', pIndex)
-          .attr('data-line-index', lineIndex)
-          .attr('data-line-hash', line.hash)
-          .style('fill', this.context.getLineColor(line))
-          .on('click', function () {
-            handlePointClick(lineIndex, x, y, pIndex, d3.select(this));
-          });
-      }
-    }
-
-    this.hoverCircles.selectAll('*.focus').moveToFront();
-  };
-
-  targetHoverCircle = (x, y) => {
-    this.hoverCircles.selectAll('*.focus').moveToFront();
-
-    let nearestY = null, nearestIndex = null, nearestHash = null, nearestCircle = null;
-
-    // Find the nearest circle
-    this.hoverCircles.selectAll('.HoverCircle').each(function (d) {
-      const elem = d3.select(this);
-      const elemY = elem.attr('data-y');
-      const r = Math.abs(elemY - y);
-
-      if (nearestY === null || r < nearestY) {
-        nearestY = r;
-        nearestIndex = parseInt(elem.attr('data-line-index'));
-        nearestHash = elem.attr('data-line-hash');
-        nearestCircle = elem;
-      }
-
-      if (!elem.classed('focus')) {
-        elem.classed('active', false).attr('r', circleRadius);
-      }
-    });
-
-    if (!nearestCircle) {
-      return;
-    }
-
-    // Update circle
-    if (!nearestCircle.classed('focus')) {
-      nearestCircle.classed('active', true).attr('r', circleActiveRadius).moveToFront();
-    }
-
-    // Update line
-    this.plot.selectAll('.PlotLine')
-      .classed('active', false);
-    // .classed('fade', true);
-    this.plot.selectAll(`.PlotLine-${nearestIndex}`)
-      .classed('active', true);
-    // .classed('fade', false);
-
-    this.context.setContextActiveStepIndex(nearestIndex);
-    this.context.setContextActiveStepHash(nearestHash);
-  };
-
   getCommitTags = (lineData) => {
     this.props.getCommitTags(lineData.hash)
       .then((data) => {
@@ -612,221 +660,6 @@ class Panel extends Component {
       });
   };
 
-  handleAreaMouseOver = () => {
-  };
-
-  handleAreaMouseMove = (mouse) => {
-    const { width, height, margin } = this.state.visBox;
-    const padding = 10;
-
-    if (mouse[0] < margin.left - padding || mouse[0] > width - margin.right + padding ||
-      mouse[1] < margin.top - padding || mouse[1] > height - margin.bottom + padding) {
-      // this.hideHoverLine();
-    } else {
-      this.showHoverLine(mouse[0]);
-      this.moveHoverLine( mouse[0] - margin.left);
-      this.targetHoverCircle(mouse[0] - margin.left, mouse[1] - margin.top)
-    }
-  };
-
-  handleAreaMouseOut = (mouse) => {
-    const { width, height, margin } = this.state.visBox;
-    const padding = 10;
-
-    if (mouse[0] < margin.left - padding || mouse[0] > width - margin.right + padding ||
-      mouse[1] < margin.top - padding || mouse[1] > height - margin.bottom + padding) {
-      // this.hideHoverLine();
-    }
-  };
-
-  handleBgRectClick = () => {
-    this.hideActionPopUps();
-    this.hoverCircles.selectAll('*.focus').remove();
-  };
-
-  handleLineMouseOver = (elem) => {
-    // elem.style('stroke-width', 3);
-  };
-
-  handleLineMouseOut = (elem) => {
-    // elem.style('stroke-width', 1);
-  };
-
-  handleLineClick = () => {
-  };
-
-  handleProcessKill = (pid, idx) => {
-    this.setState(prevState => ({
-      ...prevState,
-      commitPopUp: {
-        ...prevState.commitPopUp,
-        processKillBtn: {
-          loading: true,
-          disabled: true,
-        },
-      },
-    }));
-
-    this.props.killRunningExecutable(pid).then((data) => {
-      // this.getProcesses();
-      this.handleCommitInfoClick(idx);
-    });
-  };
-
-  handleCommitInfoClick = (lineIndex) => {
-    const data = this.context.data;
-    const lineData = data[lineIndex];
-
-    const pos = this.positionPopUp(
-      this.state.chartPopUp.left + popUpDefaultWidth,
-      this.state.chartPopUp.top,
-      this.state.chartPopUp);
-
-    this.hideActionPopUps(true, () => {
-      this.setState(prevState => ({
-        ...prevState,
-        commitPopUp: {
-          ...prevState.commitPopUp,
-          display: true,
-          left: pos.left,
-          top: pos.top,
-          chainArrow: pos.chainArrow,
-          processKillBtn: {
-            loading: false,
-            disabled: false,
-          },
-          content: (
-            <>
-              <UI.Text type='grey' center>Loading..</UI.Text>
-            </>
-          ),
-        },
-      }));
-
-      this.props.getCommitInfo(lineData.branch, lineData.hash).then((data) => {
-        const content = (
-          <>
-            <UI.Text type='grey' small>
-              {moment.unix(lineData.date).format('HH:mm · D MMM, YY')}
-            </UI.Text>
-            <Link
-              to={buildUrl(HUB_PROJECT_EXPERIMENT, {
-                experiment_name: lineData.branch,
-                commit_id: lineData.hash,
-              })}
-            >
-              <UI.Text type='primary'>Detailed View</UI.Text>
-            </Link>
-            <UI.Line />
-            {(!Number.isInteger(lineData.msg) || `${lineData.msg}`.length !== 10) &&
-            <>
-              <UI.Text type='grey-darker' small spacing>{lineData.msg}</UI.Text>
-              <UI.Line />
-            </>
-            }
-            <UI.Text type='grey' small>Experiment: {lineData.branch}</UI.Text>
-            <UI.Text type='grey' small>Hash: {lineData.hash}</UI.Text>
-            {!!data.process &&
-              <>
-                <UI.Line />
-                {!!data.process.uuid &&
-                  <Link to={buildUrl(HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL, {
-                    process_id: data.process.uuid
-                  })}>
-                    <UI.Text>Process</UI.Text>
-                  </Link>
-                }
-                <UI.Text type='grey' small>Process status: {data.process.finish ? 'finished' : 'running'}</UI.Text>
-                {!!data.process.start_date &&
-                  <UI.Text type='grey' small>
-                    Time: {Math.round((
-                      data.process.finish
-                        ? (data.date - data.process.start_date)
-                        : (data.process.time || '-')
-                    ))}s
-                  </UI.Text>
-                }
-                {!!data.process.pid &&
-                  <div className='CommitPopUp__process'>
-                    <UI.Text type='grey' small inline>PID: {data.process.pid} </UI.Text>
-                    <UI.Button
-                      onClick={() => this.handleProcessKill(data.process.pid, lineIndex)}
-                      type='negative'
-                      size='tiny'
-                      inline
-                      {...this.state.commitPopUp.processKillBtn}
-                    >
-                      Kill
-                    </UI.Button>
-                  </div>
-                }
-              </>
-            }
-          </>
-        );
-
-        this.setState(prevState => ({
-          ...prevState,
-          commitPopUp: {
-            ...prevState.commitPopUp,
-            content: content,
-          },
-        }));
-      });
-    });
-  };
-
-  handlePointClick = (lineIndex, x, y, pointX, pointElem) => {
-    const data = this.context.data;
-    const lineData = data[lineIndex];
-    const pointData = this.context.getLineDataByStep(lineData.data, pointX);
-
-    const pos = this.positionPopUp(x, y);
-
-    this.hoverCircles.selectAll('*.focus').each(function (d) {
-      const circle = d3.select(this);
-
-      circle.classed('focus', false)
-        .attr('r', circleRadius);
-
-      if (circle.attr('data-x') != x) {
-        circle.remove();
-      }
-    });
-
-    pointElem
-      .classed('focus', true)
-      .classed('active', false)
-      .attr('r', circleActiveRadius)
-      .moveToFront();
-
-    this.hideActionPopUps(false, () => {
-      this.setState((prevState) => {
-        return {
-          ...prevState,
-          chartPopUp: {
-            left: pos.left,
-            top: pos.top,
-            display: true,
-            selectedTags: [],
-            selectedTagsLoading: true,
-            lineData,
-            lineIndex,
-            pointData,
-          },
-        };
-      });
-
-      this.getCommitTags(lineData);
-    });
-  };
-
-  handleTooltipClick = () => {
-    // TODO: hide action tooltips on tooltip click
-    // this.hideActionTooltips();
-    // this.hoverCircles.selectAll('*.focus').remove();
-  };
-
   handleTagItemClick = (lineData, tag) => {
     this.setState((prevState) => ({
       ...prevState,
@@ -842,6 +675,18 @@ class Panel extends Component {
       experiment_name: lineData.branch,
     }).then(tagsIds => {
       this.getCommitTags(lineData);
+
+      // Update metrics
+      const data = [...this.context.metrics.data];
+      data.forEach((i) => {
+        if (i.hash === lineData.hash) {
+          i.tag = tag;
+        }
+      });
+      this.context.setMetricsState({
+        ...this.context.metrics,
+        data: data,
+      });
     });
   };
 
@@ -876,117 +721,176 @@ class Panel extends Component {
     });
   };
 
-  _renderContent = () => {
+  handleProcessKill = (pid, idx) => {
+    this.setState(prevState => ({
+      ...prevState,
+      commitPopUp: {
+        ...prevState.commitPopUp,
+        processKillBtn: {
+          loading: true,
+          disabled: true,
+        },
+      },
+    }));
+
+    this.props.killRunningExecutable(pid).then((data) => {
+      // this.getProcesses();
+      this.handleCommitInfoClick(idx);
+    });
+  };
+
+  handleCommitInfoClick = (lineIndex) => {
+    const data = this.context.metrics.data;
+    const lineData = data[lineIndex];
+
+    const pos = this.positionPopUp(
+      this.state.chartPopUp.left + popUpDefaultWidth,
+      this.state.chartPopUp.top,
+      this.state.chartPopUp);
+
+    this.hideActionPopUps(true, () => {
+      this.setState(prevState => ({
+        ...prevState,
+        commitPopUp: {
+          ...prevState.commitPopUp,
+          display: true,
+          left: pos.left,
+          top: pos.top,
+          chainArrow: pos.chainArrow,
+          processKillBtn: {
+            loading: false,
+            disabled: false,
+          },
+          isLoading: true,
+        },
+      }));
+
+      this.props.getCommitInfo(lineData.branch, lineData.hash).then((data) => {
+        this.setState(prevState => ({
+          ...prevState,
+          commitPopUp: {
+            ...prevState.commitPopUp,
+            isLoading: false,
+            data,
+          },
+        }));
+      });
+    });
+  };
+
+  _renderPopUpContent = () => {
+    const lineData = this.state.chartPopUp.lineData;
+    const commitPopUpData = this.state.commitPopUp.data;
+
     return (
       <>
-        <div ref={this.visRef} className='ControlPanel__svg' />
         <div className='ControlPanel__body'>
           {this.state.chartPopUp.display &&
-            <PopUp
-              className='ChartPopUp'
-              left={this.state.chartPopUp.left}
-              top={this.state.chartPopUp.top}
-              xGap={true}
-            >
+          <PopUp
+            className='ChartPopUp'
+            left={this.state.chartPopUp.left}
+            top={this.state.chartPopUp.top}
+            xGap={true}
+          >
+            <div>
               <div>
-                <div>
-                  {!this.state.chartPopUp.selectedTagsLoading
-                    ? (
-                      <div className='ControlPanel__popup__tags__wrapper'>
-                        <UI.Text overline type='grey-darker'>tag</UI.Text>
-                        <div className='ControlPanel__popup__tags'>
-                          {this.state.chartPopUp.selectedTags.length
-                            ? (
-                              <>
-                                {this.state.chartPopUp.selectedTags.map((tagItem, i) =>
-                                  <UI.Label key={i} color={tagItem.color}>
-                                    {tagItem.name}
-                                  </UI.Label>
-                                )}
-                              </>
-                            )
-                            : <UI.Label>No attached tag</UI.Label>
-                          }
-                          <div
-                            className='ControlPanel__popup__tags__update'
-                            onClick={() => this.handleAttachTagClick(this.state.chartPopUp.lineData)}
-                          >
-                            <UI.Icon i='nc-pencil' />
-                          </div>
+                {!this.state.chartPopUp.selectedTagsLoading
+                  ? (
+                    <div className='ControlPanel__popup__tags__wrapper'>
+                      <UI.Text overline type='grey-darker'>tag</UI.Text>
+                      <div className='ControlPanel__popup__tags'>
+                        {this.state.chartPopUp.selectedTags.length
+                          ? (
+                            <>
+                              {this.state.chartPopUp.selectedTags.map((tagItem, i) =>
+                                <UI.Label key={i} color={tagItem.color}>
+                                  {tagItem.name}
+                                </UI.Label>
+                              )}
+                            </>
+                          )
+                          : <UI.Label>No attached tag</UI.Label>
+                        }
+                        <div
+                          className='ControlPanel__popup__tags__update'
+                          onClick={() => this.handleAttachTagClick(lineData)}
+                        >
+                          <UI.Icon i='nc-pencil' />
                         </div>
                       </div>
-                    )
-                    : (
-                      <UI.Text type='grey' center spacingTop>Loading..</UI.Text>
-                    )
-                  }
-                  <UI.Line />
-                </div>
-                <UI.Text
-                  className='link'
-                  type='primary'
-                  onClick={() => this.handleCommitInfoClick(this.state.chartPopUp.lineIndex)}
-                >
-                  Run details
-                </UI.Text>
-                <UI.Line />
-                <UI.Text color={this.context.getLineColor(this.state.chartPopUp.lineData)}>
-                  {Math.round(this.state.chartPopUp.pointData.value*10e9)/10e9}
-                </UI.Text>
-                {this.state.chartPopUp.pointData.epoch !== null &&
-                  <UI.Text type='grey' small>Epoch {this.state.chartPopUp.pointData.epoch}</UI.Text>
+                    </div>
+                  )
+                  : (
+                    <UI.Text type='grey' center spacingTop>Loading..</UI.Text>
+                  )
                 }
-                <UI.Text type='grey' small>Step {this.state.chartPopUp.pointData.step}</UI.Text>
+                <UI.Line />
               </div>
-            </PopUp>
+              <UI.Text
+                className='link'
+                type='primary'
+                onClick={() => this.handleCommitInfoClick(this.state.chartPopUp.lineIndex)}
+              >
+                Run details
+              </UI.Text>
+              <UI.Line />
+              <UI.Text color={this.context.getMetricColor(lineData)}>
+                {Math.round(this.state.chartPopUp.pointData.value*10e9)/10e9}
+              </UI.Text>
+              {this.state.chartPopUp.pointData.epoch !== null &&
+              <UI.Text type='grey' small>Epoch {this.state.chartPopUp.pointData.epoch}</UI.Text>
+              }
+              <UI.Text type='grey' small>Step {this.state.chartPopUp.pointData.step}</UI.Text>
+            </div>
+          </PopUp>
           }
           {this.state.tagPopUp.display &&
-            <PopUp
-              className='TagPopUp'
-              left={this.state.tagPopUp.left}
-              top={this.state.tagPopUp.top}
-              chainArrow={this.state.tagPopUp.chainArrow}
-              xGap={true}
-            >
-              {this.state.tagPopUp.isLoading
-                ? (
-                  <UI.Text type='grey' center>Loading..</UI.Text>
-                )
-                : (
-                  <div className='TagPopUp__tags'>
-                    <div className='TagPopUp__tags__title'>
-                      <UI.Text type='grey' inline>
-                        Select a tag
-                      </UI.Text>
-                      <Link to={HUB_PROJECT_CREATE_TAG}>
-                        <UI.Button type='positive' size='tiny'>Create</UI.Button>
-                      </Link>
-                    </div>
-                    <UI.Line spacing={false} />
-                    <div className='TagPopUp__tags__box'>
-                      {!this.state.tagPopUp.tags.length &&
-                        <UI.Text type='grey' center spacingTop spacing>
-                          Empty
-                        </UI.Text>
-                      }
-                      {this.state.tagPopUp.tags.map((tag, tagKey) =>
-                        <UI.Label
-                          className={classNames({
-                            TagPopUp__tags__item: true,
-                            active: this.state.chartPopUp.selectedTags.map(i => i.id).includes(tag.id),
-                          })}
-                          key={tagKey}
-                          color={tag.color}
-                          onClick={() => this.handleTagItemClick(this.state.chartPopUp.lineData, tag)}
-                        >
-                          {tag.name}
-                        </UI.Label>
-                      )}
-                    </div>
+          <PopUp
+            className='TagPopUp'
+            left={this.state.tagPopUp.left}
+            top={this.state.tagPopUp.top}
+            chainArrow={this.state.tagPopUp.chainArrow}
+            xGap={true}
+          >
+            {this.state.tagPopUp.isLoading
+              ? (
+                <UI.Text type='grey' center>Loading..</UI.Text>
+              )
+              : (
+                <div className='TagPopUp__tags'>
+                  <div className='TagPopUp__tags__title'>
+                    <UI.Text type='grey' inline>
+                      Select a tag
+                    </UI.Text>
+                    <Link to={HUB_PROJECT_CREATE_TAG}>
+                      <UI.Button type='positive' size='tiny'>Create</UI.Button>
+                    </Link>
                   </div>
-                )
-              }
-            </PopUp>
+                  <UI.Line spacing={false} />
+                  <div className='TagPopUp__tags__box'>
+                    {!this.state.tagPopUp.tags.length &&
+                    <UI.Text type='grey' center spacingTop spacing>
+                      Empty
+                    </UI.Text>
+                    }
+                    {this.state.tagPopUp.tags.map((tag, tagKey) =>
+                      <UI.Label
+                        className={classNames({
+                          TagPopUp__tags__item: true,
+                          active: this.state.chartPopUp.selectedTags.map(i => i.id).includes(tag.id),
+                        })}
+                        key={tagKey}
+                        color={tag.color}
+                        onClick={() => this.handleTagItemClick(lineData, tag)}
+                      >
+                        {tag.name}
+                      </UI.Label>
+                    )}
+                  </div>
+                </div>
+              )
+            }
+          </PopUp>
           }
           {this.state.commitPopUp.display &&
             <PopUp
@@ -996,10 +900,69 @@ class Panel extends Component {
               chainArrow={this.state.commitPopUp.chainArrow}
               xGap={true}
             >
-              {this.state.commitPopUp.content !== null &&
-                <>
-                  {this.state.commitPopUp.content}
-                </>
+              {this.state.commitPopUp.isLoading
+                ? (
+                  <UI.Text type='grey' center spacingTop>Loading..</UI.Text>
+                ) : (
+                  <>
+                    <UI.Text type='grey' small>
+                      {moment.unix(lineData.date).format('HH:mm · D MMM, YY')}
+                    </UI.Text>
+                    <Link
+                      to={buildUrl(HUB_PROJECT_EXPERIMENT, {
+                        experiment_name: lineData.branch,
+                        commit_id: lineData.hash,
+                      })}
+                    >
+                      <UI.Text type='primary'>Detailed View</UI.Text>
+                    </Link>
+                    <UI.Line />
+                    {(!Number.isInteger(lineData.msg) || `${lineData.msg}`.length !== 10) &&
+                    <>
+                      <UI.Text type='grey-darker' small spacing>{lineData.msg}</UI.Text>
+                      <UI.Line />
+                    </>
+                    }
+                    <UI.Text type='grey' small>Experiment: {lineData.branch}</UI.Text>
+                    <UI.Text type='grey' small>Hash: {lineData.hash}</UI.Text>
+                    {!!commitPopUpData.process &&
+                    <>
+                      <UI.Line />
+                      {!!commitPopUpData.process.uuid &&
+                      <Link to={buildUrl(HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL, {
+                        process_id: commitPopUpData.process.uuid
+                      })}>
+                        <UI.Text>Process</UI.Text>
+                      </Link>
+                      }
+                      <UI.Text type='grey' small>Process status: {commitPopUpData.process.finish ? 'finished' : 'running'}</UI.Text>
+                      {!!commitPopUpData.process.start_date &&
+                      <UI.Text type='grey' small>
+                        Time: {Math.round((
+                          commitPopUpData.process.finish
+                            ? (commitPopUpData.date - commitPopUpData.process.start_date)
+                            : (commitPopUpData.process.time || '-')
+                        ))}
+                      </UI.Text>
+                      }
+                      {!!commitPopUpData.process.pid &&
+                      <div className='CommitPopUp__process'>
+                        <UI.Text type='grey' small inline>PID: {commitPopUpData.process.pid} </UI.Text>
+                        <UI.Button
+                          onClick={() => this.handleProcessKill(commitPopUpData.process.pid, this.state.chartPopUp.lineIndex)}
+                          type='negative'
+                          size='tiny'
+                          inline
+                          {...this.state.commitPopUp.processKillBtn}
+                        >
+                          Kill
+                        </UI.Button>
+                      </div>
+                      }
+                    </>
+                    }
+                  </>
+                )
               }
             </PopUp>
           }
@@ -1019,12 +982,13 @@ class Panel extends Component {
   render() {
     return (
       <div className='ControlPanel' ref={this.parentRef}>
-        {this.context.isLoading
+        <div ref={this.visRef} className='ControlPanel__svg' />
+        {this.context.metrics.isLoading
           ? this._renderPanelMsg(<UI.Text type='grey' center>Loading..</UI.Text>)
           : <>
-            {this.isEmpty()
+            {this.context.metrics.isEmpty
               ? this._renderPanelMsg(<UI.Text type='grey' center>No data</UI.Text>)
-              : this._renderContent()
+              : this._renderPopUpContent()
             }
           </>
         }

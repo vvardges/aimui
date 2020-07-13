@@ -1,9 +1,10 @@
 // site
-export const MAIN = '/';
 export const NOT_FOUND = '/not-found';
 export const INCOMPATIBLE_VERSION = '/incompatible-version';
 
 // hubs
+export const MAIN = '/';
+export const MAIN_SEARCH = '/?search=:search';
 export const HUB_PROJECT_EXPERIMENT_DEFAULT = '/default/latest';
 export const HUB_PROJECT_EXPERIMENT_INDEX = '/default/index';
 export const HUB_PROJECT_EXPERIMENT = '/:experiment_name/:commit_id';

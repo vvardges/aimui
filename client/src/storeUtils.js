@@ -43,12 +43,6 @@ export function getWithState(caseName, caseClass) {
     // Components
     case classes.HEADER:
       break;
-    case classes.HUB_MAIN_SCREEN_PROVIDER:
-      Object.assign(mapDispatch2Props, {
-        getCommitsMetricsByQuery: commitActions.getCommitsMetricsByQuery,
-        getCommitsDictionariesByQuery: commitActions.getCommitsDictionariesByQuery,
-      });
-      break;
     case classes.SEARCH_BAR:
       break;
     case classes.CONTROL_PANEL:
@@ -68,6 +62,8 @@ export function getWithState(caseName, caseClass) {
     // Screens
     case classes.HUB_MAIN_SCREEN:
       Object.assign(mapDispatch2Props, {
+        getCommitsMetricsByQuery: commitActions.getCommitsMetricsByQuery,
+        getCommitsDictionariesByQuery: commitActions.getCommitsDictionariesByQuery,
         getRunningExecutables: executablesActions.getRunningExecutables,
         killRunningExecutable: executablesActions.killRunningExecutable,
       });

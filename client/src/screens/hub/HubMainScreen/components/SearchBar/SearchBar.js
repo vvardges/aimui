@@ -13,36 +13,16 @@ class SearchBar extends Component {
     super(props);
 
     this.state = {
-      commitSearchQuery: 'metric:loss',
       prevQuery: '',
     };
   }
 
-  componentDidMount() {
-    this.search();
-  }
-
-  search = () => {
-    const query = this.state.commitSearchQuery.trim();
-
-    if (query === this.state.prevQuery) {
-      // return;
-    } else {
-      this.setState(() => {
-        return {
-          prevQuery: query,
-        };
-      });
-    }
-
-    if (query) {
-      this.context.getDataByQuery(query);
-    }
-  };
-
   handleKeyPress = (evt) => {
     if (evt.charCode === 13) {
-      this.search();
+      this.context.setSearchState({ query: this.context.searchInput.value }, () => {
+        this.context.searchByQuery().then(() => {
+        });
+      });
       return false;
     }
   };
@@ -54,8 +34,8 @@ class SearchBar extends Component {
           className='SearchBar__search__input'
           classNameWrapper='SearchBar__search__input__wrapper'
           placeholder='Type search query..'
-          value={this.state.commitSearchQuery}
-          onChange={(evt) => this.setState({ commitSearchQuery: evt.target.value })}
+          value={this.context.searchInput.value}
+          onChange={(evt) => this.context.setSearchInputValue(evt.target.value)}
           onKeyPress={(evt) => this.handleKeyPress(evt)}
         />
       </div>
