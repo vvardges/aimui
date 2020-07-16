@@ -15,7 +15,7 @@ class ContextBox extends Component {
     return v ? Math.round(v * 10e6) / 10e6 : 0;
   };
 
-  _renderItem = (runDictItem, hash, key) => {
+  _renderItem = (hash, runDictItem) => {
     const index = this.context.chart.focused.index;
     const lineData = this.context.getMetricByHash(hash);
     if (lineData === null) {
@@ -75,7 +75,8 @@ class ContextBox extends Component {
         <td>
           {stepData !== null && stepData.epoch !== null ? stepData.epoch : '-'}
         </td>
-        {Object.keys(this.context.params.unionFields).map((n, nKey) => (
+        {!!runDictItem && this.context.isAimRun(lineData) &&
+        Object.keys(this.context.params.unionFields).map((n, nKey) => (
           this.context.params.unionFields[n].map((f, fKey) => (
             <td key={nKey * this.context.params.unionFields[n].length + fKey}>
               {runDictItem.data.hasOwnProperty(n) && runDictItem.data[n].hasOwnProperty(f)
@@ -85,8 +86,61 @@ class ContextBox extends Component {
             </td>
           ))
         ))}
+        {this.context.isTFSummaryScalar(lineData) &&
+          <td colSpan={Object.values(this.context.params.unionFields).flat().length || 1}>
+            {lineData.name}
+          </td>
+        }
       </tr>
     );
+  };
+
+  doesAimMetricExist = () => {
+    for (let m in this.context.metrics.data) {
+      if (this.context.isAimRun(this.context.metrics.data[m])) {
+        return true;
+      }
+    }
+  };
+
+  _renderTableHeaderParams = () => {
+    if (!this.context.metrics.data.length) {
+      return null;
+    }
+
+    if (!this.doesAimMetricExist()) {
+      return <td />;
+    }
+
+    return (
+      <>
+        {Object.keys(this.context.params.unionFields).map((n, nKey) => (
+          <td key={nKey} colSpan={this.context.params.unionFields[n].length}>
+            {n}
+          </td>
+        ))}
+      </>
+    )
+  };
+
+  _renderTableSubHeaderParams = () => {
+    if (!this.context.metrics.data.length) {
+      return null;
+    }
+
+    if (!this.doesAimMetricExist()) {
+      return <td>Name / Params</td>;
+    }
+
+    return (
+      <>
+        {Object.values(this.context.params.unionFields).flat().map((f, fKey) => (
+          <td key={fKey}>
+            {f}
+          </td>
+        ))}
+      </>
+    )
   };
 
   _renderContent = () => {
@@ -109,11 +163,7 @@ class ContextBox extends Component {
                 <tr className='ContextBox__table__header'>
                   <td key='run'/>
                   <td key='value' colSpan={3}/>
-                  {Object.keys(this.context.params.unionFields).map((n, nKey) => (
-                    <td key={nKey} colSpan={this.context.params.unionFields[n].length}>
-                      {n}
-                    </td>
-                  ))}
+                  {this._renderTableHeaderParams()}
                 </tr>
               }
               <tr className='ContextBox__table__subheader'>
@@ -121,16 +171,15 @@ class ContextBox extends Component {
                 <td>Value</td>
                 <td>Step</td>
                 <td>Epoch</td>
-                {Object.values(this.context.params.unionFields).flat().map((f, fKey) => (
-                  <td key={fKey}>
-                    {f}
-                  </td>
-                ))}
+                {this._renderTableSubHeaderParams()}
               </tr>
             </thead>
             <tbody>
-              {Object.keys(this.context.params.data).map((runHash, runKey) => (
-                this._renderItem(this.context.params.data[runHash], runHash, runKey)
+              {Object.keys(this.context.params.data).map((runHash) => (
+                this._renderItem(runHash, this.context.params.data[runHash])
+              ))}
+              {this.context.getTFSummaryScalars().map((s) => (
+                this._renderItem(s.hash, null)
               ))}
             </tbody>
           </table>

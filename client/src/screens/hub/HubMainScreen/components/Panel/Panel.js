@@ -423,7 +423,9 @@ class Panel extends Component {
           };
         });
 
-        this.getCommitTags(lineData);
+        if (this.context.isAimRun(lineData)) {
+          this.getCommitTags(lineData);
+        }
       });
     } else {
       this.hideActionPopUps(false);
@@ -793,6 +795,7 @@ class Panel extends Component {
             xGap={true}
           >
             <div>
+              {this.context.isAimRun(lineData) &&
               <div>
                 {!this.state.chartPopUp.selectedTagsLoading
                   ? (
@@ -815,32 +818,59 @@ class Panel extends Component {
                           className='ControlPanel__popup__tags__update'
                           onClick={() => this.handleAttachTagClick(lineData)}
                         >
-                          <UI.Icon i='nc-pencil' />
+                          <UI.Icon i='nc-pencil'/>
                         </div>
                       </div>
                     </div>
                   )
                   : (
-                    <UI.Text type='grey' center spacingTop>Loading..</UI.Text>
+                    <UI.Text type='grey' center spacingTop spacing>Loading..</UI.Text>
                   )
                 }
-                <UI.Line />
+                <UI.Line/>
               </div>
-              <UI.Text
-                className='link'
-                type='primary'
-                onClick={() => this.handleCommitInfoClick(this.state.chartPopUp.lineIndex)}
-              >
-                Run details
-              </UI.Text>
-              <UI.Line />
+              }
+              {this.context.isAimRun(lineData) &&
+              <>
+                <UI.Text
+                  className='link'
+                  type='primary'
+                  onClick={() => this.handleCommitInfoClick(this.state.chartPopUp.lineIndex)}
+                >
+                  Run details
+                </UI.Text>
+                <UI.Line />
+              </>
+              }
+              {this.context.isTFSummaryScalar(lineData) &&
+              <>
+                <div className='ControlPanel__popup__tags__wrapper'>
+                  <UI.Text overline type='grey-darker'>tag</UI.Text>
+                  <div className='ControlPanel__popup__tags'>
+                    <UI.Label>
+                      {lineData.tag.name}
+                    </UI.Label>
+                  </div>
+                </div>
+                <UI.Line />
+                <UI.Text overline type='grey-darker'>tensorflow summary scalar</UI.Text>
+                <UI.Text type='grey-dark'>{lineData.name}</UI.Text>
+                <UI.Text type='grey' small>{moment.unix(lineData.date).format('HH:mm · D MMM, YY')}</UI.Text>
+                <UI.Line />
+              </>
+              }
               <UI.Text color={this.context.getMetricColor(lineData)}>
-                {Math.round(this.state.chartPopUp.pointData.value*10e9)/10e9}
+                Value: {Math.round(this.state.chartPopUp.pointData.value*10e9)/10e9}
               </UI.Text>
               {this.state.chartPopUp.pointData.epoch !== null &&
-              <UI.Text type='grey' small>Epoch {this.state.chartPopUp.pointData.epoch}</UI.Text>
+              <UI.Text type='grey' small>Epoch: {this.state.chartPopUp.pointData.epoch}</UI.Text>
               }
-              <UI.Text type='grey' small>Step {this.state.chartPopUp.pointData.step}</UI.Text>
+              <UI.Text type='grey' small>
+                Step: {this.state.chartPopUp.pointData.step}
+                {this.context.isTFSummaryScalar(lineData) &&
+                  <> (summary local step: {this.state.chartPopUp.pointData.local_step}) </>
+                }
+              </UI.Text>
             </div>
           </PopUp>
           }
@@ -984,7 +1014,11 @@ class Panel extends Component {
       <div className='ControlPanel' ref={this.parentRef}>
         <div ref={this.visRef} className='ControlPanel__svg' />
         {this.context.metrics.isLoading
-          ? this._renderPanelMsg(<UI.Text type='grey' center>Loading..</UI.Text>)
+          ? (
+            this.context.search.query.indexOf('tf_scalar') === -1
+              ? this._renderPanelMsg(<UI.Text type='grey' center>Loading..</UI.Text>)
+              : this._renderPanelMsg(<UI.Text type='grey' center>Loading tf.summary logs can take some time..</UI.Text>)
+          )
           : <>
             {this.context.metrics.isEmpty
               ? this._renderPanelMsg(<UI.Text type='grey' center>No data</UI.Text>)

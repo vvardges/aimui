@@ -1,5 +1,9 @@
 # Changelog
 
+- Show information about tf.summary scalars in context area (gorarakelyan)
+- Render tf.summary scalars on chart area (gorarakelyan)
+- Add tf.summary adapter for reading logs (gorarakelyan)
+
 ## 1.0.4 Jul 13 2020
 - Ability to recover panel state from URL (gorarakelyan)
 - Add ability to filter runs by a parameter (gorarakelyan)

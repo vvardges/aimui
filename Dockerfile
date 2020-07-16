@@ -336,21 +336,23 @@ ENV NGINX_WORKER_PROCESSES 1
 # (in a Dockerfile or with an option for `docker run`)
 ENV LISTEN_PORT 80
 
+RUN apk add alpine-sdk
+
 # Install dependencies
 RUN apk add --no-cache --virtual .build-deps \
-    gcc \
+	alpine-sdk \
     python3-dev \
     musl-dev \
     libffi-dev \
     postgresql-dev
 
-RUN pip install --upgrade pip
-
 WORKDIR /server
 
+RUN pip install --upgrade pip 
 RUN pip install virtualenv
 COPY ./server/requirements.txt ./
-RUN virtualenv /env && /env/bin/pip install -r /server/requirements.txt && /env/bin/pip install uwsgi
+RUN virtualenv /env 
+RUN /env/bin/pip install -r /server/requirements.txt && /env/bin/pip install uwsgi
 
 # Add server app
 COPY ./server ./

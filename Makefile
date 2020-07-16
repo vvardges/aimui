@@ -4,10 +4,10 @@ else
 	repo = `pwd`/examples/.aim
 endif
 
-ifdef $(port)
-    port = $(port)
+ifneq ($(tf_logs),)
+    tf_logs_v = -v "$(tf_logs)":"/tf_logs"
 else
-	port = 43800
+	tf_logs_v = 
 endif
 
 
@@ -26,6 +26,7 @@ up:
 		-v `pwd`/client:/client \
 		-v `pwd`/server:/server \
 		-v $(repo):/store \
+		$(tf_logs_v) \
 		-v "aim_live_db_dev:/var/lib/postgresql/data" \
 		-e PROJECT_NAME=proj \
 		-e PROJECT_PATH=/root/my/project \

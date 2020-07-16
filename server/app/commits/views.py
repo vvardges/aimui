@@ -8,9 +8,16 @@ from flask_restful import Api, Resource
 
 from app import App
 from app.commits.models import Commit, Tag
-from app.commits.utils import get_runs_metric, get_runs_dictionary, parse_query
 from services.executables.action import Action
 from app.db import db
+from app.commits.utils import (
+    get_runs_metric,
+    get_runs_dictionary,
+    get_tf_summary_scalars,
+    retrieve_scale_metrics,
+    scale_metric_steps,
+    parse_query,
+)
 
 
 commits_bp = Blueprint('commits', __name__)
@@ -23,14 +30,40 @@ class CommitMetricSearchApi(Resource):
         query = request.args.get('q').strip()
         parsed_query = parse_query(query)
 
+        # Get parameters
         metrics = parsed_query['metrics']
         tag = parsed_query['tag']
         experiment = parsed_query['experiment']
         params = parsed_query['params']
+        steps = parsed_query['steps']
 
-        commits = get_runs_metric(metrics, tag, experiment, params)
+        runs_metrics = []
 
-        return jsonify(commits)
+        # Get `aim` runs
+        aim_runs_metrics = get_runs_metric(metrics, tag, experiment,
+                                           params)
+        runs_metrics += aim_runs_metrics
+
+        # Get `tf_summary` runs
+        if parsed_query['tf_scalar']:
+            try:
+                tf_scalars = get_tf_summary_scalars(parsed_query['tf_scalar'],
+                                                    experiment,
+                                                    params)
+                runs_metrics += tf_scalars
+            except:
+                pass
+
+        # Retrieve and/or scale steps
+        max_run_len = 0
+        for metric in runs_metrics:
+            if metric['num_steps'] > max_run_len:
+                max_run_len = metric['num_steps']
+        scaled_steps = scale_metric_steps(max_run_len, steps or 50)
+
+        retrieve_scale_metrics(runs_metrics, metrics, scaled_steps)
+
+        return jsonify(runs_metrics)
 
 
 @commits_api.resource('/search/dictionary')

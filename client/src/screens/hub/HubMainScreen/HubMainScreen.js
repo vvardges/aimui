@@ -343,6 +343,20 @@ class HubMainScreen extends React.Component {
     });
   };
 
+  getTFSummaryScalars = () => {
+    return this.state.context.metrics.data.filter(m => m.source !== undefined && m.source === 'tf_summary');
+  };
+
+  isAimRun = (lineData) => {
+    // Returns `true` if run is tracked via Aim(not loaded from tf summary)
+    return lineData['source'] === undefined;
+  };
+
+  isTFSummaryScalar = (lineData) => {
+    // Returns `true` if run is imported from TF summary
+    return lineData['source'] === 'tf_summary';
+  };
+
   searchByQuery = () => {
     return new Promise(resolve => {
       const query = this.state.context.search.query.trim();
@@ -472,6 +486,9 @@ class HubMainScreen extends React.Component {
             getMetricByHash             : this.getMetricByHash,
             getMetricStepValueByStepIdx : this.getMetricStepValueByStepIdx,
             getMetricStepDataByStepIdx  : this.getMetricStepDataByStepIdx,
+            getTFSummaryScalars         : this.getTFSummaryScalars,
+            isAimRun                    : this.isAimRun,
+            isTFSummaryScalar           : this.isTFSummaryScalar,
             hashToColor                 : this.hashToColor,
             getMetricColor              : this.getMetricColor,
           }}
