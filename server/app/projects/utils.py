@@ -5,15 +5,19 @@ from file_read_backwards import FileReadBackwards
 
 
 def get_project_branches(project_path):
-    if os.path.isdir(project_path):
-        sub_dirs = os.listdir(project_path)
-        branches = []
-        for d in sub_dirs:
-            if os.path.isdir(os.path.join(project_path, d)) \
-                    and d != 'logs':
-                branches.append(d)
+    branches = []
+
+    config_file_path = os.path.join(project_path, 'config.json')
+    if not os.path.isfile(config_file_path):
         return branches
-    return []
+
+    with open(config_file_path, 'r') as config_file:
+        config_content = json.loads(config_file.read().strip())
+
+    branches = config_content.get('branches') or []
+    branches = list(map(lambda b: b['name'], branches))
+
+    return branches
 
 
 def get_branch_commits(branch_path):

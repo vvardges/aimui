@@ -6,9 +6,11 @@ from app.projects.utils import get_project_branches, get_branch_commits
 from app.db import db
 from app.commits.models import Commit, Tag
 from artifacts.artifact import Metric
+from adapters.tf_summary_adapter import TFSummaryAdapter
 
 
 PROJECT_PATH = '/store'
+TF_LOGS_PATH = '/tf_logs'
 
 
 def get_run_objects_path(b, c):
@@ -93,57 +95,24 @@ def get_runs_metric(metrics, tag=None, experiments=None, params=None):
 
     # Get commits data length
     max_commit_len = 0
-    for commit in filtered_runs:
-        commit_hash = commit['hash']
-        branch_path = os.path.join(PROJECT_PATH, commit['branch'])
-        storage_path = get_run_objects_path(branch_path, commit['hash'])
+    for run in filtered_runs:
+        branch_path = os.path.join(PROJECT_PATH, run['branch'])
+        storage_path = get_run_objects_path(branch_path, run['hash'])
         records_storage = Storage(storage_path, 'r')
         for metric in metrics:
             try:
                 records_storage.open(metric,
                                      uncommitted_bucket_visible=True)
-                commit['num_steps'] = records_storage.get_records_num(metric)
+                run['num_steps'] = records_storage.get_records_num(metric)
                 records_storage.close()
             except:
-                commit['num_steps'] = 0
-            if commit['num_steps'] > max_commit_len:
-                max_commit_len = commit['num_steps']
+                run['num_steps'] = 0
+            if run['num_steps'] > max_commit_len:
+                max_commit_len = run['num_steps']
 
-    # Get commits data
-    scaled_steps_len = 50
-    if scaled_steps_len > max_commit_len:
-        scaled_steps_len = max_commit_len
-    if scaled_steps_len:
-        scaled_steps = slice(0, max_commit_len,
-                             max_commit_len // scaled_steps_len)
-    else:
-        scaled_steps = slice(0, 0)
-
-    # Retrieve actual values from commits
-    for commit in filtered_runs:
-        commit_hash = commit['hash']
-        branch_path = os.path.join(PROJECT_PATH, commit['branch'])
-        storage_path = get_run_objects_path(branch_path, commit['hash'])
-        commit['data'] = []
-        records_storage = Storage(storage_path, 'r')
-        for metric in metrics:
-            try:
-                records_storage.open(metric,
-                                     uncommitted_bucket_visible=True)
-                for r in records_storage.read_records(metric,
-                                                      scaled_steps):
-                    base, metric_record = Metric.deserialize(r)
-                    commit['data'].append({
-                        'value': metric_record.value,
-                        'step': base.step,
-                        'epoch': base.epoch if base.has_epoch else None,
-                    })
-                records_storage.close()
-            except:
-                pass
-
-    # Remove empty commits
-    filtered_runs = list(filter(lambda r: len(r['data']) > 0, filtered_runs))
+    # Remove empty runs
+    filtered_runs = list(filter(lambda r: r['num_steps'] > 0,
+                                filtered_runs))
 
     # Get tags and colors
     commit_models = db.session.query(Commit, Tag) \
@@ -163,6 +132,73 @@ def get_runs_metric(metrics, tag=None, experiments=None, params=None):
                 }
 
     return filtered_runs
+
+
+def get_tf_summary_scalars(tags, exp, params=None):
+    scalars = []
+
+    dir_paths = TFSummaryAdapter.list_log_dir_paths(TF_LOGS_PATH)
+
+    for dir_path in dir_paths:
+        tf = TFSummaryAdapter(dir_path)
+        dir_scalars = tf.get_scalars(tags)
+        if dir_scalars and len(dir_scalars) > 0:
+            # Append only the first scalar
+            # TODO: Add support for processing multiple metrics
+            scalars.append(dir_scalars[0])
+
+    max_scalar_len = 0
+    for scalar in scalars:
+        if scalar['num_steps'] > max_scalar_len:
+            max_scalar_len = scalar['num_steps']
+
+    return scalars
+
+
+def retrieve_scale_metrics(runs, metrics, scaled_steps):
+    for run in runs:
+        if run.get('source') == 'tf_summary':
+            run_len = len(run['data'])
+            run_range = range(run_len)[scaled_steps.start:
+                                       scaled_steps.stop:
+                                       scaled_steps.step]
+            run_scaled_data = []
+            for i in run_range:
+                run_scaled_data.append(run['data'][i])
+            run['data'] = run_scaled_data
+        else:
+            # Retrieve aim metrics
+            branch_path = os.path.join(PROJECT_PATH, run['branch'])
+            storage_path = get_run_objects_path(branch_path, run['hash'])
+            run['data'] = []
+            records_storage = Storage(storage_path, 'r')
+            for metric in metrics:
+                try:
+                    records_storage.open(metric,
+                                         uncommitted_bucket_visible=True)
+                    for r in records_storage.read_records(metric,
+                                                          scaled_steps):
+                        base, metric_record = Metric.deserialize(r)
+                        run['data'].append({
+                            'value': metric_record.value,
+                            'step': base.step,
+                            'epoch': base.epoch if base.has_epoch else None,
+                        })
+                    records_storage.close()
+                except:
+                    pass
+
+
+def scale_metric_steps(max_metric_len, max_steps):
+    scaled_steps_len = max_steps
+    if scaled_steps_len > max_metric_len:
+        scaled_steps_len = max_metric_len
+    if scaled_steps_len:
+        scaled_steps = slice(0, max_metric_len,
+                             max_metric_len // scaled_steps_len)
+    else:
+        scaled_steps = slice(0, 0)
+    return scaled_steps
 
 
 def get_runs_dictionary(tag=None, experiments=None):
@@ -190,7 +226,8 @@ def get_runs_dictionary(tag=None, experiments=None):
 
 def parse_query(query):
     sub_queries = query.split(' ')
-    metrics = tag = experiment = params = None
+    metrics = tag = experiment = params = steps = None
+    tf_summary = None
     for sub_query in sub_queries:
         if 'metric' in sub_query:
             if metrics is None:
@@ -206,9 +243,12 @@ def parse_query(query):
             _, _, experiment = sub_query.rpartition(':')
             experiment = experiment.lower().strip()
 
-        if 'experiment' in sub_query:
-            _, _, experiment = sub_query.rpartition(':')
-            experiment = experiment.lower().strip()
+        if 'step' in sub_query:
+            _, _, steps = sub_query.rpartition(':')
+            try:
+                steps = int(steps)
+            except:
+                pass
 
         if 'param' in sub_query:
             if params is None:
@@ -222,9 +262,15 @@ def parse_query(query):
                     'value': param_val,
                 }
 
+        if 'tf_scalar' in sub_query:
+            _, _, tf_summary = sub_query.rpartition(':')
+            tf_summary = tf_summary.lower().strip().split(',')
+
     return {
         'metrics': metrics,
         'tag': tag,
         'experiment': experiment,
         'params': params,
+        'steps': steps,
+        'tf_scalar': tf_summary,
     }

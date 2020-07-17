@@ -107,3 +107,16 @@ export function formatSize(size) {
 export function isDev() {
   return window.location.hostname === 'aim-dev.loc';
 }
+
+export function getObjectValueByPath(obj, path) {
+  if (path.indexOf('.')) {
+    const subs = path.split('.');
+    let ret = obj;
+    for (let i = 0; i < subs.length; i++) {
+      ret = ret[subs[i]]
+    }
+    return ret;
+  } else {
+    return obj[path];
+  }
+}

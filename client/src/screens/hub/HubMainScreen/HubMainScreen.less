@@ -1,7 +1,7 @@
 @import '../../../vars';
 
-@search-height: 50px;
-@controls-width: 80px;
+@search-height: 55px;
+@controls-width: 75px;
 @padding: 0px;
 
 .HubMainScreen__wrapper {
@@ -32,6 +32,7 @@
 .HubMainScreen__grid__body {
   height: 100%;
   overflow: hidden;
+  background-color: var(--grey-lighter);
   /*
   display: grid;
   grid-template-columns: 1fr;
@@ -39,7 +40,6 @@
    */
 
   > div {
-    width: 100%;
     box-sizing: border-box;
     overflow: hidden;
   }
@@ -51,8 +51,10 @@
 
 .HubMainScreen__grid__panel {
   height: calc(65% - @search-height);
+  margin: 0 5px;
 }
 
 .HubMainScreen__grid__context {
   height: 35%;
+  padding-top: 5px;
 }
