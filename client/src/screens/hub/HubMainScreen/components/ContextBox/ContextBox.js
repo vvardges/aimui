@@ -44,7 +44,7 @@ class ContextBox extends Component {
     if (active) {
       style = {
         borderLeftColor: color,
-        backgroundColor: colorObj.alpha(0.1).hsl().string(),
+        backgroundColor: colorObj.alpha(0.15).hsl().string(),
       };
     }
 
@@ -144,11 +144,11 @@ class ContextBox extends Component {
   };
 
   _renderContent = () => {
-    if (this.context.metrics.isLoading || this.context.params.isLoading) {
+    if (this.context.metrics.isLoading || (this.context.metrics.data.length && this.context.params.isLoading)) {
       return <UI.Text type='grey' center spacingTop>Loading..</UI.Text>
     }
 
-    if (!this.context.metrics.data || !this.context.metrics.data.length
+    if (!this.context.metrics.data.length
       || !this.context.params.unionFields
       || !this.context.params.unionNamespaces) {
       return null;

@@ -237,7 +237,7 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  setSearchInputValue = (value) => {
+  setSearchInputValue = (value, callback=null) => {
     this.setState(prevState => ({
       ...prevState,
       context: {
@@ -247,7 +247,11 @@ class HubMainScreen extends React.Component {
           value,
         },
       },
-    }));
+    }), () => {
+      if (callback !== null) {
+        callback();
+      }
+    });
   };
 
   setChartState = (chartState, callback=null) => {
@@ -426,7 +430,7 @@ class HubMainScreen extends React.Component {
 
   _renderContent = () => {
     const headerWidth = 70;
-    const controlsWidth = 80;
+    const controlsWidth = 75;
 
     return (
       <div
@@ -446,7 +450,7 @@ class HubMainScreen extends React.Component {
               </div>
               <div className='HubMainScreen__grid__context'>
                 <ContextBox
-                  width={this.state.width - headerWidth - controlsWidth}
+                  width={this.state.width - headerWidth - controlsWidth - 10}
                 />
               </div>
             </div>

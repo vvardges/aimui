@@ -19,25 +19,42 @@ class SearchBar extends Component {
 
   handleKeyPress = (evt) => {
     if (evt.charCode === 13) {
-      this.context.setSearchState({ query: this.context.searchInput.value }, () => {
-        this.context.searchByQuery().then(() => {
-        });
-      });
+      this.search();
       return false;
     }
+  };
+
+  handleClearButtonClick = () => {
+    this.context.setSearchInputValue('', () => this.search());
+  };
+
+  search = () => {
+    this.context.setSearchState({ query: this.context.searchInput.value }, () => {
+      this.context.searchByQuery().then(() => {
+      });
+    });
   };
 
   render() {
     return (
       <div className='SearchBar'>
-        <UI.Input
-          className='SearchBar__search__input'
-          classNameWrapper='SearchBar__search__input__wrapper'
-          placeholder='Type search query..'
-          value={this.context.searchInput.value}
-          onChange={(evt) => this.context.setSearchInputValue(evt.target.value)}
-          onKeyPress={(evt) => this.handleKeyPress(evt)}
-        />
+        <div className='SearchBar__search'>
+          <UI.Icon i='nc-zoom-2' className='SearchBar__search__icon' />
+          <UI.Input
+            className='SearchBar__search__input'
+            classNameWrapper='SearchBar__search__input__wrapper'
+            placeholder='Type search query..'
+            value={this.context.searchInput.value}
+            onChange={(evt) => this.context.setSearchInputValue(evt.target.value)}
+            onKeyPress={(evt) => this.handleKeyPress(evt)}
+          />
+          {!!this.context.searchInput.value &&
+            <div
+              className='SearchBar__search__icon clear clickable'
+              onClick={() => this.handleClearButtonClick()}
+            />
+          }
+        </div>
       </div>
     );
   }
