@@ -129,14 +129,15 @@ class Panel extends Component {
 
   initD3 = () => {
     d3.selection.prototype.moveToFront = function() {
-      return this.each(function(){
+      return this.each(function() {
         this.parentNode.appendChild(this);
       });
     };
   };
 
   renderChart = () => {
-    console.log('rerender', this.context.key);
+    console.log(`Render: Chart(${this.context.key})`);
+
     this.key = this.context.key;
 
     this.clear();
@@ -301,9 +302,12 @@ class Panel extends Component {
   };
 
   drawHoverAttributes = () => {
-    const { index } = this.context.chart.focused;
-    if (index === null) {
+    const focused = this.context.chart.focused;
+    if (focused.index === null || focused.circle.active === false) {
       this.hideActionPopUps(false);
+    }
+    const index = focused.circle.active ? focused.circle.stepIndex : focused.index;
+    if (index === null) {
       return;
     }
 
@@ -323,8 +327,8 @@ class Panel extends Component {
 
     // Draw circles
     const metrics = this.context.metrics.data;
-    const focusedCircle = this.context.chart.focused.circle;
-    const { metric, circle } = this.context.chart.focused;
+    const focusedMetric = focused.metric;
+    const focusedCircle = focused.circle;
     const handlePointClick = this.handlePointClick;
     let focusedCircleElem = null;
 
@@ -349,28 +353,31 @@ class Panel extends Component {
             handlePointClick(index, parseInt(metricIndex));
           });
 
-        if (focusedCircle.metricIndex === metricIndex && focusedCircle.stepIndex === index) {
+        if (focusedCircle.active === true
+          && focusedCircle.metricIndex === metricIndex
+          && focusedCircle.stepIndex === index) {
           focusedCircleElem = circle;
         }
       }
     }
 
-    // Apply active state to line and circle
-    if (circle.metricIndex !== null || metric.index !== null) {
-      this.plot.selectAll(`.PlotLine-${(circle.metricIndex !== null ? circle.metricIndex : metric.index)}`)
+    // Apply focused state to line and circle
+    if (focusedCircle.metricIndex !== null || focusedMetric.index !== null) {
+      this.plot
+        .selectAll(`.PlotLine-${(focusedCircle.metricIndex !== null ? focusedCircle.metricIndex : focusedMetric.index)}`)
         .classed('active', true);
     }
-    if (metric.index !== null) {
+    if (focusedMetric.index !== null) {
       this.circles.selectAll('*.focus').moveToFront();
 
-      this.circles.selectAll(`.HoverCircle-${metric.index}`)
+      this.circles.selectAll(`.HoverCircle-${focusedMetric.index}`)
         .classed('active', true)
         .attr('r', circleActiveRadius)
         .moveToFront();
     }
 
     // Add focused circle and/or apply focused state
-    if (focusedCircle.metricIndex !== null) {
+    if (focusedCircle.active === true) {
       if (focusedCircleElem !== null) {
         focusedCircleElem
           .classed('focus', true)
@@ -449,42 +456,52 @@ class Panel extends Component {
 
   handleAreaMouseMove = (mouse) => {
     // Disable hover effects if circle is focused
-    if (this.context.chart.focused.circle.metricIndex !== null) {
+    if (this.context.chart.focused.circle.active) {
       return false;
     }
 
+    // Update active state
     this.setActiveLineAndCircle(mouse);
+
+    // Remove hovered line state
+    this.unsetHoveredLine(mouse);
+  };
+
+  handleVisAreaMouseOut = () => {
+    this.unsetHoveredLine();
   };
 
   handleBgRectClick = (mouse) => {
-    if (this.context.chart.focused.circle.metricIndex === null) {
+    if (!this.context.chart.focused.circle.active) {
       return;
     }
 
     this.context.setChartFocusedState({
       circle: {
+        active: false,
         metricIndex: null,
         stepIndex: null,
       },
       index: null,
-    }, () => this.context.updateURL());
+    });
 
     // Update active state
     this.setActiveLineAndCircle(mouse);
   };
 
   handleLineClick = (mouse) => {
-    if (this.context.chart.focused.circle.metricIndex === null) {
+    if (!this.context.chart.focused.circle.active) {
       return;
     }
 
     this.context.setChartFocusedState({
       circle: {
+        active: false,
         metricIndex: null,
         stepIndex: null,
       },
       index: null,
-    }, () => this.context.updateURL());
+    });
 
     // Update active state
     this.setActiveLineAndCircle(mouse, false);
@@ -493,6 +510,7 @@ class Panel extends Component {
   handlePointClick = (stepIndex, metricIndex) => {
     this.context.setChartFocusedState({
       circle: {
+        active: true,
         stepIndex,
         metricIndex,
       },
@@ -500,15 +518,13 @@ class Panel extends Component {
         hash: null,
         index: null,
       },
-    }, () => this.context.updateURL());
+    });
   };
 
   setActiveLineAndCircle = (mouse, marginInc=true) => {
-    const { width, height, margin } = this.state.visBox;
-    const padding = 10;
+    const { margin } = this.state.visBox;
 
-    if (mouse[0] > margin.left - padding && mouse[0] < width - margin.right + padding &&
-      mouse[1] > margin.top - padding && mouse[1] < height - margin.bottom + padding) {
+    if (this.isMouseInVisArea(mouse)) {
       const data = this.state.chart.xSteps;
       const x = marginInc ? mouse[0] - margin.left : mouse[0];
       const y = marginInc ? mouse[1] - margin.top : mouse[1];
@@ -558,6 +574,25 @@ class Panel extends Component {
         }
       }
     }
+  };
+
+  unsetHoveredLine = (mouse=false) => {
+    if (mouse === false || !this.isMouseInVisArea(mouse)) {
+      this.context.setChartFocusedState({
+        metric: {
+          index: null,
+          hash: null,
+        },
+      });
+    }
+  };
+
+  isMouseInVisArea = (mouse) => {
+    const { width, height, margin } = this.state.visBox;
+    const padding = 5;
+
+    return (mouse[0] > margin.left - padding && mouse[0] < width - margin.right + padding &&
+      mouse[1] > margin.top - padding && mouse[1] < height - margin.bottom + padding)
   };
 
   /* PopUp Actions */
@@ -853,7 +888,7 @@ class Panel extends Component {
                   </div>
                 </div>
                 <UI.Line />
-                <UI.Text overline type='grey-darker'>tensorflow summary scalar</UI.Text>
+                <UI.Text overline type='grey-darker'>tf.summary scalar</UI.Text>
                 <UI.Text type='grey-dark'>{lineData.name}</UI.Text>
                 <UI.Text type='grey' small>{moment.unix(lineData.date).format('HH:mm · D MMM, YY')}</UI.Text>
                 <UI.Line />
@@ -868,7 +903,7 @@ class Panel extends Component {
               <UI.Text type='grey' small>
                 Step: {this.state.chartPopUp.pointData.step}
                 {this.context.isTFSummaryScalar(lineData) &&
-                  <> (summary local step: {this.state.chartPopUp.pointData.local_step}) </>
+                  <> (local step: {this.state.chartPopUp.pointData.local_step}) </>
                 }
               </UI.Text>
             </div>
@@ -1001,10 +1036,10 @@ class Panel extends Component {
     );
   };
 
-  _renderPanelMsg = (TextElem) => {
+  _renderPanelMsg = (Elem) => {
     return (
       <div className='ControlPanel__msg__wrapper'>
-        {TextElem}
+        {Elem}
       </div>
     );
   };
@@ -1021,7 +1056,28 @@ class Panel extends Component {
           )
           : <>
             {this.context.metrics.isEmpty
-              ? this._renderPanelMsg(<UI.Text type='grey' center>No data</UI.Text>)
+              ? this._renderPanelMsg(
+                <>
+                  {!!this.context.search.query
+                    ? <UI.Text type='grey' center>You haven't recorded experiments matching this query.</UI.Text>
+                    : <UI.Text type='grey' center>It's super easy to search Aim experiments.</UI.Text>
+                  }
+                  <UI.Text type='grey' center>
+                    Lookup
+                    {' '}
+                    <a
+                      className='link'
+                      href='https://github.com/aimhubio/aim#searching-experiments'
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      search docs
+                    </a>
+                    {' '}
+                    to learn more.
+                  </UI.Text>
+                </>
+              )
               : this._renderPopUpContent()
             }
           </>

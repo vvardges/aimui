@@ -46,7 +46,7 @@ class ControlsSidebar extends Component {
   };
 
   handleYScaleChange = (yScale) => {
-    this.context.setChartSettingsState({ 'yScale': yScale }, () => this.context.updateURL());
+    this.context.setChartSettingsState({ 'yScale': yScale });
   };
 
   render() {

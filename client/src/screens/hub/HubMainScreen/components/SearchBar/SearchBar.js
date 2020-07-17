@@ -30,9 +30,9 @@ class SearchBar extends Component {
 
   search = () => {
     this.context.setSearchState({ query: this.context.searchInput.value }, () => {
-      this.context.searchByQuery().then(() => {
+      this.context.searchByQuery(true).then(() => {
       });
-    });
+    }, false);
   };
 
   render() {

@@ -9,11 +9,13 @@ import * as classes from '../../../constants/classes';
 import * as screens from '../../../constants/screens';
 import * as storeUtils from '../../../storeUtils';
 import HubMainScreenContext from './HubMainScreenContext/HubMainScreenContext';
+import { setItem, getItem } from '../../../services/storage';
+import { USER_LAST_SEARCH_QUERY } from '../../../config';
 import Panel from './components/Panel/Panel';
 import SearchBar from './components/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
 import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
-import { randomStr, sortOnKeys, buildUrl } from '../../../utils';
+import { randomStr, sortOnKeys, buildUrl, getObjectValueByPath } from '../../../utils';
 
 
 class HubMainScreen extends React.Component {
@@ -35,6 +37,7 @@ class HubMainScreen extends React.Component {
               index: null,
             },
             circle: {
+              active: false,
               metricIndex: null,
               stepIndex: null,
             },
@@ -75,6 +78,12 @@ class HubMainScreen extends React.Component {
 
     this.projectWrapperRef = React.createRef();
     this.panelRef = React.createRef();
+
+    this.URLStateParams = [
+      'chart.focused.circle',
+      'chart.settings',
+      'search',
+    ];
 
     this.defaultSearchQuery = 'metric:loss';
   }
@@ -119,32 +128,96 @@ class HubMainScreen extends React.Component {
 
   recoverStateFromURL = (search) => {
     if (!!search && search.indexOf('?search=') !== -1) {
-      const encodedState = window.location.search.substr(8);
-      const state = JSON.parse(atob(encodedState));
-      const query = state.search.query;
-
-      if (this.state.context.search.query === undefined && state.search.query === undefined) {
-        state.search.query = this.defaultSearchQuery;
+      if (!this.isURLStateOutdated(search)) {
+        return;
       }
+
+      const state = this.URLSearchToState(search);
+      //   if (this.state.context.search.query === undefined && state.search.query === undefined) {
+      //     state.search.query = this.defaultSearchQuery;
+      //   }
 
       if (JSON.stringify(state.search) !== JSON.stringify(this.state.context.search)) {
         this.setSearchState(state.search, () => {
-          this.searchByQuery().then(() => {
-            this.setChartFocusedState(state.chart.focused);
-            this.setChartSettingsState(state.chart.settings);
+          this.searchByQuery(false).then(() => {
+            this.setChartFocusedState(state.chart.focused, null, false);
+            this.setChartSettingsState(state.chart.settings, null, false);
           });
-        });
+        }, false);
       } else {
-        this.setChartFocusedState(state.chart.focused);
-        this.setChartSettingsState(state.chart.settings);
+        this.setChartFocusedState(state.chart.focused, null, false);
+        this.setChartSettingsState(state.chart.settings, null, false);
       }
     } else {
-      this.setSearchState({
-        query: this.defaultSearchQuery,
-      }, () => {
-        this.searchByQuery().then(() => {
-        });
-      });
+      let setSearchQuery = getItem(USER_LAST_SEARCH_QUERY);
+      if (setSearchQuery === undefined) {
+        setSearchQuery = this.defaultSearchQuery;
+      }
+      if (!!setSearchQuery) {
+        this.setSearchState({
+          query: setSearchQuery,
+        }, () => {
+          this.searchByQuery().then(() => {});
+        }, true);
+      }
+    }
+  };
+
+  stateToURL = (state) => {
+    const encodedState = btoa(JSON.stringify(state));
+    const URL = buildUrl(screens.MAIN_SEARCH, {
+      search: encodedState,
+    });
+    return URL;
+  };
+
+  URLSearchToState = (search) => {
+    if (search.indexOf('?search=') !== -1) {
+      const encodedState = search.substr(8);
+      return JSON.parse(atob(encodedState));
+    }
+    return null;
+  };
+
+  isURLStateOutdated = (searchQuery) => {
+    const state = this.URLSearchToState(searchQuery);
+    if (state === null) {
+      return !(!!searchQuery && searchQuery.indexOf('?search=') !== -1);
+    }
+
+    for (let p in this.URLStateParams) {
+      if (JSON.stringify(getObjectValueByPath(state, this.URLStateParams[p]))
+        !== JSON.stringify(getObjectValueByPath(this.state.context, this.URLStateParams[p]))) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  updateURL = () => {
+    if (!this.isURLStateOutdated(window.location.search)) {
+      return;
+    }
+
+    const state = {
+      chart: {
+        settings: this.state.context.chart.settings,
+        focused: {
+          circle: this.state.context.chart.focused.circle,
+        },
+      },
+      search: {
+        query: this.state.context.search.query,
+      },
+    };
+
+    const URL = this.stateToURL(state);
+    if (window.location.pathname + window.location.search !== URL) {
+      console.log('Update: URL');
+      this.props.history.push(URL);
+      if (state.search.query !== null) {
+        setItem(USER_LAST_SEARCH_QUERY, state.search.query);
+      }
     }
   };
 
@@ -156,29 +229,6 @@ class HubMainScreen extends React.Component {
         key: randomStr(16),
       },
     }));
-  };
-
-  updateURL = () => {
-    const state = {
-      chart: {
-        settings: this.state.context.chart.settings,
-        focused: {
-          circle: this.state.context.chart.focused.circle,
-          index: this.state.context.chart.focused.index,
-        },
-      },
-      search: {
-        query: this.state.context.search.query,
-      },
-    };
-
-    const encodedState = btoa(JSON.stringify(state));
-    const url = buildUrl(screens.MAIN_SEARCH, {
-      search: encodedState,
-    });
-    if (window.location.pathname + window.location.search !== url) {
-      this.props.history.push(url);
-    }
   };
 
   setMetricsState = (metricsState, callback=null) => {
@@ -216,7 +266,7 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  setSearchState = (searchState, callback=null) => {
+  setSearchState = (searchState, callback=null, updateURL=true) => {
     this.setState(prevState => ({
       ...prevState,
       context: {
@@ -233,6 +283,9 @@ class HubMainScreen extends React.Component {
     }), () => {
       if (callback !== null) {
         callback();
+      }
+      if (updateURL) {
+        this.updateURL();
       }
     });
   };
@@ -254,7 +307,7 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  setChartState = (chartState, callback=null) => {
+  setChartState = (chartState, callback=null, updateURL) => {
     this.setState(prevState => {
       const chartStateUpd = Object.assign({}, prevState.context.chart, chartState);
       const contextState = Object.assign({}, prevState.context, {
@@ -268,27 +321,30 @@ class HubMainScreen extends React.Component {
       if (callback !== null) {
         callback();
       }
+      if (updateURL) {
+        this.updateURL();
+      }
     });
   };
 
-  setChartSettingsState = (settingsState, callback=null) => {
+  setChartSettingsState = (settingsState, callback=null, updateURL=true) => {
     this.setChartState({
-      // TOFIX: Not pass current state value
+      // FIXME: Not pass current state value
       settings: {
         ...this.state.context.chart.settings,
         ...settingsState,
       },
-    }, callback);
+    }, callback, updateURL);
   };
 
-  setChartFocusedState = (focusedState, callback=null) => {
+  setChartFocusedState = (focusedState, callback=null, updateURL=true) => {
     this.setChartState({
-      // TOFIX: Not pass current state value
+      // FIXME: Not pass current state value
       focused: {
         ...this.state.context.chart.focused,
         ...focusedState,
       },
-    }, callback);
+    }, callback, updateURL);
   };
 
   getMetricsByQuery = (query) => {
@@ -361,7 +417,7 @@ class HubMainScreen extends React.Component {
     return lineData['source'] === 'tf_summary';
   };
 
-  searchByQuery = () => {
+  searchByQuery = (updateURL) => {
     return new Promise(resolve => {
       const query = this.state.context.search.query.trim();
       this.setChartFocusedState({
@@ -379,10 +435,9 @@ class HubMainScreen extends React.Component {
           this.getMetricsByQuery(query),
           this.getParamsByQuery(query),
         ]).then(() => {
-          this.updateURL();
           resolve();
         });
-      });
+      }, updateURL);
     });
   };
 
