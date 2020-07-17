@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.0.5 Jul 18 2020
 - Show information about tf.summary scalars in context area (gorarakelyan)
 - Render tf.summary scalars on chart area (gorarakelyan)
 - Add tf.summary adapter for reading logs (gorarakelyan)
