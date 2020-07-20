@@ -95,3 +95,19 @@
     display: none;
   }
 }
+
+.CommitNavigation__item__indicator {
+  display: inline-block;
+  vertical-align: middle;
+
+  &:before {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background-color: var(--green);
+    border: 4px solid var(--green-lighter);
+  }
+}

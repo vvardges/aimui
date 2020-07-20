@@ -164,11 +164,17 @@ class CommitNavigation extends Component {
           commit_id: commit.hash,
         })}>
           <div className='CommitNavigation__item__short'>
+            {!!commit.process && commit.process.finish === false &&
+              <div className='CommitNavigation__item__indicator' />
+            }
             <Truncate lines={1}>
               <UI.Text small>{this.formatCommitMsg(commit.message)}</UI.Text>
             </Truncate>
           </div>
           <div className='CommitNavigation__item__full'>
+            {!!commit.process && commit.process.finish === false &&
+              <div className='CommitNavigation__item__indicator' />
+            }
             <Truncate lines={4}>
               <UI.Text small>{this.formatCommitMsg(commit.message)}</UI.Text>
             </Truncate>

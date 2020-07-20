@@ -84,6 +84,16 @@ class ProjectExperimentApi(Resource):
             }
         else:
             commit = commits.get(commit_id)
+            if not commit['process']['finish']:
+                if commit['process'].get('start_date'):
+                    duration = time.time() - commit['process']['start_date']
+                    commit['process']['time'] = duration
+                else:
+                    commit['process']['time'] = None
+            elif commit['process'].get('start_date') is not None \
+                    and commit['process'].get('finish_date') is not None:
+                commit['process']['time'] = commit['process']['finish_date'] \
+                                            - commit['process']['start_date']
 
         if not commit:
             return make_response(jsonify({}), 404)
