@@ -3,7 +3,7 @@ import './ExperimentDiff.css';
 
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import ReactSVG from 'react-svg';
 import {parseDiff, Diff, Hunk, Decoration} from 'react-diff-view';
 import moment from 'moment';
@@ -36,6 +36,8 @@ class HubExperimentScreen extends React.Component {
       commit: {},
       contentWidth: null,
       metricsData: {},
+      tags: [],
+      tagsAreLoading: true,
     };
 
     this.contentRef = React.createRef();
@@ -49,7 +51,7 @@ class HubExperimentScreen extends React.Component {
 
   componentDidMount() {
     this.getExperiment();
-
+    this.getTags();
     this.handleResize();
     window.addEventListener('resize', this.handleResize);
   }
@@ -69,9 +71,32 @@ class HubExperimentScreen extends React.Component {
         expandCluster: {},
         selectedModel: false,
         selectBranch: null,
-      }, () => this.getExperiment());
+        tags: [],
+      }, () => {
+        this.getExperiment();
+        this.getTags();
+      });
     }
   }
+
+  getTags = () => {
+    this.setState(prevState => ({
+      ...prevState,
+      tagsAreLoading: true,
+    }));
+
+    this.props.getCommitTags(this.props.match.params.commit_id).then(data => {
+      this.setState({
+        tags: data,
+      })
+    }).catch((err) => {
+    }).finally(() => {
+      this.setState(prevState => ({
+        ...prevState,
+        tagsAreLoading: false,
+      }));
+    })
+  };
 
   onIndex = () => {
     return this.props.match.params.commit_id === 'index';
@@ -446,24 +471,42 @@ class HubExperimentScreen extends React.Component {
             />
             <div>
               {!!this.state.commit &&
-              <>
-                {!this.state.commit.index
-                  ? (!Number.isInteger(this.state.commit.message) || `${this.state.commit.message}`.length !== 10) &&
-                    <UI.Text type='grey-darker'>
-                      {this.state.commit.message}
+              <div className='HubExperimentScreen__header__content'>
+                <div>
+                  {!this.state.commit.index
+                    ? (!Number.isInteger(this.state.commit.message) || `${this.state.commit.message}`.length !== 10) &&
+                      <UI.Text type='grey-darker'>
+                        {this.state.commit.message}
+                      </UI.Text>
+                    :
+                    <CurrentRunIndicator />
+                  }
+                  {!this.state.commit.index &&
+                    <UI.Text
+                      type='grey'
+                      small
+                    >
+                      Committed on {moment.unix(this.state.commit.date).format('D MMM, YY')}
                     </UI.Text>
-                  :
-                  <CurrentRunIndicator />
+                  }
+                </div>
+                {!this.state.tagsAreLoading &&
+                  <div className='HubExperimentScreen__header__tags'>
+                    {this.state.tags.map((tag) => (
+                      <Link to={buildUrl(screens.HUB_PROJECT_EDIT_TAG, {
+                        tag_id: tag.id,
+                      })}>
+                        <UI.Label
+                          key={tag.id}
+                          color={tag.color}
+                        >
+                          {tag.name}
+                        </UI.Label>
+                      </Link>
+                    ))}
+                  </div>
                 }
-                {!this.state.commit.index &&
-                  <UI.Text
-                    type='grey'
-                    small
-                  >
-                    Committed on {moment.unix(this.state.commit.date).format('D MMM, YY')}
-                  </UI.Text>
-                }
-              </>
+              </div>
               }
             </div>
           </div>

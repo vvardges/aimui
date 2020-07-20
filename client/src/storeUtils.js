@@ -125,6 +125,7 @@ export function getWithState(caseName, caseClass) {
       Object.assign(mapDispatch2Props, {
         getExperiment: projectActions.getExperiment,
         getExperimentComponent: projectActions.getExperimentComponent,
+        getCommitTags: commitActions.getCommitTags,
       });
       break;
     default:
