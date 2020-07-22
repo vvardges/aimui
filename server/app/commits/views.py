@@ -7,9 +7,10 @@ from flask import Blueprint, jsonify, request, \
 from flask_restful import Api, Resource
 
 from app import App
-from app.commits.models import Commit, Tag
+from app.commits.models import Commit, TFSummaryLog, Tag
 from services.executables.action import Action
 from app.db import db
+from adapters.tf_summary_adapter import TFSummaryAdapter
 from app.commits.utils import (
     get_runs_metric,
     get_runs_dictionary,
@@ -17,6 +18,7 @@ from app.commits.utils import (
     retrieve_scale_metrics,
     scale_metric_steps,
     parse_query,
+    TF_LOGS_PATH,
 )
 
 
@@ -48,7 +50,6 @@ class CommitMetricSearchApi(Resource):
         if parsed_query['tf_scalar']:
             try:
                 tf_scalars = get_tf_summary_scalars(parsed_query['tf_scalar'],
-                                                    experiment,
                                                     params)
                 runs_metrics += tf_scalars
             except:
@@ -78,6 +79,60 @@ class CommitDictionarySearchApi(Resource):
         dicts = get_runs_dictionary(tag, experiment)
 
         return jsonify(dicts)
+
+
+@commits_api.resource('/tf-summary/list')
+class TFSummaryListApi(Resource):
+    def get(self):
+        dir_paths = TFSummaryAdapter.list_log_dir_paths(TF_LOGS_PATH)
+        return jsonify(dir_paths)
+
+
+@commits_api.resource('/tf-summary/params/list')
+class TFSummaryParamsListApi(Resource):
+    def post(self):
+        params_form = request.form
+        path = params_form.get('path')
+
+        if not path:
+            return jsonify({'params': ''})
+
+        tf_log = TFSummaryLog.query.filter((TFSummaryLog.log_path == path) &
+                                           (TFSummaryLog.is_archived.is_(False))
+                                           ).first()
+        if tf_log is None:
+            return jsonify({'params': ''})
+
+        return jsonify({
+            'params': tf_log.params,
+        })
+
+
+@commits_api.resource('/tf-summary/params/update')
+class TFSummaryParamsUpdateApi(Resource):
+    def post(self):
+        params_form = request.form
+        path = params_form.get('path')
+        params = params_form.get('params')
+        parsed_params = params_form.get('parsed_params')
+
+        if not path:
+            return make_response(jsonify({}), 403)
+
+        tf_log = TFSummaryLog.query.filter((TFSummaryLog.log_path == path) &
+                                           (TFSummaryLog.is_archived.is_(False))
+                                           ).first()
+        if tf_log is None:
+            tf_log = TFSummaryLog(path)
+            db.session.add(tf_log)
+
+        tf_log.params = params
+        tf_log.params_json = json.loads(parsed_params) if params else None
+        db.session.commit()
+
+        return jsonify({
+            'params': params,
+        })
 
 
 @commits_api.resource('/tags/<commit_hash>')

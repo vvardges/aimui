@@ -95,6 +95,13 @@ export function getWithState(caseName, caseClass) {
         hideExecutable: executablesActions.hideExecutable,
       });
       break;
+    case classes.HUB_TF_SUMMARY_LIST_SCREEN:
+      Object.assign(mapDispatch2Props, {
+        getTFSummaryList: commitActions.getTFSummaryList,
+        getTFLogParams: commitActions.getTFLogParams,
+        postTFLogParams: commitActions.postTFLogParams,
+      });
+      break;
     case classes.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL:
       Object.assign(mapDispatch2Props, {
         getExecutableProcess: executablesActions.getExecutableProcess,

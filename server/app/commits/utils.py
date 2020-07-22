@@ -4,7 +4,7 @@ import json
 
 from app.projects.utils import get_project_branches, get_branch_commits
 from app.db import db
-from app.commits.models import Commit, Tag
+from app.commits.models import Commit, Tag, TFSummaryLog
 from artifacts.artifact import Metric
 from adapters.tf_summary_adapter import TFSummaryAdapter
 
@@ -134,11 +134,40 @@ def get_runs_metric(metrics, tag=None, experiments=None, params=None):
     return filtered_runs
 
 
-def get_tf_summary_scalars(tags, exp, params=None):
+def get_tf_summary_scalars(tags, params=None):
     scalars = []
 
+    # Get directory paths
     dir_paths = TFSummaryAdapter.list_log_dir_paths(TF_LOGS_PATH)
 
+    # Filter by params
+    if params is not None and len(params) > 0:
+        filter_q = None
+        for s_param in params.values():
+            filter_exp = TFSummaryLog.params_json[s_param['key']].astext \
+                         == s_param['value']
+            if filter_q is None:
+                filter_q = filter_exp
+            else:
+                filter_q &= filter_exp
+        searched_logs = db.session.query(TFSummaryLog).filter(filter_q).all()
+        if searched_logs and len(searched_logs) > 0:
+            searched_paths = list(map(lambda l: l.log_path, searched_logs))
+            i = 0
+            while i < len(dir_paths):
+                matched = False
+                for s in searched_paths:
+                    if s == dir_paths[i]:
+                        matched = True
+                        break
+                if matched:
+                    i += 1
+                else:
+                    del dir_paths[i]
+        else:
+            dir_paths = []
+
+    # Get scalar paths
     for dir_path in dir_paths:
         tf = TFSummaryAdapter(dir_path)
         dir_scalars = tf.get_scalars(tags)
