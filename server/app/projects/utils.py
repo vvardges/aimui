@@ -4,22 +4,6 @@ import json
 from file_read_backwards import FileReadBackwards
 
 
-def get_project_branches(project_path):
-    branches = []
-
-    config_file_path = os.path.join(project_path, 'config.json')
-    if not os.path.isfile(config_file_path):
-        return branches
-
-    with open(config_file_path, 'r') as config_file:
-        config_content = json.loads(config_file.read().strip())
-
-    branches = config_content.get('branches') or []
-    branches = list(map(lambda b: b['name'], branches))
-
-    return branches
-
-
 def get_branch_commits(branch_path):
     commits = {}
     for c in os.listdir(branch_path):

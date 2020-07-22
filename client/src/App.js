@@ -43,6 +43,9 @@ class App extends React.Component {
 
   componentDidMount() {
     setTimeout(() => this.props.completeProgress(), 150);
+    this.props.getProject().then(() => {
+      this.props.incProgress();
+    });
     this.setAnalytics();
   }
 

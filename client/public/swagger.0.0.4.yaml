@@ -556,7 +556,7 @@ paths:
             application/json:
               schema:
                 type: object
-  "/projects":
+  "/projects/project":
     get:
       operationId: getProject
       summary: Get project
@@ -569,6 +569,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProjectGet"
+  "/projects/project/data":
+    get:
+      operationId: getProjectData
+      summary: Get project
+      tags:
+        - Project
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
   "/projects/{experiment_name}/{commit_id}":
     get:
       operationId: getExperiment

@@ -8,18 +8,20 @@ from flask import Blueprint, jsonify, request, \
 from flask_restful import Api, Resource
 
 from app.db import db
-from app.projects.utils import get_project_branches, read_artifact_log, \
-    get_dir_size, get_branch_commits
+from app.projects.utils import (
+    read_artifact_log,
+    get_branch_commits,
+)
 from app.projects.project import Project
 from artifacts.artifact import Metric
-from app.commits.utils import get_runs_metric
+from app.commits.utils import get_runs_metric, get_branches
 
 
 projects_bp = Blueprint('projects', __name__)
 projects_api = Api(projects_bp)
 
 
-@projects_api.resource('/')
+@projects_api.resource('/project')
 class ProjectApi(Resource):
     def get(self):
         project = Project()
@@ -27,15 +29,25 @@ class ProjectApi(Resource):
         if not project.exists():
             return make_response(jsonify({}), 404)
 
-        # Get project branches list
-        project_path = '/store'
-        project_branches = get_project_branches(project_path)
-
         return jsonify({
             'name': project.name,
             'path': project.path,
+            'tf_enabled': project.tf_enabled,
             'description': project.description,
-            'branches': project_branches,
+            'branches': get_branches(),
+        })
+
+
+@projects_api.resource('/project/data')
+class ProjectDataApi(Resource):
+    def get(self):
+        project = Project()
+
+        if not project.exists():
+            return make_response(jsonify({}), 404)
+
+        return jsonify({
+            'branches': get_branches(),
         })
 
 

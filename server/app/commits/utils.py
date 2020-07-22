@@ -2,7 +2,7 @@ import os
 from aimrecords import Storage
 import json
 
-from app.projects.utils import get_project_branches, get_branch_commits
+from app.projects.utils import get_branch_commits
 from app.db import db
 from app.commits.models import Commit, Tag, TFSummaryLog
 from artifacts.artifact import Metric
@@ -10,15 +10,30 @@ from adapters.tf_summary_adapter import TFSummaryAdapter
 
 
 PROJECT_PATH = '/store'
-TF_LOGS_PATH = '/tf_logs'
 
 
 def get_run_objects_path(b, c):
     return os.path.join(b, c, 'objects')
 
 
+def get_branches():
+    branches = []
+
+    config_file_path = os.path.join(PROJECT_PATH, 'config.json')
+    if not os.path.isfile(config_file_path):
+        return branches
+
+    with open(config_file_path, 'r') as config_file:
+        config_content = json.loads(config_file.read().strip())
+
+    branches = config_content.get('branches') or []
+    branches = list(map(lambda b: b['name'], branches))
+
+    return branches
+
+
 def get_runs_hashes(tag=None, experiments=None, params=None):
-    project_branches = get_project_branches(PROJECT_PATH)
+    project_branches = get_branches()
 
     # Filter by experiments
     if experiments and isinstance(experiments, str):
@@ -138,7 +153,7 @@ def get_tf_summary_scalars(tags, params=None):
     scalars = []
 
     # Get directory paths
-    dir_paths = TFSummaryAdapter.list_log_dir_paths(TF_LOGS_PATH)
+    dir_paths = TFSummaryAdapter.list_log_dir_paths()
 
     # Filter by params
     if params is not None and len(params) > 0:

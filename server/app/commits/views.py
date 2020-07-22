@@ -18,7 +18,6 @@ from app.commits.utils import (
     retrieve_scale_metrics,
     scale_metric_steps,
     parse_query,
-    TF_LOGS_PATH,
 )
 
 
@@ -84,7 +83,7 @@ class CommitDictionarySearchApi(Resource):
 @commits_api.resource('/tf-summary/list')
 class TFSummaryListApi(Resource):
     def get(self):
-        dir_paths = TFSummaryAdapter.list_log_dir_paths(TF_LOGS_PATH)
+        dir_paths = TFSummaryAdapter.list_log_dir_paths()
         return jsonify(dir_paths)
 
 

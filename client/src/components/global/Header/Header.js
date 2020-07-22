@@ -8,6 +8,7 @@ import UI from '../../../ui';
 import * as storeUtils from '../../../storeUtils';
 import * as classes from '../../../constants/classes';
 import * as screens from '../../../constants/screens';
+import ReactSVG from 'react-svg';
 
 
 class Header extends React.Component {
@@ -65,6 +66,19 @@ class Header extends React.Component {
                   </div>
                 </NavLink>
               </div>
+              {this.props.project.tf_enabled &&
+                <div className='Header__item__wrapper'>
+                  <NavLink to={screens.HUB_TF_SUMMARY_LIST}>
+                    <div className='Header__item'>
+                      <ReactSVG
+                        className='Header__item__icon__svg'
+                        src={require('../../../asset/icons/tensorflow-2.svg')}
+                      />
+                      <UI.Text className='Header__item__title'>TF logs</UI.Text>
+                    </div>
+                  </NavLink>
+                </div>
+              }
             </div>
             <div className='Header__items bottom'>
               <div className='Header__item__wrapper'>

@@ -366,6 +366,10 @@ class HubTFSummaryListScreen extends Component {
   };
 
   _renderContent = () => {
+    if (!this.props.project.tf_enabled) {
+      return <UI.Text type='grey' center>Can't find TF summary logs directory</UI.Text>
+    }
+
     if (this.state.isLoading) {
       return <UI.Text type='grey' center>Loading..</UI.Text>
     }
@@ -373,6 +377,9 @@ class HubTFSummaryListScreen extends Component {
     return (
       <div className='HubTFSummaryListScreen__content'>
         <UI.Text size={6} header divided>TF Summary Logs</UI.Text>
+        <UI.Text className='HubTFSummaryListScreen__desc' type='grey'>
+          Configure your TensorFlow logs for fast and easy search or comparison
+        </UI.Text>
         <div className='HubTFSummaryListScreen__tree'>
           {this._renderTree(this.state.tree)}
         </div>
