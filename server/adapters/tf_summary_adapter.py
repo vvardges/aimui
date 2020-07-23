@@ -106,6 +106,7 @@ class TFSummaryAdapter:
         for scalar in scalars.values():
             _, _, name = self.dir_path[1:].partition('/')
             scalar['name'] = name
+            scalar['path'] = self.dir_path
             scalar['hash'] = self.name_to_hash(name)
 
             # Order data by step and remove duplications

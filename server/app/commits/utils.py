@@ -268,10 +268,24 @@ def get_runs_dictionary(tag=None, experiments=None):
     return runs_dicts
 
 
+def get_tf_logs_params():
+    params = {}
+
+    tf_logs = TFSummaryLog.query.filter(TFSummaryLog.is_archived.is_(False))\
+        .all()
+
+    for tf_log in tf_logs:
+        params[tf_log.log_path] = {
+            'data': tf_log.params_json,
+        }
+
+    return params
+
+
 def parse_query(query):
     sub_queries = query.split(' ')
     metrics = tag = experiment = params = steps = None
-    tf_summary = None
+    include = []
     for sub_query in sub_queries:
         if 'metric' in sub_query:
             if metrics is None:
@@ -306,9 +320,9 @@ def parse_query(query):
                     'value': param_val,
                 }
 
-        if 'tf_scalar' in sub_query:
-            _, _, tf_summary = sub_query.rpartition(':')
-            tf_summary = tf_summary.lower().strip().split(',')
+        if 'include' in sub_query:
+            _, _, include_q = sub_query.rpartition(':')
+            include = include_q.lower().strip().split(',')
 
     return {
         'metrics': metrics,
@@ -316,5 +330,5 @@ def parse_query(query):
         'experiment': experiment,
         'params': params,
         'steps': steps,
-        'tf_scalar': tf_summary,
+        'include': include,
     }

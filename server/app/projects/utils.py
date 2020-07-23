@@ -19,19 +19,6 @@ def get_branch_commits(branch_path):
     return commits
 
 
-def get_dir_size(start_path):
-    total_size = 0
-
-    for dir_path, dir_names, file_names in os.walk(start_path):
-        for f in file_names:
-            fp = os.path.join(dir_path, f)
-            # skip if it is symbolic link
-            if not os.path.islink(fp):
-                total_size += os.path.getsize(fp)
-
-    return total_size
-
-
 def read_artifact_log(file_path, limit=-1):
     if not os.path.isfile(file_path):
         return []

@@ -18,6 +18,7 @@ from app.commits.utils import (
     retrieve_scale_metrics,
     scale_metric_steps,
     parse_query,
+    get_tf_logs_params,
 )
 
 
@@ -46,11 +47,9 @@ class CommitMetricSearchApi(Resource):
         runs_metrics += aim_runs_metrics
 
         # Get `tf_summary` runs
-        if parsed_query['tf_scalar']:
+        if 'tf_logs' in parsed_query['include']:
             try:
-                tf_scalars = get_tf_summary_scalars(parsed_query['tf_scalar'],
-                                                    params)
-                runs_metrics += tf_scalars
+                runs_metrics += get_tf_summary_scalars(metrics, params)
             except:
                 pass
 
@@ -76,6 +75,12 @@ class CommitDictionarySearchApi(Resource):
         experiment = parsed_query['experiment']
 
         dicts = get_runs_dictionary(tag, experiment)
+
+        # Get tf logs saved params
+        if 'tf_logs' in parsed_query['include']:
+            tf_logs_params = get_tf_logs_params()
+            for tf_log_path, tf_log_params in tf_logs_params.items():
+                dicts[tf_log_path] = tf_log_params
 
         return jsonify(dicts)
 
