@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.0.6 Jul 23 2020
 - Get rid of index run of experiment (gorarakelyan)
 - Ability to navigate to tf logs screen from main sidebar (gorarakelyan)
 - Ability to list and edit parameters of attached TF Summary logs (gorarakelyan)
