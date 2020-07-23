@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.6 Jul 23 2020
+- Get rid of index run of experiment (gorarakelyan)
+- Ability to navigate to tf logs screen from main sidebar (gorarakelyan)
+- Ability to list and edit parameters of attached TF Summary logs (gorarakelyan)
+- Fix panel URL state management issue (gorarakelyan)
+- Add search bar icon on panel page main search bar (gorarakelyan)
+- Add tf.summary adapter to featch and show logged scalars (gorarakelyan)
+- Show tags in related experiment detail screen (jialin-wu-02)
+- Display Information on Navbar (jialin-wu-02)
+- Add Status Indicator to Sidebar (jialin-wu-02)
+
 ## 1.0.5 Jul 18 2020
 - Show information about tf.summary scalars in context area (gorarakelyan)
 - Render tf.summary scalars on chart area (gorarakelyan)

@@ -10,7 +10,7 @@ class CurrentRunIndicator extends PureComponent {
         <div className='CurrentRunIndicator__current__indicator'>
           <div className='CurrentRunIndicator__current__indicator__anim' />
         </div>
-        <UI.Text>Experiment index</UI.Text>
+        {/*<UI.Text>Experiment index</UI.Text>*/}
       </div>
     );
   }

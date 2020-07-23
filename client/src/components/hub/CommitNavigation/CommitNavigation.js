@@ -164,11 +164,17 @@ class CommitNavigation extends Component {
           commit_id: commit.hash,
         })}>
           <div className='CommitNavigation__item__short'>
+            {!!commit.process && commit.process.finish === false &&
+              <div className='CommitNavigation__item__indicator' />
+            }
             <Truncate lines={1}>
               <UI.Text small>{this.formatCommitMsg(commit.message)}</UI.Text>
             </Truncate>
           </div>
           <div className='CommitNavigation__item__full'>
+            {!!commit.process && commit.process.finish === false &&
+              <div className='CommitNavigation__item__indicator' />
+            }
             <Truncate lines={4}>
               <UI.Text small>{this.formatCommitMsg(commit.message)}</UI.Text>
             </Truncate>
@@ -216,6 +222,22 @@ class CommitNavigation extends Component {
     )
   };
 
+  _renderIndex = () => {
+    return (
+      <div key='current' className={classNames({
+        CommitNavigation__current: true,
+        active: this.props.active === 'index',
+      })}>
+        <Link to={buildUrl(HUB_PROJECT_EXPERIMENT, {
+          experiment_name: this.props.experimentName,
+          commit_id: 'index',
+        })}>
+          <UI.Text className='CommitNavigation__current__title' small>Index</UI.Text>
+        </Link>
+      </div>
+    )
+  };
+
   render() {
     const className = classNames({
       CommitNavigation: true,
@@ -225,17 +247,6 @@ class CommitNavigation extends Component {
       <div className={className} ref={this.navbarRef}>
         {this.props.commits.length > 0 &&
           <UI.Menu className='CommitNavigation__nav' outline={false} header='Runs:'>
-            <div key='current' className={classNames({
-              CommitNavigation__current: true,
-              active: this.props.active === 'index',
-            })}>
-              <Link to={buildUrl(HUB_PROJECT_EXPERIMENT, {
-                experiment_name: this.props.experimentName,
-                commit_id: 'index',
-              })}>
-                <UI.Text className='CommitNavigation__current__title' small>Index</UI.Text>
-              </Link>
-            </div>
             {this._renderCommits()}
           </UI.Menu>
         }

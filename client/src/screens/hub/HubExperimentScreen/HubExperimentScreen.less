@@ -2,7 +2,7 @@
 
 .HubExperimentScreen__header {
   display: grid;
-  grid-template-columns: 1fr 4fr;
+  grid-template-columns: 200px 1fr;
   grid-column-gap: var(--component-spacing-md);
   align-items: center;
 
@@ -15,6 +15,28 @@
 .HubExperimentScreen__header {
   + .HubExperimentScreen__grid {
     margin-top: var(--component-spacing-md);
+  }
+}
+
+.HubExperimentScreen__header__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.HubExperimentScreen__header__content__process {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  > * {
+    margin-right: var(--component-spacing-sm);
+  }
+}
+
+.HubExperimentScreen__header__tags {
+  a {
+    text-decoration: none;
   }
 }
 

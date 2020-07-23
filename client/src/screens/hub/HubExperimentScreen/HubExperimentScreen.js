@@ -3,7 +3,7 @@ import './ExperimentDiff.css';
 
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import ReactSVG from 'react-svg';
 import {parseDiff, Diff, Hunk, Decoration} from 'react-diff-view';
 import moment from 'moment';
@@ -13,7 +13,7 @@ import ExperimentCell from '../../../components/hub/ExperimentCell/ExperimentCel
 import * as classes from '../../../constants/classes';
 import * as storeUtils from '../../../storeUtils';
 import UI from '../../../ui';
-import { buildUrl, classNames, formatSize } from '../../../utils';
+import { buildUrl, classNames, formatDuration, formatSize } from '../../../utils';
 import { SERVER_HOST, SERVER_API_HOST, WS_HOST } from '../../../config';
 import * as screens from '../../../constants/screens';
 import CommitNavigation from '../../../components/hub/CommitNavigation/CommitNavigation';
@@ -36,6 +36,8 @@ class HubExperimentScreen extends React.Component {
       commit: {},
       contentWidth: null,
       metricsData: {},
+      tags: [],
+      tagsAreLoading: true,
     };
 
     this.contentRef = React.createRef();
@@ -49,7 +51,7 @@ class HubExperimentScreen extends React.Component {
 
   componentDidMount() {
     this.getExperiment();
-
+    this.getTags();
     this.handleResize();
     window.addEventListener('resize', this.handleResize);
   }
@@ -69,9 +71,32 @@ class HubExperimentScreen extends React.Component {
         expandCluster: {},
         selectedModel: false,
         selectBranch: null,
-      }, () => this.getExperiment());
+        tags: [],
+      }, () => {
+        this.getExperiment();
+        this.getTags();
+      });
     }
   }
+
+  getTags = () => {
+    this.setState(prevState => ({
+      ...prevState,
+      tagsAreLoading: true,
+    }));
+
+    this.props.getCommitTags(this.props.match.params.commit_id).then(data => {
+      this.setState({
+        tags: data,
+      })
+    }).catch((err) => {
+    }).finally(() => {
+      this.setState(prevState => ({
+        ...prevState,
+        tagsAreLoading: false,
+      }));
+    })
+  };
 
   onIndex = () => {
     return this.props.match.params.commit_id === 'index';
@@ -427,6 +452,11 @@ class HubExperimentScreen extends React.Component {
   _renderExperimentHeader = () => {
     let experimentName = this.props.match.params.experiment_name;
 
+    let processDuration = null;
+    if (!!this.state.commit.process && !!this.state.commit.process.time) {
+      processDuration = formatDuration(this.state.commit.process.time);
+    }
+
     return (
       <>
         {!!this.props.project.branches && !!this.props.project.branches.length &&
@@ -446,24 +476,58 @@ class HubExperimentScreen extends React.Component {
             />
             <div>
               {!!this.state.commit &&
-              <>
-                {!this.state.commit.index
-                  ? (!Number.isInteger(this.state.commit.message) || `${this.state.commit.message}`.length !== 10) &&
-                    <UI.Text type='grey-darker'>
-                      {this.state.commit.message}
-                    </UI.Text>
-                  :
-                  <CurrentRunIndicator />
+              <div className='HubExperimentScreen__header__content'>
+                <div className='HubExperimentScreen__header__content__process'>
+                  {!!this.state.commit.process && this.state.commit.process.finish === false &&
+                    <CurrentRunIndicator />
+                  }
+                  {this.state.commit.process &&
+                    <div>
+                      {!!this.state.commit.process.start_date &&
+                        <UI.Text
+                          type='grey'
+                          small
+                        >
+                          {!!this.state.commit.process.uuid
+                            ? <Link to={buildUrl(screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL, {
+                              process_id: this.state.commit.process.uuid,
+                            })}>
+                              Process
+                            </Link>
+                            : <UI.Text inline>Process</UI.Text>
+                          }
+                          {' '} started at {moment.unix(this.state.commit.process.start_date).format('D MMM, YY')}
+                        </UI.Text>
+                      }
+                      {!!processDuration &&
+                        <UI.Text
+                          type='grey'
+                          small
+                        >
+                          Execution Time:
+                          {` ${processDuration.hours}h ${processDuration.minutes}m ${processDuration.seconds}s`}
+                        </UI.Text>
+                      }
+                    </div>
+                  }
+                </div>
+                {!this.state.tagsAreLoading && this.state.tags.length > 0 &&
+                  <div className='HubExperimentScreen__header__tags'>
+                    {this.state.tags.map((tag) => (
+                      <Link to={buildUrl(screens.HUB_PROJECT_EDIT_TAG, {
+                        tag_id: tag.id,
+                      })}>
+                        <UI.Label
+                          key={tag.id}
+                          color={tag.color}
+                        >
+                          {tag.name}
+                        </UI.Label>
+                      </Link>
+                    ))}
+                  </div>
                 }
-                {!this.state.commit.index &&
-                  <UI.Text
-                    type='grey'
-                    small
-                  >
-                    Committed on {moment.unix(this.state.commit.date).format('D MMM, YY')}
-                  </UI.Text>
-                }
-              </>
+              </div>
               }
             </div>
           </div>
@@ -533,7 +597,7 @@ class HubExperimentScreen extends React.Component {
       )
     }
 
-    if (!this.state.experiment.branch_init) {
+    if (!this.state.experiment || !this.state.experiment.branch_init) {
       return this._renderEmptyBranch();
     }
 
@@ -552,7 +616,7 @@ class HubExperimentScreen extends React.Component {
             {this.state.experiment.maps.map((mapItem, mapKey) =>
               <>
                 {mapItem.nested
-                  ? (
+                  ? ( 
                     Object.keys(mapItem.data).map((mapItemKeyName, mapItemKey) =>
                       this._renderMap({
                         data: mapItem.data[mapItemKeyName],
@@ -629,7 +693,7 @@ class HubExperimentScreen extends React.Component {
       return (
         <Redirect to={buildUrl(screens.HUB_PROJECT_EXPERIMENT, {
           experiment_name: this.state.selectBranch,
-          commit_id: 'index',
+          commit_id: 'latest',
         })} />
       )
     }
