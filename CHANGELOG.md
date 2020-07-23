@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.7 Jul 23 2020
+- Fix tf summary loading alert in Panel (gorarakelyan)
+
 ## 1.0.6 Jul 23 2020
 - Get rid of index run of experiment (gorarakelyan)
 - Ability to navigate to tf logs screen from main sidebar (gorarakelyan)
