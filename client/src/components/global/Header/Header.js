@@ -43,7 +43,12 @@ class Header extends React.Component {
                 </NavLink>
               </div>
               <div className='Header__item__wrapper'>
-                <NavLink exact to={screens.HUB_PROJECT_EXPERIMENT_INDEX}>
+                <NavLink
+                  to={screens.HUB_PROJECT_EXPERIMENT_DEFAULT}
+                  className={classNames({
+                    active: window.location.pathname.startsWith('/experiment'),
+                  })}
+                >
                   <div className='Header__item'>
                     <UI.Icon i='nc-layers-3' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Runs</UI.Text>
@@ -51,7 +56,12 @@ class Header extends React.Component {
                 </NavLink>
               </div>
               <div className='Header__item__wrapper'>
-                <NavLink to={screens.HUB_PROJECT_TAGS}>
+                <NavLink
+                  to={screens.HUB_PROJECT_TAGS}
+                  className={classNames({
+                    active: window.location.pathname.startsWith('/tag'),
+                  })}
+                >
                   <div className='Header__item'>
                     <UI.Icon i='nc-flag-points-32' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Tags</UI.Text>
@@ -59,7 +69,12 @@ class Header extends React.Component {
                 </NavLink>
               </div>
               <div className='Header__item__wrapper'>
-                <NavLink to={screens.HUB_PROJECT_EXECUTABLES}>
+                <NavLink
+                  to={screens.HUB_PROJECT_EXECUTABLES}
+                  className={classNames({
+                    active: window.location.pathname.startsWith('/process'),
+                  })}
+                >
                   <div className='Header__item'>
                     <UI.Icon i='nc-archive-2' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Processes</UI.Text>
@@ -68,7 +83,12 @@ class Header extends React.Component {
               </div>
               {this.props.project.tf_enabled &&
                 <div className='Header__item__wrapper'>
-                  <NavLink to={screens.HUB_TF_SUMMARY_LIST}>
+                  <NavLink
+                    to={screens.HUB_TF_SUMMARY_LIST}
+                    className={classNames({
+                      active: window.location.pathname.startsWith('/tf'),
+                    })}
+                  >
                     <div className='Header__item'>
                       <ReactSVG
                         className='Header__item__icon__svg'
