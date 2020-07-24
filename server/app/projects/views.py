@@ -21,7 +21,7 @@ projects_bp = Blueprint('projects', __name__)
 projects_api = Api(projects_bp)
 
 
-@projects_api.resource('/project')
+@projects_api.resource('/')
 class ProjectApi(Resource):
     def get(self):
         project = Project()
@@ -38,7 +38,7 @@ class ProjectApi(Resource):
         })
 
 
-@projects_api.resource('/project/data')
+@projects_api.resource('/info')
 class ProjectDataApi(Resource):
     def get(self):
         project = Project()
