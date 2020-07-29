@@ -1,5 +1,7 @@
 # Changelog
 
+- Add segments integration (gorarakelyan)
+
 ## 1.0.8 Jul 24 2020
 - Fix projects blueprint endpoints (gorarakelyan)
 - Make table header stick to the top of context area (gorarakelyan)
