@@ -15,7 +15,7 @@ import Panel from './components/Panel/Panel';
 import SearchBar from './components/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
 import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
-import { randomStr, sortOnKeys, buildUrl, getObjectValueByPath } from '../../../utils';
+import { randomStr, deepEqual, buildUrl, getObjectValueByPath } from '../../../utils';
 import * as analytics from '../../../services/analytics';
 
 
@@ -140,7 +140,7 @@ class HubMainScreen extends React.Component {
       //     state.search.query = this.defaultSearchQuery;
       //   }
 
-      if (JSON.stringify(state.search) !== JSON.stringify(this.state.context.search)) {
+      if (!deepEqual(state.search, this.state.context.search)) {
         this.setSearchState(state.search, () => {
           this.searchByQuery(false).then(() => {
             this.setChartFocusedState(state.chart.focused, null, false);
@@ -189,8 +189,8 @@ class HubMainScreen extends React.Component {
     }
 
     for (let p in this.URLStateParams) {
-      if (JSON.stringify(getObjectValueByPath(state, this.URLStateParams[p]))
-        !== JSON.stringify(getObjectValueByPath(this.state.context, this.URLStateParams[p]))) {
+      if (!deepEqual(getObjectValueByPath(state, this.URLStateParams[p]),
+        getObjectValueByPath(this.state.context, this.URLStateParams[p]))) {
         return true;
       }
     }
