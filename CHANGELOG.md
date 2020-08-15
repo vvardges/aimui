@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.0.11 Aug 15 2020
 - Fix panel height issue (gorarakelyan)
 
 ## 1.0.10 Aug 14 2020
