@@ -65,6 +65,7 @@ export function getWithState(caseName, caseClass) {
       Object.assign(mapDispatch2Props, {
         getRunningExecutables: executablesActions.getRunningExecutables,
         killRunningExecutable: executablesActions.killRunningExecutable,
+        pollExecutablesInfo: executablesActions.pollExecutablesInfo,
       });
     // Screens
     case classes.HUB_MAIN_SCREEN:

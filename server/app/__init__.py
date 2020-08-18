@@ -7,11 +7,13 @@ from utils import Singleton
 from app.config import config
 from app.db import Db
 from services.executables.manager import Executables as ExecutablesManager
+from services.tracker.server import TrackManager
 
 
 class App(metaclass=Singleton):
     api = None
     executables_manager = None
+    track_manager = None
 
     @classmethod
     def __init__(cls, test_config=None):
@@ -64,4 +66,13 @@ class App(metaclass=Singleton):
             cls.executables_manager.stop()
         if cls.executables_manager is None:
             cls.executables_manager = ExecutablesManager()
+
+        if cls.track_manager is not None:
+            cls.track_manager.stop()
+        if cls.track_manager is None:
+            cls.track_manager = TrackManager()
+
+        cls.track_manager.start()
+
+        
         cls.executables_manager.start()

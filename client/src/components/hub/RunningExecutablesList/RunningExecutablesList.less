@@ -8,6 +8,13 @@
   }
 }
 
+.RunningExecutablesList__item__wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .RunningExecutablesList__item {
   display: flex;
   flex-direction: row;
@@ -18,6 +25,10 @@
     margin-right: var(--component-spacing-sm);
     flex-shrink: 0;
   }
+}
+
+.RunningExecutablesList__item__left {
+  float: left;
 }
 
 .RunningExecutablesList__item__name {

@@ -231,6 +231,19 @@ paths:
             application/json:
               schema:
                 type: object
+  "/executables/poll":
+    get:
+      operationId: pollExecutablesInfo
+      summary: Poll data from running executables
+      tags:
+        - Executable
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
   "/executables/{executable_id}/hide":
     post:
       operationId: hideExecutable

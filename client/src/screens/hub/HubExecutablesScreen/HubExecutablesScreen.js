@@ -91,7 +91,7 @@ class HubExecutablesScreen extends React.Component {
       <div className='HubExecutablesScreen'>
         <div>
           <UI.Segment className='HubExecutablesScreen__processes' type='secondary'>
-            <UI.Text divided>
+            <UI.Text inline>
               Running processes
               <UI.Icon
                 className='HubExecutablesScreen__processes__update'
@@ -99,6 +99,10 @@ class HubExecutablesScreen extends React.Component {
                 i='nc-square-download'
               />
             </UI.Text>
+            <UI.Text className='HubExecutablesScreen__processes__lefttext'>
+              Status
+            </UI.Text>
+            <UI.Line />
             <RunningExecutablesList ref={this.runningExecsRef} />
           </UI.Segment>
           <div className='HubExecutablesScreen__templates'>
@@ -163,7 +167,6 @@ class HubExecutablesScreen extends React.Component {
         <Helmet>
           <meta title='' content='' />
         </Helmet>
-
         <UI.Container size='small'>
           {this._renderContent()}
         </UI.Container>

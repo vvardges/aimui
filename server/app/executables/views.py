@@ -111,6 +111,11 @@ class ExecutableListRunningApi(Resource):
 
         return result
 
+@executables_api.resource('/poll')
+class ExecutablePollData(Resource):
+    def get(self):
+
+        return 123
 
 @executables_api.resource('/kill/<pid>')
 class ExecutableKillRunningApi(Resource):

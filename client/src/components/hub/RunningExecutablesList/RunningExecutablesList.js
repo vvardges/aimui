@@ -14,12 +14,29 @@ class RunningExecutablesList extends Component {
     this.state = {
       isLoading: true,
       executables: [],
+      pollData: [],
       killButtons: [],
     };
   }
 
   componentDidMount() {
     this.getProcesses();
+    this.pollExecutablesInfo();
+  }
+
+  pollExecutablesInfo = () => {
+    this.datapolling = setInterval(() => {
+      this.props.pollExecutablesInfo().then((data) => {
+        console.log(data)
+        this.setState({
+          pollData: [...this.state.pollData, data]
+        })
+      })
+    }, 5000)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.datapolling);
   }
 
   getProcesses = () => {
@@ -67,23 +84,26 @@ class RunningExecutablesList extends Component {
             : (
               <div className='RunningExecutablesList__items'>
                 {this.state.executables.map((e, eKey) =>
-                  <div className='RunningExecutablesList__item' key={eKey}>
-                    <UI.Button
-                      onClick={() => this.handleProcessKill(eKey, e.pid)}
-                      type='negative'
-                      size='small'
-                      inline
-                      {...this.state.killButtons[eKey]}
-                    >
-                      Kill
-                    </UI.Button>
-                    <UI.Label>{e.pid}</UI.Label>
-                    <div className='RunningExecutablesList__item__name'>
-                      {!!e.name &&
-                        <UI.Text inline>{e.name}:</UI.Text>
-                      }
-                      <UI.Text small inline> > {e.script_path}</UI.Text>
+                  <div className='RunningExecutablesList__item__wrapper' key={eKey}>
+                    <div className='RunningExecutablesList__item'> 
+                      <UI.Button
+                        onClick={() => this.handleProcessKill(eKey, e.pid)}
+                        type='negative'
+                        size='small'
+                        inline
+                        {...this.state.killButtons[eKey]}
+                      >
+                        Kill
+                      </UI.Button>
+                      <UI.Label>{e.pid}</UI.Label>
+                      <div className='RunningExecutablesList__item__name'>
+                        {!!e.name &&
+                          <UI.Text inline>{e.name}:</UI.Text>
+                        }
+                        <UI.Text small inline> > {e.script_path}</UI.Text>
+                      </div>
                     </div>
+                    <UI.Label className='RunningExecutablesList__item__left'> Epoch: 5 </UI.Label>
                   </div>
                 )}
               </div>

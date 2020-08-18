@@ -1,4 +1,17 @@
 import callApi from '../../services/api';
+import { dispatch } from 'd3';
+
+export function pollExecutablesInfo() {
+  return dispatch => {
+    return new Promise((resolve, reject) => {
+      callApi('Executable.pollExecutablesInfo').then((data) => {
+        resolve(data);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
+  }
+}
 
 export function executeExecutable(params) {
   return dispatch => {
