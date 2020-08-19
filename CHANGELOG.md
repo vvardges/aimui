@@ -1,5 +1,8 @@
 # Changelog
 
+- Add ability to remove bottom outliers (gorarakelyan)
+- Add ability to remove outliers (roubkar)
+
 ## 1.0.11 Aug 15 2020
 - Fix panel height issue (gorarakelyan)
 

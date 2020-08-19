@@ -48,7 +48,7 @@ class HubMainScreen extends React.Component {
           },
           settings: {
             yScale: 0,
-            displayOutliers: false
+            displayOutliers: false,
           },
         },
 

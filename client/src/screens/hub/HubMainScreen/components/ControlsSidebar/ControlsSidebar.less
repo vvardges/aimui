@@ -26,6 +26,7 @@
   width: 28px;
   padding: var(--component-spacing-sm);
   border-radius: var(--border-radius);
+  border: 1px solid transparent;
   color: var(--grey);
   cursor: pointer;
   transition: background-color 110ms ease, color 110ms ease;
@@ -37,12 +38,14 @@
 
   &:active, &.active {
     background-color: var(--primary-bg);
+    border-color: var(--primary-lighter);
     color: var(--primary);
   }
 
   &.disabled {
     opacity: 0.65;
     cursor: default;
+    pointer-events: none;
 
     &:hover {
       background-color: initial;
