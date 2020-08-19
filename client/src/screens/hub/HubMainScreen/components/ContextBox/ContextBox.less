@@ -72,6 +72,7 @@
 .ContextBox__table__item {
   font-size: var(--text-sm);
   color: var(--grey);
+  cursor: pointer;
 
   &.active {
     td:first-child {
@@ -97,6 +98,12 @@
   height: 0.5em;
   border-radius: 50%;
   margin-right: var(--component-spacing-sm);
+}
+
+.ContextBox__table__item__name {
+  &:hover, &:active, &:visited {
+    color: inherit;
+  }
 }
 
 .ContextBox__table__item__context {

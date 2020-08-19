@@ -1,16 +1,83 @@
 import './ContextBox.less';
 
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Color from 'color';
 import moment from 'moment';
 
 import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
-import { classNames } from '../../../../../utils';
+import { buildUrl, classNames } from '../../../../../utils';
 import UI from '../../../../../ui';
+import { HUB_PROJECT_EXPERIMENT } from '../../../../../constants/screens';
 
 
 class ContextBox extends Component {
+  handleRowMove = (runHash, metricName, traceContext) => {
+    const focusedCircle = this.context.chart.focused.circle;
+    const focusedMetric = this.context.chart.focused.metric;
+
+    if (focusedCircle.active) {
+      return;
+    }
+
+    if (focusedMetric.runHash === runHash && focusedMetric.metricName === metricName
+      && focusedMetric.traceContext === traceContext) {
+      return;
+    }
+
+    this.context.setChartFocusedState({
+      metric: {
+        runHash,
+        metricName,
+        traceContext,
+      },
+    });
+  };
+
+  handleRowClick = (runHash, metricName, traceContext) => {
+    const focusedCircle = this.context.chart.focused.circle;
+    let step = this.context.chart.focused.step;
+
+    if (focusedCircle.runHash === runHash && focusedCircle.metricName === metricName
+      && focusedCircle.traceContext === traceContext) {
+      this.context.setChartFocusedState({
+        step: step || 0,
+        circle: {
+          active: false,
+          runHash: null,
+          metricName: null,
+          traceContext: null,
+          step: null,
+        },
+      });
+      return;
+    }
+
+    const line =  this.context.getTraceData(runHash, metricName, traceContext);
+    if (line === null || line.data === null || !line.data.length) {
+      return;
+    }
+
+    const point = this.context.getMetricStepDataByStepIdx(line.data, step);
+
+    if (point === null) {
+      // Select last point
+      step = line.data[line.data.length-1][1];
+    }
+
+    this.context.setChartFocusedState({
+      step: step,
+      circle: {
+        active: true,
+        runHash: runHash,
+        metricName: metricName,
+        traceContext: traceContext,
+        step: step,
+      },
+    });
+  };
+
   formatValue = (v) => {
     return v ? Math.round(v * 10e6) / 10e6 : 0;
   };
@@ -64,7 +131,13 @@ class ContextBox extends Component {
     // }
 
     return (
-      <tr className={className} style={style} key={`${run.run_hash}/${metric.name}/${contextHash}`}>
+      <tr
+        className={className}
+        style={style}
+        key={`${run.run_hash}/${metric.name}/${contextHash}`}
+        onMouseMove={() => this.handleRowMove(run.run_hash, metric.name, contextHash)}
+        onClick={() => this.handleRowClick(run.run_hash, metric.name, contextHash)}
+      >
         <td>
           <div
             className='ContextBox__table__item__run'
@@ -74,20 +147,8 @@ class ContextBox extends Component {
           >
             <div className='ContextBox__table__item__tag__dot' style={{ backgroundColor: color }} />
             {this.context.isTFSummaryScalar(run)
-              ? 'TF:'
-              : `${run.experiment_name}/`
-            }
-            {metric.name}
-            {!!trace.context &&
-              <>
-                {' ['}
-                <div className='ContextBox__table__item__context'>
-                  {Object.keys(trace.context).map((contextCat, contextCatKey) =>
-                    <UI.Text inline key={contextCatKey}>{contextCat}: {trace.context[contextCat]}</UI.Text>
-                  )}
-                </div>
-                {']'}
-              </>
+              ? this._renderTFRowName(metric)
+              : this._renderAimRowName(run, metric, trace)
             }
           </div>
         </td>
@@ -108,6 +169,38 @@ class ContextBox extends Component {
         </td>
       </tr>
     );
+  };
+
+  _renderAimRowName = (run, metric, trace) => {
+    return (
+      <Link
+        className='ContextBox__table__item__name'
+        to={buildUrl(HUB_PROJECT_EXPERIMENT, {
+          experiment_name: run.experiment_name,
+          commit_id: run.run_hash,
+        })}
+      >
+        {run.experiment_name}/
+        {metric.name}
+        {!!trace.context &&
+        <>
+          {' ['}
+          <div className='ContextBox__table__item__context'>
+            {Object.keys(trace.context).map((contextCat, contextCatKey) =>
+              <UI.Text inline key={contextCatKey}>{contextCat}: {trace.context[contextCat]}</UI.Text>
+            )}
+          </div>
+          {']'}
+        </>
+        }
+      </Link>
+    )
+  };
+
+  _renderTFRowName = (metric) => {
+    return (
+      <>TF:{metric.name}</>
+    )
   };
 
   _renderRowParams = (param, paramName) => {
