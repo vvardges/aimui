@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.0.13 Aug 21 2020
 - Fix panel canvas height issue (gorarakelyan)
 
 ## 1.0.12 Aug 21 2020
