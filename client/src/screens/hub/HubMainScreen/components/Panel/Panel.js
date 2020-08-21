@@ -119,7 +119,7 @@ class Panel extends Component {
   componentDidMount() {
     this.initD3();
     this.renderChart();
-    // setTimeout(() => this.renderChart(), 1000);
+    setTimeout(() => this.renderChart(), 1000);
     window.addEventListener('resize', () => this.resize());
   }
 
