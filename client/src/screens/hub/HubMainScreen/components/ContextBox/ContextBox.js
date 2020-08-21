@@ -204,7 +204,11 @@ class ContextBox extends Component {
   };
 
   _renderRowParams = (param, paramName) => {
-    if (typeof param === 'object') {
+    if (Array.isArray(param)) {
+      return <UI.Text>{paramName}={JSON.stringify(param)}</UI.Text>
+    } else if (typeof param === 'boolean') {
+      return <UI.Text>{paramName}={param ? 'true' : 'false'}</UI.Text>
+    } else if (typeof param === 'object') {
       if (Object.keys(param).length === 0) {
         return null;
       }
@@ -212,7 +216,7 @@ class ContextBox extends Component {
       return (
         <div className='ContextBox__param__items'>
           {!!paramName &&
-            <UI.Text className='ContextBox__param__items__name'>{paramName}:</UI.Text>
+          <UI.Text className='ContextBox__param__items__name'>{paramName}:</UI.Text>
           }
           {Object.keys(param).map((paramName, paramValKey) =>
             <div
@@ -224,8 +228,6 @@ class ContextBox extends Component {
           )}
         </div>
       )
-    } else if (Array.isArray(param)) {
-      return <UI.Text>{paramName}={JSON.stringify(param)}</UI.Text>
     } else {
       return <UI.Text>{paramName}={param}</UI.Text>
     }
