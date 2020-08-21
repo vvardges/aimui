@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.12 Aug 21 2020
+- Parse nested dictionary of parameters (gorarakelyan)
+- Add context area hover and click interactions (gorarakelyan)
+- Add ability to remove bottom outliers (gorarakelyan)
+- Add ability to remove outliers (roubkar)
+
 ## 1.0.11 Aug 15 2020
 - Fix panel height issue (gorarakelyan)
 

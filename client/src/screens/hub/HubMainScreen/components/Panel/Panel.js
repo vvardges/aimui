@@ -7,7 +7,7 @@ import moment from 'moment';
 
 import * as classes from '../../../../../constants/classes';
 import * as storeUtils from '../../../../../storeUtils';
-import { classNames, buildUrl } from '../../../../../utils';
+import { classNames, buildUrl, removeOutliers } from '../../../../../utils';
 import {
   HUB_PROJECT_EXPERIMENT,
   HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL,
@@ -89,7 +89,9 @@ class Panel extends Component {
     this.plot = null;
     this.bgRect = null;
     this.hoverLine = null;
-    this.circles = null;
+    this.axes = null;
+    this.lines = null;
+    this.attributes = null;
 
     this.curves =  [
       'curveLinear',
@@ -117,7 +119,7 @@ class Panel extends Component {
   componentDidMount() {
     this.initD3();
     this.renderChart();
-    setTimeout(() => this.renderChart(), 1000);
+    // setTimeout(() => this.renderChart(), 1000);
     window.addEventListener('resize', () => this.resize());
   }
 
@@ -205,7 +207,9 @@ class Panel extends Component {
 
         this.svg = visArea.append('svg')
           .attr('width', width)
-          .attr('height', height);
+          .attr('height', height)
+          .attr('xmlns', 'http://www.w3.org/2000/svg')
+          .attr('id', 'panel_svg');
 
         this.bgRect = this.svg.append('rect')
           .attr('x', margin.left)
@@ -216,6 +220,21 @@ class Panel extends Component {
 
         this.plot = this.svg.append('g')
           .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+        this.axes = this.plot.append('g')
+          .attr('class', 'Axes');
+
+        this.lines = this.plot.append('g')
+          .attr('class', 'Lines');
+        this.lines.append('clipPath')
+          .attr('id', 'lines-rect-clip')
+          .append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', width - margin.left - margin.right)
+          .attr('height', height - margin.top - margin.bottom);
+
+        this.attributes = this.plot.append('g');
 
         resolve();
       });
@@ -249,20 +268,53 @@ class Panel extends Component {
 
       let yMax = null, yMin = null;
 
-      runs.forEach((run) => {
-        run.metrics.forEach((metric) => {
-          metric.traces.forEach((trace) => {
-            const traceMax = Math.max(...trace.data.map(i => i[0]));
-            const traceMin = Math.min(...trace.data.map(i => i[0]));
-            if (yMax == null || traceMax > yMax) {
-              yMax = traceMax;
-            }
-            if (yMin == null || traceMin < yMin) {
-              yMin = traceMin;
-            }
+      if (this.context.chart.settings.displayOutliers) {
+        runs.forEach((run) => {
+          run.metrics.forEach((metric) => {
+            metric.traces.forEach((trace) => {
+              const traceMax = Math.max(...trace.data.map(elem => elem[0]));
+              const traceMin = Math.min(...trace.data.map(elem => elem[0]));
+              if (yMax == null || traceMax > yMax) {
+                yMax = traceMax;
+              }
+              if (yMin == null || traceMin < yMin) {
+                yMin = traceMin;
+              }
+            });
           });
         });
-      });
+      } else {
+        let minData = [], maxData = [];
+        runs.forEach((run) => {
+          run.metrics.forEach((metric) => {
+            metric.traces.forEach((trace) => {
+              if (trace.data) {
+                trace.data.forEach((elem, elemIdx) => {
+                  if (minData.length > elemIdx) {
+                    minData[elemIdx].push(elem[0]);
+                  } else {
+                    minData.push([elem[0]])
+                  }
+                  if (maxData.length > elemIdx) {
+                    maxData[elemIdx].push(elem[0]);
+                  } else {
+                    maxData.push([elem[0]])
+                  }
+                });
+              }
+            });
+          });
+        });
+
+        minData = minData.map(e => Math.min(...e));
+        minData = removeOutliers(minData, 4);
+
+        maxData = maxData.map(e => Math.max(...e));
+        maxData = removeOutliers(maxData, 4);
+
+        yMin = minData[0];
+        yMax = maxData[maxData.length-1];
+      }
 
       let yScaleBase;
       if (this.scale[this.context.chart.settings.yScale] === 'scaleLinear') {
@@ -278,12 +330,12 @@ class Panel extends Component {
         .domain([yMin, yMax])
         .range([height - margin.top - margin.bottom, 0]);
 
-      this.plot.append('g')
+      this.axes.append('g')
         .attr('class', 'x axis')
         .attr('transform', `translate(0, ${this.state.plotBox.height})`)
         .call(d3.axisBottom(xScale));
 
-      this.plot.append('g')
+      this.axes.append('g')
         .attr('class', 'y axis')
         .call(d3.axisLeft(yScale));
 
@@ -313,10 +365,11 @@ class Panel extends Component {
             .y(d => this.state.chart.yScale(d[0]))
             .curve(d3[this.curves[5]]);
 
-          this.plot.append('path')
+          this.lines.append('path')
             .attr('class', `PlotLine PlotLine-${this.context.traceToHash(run.run_hash, metric.name, trace.context)}`)
             .datum(trace.data)
             .attr('d', line)
+            .attr('clip-path', 'url(#lines-rect-clip)')
             .style('fill', 'none')
             .style('stroke', this.context.getMetricColor(run, metric, trace))
             .attr('data-run-hash', run.run_hash)
@@ -344,7 +397,7 @@ class Panel extends Component {
     const { height } = this.state.plotBox;
 
     // Draw hover line
-    this.hoverLine = this.plot.append('line')
+    this.hoverLine = this.attributes.append('line')
       .attr('x1', x)
       .attr('y1', 0)
       .attr('x2', x)
@@ -361,7 +414,7 @@ class Panel extends Component {
     const handlePointClick = this.handlePointClick;
     let focusedCircleElem = null;
 
-    this.circles = this.plot.append('g');
+    this.circles = this.attributes.append('g');
 
     runs.forEach((run) => {
       run.metrics.forEach((metric) => {

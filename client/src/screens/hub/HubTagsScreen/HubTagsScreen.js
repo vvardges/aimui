@@ -84,7 +84,7 @@ class HubTagsScreen extends React.Component {
                 <div className='HubTagsScreen__tags__item__body'>
                   <UI.Label color={tag.color}>{tag.name}</UI.Label>
                   <UI.Text className='HubTagsScreen__tags__item__commits' small inline type='grey'>
-                    Commits: {tag.num_commits}
+                    Runs: {tag.num_commits}
                   </UI.Text>
                 </div>
               </Link>

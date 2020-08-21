@@ -450,7 +450,7 @@ class HubExperimentScreen extends React.Component {
             <div className='ExperimentParams__item' key={key}>
               <div className='ExperimentParams__item__idx'>{key+1}</div>
               <div>{item}</div>
-              <div>{mapItem.data[item]}</div>
+              <div>{JSON.stringify(mapItem.data[item])}</div>
             </div>
           )}
         </ExperimentCell>
