@@ -435,10 +435,34 @@ paths:
             application/json:
               schema:
                 type: object
-  "/commits/info/{experiment}/{commit_id}":
+  "/commits/{experiment}/{commit_id}/info":
     get:
       operationId: getCommitInfo
       summary: Get commit info
+      tags:
+        - Commit
+      parameters:
+        - name: commit_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: experiment
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+  "/commits/{experiment}/{commit_id}/archivation/update":
+    post:
+      operationId: updateCommitArchivationFlag
+      summary: Update commit archivation
       tags:
         - Commit
       parameters:

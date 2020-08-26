@@ -145,6 +145,7 @@ export function getWithState(caseName, caseClass) {
         getExperiment: projectActions.getExperiment,
         getExperimentComponent: projectActions.getExperimentComponent,
         getCommitTags: commitActions.getCommitTags,
+        updateCommitArchivationFlag: commitActions.updateCommitArchivationFlag,
       });
       break;
     default:

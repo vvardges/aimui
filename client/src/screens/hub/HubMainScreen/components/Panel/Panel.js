@@ -477,55 +477,75 @@ class Panel extends Component {
       } else {
         const focusedCircleX = this.state.chart.xScale(focusedCircle.step);
         const line = this.context.getTraceData(focusedCircle.runHash, focusedCircle.metricName, focusedCircle.traceContext);
-        const focusedCircleVal = this.context.getMetricStepValueByStepIdx(line.data, focusedCircle.step);
-        const focusedCircleY = this.state.chart.yScale(focusedCircleVal);
+        if (line !== null) {
+          const focusedCircleVal = this.context.getMetricStepValueByStepIdx(line.data, focusedCircle.step);
+          if (focusedCircleVal !== null) {
+            const focusedCircleY = this.state.chart.yScale(focusedCircleVal);
 
-        this.circles.append('circle')
-          .attr('class', `HoverCircle HoverCircle-${focusedCircle.metricIndex} focus`)
-          .attr('cx', focusedCircleX)
-          .attr('cy', focusedCircleY)
-          .attr('r', circleActiveRadius)
-          .attr('data-x', focusedCircleX)
-          .attr('data-y', focusedCircleY)
-          .attr('data-step', step)
-          .attr('data-run-hash', focusedCircle.runHash)
-          .attr('data-metric-name', focusedCircle.metricName)
-          .attr('data-trace-context-hash', focusedCircle.traceContext)
-          .style('fill', this.context.getMetricColor(line.run, line.metric, line.trace))
-          .on('click', function() {
-            handlePointClick(focusedCircle.runHash,
-              focusedCircle.metricName,
-              focusedCircle.traceContext);
-          })
-          .moveToFront();
+            this.circles.append('circle')
+              .attr('class', `HoverCircle HoverCircle-${focusedCircle.metricIndex} focus`)
+              .attr('cx', focusedCircleX)
+              .attr('cy', focusedCircleY)
+              .attr('r', circleActiveRadius)
+              .attr('data-x', focusedCircleX)
+              .attr('data-y', focusedCircleY)
+              .attr('data-step', step)
+              .attr('data-run-hash', focusedCircle.runHash)
+              .attr('data-metric-name', focusedCircle.metricName)
+              .attr('data-trace-context-hash', focusedCircle.traceContext)
+              .style('fill', this.context.getMetricColor(line.run, line.metric, line.trace))
+              .on('click', function() {
+                handlePointClick(focusedCircle.runHash,
+                  focusedCircle.metricName,
+                  focusedCircle.traceContext);
+              })
+              .moveToFront();
+          }
+        }
       }
 
       // Open chart pop up
+      let point = null;
+      let pos = null;
       const line =  this.context.getTraceData(focusedCircle.runHash, focusedCircle.metricName,
         focusedCircle.traceContext);
-      const point = this.context.getMetricStepDataByStepIdx(line.data, focusedCircle.step);
-      const pos = this.positionPopUp(this.state.chart.xScale(focusedCircle.step),
-        this.state.chart.yScale(point[0]));
+      if (line !== null) {
+        point = this.context.getMetricStepDataByStepIdx(line.data, focusedCircle.step);
+        if (point !== null) {
+          pos = this.positionPopUp(this.state.chart.xScale(focusedCircle.step),
+            this.state.chart.yScale(point[0]));
+        }
+      }
       this.hideActionPopUps(false, () => {
-        this.setState((prevState) => {
-          return {
-            ...prevState,
-            chartPopUp: {
-              left: pos.left,
-              top: pos.top,
-              display: true,
-              selectedTags: [],
-              selectedTagsLoading: true,
-              run: line.run,
-              metric: line.metric,
-              trace: line.trace,
-              point: point,
+        if (line !== null && point !== null) {
+          this.setState((prevState) => {
+            return {
+              ...prevState,
+              chartPopUp: {
+                left: pos.left,
+                top: pos.top,
+                display: true,
+                selectedTags: [],
+                selectedTagsLoading: true,
+                run: line.run,
+                metric: line.metric,
+                trace: line.trace,
+                point: point,
+              },
+            };
+          });
+          if (this.context.isAimRun(line.run)) {
+            this.getCommitTags(line.run.run_hash);
+          }
+        } else {
+          this.context.setChartFocusedState({
+            circle: {
+              runHash: null,
+              metricName: null,
+              traceContext: null,
             },
-          };
-        });
-
-        if (this.context.isAimRun(line.run)) {
-          this.getCommitTags(line.run.run_hash);
+            step: null,
+          });
         }
       });
     } else {

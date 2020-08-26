@@ -188,6 +188,7 @@ class CommitNavigation extends Component {
     const maxAmount = 12;
 
     let commits = this.props.commits;
+    commits = commits.filter(c => !c.archived);
     commits.sort(this.commitsCompare);
 
     return (
@@ -245,7 +246,7 @@ class CommitNavigation extends Component {
 
     return (
       <div className={className} ref={this.navbarRef}>
-        {this.props.commits.length > 0 &&
+        {this.props.commits.filter(c => !c.archived).length > 0 &&
           <UI.Menu className='CommitNavigation__nav' outline={false} header='Runs:'>
             {this._renderCommits()}
           </UI.Menu>

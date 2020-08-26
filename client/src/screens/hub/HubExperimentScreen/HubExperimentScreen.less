@@ -1,20 +1,18 @@
 @import '../../../vars';
 
-.HubExperimentScreen__header {
+.HubExperimentScreen__header__top {
   display: grid;
   grid-template-columns: 200px 1fr;
   grid-column-gap: var(--component-spacing-md);
   align-items: center;
 
+  + .HubExperimentScreen__grid {
+    margin-top: var(--component-spacing-md);
+  }
+
   @media @sm-max {
     grid-template-columns: 1fr;
     grid-row-gap: var(--component-spacing-md);
-  }
-}
-
-.HubExperimentScreen__header {
-  + .HubExperimentScreen__grid {
-    margin-top: var(--component-spacing-md);
   }
 }
 
@@ -38,6 +36,17 @@
   a {
     text-decoration: none;
   }
+}
+
+.HubExperimentScreen__header__tags__title {
+  margin-right: var(--space-xs);
+}
+
+.HubExperimentScreen__header__bottom {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .HubExperimentScreen__grid {

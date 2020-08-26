@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request, \
     abort, make_response, send_from_directory
 from flask_restful import Api, Resource
 
-from aim.ql.grammar.statement import Statement
+from aim.ql.grammar.statement import Statement, Expression
 
 from app import App
 from app.projects.project import Project
@@ -49,17 +49,21 @@ class CommitMetricSearchApi(Resource):
 
         aim_runs, tf_logs = separate_select_statement(statement_select)
 
+        if 'run.archived' not in search_statement:
+            default_expression = 'run.archived is not True'
+        else:
+            default_expression = None
+
         # Get project
         project = Project()
         if not project.exists():
             return make_response(jsonify({}), 404)
 
-        try:
-            aim_metrics = project.repo.select_metrics(aim_runs, statement_expr)
-            if aim_metrics and len(aim_metrics):
-                runs += aim_metrics
-        except:
-            pass
+        aim_metrics = project.repo.select_metrics(aim_runs,
+                                                  statement_expr,
+                                                  default_expression)
+        if aim_metrics and len(aim_metrics):
+            runs += aim_metrics
 
         # Get tf.summary logs
         if len(tf_logs) > 0:
@@ -268,7 +272,7 @@ class CommitTagUpdateApi(Resource):
         }
 
 
-@commits_api.resource('/info/<experiment>/<commit_hash>')
+@commits_api.resource('/<experiment>/<commit_hash>/info')
 class CommitInfoApi(Resource):
     def get(self, experiment, commit_hash):
         commit_path = os.path.join('/store', experiment, commit_hash)
@@ -305,3 +309,23 @@ class CommitInfoApi(Resource):
                         process['pid'] = processes[0]['pid']
 
         return jsonify(info)
+
+
+@commits_api.resource('/<experiment>/<commit_hash>/archivation/update')
+class CommitArchivationApi(Resource):
+    def post(self, experiment, commit_hash):
+        # Get project
+        project = Project()
+        if not project.exists():
+            return make_response(jsonify({}), 404)
+
+        if project.repo.is_archived(experiment, commit_hash):
+            project.repo.unarchive(experiment, commit_hash)
+            return jsonify({
+                'archived': False,
+            })
+        else:
+            project.repo.archive(experiment, commit_hash)
+            return jsonify({
+                'archived': True,
+            })
