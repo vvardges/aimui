@@ -39,6 +39,10 @@ class HubExperimentScreen extends React.Component {
       metricsData: {},
       tags: [],
       tagsAreLoading: true,
+      archivationBtn: {
+        loading: false,
+        disabled: false,
+      },
     };
 
     this.contentRef = React.createRef();
@@ -52,7 +56,6 @@ class HubExperimentScreen extends React.Component {
 
   componentDidMount() {
     this.getExperiment();
-    this.getTags();
     this.handleResize();
     window.addEventListener('resize', this.handleResize);
 
@@ -78,7 +81,6 @@ class HubExperimentScreen extends React.Component {
         tags: [],
       }, () => {
         this.getExperiment();
-        this.getTags();
       });
     }
   }
@@ -89,7 +91,7 @@ class HubExperimentScreen extends React.Component {
       tagsAreLoading: true,
     }));
 
-    this.props.getCommitTags(this.props.match.params.commit_id).then(data => {
+    this.props.getCommitTags(this.state.commit.hash).then(data => {
       this.setState({
         tags: data,
       })
@@ -319,6 +321,7 @@ class HubExperimentScreen extends React.Component {
           selectedModel: !!data.models ? data.models[0] : false,
         };
       }, () => {
+        this.getTags();
         // if (data.metrics) {
         //   const metricsData = {};
         //   data.metrics.forEach((item) => {
@@ -458,6 +461,35 @@ class HubExperimentScreen extends React.Component {
     )
   };
 
+  handleArchivationBtnClick = () => {
+    const experimentName = this.props.match.params.experiment_name;
+    const runHash = this.state.commit.hash;
+
+    this.setState({
+      archivationBtn: {
+        loading: true,
+        disabled: true,
+      },
+    });
+
+    this.props.updateCommitArchivationFlag(experimentName, runHash).then(data => {
+      this.setState(prevState => ({
+        ...prevState,
+        commit: {
+          ...prevState.commit,
+          archived: data.archived,
+        },
+      }));
+    }).finally(() => {
+      this.setState({
+        archivationBtn: {
+          loading: false,
+          disabled: false,
+        },
+      });
+    });
+  };
+
   _renderExperimentHeader = () => {
     let experimentName = this.props.match.params.experiment_name;
 
@@ -470,58 +502,76 @@ class HubExperimentScreen extends React.Component {
       <>
         {!!this.props.project.branches && !!this.props.project.branches.length &&
           <div className='HubExperimentScreen__header'>
-            <UI.Dropdown
-              className='HubExperimentScreen__branchSelect'
-              width={200}
-              options={this.props.project.branches && this.props.project.branches.map(val => ({
-                value: val,
-                label: `${val}`,
-              }))}
-              defaultValue={{
-                value: experimentName,
-                label: `${experimentName}`,
-              }}
-              onChange={this.handleBranchChange}
-            />
-            <div>
-              {!!this.state.commit &&
-              <div className='HubExperimentScreen__header__content'>
-                <div className='HubExperimentScreen__header__content__process'>
-                  {!!this.state.commit.process && this.state.commit.process.finish === false &&
-                    <CurrentRunIndicator />
-                  }
-                  {this.state.commit.process &&
-                    <div>
-                      {!!this.state.commit.process.start_date &&
-                        <UI.Text
-                          type='grey'
-                          small
-                        >
-                          {!!this.state.commit.process.uuid
-                            ? <Link to={buildUrl(screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL, {
-                              process_id: this.state.commit.process.uuid,
-                            })}>
-                              Process
-                            </Link>
-                            : <UI.Text inline>Process</UI.Text>
-                          }
-                          {' '} started at {moment.unix(this.state.commit.process.start_date).format('D MMM, YY')}
-                        </UI.Text>
-                      }
-                      {!!processDuration &&
-                        <UI.Text
-                          type='grey'
-                          small
-                        >
-                          Execution Time:
-                          {` ${processDuration.hours}h ${processDuration.minutes}m ${processDuration.seconds}s`}
-                        </UI.Text>
-                      }
-                    </div>
-                  }
+            <div className='HubExperimentScreen__header__top'>
+              <UI.Dropdown
+                className='HubExperimentScreen__branchSelect'
+                width={200}
+                options={this.props.project.branches && this.props.project.branches.map(val => ({
+                  value: val,
+                  label: `${val}`,
+                }))}
+                defaultValue={{
+                  value: experimentName,
+                  label: `${experimentName}`,
+                }}
+                onChange={this.handleBranchChange}
+              />
+              <div>
+                {!!this.state.commit &&
+                <div className='HubExperimentScreen__header__content'>
+                  <div className='HubExperimentScreen__header__content__process'>
+                    {!!this.state.commit.process && this.state.commit.process.finish === false &&
+                      <CurrentRunIndicator />
+                    }
+                    {this.state.commit.process &&
+                      <div>
+                        {!!this.state.commit.process.start_date &&
+                          <UI.Text
+                            type='grey'
+                            small
+                          >
+                            {!!this.state.commit.process.uuid
+                              ? <Link to={buildUrl(screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL, {
+                                process_id: this.state.commit.process.uuid,
+                              })}>
+                                Process
+                              </Link>
+                              : <UI.Text inline>Process</UI.Text>
+                            }
+                            {' '}
+                            started at {moment.unix(this.state.commit.process.start_date).format('D MMM, YY')}
+                          </UI.Text>
+                        }
+                        {!!processDuration &&
+                          <UI.Text
+                            type='grey'
+                            small
+                          >
+                            Execution Time:
+                            {` ${processDuration.hours}h ${processDuration.minutes}m ${processDuration.seconds}s`}
+                          </UI.Text>
+                        }
+                      </div>
+                    }
+                  </div>
                 </div>
+                }
+              </div>
+            </div>
+            <UI.Line />
+            <div className='HubExperimentScreen__header__bottom'>
+              <div className='HubExperimentScreen__header__tags'>
                 {!this.state.tagsAreLoading && this.state.tags.length > 0 &&
-                  <div className='HubExperimentScreen__header__tags'>
+                  <>
+                    <UI.Text
+                      className='HubExperimentScreen__header__tags__title'
+                      key='tag'
+                      type='grey'
+                      small
+                      inline
+                    >
+                      Tag:
+                    </UI.Text>
                     {this.state.tags.map((tag) => (
                       <Link to={buildUrl(screens.HUB_PROJECT_EDIT_TAG, {
                         tag_id: tag.id,
@@ -534,11 +584,21 @@ class HubExperimentScreen extends React.Component {
                         </UI.Label>
                       </Link>
                     ))}
-                  </div>
+                  </>
                 }
               </div>
-              }
+              <div className='HubExperimentScreen__header__actions'>
+                <UI.Button
+                  size='tiny'
+                  type='secondary'
+                  onClick={() => this.handleArchivationBtnClick()}
+                  {...this.state.archivationBtn}
+                >
+                  {this.state.commit.archived ? 'Unarchive run' : 'Archive run'}
+                </UI.Button>
+              </div>
             </div>
+            <UI.Line />
           </div>
         }
       </>

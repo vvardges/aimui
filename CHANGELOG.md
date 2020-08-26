@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.14 Aug 26 2020
+- Add ability to archive/unarchive runs (gorarakelyan)
+
 ## 1.0.13 Aug 21 2020
 - Fix panel canvas height issue (gorarakelyan)
 

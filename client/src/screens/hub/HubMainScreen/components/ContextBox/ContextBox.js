@@ -75,6 +75,11 @@ class ContextBox extends Component {
         traceContext: traceContext,
         step: step,
       },
+      metric: {
+        runHash: null,
+        metricName: null,
+        traceContext: null,
+      },
     });
   };
 

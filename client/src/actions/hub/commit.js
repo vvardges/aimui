@@ -97,3 +97,15 @@ export function postTFLogParams(path, params, parsed_params) {
     });
   }
 }
+
+export function updateCommitArchivationFlag(experiment, commit_id) {
+  return dispatch => {
+    return new Promise((resolve, reject) => {
+      callApi('Commit.updateCommitArchivationFlag', { experiment, commit_id }).then((data) => {
+        resolve(data);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
+  }
+}

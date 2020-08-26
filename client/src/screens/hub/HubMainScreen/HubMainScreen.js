@@ -177,8 +177,12 @@ class HubMainScreen extends React.Component {
 
   URLSearchToState = (search) => {
     if (search.indexOf('?search=') !== -1) {
-      const encodedState = search.substr(8);
-      return JSON.parse(atob(encodedState));
+      try {
+        const encodedState = search.substr(8);
+        return JSON.parse(atob(encodedState));
+      } catch(e) {
+        return null;
+      }
     }
     return null;
   };
@@ -413,6 +417,10 @@ class HubMainScreen extends React.Component {
   };
 
   getMetricStepDataByStepIdx = (data, step) => {
+    if (data === null || !data) {
+      return null;
+    }
+
     for (let i = 0; i < data.length; i++) {
       if (data[i][1] === step) {
         return data[i];
