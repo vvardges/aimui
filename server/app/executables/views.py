@@ -114,8 +114,12 @@ class ExecutableListRunningApi(Resource):
 @executables_api.resource('/poll')
 class ExecutablePollData(Resource):
     def get(self):
-
-        return 123
+        while True:
+            isEmpty = App.track_manager.shouldRetrieve()
+            if len(isEmpty) != 0:
+                for portID in isEmpty.keys():
+                    if isEmpty[portID]:
+                        return portID
 
 @executables_api.resource('/kill/<pid>')
 class ExecutableKillRunningApi(Resource):
