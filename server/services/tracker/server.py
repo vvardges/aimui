@@ -89,19 +89,3 @@ class TrackManager():
         # close the socket
         if self._server:
             self._server.close()
-        
-        
-
-
-# # Test Code
-# track = TrackManager()
-# track.start()
-
-# while True:
-#     isEmpty = track.shouldRetrieve()
-#     if len(isEmpty) != 0:
-#         for portID in isEmpty.keys():
-#             if isEmpty[portID]:
-#                 print(track.retrieve(portID))
-
-
