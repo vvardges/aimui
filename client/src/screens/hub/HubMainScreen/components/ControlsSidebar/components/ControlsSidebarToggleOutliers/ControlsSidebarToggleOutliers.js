@@ -15,7 +15,7 @@ function ControlsSiderbarToggleOutliers(props) {
       onClick={props.toggleOutliers}
       title={props.disabled ? 'Outlier toggler is disabled' : props.displayOutliers ? 'Ignore outliers' : 'Display outliers'}
     >
-      <UI.Icon i='nc-vector' scale={1.4} />
+      <UI.Icon i='scatter_plot' scale={1.7} />
     </div>
   );
 }

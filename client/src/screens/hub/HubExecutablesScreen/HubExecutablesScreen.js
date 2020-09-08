@@ -96,7 +96,7 @@ class HubExecutablesScreen extends React.Component {
               <UI.Icon
                 className='HubExecutablesScreen__processes__update'
                 onClick={() => this.updateProcesses()}
-                i='nc-square-download'
+                i='get_app'
               />
             </UI.Text>
             <RunningExecutablesList ref={this.runningExecsRef} />

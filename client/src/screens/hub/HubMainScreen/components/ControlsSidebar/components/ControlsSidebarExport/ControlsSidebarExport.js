@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 function ControlsSidebarExport(props) {
   function exportPanel() {
     // FIXME: Need to implement more declarative approach for getting svg element (#64)
+    return;
     let svgElement = document.querySelector('#panel_svg');
     if (svgElement) {
       let { width, height } = svgElement.getBoundingClientRect();
@@ -63,7 +64,7 @@ function ControlsSidebarExport(props) {
       onClick={exportPanel}
       title={props.disabled ? 'Export is disabled' : 'Export panel as JPEG'}
     >
-      <UI.Icon i='nc-square-download' scale={1.4} />
+      <UI.Icon i='get_app' scale={1.7} />
     </div>
   );
 }

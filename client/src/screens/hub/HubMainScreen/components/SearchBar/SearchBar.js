@@ -39,7 +39,7 @@ class SearchBar extends Component {
     return (
       <div className='SearchBar'>
         <div className='SearchBar__search'>
-          <UI.Icon i='nc-zoom-2' className='SearchBar__search__icon' />
+          <UI.Icon i='search' className='SearchBar__search__icon' />
           <UI.Input
             className='SearchBar__search__input'
             classNameWrapper='SearchBar__search__input__wrapper'

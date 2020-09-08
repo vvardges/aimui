@@ -17,7 +17,7 @@ import ContextBox from './components/ContextBox/ContextBox';
 import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
 import { randomStr, deepEqual, buildUrl, getObjectValueByPath } from '../../../utils';
 import * as analytics from '../../../services/analytics';
-
+import TraceList from './models/TraceList';
 
 class HubMainScreen extends React.Component {
   constructor(props) {
@@ -68,6 +68,16 @@ class HubMainScreen extends React.Component {
           value: undefined,
         },
 
+        // Filter panel
+        contextFilter: {
+          groupByColor: [],
+          groupByStyle: [],
+          groupByChart: [],
+          aggregated: false
+        },
+
+        traceList: null,
+
         // Unique key to re-render svg on chart or runs states update
         key: null,
       },
@@ -80,6 +90,7 @@ class HubMainScreen extends React.Component {
       'chart.focused.circle',
       'chart.settings',
       'search',
+      'contextFilter'
     ];
 
     this.defaultSearchQuery = 'loss';
@@ -90,12 +101,6 @@ class HubMainScreen extends React.Component {
     this.unBindURLChangeListener = this.props.history.listen((location) => {
       this.recoverStateFromURL(location.search);
     });
-  }
-
-  componentDidUpdate() {
-    if (!!this.panelRef.current && this.state.context.key !== this.panelRef.current.key) {
-      this.panelRef.current.renderChart();
-    }
   }
 
   componentDidMount() {
@@ -141,6 +146,7 @@ class HubMainScreen extends React.Component {
       //     state.search.query = this.defaultSearchQuery;
       //   }
 
+      this.setContextFilter(state.contextFilter, null, false);
       if (!deepEqual(state.search, this.state.context.search)) {
         this.setSearchState(state.search, () => {
           this.searchByQuery(false).then(() => {
@@ -161,7 +167,7 @@ class HubMainScreen extends React.Component {
         this.setSearchState({
           query: setSearchQuery,
         }, () => {
-          this.searchByQuery().then(() => {});
+          this.searchByQuery().then(() => { });
         }, true);
       }
     }
@@ -218,11 +224,12 @@ class HubMainScreen extends React.Component {
         query: this.state.context.search.query,
         v: this.state.context.search.v,
       },
+      contextFilter: this.state.context.contextFilter
     };
 
     const URL = this.stateToURL(state);
     if (window.location.pathname + window.location.search !== URL) {
-      console.log('Update: URL');
+      console.log(`Update: URL(${URL})`);
       this.props.history.push(URL);
       if (state.search.query !== null) {
         setItem(USER_LAST_SEARCH_QUERY, state.search.query);
@@ -234,16 +241,18 @@ class HubMainScreen extends React.Component {
   };
 
   reRenderChart = () => {
+    const key = randomStr(16);
+    console.log(`Rerender: Panel(${key})`);
     this.setState(prevState => ({
       ...prevState,
       context: {
         ...prevState.context,
-        key: randomStr(16),
+        key,
       },
     }));
   };
 
-  setRunsState = (runsState, callback=null) => {
+  setRunsState = (runsState, callback = null) => {
     this.setState(prevState => ({
       ...prevState,
       context: {
@@ -257,11 +266,13 @@ class HubMainScreen extends React.Component {
       if (callback !== null) {
         callback();
       }
-      this.reRenderChart();
+
+      // FIXME
+      this.groupRuns();
     });
   };
 
-  setSearchState = (searchState, callback=null, updateURL=true) => {
+  setSearchState = (searchState, callback = null, updateURL = true) => {
     this.setState(prevState => ({
       ...prevState,
       context: {
@@ -285,7 +296,7 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  setSearchInputValue = (value, callback=null) => {
+  setSearchInputValue = (value, callback = null) => {
     this.setState(prevState => ({
       ...prevState,
       context: {
@@ -302,7 +313,7 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  setChartState = (chartState, callback=null, updateURL) => {
+  setChartState = (chartState, callback = null, updateURL) => {
     this.setState(prevState => {
       const chartStateUpd = Object.assign({}, prevState.context.chart, chartState);
       const contextState = Object.assign({}, prevState.context, {
@@ -322,7 +333,7 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  setChartSettingsState = (settingsState, callback=null, updateURL=true) => {
+  setChartSettingsState = (settingsState, callback = null, updateURL = true) => {
     this.setChartState({
       // FIXME: Not pass current state value
       settings: {
@@ -332,7 +343,7 @@ class HubMainScreen extends React.Component {
     }, callback, updateURL);
   };
 
-  setChartFocusedState = (focusedState, callback=null, updateURL=true) => {
+  setChartFocusedState = (focusedState, callback = null, updateURL = true) => {
     this.setChartState({
       // FIXME: Not pass current state value
       focused: {
@@ -402,6 +413,48 @@ class HubMainScreen extends React.Component {
     });
   };
 
+  groupRuns = () => {
+    if (!this.state.context.runs) {
+      return;
+    }
+
+    const runs = this.state.context.runs.data;
+    // FIXME
+    if (runs === null) {
+      return;
+    }
+
+    const grouping = {
+      'color': this.state.context.contextFilter.groupByColor,
+      'stroke': this.state.context.contextFilter.groupByStyle,
+      'chart': this.state.context.contextFilter.groupByChart,
+    };
+
+    const traceList = new TraceList(grouping);
+
+    runs.forEach((run) => {
+      run.metrics.forEach((metric) => {
+        metric.traces.forEach((trace) => {
+          traceList.addSeries(run, metric, trace);
+        });
+      });
+    });
+
+    this.setState(prevState => ({
+      ...prevState,
+      context: {
+        ...prevState.context,
+        traceList
+      },
+    }), () => {
+      this.reRenderChart();
+    });
+  };
+
+  updateGroupsProperties = () => {
+
+  };
+
   getMetricByHash = (hash) => {
     for (let i in this.state.context.runs.data) {
       if (this.state.context.runs.data[i].hash === hash) {
@@ -467,22 +520,22 @@ class HubMainScreen extends React.Component {
   };
 
   traceToHash = (runHash, metricName, traceContext) => {
-    if (typeof traceContext !== 'string' ) {
+    if (typeof traceContext !== 'string') {
       traceContext = this.contextToHash(traceContext);
     }
     // FIXME: Change encoding algorithm to base58
     return btoa(`${runHash}/${metricName}/${traceContext}`).replace(/[\=\+\/]/g, '');
   };
 
-  hashToColor = (hash, alpha=1) => {
+  hashToColor = (hash, alpha = 1) => {
     const index = hash.split('').map((c, i) => hash.charCodeAt(i)).reduce((a, b) => a + b);
     const r = 50;
-    const g = ( index * 27 ) % 255;
-    const b = ( index * 13 ) % 255;
+    const g = (index * 27) % 255;
+    const b = (index * 13) % 255;
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
 
-  getMetricColor = (run, metric, trace, alpha=1) => {
+  getMetricColor = (run, metric, trace, alpha = 1) => {
     // TODO: Add conditional coloring
     const hash = this.traceToHash(run.run_hash, metric.name, trace.context);
     return this.hashToColor(hash, alpha);
@@ -494,9 +547,45 @@ class HubMainScreen extends React.Component {
     });
   };
 
+  setContextFilter = (contextFilter, callback = this.groupRuns, updateURL = true) => {
+    this.setState(prevState => {
+      let stateUpdate = {
+        ...prevState,
+        context: {
+          ...prevState.context,
+          contextFilter: {
+            ...prevState.context.contextFilter,
+            ...contextFilter,
+          },
+        },
+      };
+
+      if (
+        stateUpdate.context.contextFilter.aggregated &&
+        stateUpdate.context.contextFilter.groupByColor.length === 0 &&
+        stateUpdate.context.contextFilter.groupByStyle.length === 0 &&
+        stateUpdate.context.contextFilter.groupByChart.length === 0
+      ) {
+        stateUpdate.context.contextFilter.aggregated = false;
+      }
+
+      return stateUpdate;
+    }, () => {
+      if (callback !== null) {
+        callback();
+      }
+      if (updateURL) {
+        this.updateURL();
+      }
+    });
+  };
+
   _renderContent = () => {
     const headerWidth = 70;
     const controlsWidth = 75;
+
+    const panelIndicesLen = this.state.context.traceList?.getChartsNumber();
+    const panelIndices = [...Array(panelIndicesLen).keys()];
 
     return (
       <div
@@ -508,11 +597,16 @@ class HubMainScreen extends React.Component {
         <div className='HubMainScreen'>
           <div className='HubMainScreen__grid'>
             <div className='HubMainScreen__grid__body'>
-              <div className='HubMainScreen__grid__search'>
+              <div className='HubMainScreen__grid__search-filter'>
                 <SearchBar />
               </div>
-              <div className='HubMainScreen__grid__panel'>
-                <Panel ref={this.panelRef} />
+              <div className='HubMainScreen__grid__panel' >
+                <Panel
+                  ref={this.panelRef}
+                  parentHeight={this.state.height}
+                  parentWidth={this.state.width}
+                  indices={panelIndices}
+                />
               </div>
               <div className='HubMainScreen__grid__context'>
                 <ContextBox
@@ -546,25 +640,26 @@ class HubMainScreen extends React.Component {
             ...this.state.context,
 
             // Pass methods
-            searchByQuery               : this.searchByQuery,
-            setChartSettingsState       : this.setChartSettingsState,
-            setChartFocusedState        : this.setChartFocusedState,
-            setSearchState              : this.setSearchState,
-            setSearchInputValue         : this.setSearchInputValue,
-            setRunsState                : this.setRunsState,
-            getMetricByHash             : this.getMetricByHash,
-            getTraceData                : this.getTraceData,
-            getMetricStepValueByStepIdx : this.getMetricStepValueByStepIdx,
-            getMetricStepDataByStepIdx  : this.getMetricStepDataByStepIdx,
-            getTFSummaryScalars         : this.getTFSummaryScalars,
-            getMetricColor              : this.getMetricColor,
-            isAimRun                    : this.isAimRun,
-            isTFSummaryScalar           : this.isTFSummaryScalar,
-            hashToColor                 : this.hashToColor,
-            contextToHash               : this.contextToHash,
-            traceToHash                 : this.traceToHash,
-            updateURL                   : this.updateURL,
-            toggleOutliers              : this.toggleOutliers
+            searchByQuery: this.searchByQuery,
+            setChartSettingsState: this.setChartSettingsState,
+            setChartFocusedState: this.setChartFocusedState,
+            setSearchState: this.setSearchState,
+            setSearchInputValue: this.setSearchInputValue,
+            setRunsState: this.setRunsState,
+            getMetricByHash: this.getMetricByHash,
+            getTraceData: this.getTraceData,
+            getMetricStepValueByStepIdx: this.getMetricStepValueByStepIdx,
+            getMetricStepDataByStepIdx: this.getMetricStepDataByStepIdx,
+            getTFSummaryScalars: this.getTFSummaryScalars,
+            getMetricColor: this.getMetricColor,
+            isAimRun: this.isAimRun,
+            isTFSummaryScalar: this.isTFSummaryScalar,
+            hashToColor: this.hashToColor,
+            contextToHash: this.contextToHash,
+            traceToHash: this.traceToHash,
+            updateURL: this.updateURL,
+            toggleOutliers: this.toggleOutliers,
+            setContextFilter: this.setContextFilter
           }}
         >
           {this._renderContent()}

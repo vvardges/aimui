@@ -170,7 +170,7 @@ class ExecutableViewForm extends Component {
           }
         >
           <UI.Icon
-            i='nc-trash-simple'
+            i='delete'
             className='ExecutableViewForm__FormGroup__icon'
           />
         </div>
@@ -190,7 +190,7 @@ class ExecutableViewForm extends Component {
           }
         >
           <UI.Icon
-            i='nc-trash-simple'
+            i='delete'
             className='ExecutableViewForm__FormGroup__icon'
           />
         </div>

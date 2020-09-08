@@ -1,5 +1,3 @@
-@item-size: 28px;
-
 .ControlsSidebar {
   width: 100%;
   height: 100%;
@@ -22,9 +20,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 28px;
-  width: 28px;
   padding: var(--component-spacing-sm);
+  margin-bottom: var(--component-spacing-xs);
   border-radius: var(--border-radius);
   border: 1px solid transparent;
   color: var(--grey);
@@ -59,46 +56,32 @@
   }
 }
 
-.ControlsSidebar__menu {
-  display: none;
+.ControlsSidebar__item__popup  {
   position: absolute;
   top: 0;
-  right: calc(@item-size + 3 * var(--component-spacing-sm));
-  width: 200px;
-  min-height: calc(@item-size + 2 * var(--component-spacing-sm));
+  right: calc(54px + var(--component-spacing-sm));
+  background-color: #fff;
+  outline: 0;
+  width: 350px;
   overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 9999;
   border: 1px solid var(--primary-lighter);
-  border-radius: var(--border-radius) 0 0 var(--border-radius);
+  border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
-  background-color: #FFF;
-
-  &.open {
-    display: block;
-  }
+  z-index: 9999;
 }
 
-.ControlsSidebar__menu__list__header {
+.ControlsSidebar__item__popup__header {
   padding: var(--component-spacing-xs) var(--component-spacing-sm);
   background-color: var(--primary-bg);
   color: var(--primary-dark);
   border-bottom: 1px solid var(--primary-lighter);
 }
 
-.ControlsSidebar__menu__list__items {
-  padding: var(--component-spacing-xs) 0;
+.ControlsSidebar__item__popup__body {
+  padding: var(--component-spacing-xs) var(--component-spacing-sm);
 }
 
-.ControlsSidebar__menu__item {
-  font-size: var(--text-md);
-  padding: var(--component-spacing-xs) var(--component-spacing-sm);
-  color: var(--grey-dark);
-  cursor: pointer;
-  transition: background-color 110ms ease, color 110ms ease;
-
-  &:hover {
-    background-color: var(--grey-bg);
-    color: var(--grey-darker);
-  }
+.ControlsSidebar__item__popup__body__field {
+  margin-top: var(--component-spacing-xs);
+  margin-right: var(--component-spacing-xs);
 }

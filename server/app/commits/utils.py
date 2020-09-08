@@ -5,6 +5,7 @@ from aim.ql.utils import match
 from app.db import db
 from app.commits.models import TFSummaryLog
 from adapters.tf_summary_adapter import TFSummaryAdapter
+from app.utils import normalize_type
 
 
 def select_tf_summary_scalars(tags, expression: Optional[Expression] = None):
@@ -14,16 +15,22 @@ def select_tf_summary_scalars(tags, expression: Optional[Expression] = None):
     params = {}
     scalars_models = db.session.query(TFSummaryLog).all()
     for scalar in scalars_models:
-        params[scalar.log_path] = scalar.params_json
+        scalar_params = scalar.params_json
+        for k, v in scalar_params.items():
+            scalar_params[k] = normalize_type(v)
+        params[scalar.log_path] = scalar_params
 
     if expression is not None:
         log_paths = []
         for scalar in scalars_models:
+            hparams = {
+                'hparams': params[scalar.log_path],
+            }
             fields = {
-                'params': params[scalar.log_path],
+                'params': hparams,
                 'context': None,
             }
-            if match(False, expression, fields):
+            if match(False, expression, None, fields, hparams):
                 log_paths.append(scalar.log_path)
     else:
         log_paths = TFSummaryAdapter.list_log_dir_paths()
@@ -38,7 +45,9 @@ def select_tf_summary_scalars(tags, expression: Optional[Expression] = None):
                 'run_hash': TFSummaryAdapter.name_to_hash(log_path),
                 'experiment_name': None,
                 'metrics': dir_scalars,
-                'params': params.get(log_path) or {},
+                'params': {
+                    'hparams': params.get(log_path) or {},
+                },
                 'source': 'tf_summary',
             })
 

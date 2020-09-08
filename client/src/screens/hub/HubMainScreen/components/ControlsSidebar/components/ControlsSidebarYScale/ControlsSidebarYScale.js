@@ -48,7 +48,7 @@ function ControlsSidebarYScale(props) {
         })}
         onClick={(e) => handleControlClick(e, 'yScale')}
       >
-        <UI.Icon i='nc-settings-gear-63' scale={1.4} />
+        <UI.Icon i='settings' scale={1.4} />
       </div>
       <div
         className={classNames({

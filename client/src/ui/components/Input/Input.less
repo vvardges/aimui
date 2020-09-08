@@ -24,9 +24,14 @@
 
   padding: 0.68em;
   line-height: 1em;
+
   border: 1px solid var(--grey-lighter);
   border-radius: var(--border-radius);
   transition: all 110ms ease-in-out;
+
+  &::-webkit-input-placeholder {
+    line-height: normal !important;
+  }
 
   &:focus {
     border-color: var(--primary);

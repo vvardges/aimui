@@ -20,6 +20,7 @@ import MenuItem from './components/Menu/MenuItem';
 import Histogram from './components/Histogram/Histogram';
 import RangeSlider from './components/RangeSlider/RangeSlider';
 import Label from './components/Label/Label';
+import Tag from './components/Tag/Tag';
 
 
 export default {
@@ -41,4 +42,5 @@ export default {
   Histogram,
   RangeSlider,
   Label,
+  Tag
 };

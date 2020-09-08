@@ -1,4 +1,3 @@
-import './nucleo/nucleo.less';
 import './Icon.less';
 
 import React, { Component } from 'react';
@@ -11,7 +10,7 @@ class Icon extends Component {
       Icon: true,
       [this.props.className]: this.props.className,
       [this.props.i]: this.props.i,
-      'nc-icon': true,
+      'material-icons-outlined': true,
       no_spacing_right: !this.props.spacingRight,
     });
 
@@ -23,7 +22,9 @@ class Icon extends Component {
           ...this.props.style,
           fontSize: `${this.props.scale}em`,
         }}
-      />
+      >
+        {this.props.i}
+      </span>
     );
   }
 }

@@ -1,143 +1,32 @@
 @import '../../../../../vars.less';
 
-.ControlPanel {
-  width: 100%;
+.Panel {
   height: 100%;
-  position: relative;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  /* justify-content: space-between; */
+  box-sizing: border-box;
+  /* TODO: overflow: scroll if number of charts > 9 */
   overflow: hidden;
-  user-select: none;
   border-radius: var(--border-radius) var(--border-radius) 0 0;
-  background-color: var(--grey-bg-light);
+  background-color: var(--grey-lighter);
+  box-shadow: inset 0 0 4px #FFF;
 }
 
-.ControlPanel__svg {
-  user-select: none;
+.Panel__chart-wrapper {
+  box-sizing: border-box;
+  overflow: hidden;
+  background-color: #FFF;
+  box-shadow: 0 0 0 1px var(--grey-lighter);
 }
 
-.ControlPanel__body {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.ControlPanel__msg__wrapper {
+.Panel__msg__wrapper {
   display: flex;
   width: 100%;
   height: 100%;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-}
-
-.PopUp__area {
-  position: absolute;
-}
-
-.ControlPanel__popup__tags__wrapper {
-  width: 100%;
-  overflow-y: auto;
-}
-
-.ControlPanel__popup__tags {
-  display: flex;
-  align-items: center;
-  width: auto;
-  white-space: nowrap;
-
-  > * {
-    margin-right: var(--component-spacing-sm);
-  }
-  > *:last-child {
-    margin-right: 0;
-  }
-}
-
-.CommitPopUp__process {
-  display: flex;
-  align-items: center;
-
-  .Button {
-    margin-left: var(--component-spacing-sm);
-  }
-}
-
-.TagPopUp__tags {
-}
-
-.TagPopUp__tags__title {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--component-spacing-xs) !important;
-
-  a {
-    text-decoration: none;
-  }
-}
-
-.TagPopUp__tags__title {
-}
-
-.TagPopUp__tags__item {
-  margin: var(--component-spacing-sm) var(--component-spacing-sm) 0 0;
-  cursor: pointer;
-
-  &.active {
-    box-shadow: 0 0 0 1px #FFF, 0 0 0 2px var(--primary);
-  }
-}
-
-.ControlPanel__popup__tags__update {
-  cursor: pointer;
-  color: var(--primary);
-
-  &:hover {
-    color: var(--primary-dark);
-  }
-}
-
-.ControlPanel__svg {
-  .HoverCircle {
-    stroke: var(--primary);
-    stroke-width: 1 !important;
-    transition: all 200ms ease;
-    cursor: pointer;
-
-    &.active {
-      stroke: var(--primary-light);
-      stroke-width: 5 !important;
-    }
-
-    &:active {
-      stroke: var(--primary);
-      stroke-width: 2 !important;
-    }
-
-    &.focus {
-      stroke: var(--primary) !important;
-      stroke-width: 3 !important;
-    }
-  }
-
-  .PlotLine {
-    stroke-width: 1 !important;
-
-    &.active {
-      stroke-width: 3 !important;
-    }
-
-    &.fade {
-      stroke-width: 1 !important;
-      opacity: 0.3;
-    }
-  }
-
-  .HoverLine {
-    stroke: var(--grey-light);
-  }
-
-  .Lines {
-    overflow: hidden;
-  }
+  background-color: #FFF;
 }

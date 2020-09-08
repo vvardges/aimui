@@ -1,0 +1,57 @@
+@import '../../../../../../../vars.less';
+
+.ContextBox__table__group__popup__toggle {
+  display: flex;
+  align-items: center;
+  width: var(--space-sm);
+  height: var(--space-sm);
+  cursor: pointer;
+}
+
+.ContextBox__table__group__popup__toggle__icon {
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.active {
+    opacity: 1;
+  }
+}
+
+.ContextBox__table__group__popup {
+  position: absolute;
+  background-color: #fff;
+  outline: 0;
+  width: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--primary-lighter);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  z-index: 999;
+  margin-top: 3px;
+  right: calc(-1 * var(--space-sm));
+  top: var(--space-md);
+}
+
+.ContextBox__table__group__popup__header {
+  padding: var(--component-spacing-xs) var(--component-spacing-sm);
+  background-color: var(--primary-bg);
+  color: var(--primary-dark);
+  border-bottom: 1px solid var(--primary-lighter);
+}
+
+.ContextBox__table__group__popup__body {
+  padding: var(--component-spacing-xs) var(--component-spacing-sm);
+}
+
+.ContextBox__table__group__popup__body__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .Text {
+    font-weight: normal;
+  }
+}

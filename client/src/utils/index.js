@@ -160,6 +160,27 @@ export function deepEqual(object1, object2) {
   return true;
 }
 
+export function objectsIntersection(o1, o2) {
+  return Object.keys(o1).concat(Object.keys(o2)).sort().reduce(function (r, a, i, aa) {
+    if (i && aa[i - 1] === a) {
+      r.push(a);
+    }
+    return r;
+  }, []);
+}
+
+export function arraysIntersection(a, b) {
+  let t;
+  if (b.length > a.length) {
+    t = b;
+    b = a;
+    a = t;
+  }
+  return a.filter(function (e) {
+    return b.indexOf(e) > -1;
+  });
+}
+
 export function removeOutliers(values, t=2) {
   values.sort((a, b) => a - b);
   while (true) {
@@ -179,4 +200,19 @@ export function removeOutliers(values, t=2) {
     }
   }
   return values;
+}
+
+export function randomString(length, chars) {
+  let mask = '';
+  if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
+  if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if (chars.indexOf('#') > -1) mask += '0123456789';
+  if (chars.indexOf('!') > -1) mask += '~`!@#$%^&*()_+-={}[]:";\'<>?,./|\\';
+
+  let result = '';
+  for (let i = length; i > 0; --i) {
+    result += mask[Math.floor(Math.random() * mask.length)];
+  }
+
+  return result;
 }
