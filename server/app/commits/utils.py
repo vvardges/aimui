@@ -24,7 +24,7 @@ def select_tf_summary_scalars(tags, expression: Optional[Expression] = None):
         log_paths = []
         for scalar in scalars_models:
             hparams = {
-                'hparams': params[scalar.log_path],
+                'params': params[scalar.log_path],
             }
             fields = {
                 'params': hparams,
@@ -46,7 +46,7 @@ def select_tf_summary_scalars(tags, expression: Optional[Expression] = None):
                 'experiment_name': None,
                 'metrics': dir_scalars,
                 'params': {
-                    'hparams': params.get(log_path) or {},
+                    'params': params.get(log_path) or {},
                 },
                 'source': 'tf_summary',
             })
