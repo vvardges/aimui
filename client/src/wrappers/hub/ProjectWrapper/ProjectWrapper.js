@@ -98,7 +98,7 @@ class ProjectWrapper extends React.Component {
                 <Link
                   to={screens.MAIN}
                 >
-                  <UI.Icon i='nc-link-72' scale={1} spacingRight />
+                  <UI.Icon i='link' scale={1} spacingRight />
                   <UI.Text>{project.path}</UI.Text>
                 </Link>
               </div>

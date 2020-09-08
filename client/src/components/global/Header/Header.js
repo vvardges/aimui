@@ -37,7 +37,7 @@ class Header extends React.Component {
               <div className='Header__item__wrapper'>
                 <NavLink exact to={screens.MAIN}>
                   <div className='Header__item'>
-                    <UI.Icon i='nc-preferences' className='Header__item__icon' />
+                    <UI.Icon i='tune' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Panel</UI.Text>
                   </div>
                 </NavLink>
@@ -50,7 +50,7 @@ class Header extends React.Component {
                   })}
                 >
                   <div className='Header__item'>
-                    <UI.Icon i='nc-layers-3' className='Header__item__icon' />
+                    <UI.Icon i='layers' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Runs</UI.Text>
                   </div>
                 </NavLink>
@@ -63,7 +63,7 @@ class Header extends React.Component {
                   })}
                 >
                   <div className='Header__item'>
-                    <UI.Icon i='nc-flag-points-32' className='Header__item__icon' />
+                    <UI.Icon i='flag' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Tags</UI.Text>
                   </div>
                 </NavLink>
@@ -76,7 +76,7 @@ class Header extends React.Component {
                   })}
                 >
                   <div className='Header__item'>
-                    <UI.Icon i='nc-archive-2' className='Header__item__icon' />
+                    <UI.Icon i='archive' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Processes</UI.Text>
                   </div>
                 </NavLink>
@@ -104,7 +104,7 @@ class Header extends React.Component {
               <div className='Header__item__wrapper'>
                 <a className='link' href='https://github.com/aimhubio/aim#contents' target='_blank' rel='noreferrer noopener'>
                   <div className='Header__item'>
-                    <UI.Icon i='nc-single-folded-content' className='Header__item__icon' />
+                    <UI.Icon i='description' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Docs</UI.Text>
                   </div>
                 </a>

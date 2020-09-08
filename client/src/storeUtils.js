@@ -52,7 +52,7 @@ export function getWithState(caseName, caseClass) {
       break;
     case classes.SEARCH_BAR:
       break;
-    case classes.CONTROL_PANEL:
+    case classes.PANEL_CHART:
       Object.assign(mapDispatch2Props, {
         getCommitTags: commitActions.getCommitTags,
         getCommitInfo: commitActions.getCommitInfo,

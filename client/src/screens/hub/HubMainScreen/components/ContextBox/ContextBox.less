@@ -22,22 +22,20 @@
   width: auto;
   min-width: 100%;
   font-size: var(--text-md);
-
-  .ContextBox__table__item:nth-child(2n) {
-    background-color: #FAFAFA;
-  }
+  border-collapse: collapse;
 }
 
 .ContextBox__table__topheader {
   color: var(--grey);
 
-  td {
+  th {
     background-color: var(--grey-bg);
-    padding: 2px var(--space-xxs);
-    border-bottom: 1px solid var(--grey-lighter);
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid #CCC;
     text-transform: uppercase;
-    position: sticky;
-    top: 0;
+    text-align: left;
+    position: relative;
+    z-index: 1;
   }
 }
 
@@ -59,14 +57,31 @@
 }
 
 .ContextBox__table__subheader {
-  background-color: #EEE;
   color: var(--grey-darker);
   font-size: var(--text-sm);
 
-  td {
-    padding: var(--space-xxxs) var(--space-xxs);
-    border-bottom: 1px solid var(--grey-lighter);
+  th {
+    position: sticky;
+    top: 0px;
+    background-color: #EEE;
+    padding: var(--space-xxs) var(--space-sm);
+    box-shadow: inset 1px -1px 0 0 #CCC, 1px 0px 0 0 #CCC;
+    text-align: left;
+    z-index: 7;
+
+    &:first-of-type {
+      left: 0;
+      z-index: 8;
+      min-width: 200px;
+    }
   }
+}
+
+.ContextBox__table__subheader__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .ContextBox__table__item {
@@ -74,18 +89,119 @@
   color: var(--grey);
   cursor: pointer;
 
-  &.active {
-    td:first-child {
-      border-left-color: inherit;
-    }
-  }
-
   td {
-    padding: 4px;
+    position: relative;
+    background-color: inherit;
+    padding: var(--space-sm);
+    box-shadow: inset 1px -1px 0 0 var(--grey-lighter), 1px -1px 0 0 var(--grey-lighter);
   }
 
   td:first-child {
-    border-left: 3px solid transparent;
+    position: sticky;
+    left: 0;
+    background-color: #FFF;
+    z-index: 2;
+  }
+}
+
+.ContextBox__table__group-indicator {
+  position: sticky;
+  top: calc(var(--space-xs) + var(--text-height-sm) + 1px);
+  left: 0;
+  z-index: 4;
+  padding: var(--space-xxs) var(--space-sm);
+  background-color: #f5f5f5;
+  box-shadow: inset 1px -1px 0 0 var(--grey-lighter), 1px 0px 0 0 var(--grey-lighter);
+  
+  & > div {
+    display: flex;
+    align-items: center;
+
+    & > * {
+      margin-right: var(--space-xs);
+    }
+  }
+}
+
+.ContextBox__table__group-indicator__color {
+  width: var(--space-sm);
+  height: var(--space-sm);
+  border: 1px solid;
+  border-radius: var(--border-radius);
+}
+
+.ContextBox__table__group-indicator__stroke {
+  background-color: #FFF;
+  width: var(--space-lg);
+  height: var(--space-sm);
+  border: 1px solid;
+  border-radius: var(--border-radius);
+  padding: 0 var(--space-xxs);
+
+  & > line {
+    stroke: #333;
+    stroke-width: 2;
+  }
+}
+
+.ContextBox__table__group-indicator__toggle {
+  display: flex;
+  align-items: center;
+  width: var(--space-sm);
+  height: var(--space-sm);
+  cursor: pointer;
+}
+
+.ContextBox__table__group-indicator__toggle__icon {
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+
+.ContextBox__table__group-indicator__props {
+  .Text {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.ContextBox__table__group-indicator_placeholder  {
+  position: sticky;
+  top: calc(var(--space-xs) + var(--text-height-sm) + 1px);
+  z-index: 3;
+  padding: var(--space-xxs) var(--space-sm);
+  background-color: #f5f5f5 !important;
+  box-shadow: inset 0px -1px 0 0 var(--grey-lighter);
+}
+
+.ContextBox__table__group-aggregation {
+  position: sticky;
+  top: calc(var(--space-xs) + var(--text-height-sm) + 1px);
+  right: 0;
+  z-index: 3;
+  padding: var(--space-xxs) var(--space-sm);
+  background-color: #f5f5f5 !important;
+  box-shadow: inset 0px -1px 0 0 var(--grey-lighter), 1px 0px 0 0 var(--grey-lighter);
+}
+
+.ContextBox__table__group-aggregation__data {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.ContextBox__table__group-aggregation__data__item {
+  width: 90px;
+  padding: 0 var(--space-sm);
+  border-right: 1px solid #CCC;
+
+  &:last-of-type {
+    border-right: none;
   }
 }
 
@@ -101,6 +217,7 @@
 }
 
 .ContextBox__table__item__name {
+  color: inherit;
   &:hover, &:active, &:visited {
     color: inherit;
   }
@@ -140,3 +257,12 @@
   display: inline-block;
   margin-right: 10px;
 }
+
+@media not all and (min-resolution:.001dpcm)
+{ @supports (-webkit-appearance:none) {
+  .ContextBox__table__group-indicator,
+  .ContextBox__table__group-indicator_placeholder,
+  .ContextBox__table__group-aggregation {
+    top: initial;
+  }
+}}
