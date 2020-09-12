@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.1.1 Sep 12 2020
 - Hide processes icon from left sidebar (gorarakelyan)
 
 ## 1.1.0 Sep 8 2020
