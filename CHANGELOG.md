@@ -1,5 +1,7 @@
 # Changelog
 
+- Show empty experiment message (gorarakelyan)
+
 ## 1.1.1 Sep 12 2020
 - Hide processes icon from left sidebar (gorarakelyan)
 

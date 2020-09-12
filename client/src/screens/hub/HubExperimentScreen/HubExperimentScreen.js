@@ -91,7 +91,7 @@ class HubExperimentScreen extends React.Component {
       tagsAreLoading: true,
     }));
 
-    this.props.getCommitTags(this.state.commit.hash).then(data => {
+    this.props.getCommitTags(this.state.commit?.hash).then(data => {
       this.setState({
         tags: data,
       })
@@ -494,7 +494,7 @@ class HubExperimentScreen extends React.Component {
     let experimentName = this.props.match.params.experiment_name;
 
     let processDuration = null;
-    if (!!this.state.commit.process && !!this.state.commit.process.time) {
+    if (!!this.state.commit?.process?.time) {
       processDuration = formatDuration(this.state.commit.process.time);
     }
 
@@ -520,10 +520,10 @@ class HubExperimentScreen extends React.Component {
                 {!!this.state.commit &&
                 <div className='HubExperimentScreen__header__content'>
                   <div className='HubExperimentScreen__header__content__process'>
-                    {!!this.state.commit.process && this.state.commit.process.finish === false &&
+                    {this.state.commit?.process?.finish === false &&
                       <CurrentRunIndicator />
                     }
-                    {this.state.commit.process &&
+                    {!!this.state.commit?.process &&
                       <div>
                         {!!this.state.commit.process.start_date &&
                           <UI.Text
@@ -558,10 +558,12 @@ class HubExperimentScreen extends React.Component {
                 }
               </div>
             </div>
-            <UI.Line />
-            <div className='HubExperimentScreen__header__bottom'>
-              <div className='HubExperimentScreen__header__tags'>
-                {!this.state.tagsAreLoading && this.state.tags.length > 0 &&
+            {!!this.state.commit &&
+            <>
+              <UI.Line/>
+              <div className='HubExperimentScreen__header__bottom'>
+                <div className='HubExperimentScreen__header__tags'>
+                  {!this.state.tagsAreLoading && this.state.tags.length > 0 &&
                   <>
                     <UI.Text
                       className='HubExperimentScreen__header__tags__title'
@@ -585,27 +587,29 @@ class HubExperimentScreen extends React.Component {
                       </Link>
                     ))}
                   </>
-                }
+                  }
+                </div>
+                <div className='HubExperimentScreen__header__actions'>
+                  <UI.Button
+                    size='tiny'
+                    type='secondary'
+                    onClick={() => this.handleArchivationBtnClick()}
+                    {...this.state.archivationBtn}
+                  >
+                    {this.state.commit.archived ? 'Unarchive run' : 'Archive run'}
+                  </UI.Button>
+                </div>
               </div>
-              <div className='HubExperimentScreen__header__actions'>
-                <UI.Button
-                  size='tiny'
-                  type='secondary'
-                  onClick={() => this.handleArchivationBtnClick()}
-                  {...this.state.archivationBtn}
-                >
-                  {this.state.commit.archived ? 'Unarchive run' : 'Archive run'}
-                </UI.Button>
-              </div>
-            </div>
-            <UI.Line />
+              <UI.Line/>
+            </>
+            }
           </div>
         }
       </>
     )
   };
 
-  _renderEmptyBranch = () => {
+  _renderEmptyBranch = (exist=true) => {
     let experimentName = this.props.match.params.experiment_name;
 
     return (
@@ -617,7 +621,7 @@ class HubExperimentScreen extends React.Component {
             src={require('../../../asset/illustrations/no_data.svg')}
           />
           <UI.Text size={6} type='grey-light' center>
-            Experiment "{experimentName}" is empty
+            {!exist ? `Experiment "${experimentName}" does not exist` :  `Experiment "${experimentName}" is empty`}
           </UI.Text>
         </div>
       </>
@@ -642,7 +646,7 @@ class HubExperimentScreen extends React.Component {
   };
 
   _renderNavigation = () => {
-    if (!this.state.experiment || !this.state.experiment.init || !this.state.experiment.branch_init) {
+    if (!this.state.experiment?.branch_init || this.state.experiment?.branch_empty) {
       return null;
     }
 
@@ -651,7 +655,7 @@ class HubExperimentScreen extends React.Component {
     return (
       <CommitNavigation
         commits={this.state.commits}
-        active={this.state.commit.hash}
+        active={this.state.commit?.hash}
         experimentName={experimentName}
       />
     )
@@ -667,13 +671,14 @@ class HubExperimentScreen extends React.Component {
     }
 
     if (!this.state.experiment || !this.state.experiment.branch_init) {
+      return this._renderEmptyBranch(false);
+    }
+
+    if (this.state.experiment.branch_empty) {
       return this._renderEmptyBranch();
     }
 
-    if (this.state.experiment.index_empty
-      || (!this.state.experiment.maps.length && !this.state.experiment.metrics.length
-          && !this.state.experiment.models.length)
-    ) {
+    if (!this.state.experiment.maps.length && !this.state.experiment.metrics.length) {
       return this._renderEmptyIndex();
     }
 
