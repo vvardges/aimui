@@ -38,7 +38,7 @@ class Header extends React.Component {
                 <NavLink exact to={screens.MAIN}>
                   <div className='Header__item'>
                     <UI.Icon i='tune' className='Header__item__icon' />
-                    <UI.Text className='Header__item__title'>Panel</UI.Text>
+                    <UI.Text className='Header__item__title'>Explore</UI.Text>
                   </div>
                 </NavLink>
               </div>
@@ -68,7 +68,7 @@ class Header extends React.Component {
                   </div>
                 </NavLink>
               </div>
-              <div className='Header__item__wrapper'>
+              <div className='Header__item__wrapper hidden'>
                 <NavLink
                   to={screens.HUB_PROJECT_EXECUTABLES}
                   className={classNames({

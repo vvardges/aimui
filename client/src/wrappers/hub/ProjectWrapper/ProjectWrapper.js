@@ -95,10 +95,10 @@ class ProjectWrapper extends React.Component {
           <UI.Container size={this.props.size}>
             <div className='ProjectWrapper__header__cont'>
               <div className='ProjectWrapper__breadcrumb'>
+                <UI.Icon className='ProjectWrapper__breadcrumb__icon' i='link' scale={1} spacingRight />
                 <Link
                   to={screens.MAIN}
                 >
-                  <UI.Icon i='link' scale={1} spacingRight />
                   <UI.Text>{project.path}</UI.Text>
                 </Link>
               </div>
