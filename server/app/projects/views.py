@@ -102,7 +102,7 @@ class ProjectExperimentApi(Resource):
                 'branch_empty': True,
             })
 
-        if hasattr(commit, 'process'):
+        if 'process' in commit.keys():
             if not commit['process']['finish']:
                 if commit['process'].get('start_date'):
                     duration = time.time() - commit['process']['start_date']
