@@ -15,12 +15,6 @@ function ExperimentCell({ children, className, type, height, width, footerTitle,
     [`width_${width}`]: true,
   });
 
-  if (footerTitle.length) {
-    footerTitle = footerTitle[0].toUpperCase() + footerTitle.slice(1);
-  } else {
-    footerTitle = footerTitle.toUpperCase();
-  }
-
   return (
     <div className={compClassName}>
       <div className='ExperimentCell__body'>

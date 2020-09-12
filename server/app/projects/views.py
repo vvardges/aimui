@@ -92,16 +92,17 @@ class ProjectExperimentApi(Resource):
             for commit_item, config in commits.items():
                 if commit is None or config['date'] > commit['date']:
                     commit = config
-        elif commit_id == 'index':
-            commit = {
-                'hash': 'index',
-                'date': time.time(),
-                'index': True,
-            }
         else:
             commit = commits.get(commit_id)
 
-        if hasattr(commit, 'process'):
+        if not commit:
+            return jsonify({
+                'init': True,
+                'branch_init': True,
+                'branch_empty': True,
+            })
+
+        if 'process' in commit.keys():
             if not commit['process']['finish']:
                 if commit['process'].get('start_date'):
                     duration = time.time() - commit['process']['start_date']
@@ -113,9 +114,6 @@ class ProjectExperimentApi(Resource):
                 commit['process']['time'] = commit['process']['finish_date'] \
                                             - commit['process']['start_date']
 
-        if not commit:
-            return make_response(jsonify({}), 404)
-
         objects_dir_path = os.path.join(dir_path, commit['hash'], 'objects')
         meta_file_path = os.path.join(objects_dir_path, 'meta.json')
 
@@ -125,15 +123,6 @@ class ProjectExperimentApi(Resource):
                 meta_file_content = json.loads(meta_file.read())
         except:
             meta_file_content = {}
-
-        if commit['hash'] == 'index' and len(meta_file_content) == 0:
-            return jsonify({
-                'init': True,
-                'branch_init': True,
-                'index_empty': True,
-                'commit': commit,
-                'commits': commits,
-            })
 
         # Get all artifacts(objects) listed in the meta file
         metric_objects = []
@@ -221,6 +210,7 @@ class ProjectExperimentApi(Resource):
         return jsonify({
             'init': True,
             'branch_init': True,
+            'branch_empty': False,
             'commit': commit,
             'commits': commits,
             'metrics': metric_objects,

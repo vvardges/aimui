@@ -380,7 +380,7 @@ class ContextBox extends Component {
                 {
                   Object.keys(this.paramKeys).map(paramKey => (
                     <th key={paramKey} colSpan={this.paramKeys[paramKey].length}>
-                      <UI.Text overline>{paramKey}</UI.Text>
+                      <UI.Text className='ContextBox__table__topheader__item__name'>{paramKey}</UI.Text>
                     </th>
                   ))
                 }
@@ -412,7 +412,7 @@ class ContextBox extends Component {
                   Object.keys(this.paramKeys).map(paramKey => this.paramKeys[paramKey].map(key => (
                     <th key={key}>
                       <div className='ContextBox__table__subheader__item'>
-                        <UI.Text overline>{key}</UI.Text>
+                        <UI.Text className='ContextBox__table__subheader__item__name'>{key}</UI.Text>
                         <ColumnGroupPopup
                           param={`params.${paramKey}.${key}`}
                           contextFilter={this.context.contextFilter}
