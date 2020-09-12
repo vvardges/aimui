@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.1.2 Sep 13 2020
 - Show empty experiment message (gorarakelyan)
 
 ## 1.1.1 Sep 12 2020
