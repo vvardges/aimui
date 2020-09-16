@@ -10,6 +10,7 @@ import GroupByChart from './components/GroupByChart/GroupByChart';
 import Aggregate from './components/Aggregate/Aggregate';
 import UI from '../../../../../ui';
 import ControlsSidebarZoom from './components/ControlsSidebarZoom/ControlsSidebarZoom';
+import ControlsSiderbarToggleInterpolation from './components/ControlsSidebarToggleInterpolation/ControlsSidebarToggleInterpolation';
 
 function ControlsSidebar() {
   let { contextFilter, setContextFilter, runs, chart, toggleOutliers, setChartSettingsState } = useContext(HubMainScreenContext);
@@ -39,14 +40,17 @@ function ControlsSidebar() {
         <UI.Line />
         <ControlsSiderbarToggleOutliers 
           disabled={runs.isLoading || runs.isEmpty}
-          displayOutliers={chart.settings.displayOutliers}
-          toggleOutliers={toggleOutliers}
+          settings={chart.settings}
+          setChartSettingsState={setChartSettingsState}
+        />
+        <ControlsSiderbarToggleInterpolation
+          disabled={runs.isLoading || runs.isEmpty}
+          settings={chart.settings}
+          setChartSettingsState={setChartSettingsState}
         />
         <UI.Line />
         <ControlsSidebarZoom
-          zoomMode={chart.settings.zoomMode}
-          zoom={chart.settings.zoom}
-          zoomHistory={chart.settings.zoomHistory}
+          settings={chart.settings}
           setChartSettingsState={setChartSettingsState}
         />
         {/* <ControlsSidebarExport 

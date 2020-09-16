@@ -4,32 +4,32 @@ import PropTypes from 'prop-types';
 import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
 
-function ControlsSiderbarToggleOutliers(props) {
+function ControlsSiderbarToggleInterpolation(props) {
   return (
     <div
       className={classNames({
         ControlsSidebar__item: true,
         disabled: props.disabled,
-        active: !props.settings.persistent.displayOutliers
+        active: props.settings.persistent.interpolate
       })}
       onClick={evt => !props.disabled && props.setChartSettingsState({
         ...props.settings,
         persistent: {
           ...props.settings.persistent,
-          displayOutliers: !props.settings.persistent.displayOutliers
+          interpolate: !props.settings.persistent.interpolate
         }
       })}
-      title={props.disabled ? 'Outlier toggler is disabled' : props.settings.persistent.displayOutliers ? 'Ignore outliers' : 'Display outliers'}
+      title={props.disabled ? '' : `${props.settings.persistent.interpolate ? 'Cubic' : 'Linear'} interpolation method is applied`}
     >
-      <UI.Icon i='scatter_plot' scale={1.7} />
+      <UI.Icon i='multiline_chart' scale={1.7} />
     </div>
   );
 }
 
-ControlsSiderbarToggleOutliers.propTypes = {
+ControlsSiderbarToggleInterpolation.propTypes = {
   settings: PropTypes.object,
   disabled: PropTypes.bool,
   setChartSettingsState: PropTypes.func
 };
 
-export default ControlsSiderbarToggleOutliers;
+export default ControlsSiderbarToggleInterpolation;

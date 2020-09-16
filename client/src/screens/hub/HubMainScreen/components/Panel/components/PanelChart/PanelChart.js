@@ -310,12 +310,12 @@ class PanelChart extends Component {
     }));
 
     const xScale = d3.scaleLinear()
-      .domain(this.context.chart.settings.zoom?.[this.props.index]?.x ?? [0, xMax])
+      .domain(this.context.chart.settings.persistent.zoom?.[this.props.index]?.x ?? [0, xMax])
       .range([0, width - margin.left - margin.right]);
 
     let yMax = null, yMin = null;
 
-    if (this.context.chart.settings.displayOutliers) {
+    if (this.context.chart.settings.persistent.displayOutliers) {
       this.context.traceList?.traces.forEach(traceModel => traceModel.series.forEach(series => {
         if (traceModel.chart !== this.props.index) {
           return;
@@ -374,7 +374,7 @@ class PanelChart extends Component {
     }
 
     const yScale = yScaleBase
-      .domain(this.context.chart.settings.zoom?.[this.props.index]?.y ?? [yMin, yMax])
+      .domain(this.context.chart.settings.persistent.zoom?.[this.props.index]?.y ?? [yMin, yMax])
       .range([height - margin.top - margin.bottom, 0]);
 
     this.axes.append('g')
@@ -413,7 +413,7 @@ class PanelChart extends Component {
       const line = d3.line()
         .x(d => this.state.chart.xScale(d[1]))
         .y(d => this.state.chart.yScale(d[0]))
-        .curve(d3[this.curves[5]]);
+        .curve(d3[this.curves[this.context.chart.settings.persistent.interpolate ? 5 : 0]]);
 
       this.lines.append('path')
         .attr('class', 'PlotLine PlotLine-' + this.context.traceToHash(run.run_hash, metric.name, trace.context))
@@ -451,7 +451,7 @@ class PanelChart extends Component {
         .x((d, i) => this.state.chart.xScale(d[1]))
         .y0((d, i) => this.state.chart.yScale(d[0]))
         .y1((d, i) => this.state.chart.yScale(traceMin.data[i][0]))
-        .curve(d3[this.curves[5]]);
+        .curve(d3[this.curves[this.context.chart.settings.interpolate ? 5 : 0]]);
 
       this.lines.append('path')
         .attr('class', 'PlotArea' + (traceModel.hasRun(focusedLineAttr?.runHash, focusedLineAttr?.metricName, focusedLineAttr?.traceContext) ? ' active' : ''))
@@ -466,7 +466,7 @@ class PanelChart extends Component {
       const line = d3.line()
         .x(d => this.state.chart.xScale(d[1]))
         .y(d => this.state.chart.yScale(d[0]))
-        .curve(d3[this.curves[5]]);
+        .curve(d3[this.curves[this.context.chart.settings.interpolate ? 5 : 0]]);
 
       this.lines.append('path')
         .attr('class', 'PlotLine ' + 'PlotLine-' + this.context.traceToHash(runAvg.run_hash, metricAvg.name, traceAvg.context))
@@ -687,7 +687,11 @@ class PanelChart extends Component {
         return this.idleTimeout = setTimeout(this.idled, 350); // This allows to wait a little bit
       }
       this.context.setChartSettingsState({
-        zoom: null
+        ...this.context.chart.settings,
+        persistent: {
+          ...this.context.chart.settings.persistent,
+          zoom: null
+        }
       });
     } else {
       const { margin } = this.state.visBox;
@@ -702,21 +706,25 @@ class PanelChart extends Component {
       let [yMin, yMax] = this.state.chart.yScale.domain();
 
       this.context.setChartSettingsState({
-        zoom: {
-          ...this.context.chart.settings.zoom ?? {},
-          [this.props.index]: {
-            x: (extent[1][0] - extent[0][0]) < 50 ? null : [
-              left < xMin ? xMin : left,
-              right > xMax ? xMax : right,
-            ],
-            y: (extent[1][1] - extent[0][1]) < 50 ? null : [
-              bottom < yMin ? yMin : bottom,
-              top > yMax ? yMax : top,
-            ],
-          }
-        },
+        ...this.context.chart.settings,
         zoomMode: false,
-        zoomHistory: [[this.props.index, this.context.chart.settings.zoom?.[this.props.index] ?? null]].concat(this.context.chart.settings.zoomHistory)
+        zoomHistory: [[this.props.index, this.context.chart.settings.persistent.zoom?.[this.props.index] ?? null]].concat(this.context.chart.settings.zoomHistory),
+        persistent: {
+          ...this.context.chart.settings.persistent,
+          zoom: {
+            ...this.context.chart.settings.persistent.zoom ?? {},
+            [this.props.index]: {
+              x: (extent[1][0] - extent[0][0]) < 50 ? null : [
+                left < xMin ? xMin : left,
+                right > xMax ? xMax : right,
+              ],
+              y: (extent[1][1] - extent[0][1]) < 50 ? null : [
+                bottom < yMin ? yMin : bottom,
+                top > yMax ? yMax : top,
+              ],
+            }
+          },
+        }
       });
       // This remove the grey brush area as soon as the selection has been done
       this.svg.select('.brush').call(this.brush.move, null);

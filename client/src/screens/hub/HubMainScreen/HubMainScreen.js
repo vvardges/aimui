@@ -48,10 +48,13 @@ class HubMainScreen extends React.Component {
           },
           settings: {
             yScale: 0,
-            displayOutliers: false,
-            zoom: null,
             zoomMode: false,
             zoomHistory: [],
+            persistent: {
+              displayOutliers: false,
+              zoom: null,
+              interpolate: false,
+            }
           },
         },
 
@@ -91,8 +94,7 @@ class HubMainScreen extends React.Component {
 
     this.URLStateParams = [
       'chart.focused.circle',
-      'chart.settings.displayOutliers',
-      'chart.settings.zoom',
+      'chart.settings.persistent',
       'search',
       'contextFilter'
     ];
@@ -220,8 +222,7 @@ class HubMainScreen extends React.Component {
     const state = {
       chart: {
         settings: {
-          displayOutliers: this.state.context.chart.settings.displayOutliers,
-          zoom: this.state.context.chart.settings.zoom,
+          persistent: this.state.context.chart.settings.persistent,
         },
         focused: {
           circle: this.state.context.chart.focused.circle,
@@ -548,12 +549,6 @@ class HubMainScreen extends React.Component {
     return this.hashToColor(hash, alpha);
   };
 
-  toggleOutliers = () => {
-    this.setChartSettingsState({
-      displayOutliers: !this.state.context.chart.settings.displayOutliers
-    });
-  };
-
   setContextFilter = (contextFilter, callback = this.groupRuns, updateURL = true, resetZoom = true) => {
     this.setState(prevState => {
       let stateUpdate = {
@@ -568,7 +563,7 @@ class HubMainScreen extends React.Component {
       };
 
       if (resetZoom && contextFilter.hasOwnProperty('groupByChart')) {
-        stateUpdate.context.chart.settings.zoom = null;
+        stateUpdate.context.chart.settings.persistent.zoom = null;
         stateUpdate.context.chart.settings.zoomMode = false;
         stateUpdate.context.chart.settings.zoomHistory = [];
       }
@@ -671,7 +666,6 @@ class HubMainScreen extends React.Component {
             contextToHash: this.contextToHash,
             traceToHash: this.traceToHash,
             updateURL: this.updateURL,
-            toggleOutliers: this.toggleOutliers,
             setContextFilter: this.setContextFilter,
           }}
         >

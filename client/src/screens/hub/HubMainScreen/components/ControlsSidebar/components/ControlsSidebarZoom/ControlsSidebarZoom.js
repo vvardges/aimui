@@ -9,7 +9,9 @@ function ControlsSidebarZoom(props) {
   let [opened, setOpened] = useState(false);
   let popupRef = useRef();
 
-  let zoomedChartIndeces = Object.keys(props.zoom || {}).filter(chartIndex => props.zoom?.[chartIndex] !== null && props.zoom?.[chartIndex] !== undefined);
+  const {persistent: { zoom }, zoomHistory, zoomMode} = props.settings;
+
+  let zoomedChartIndeces = Object.keys(zoom || {}).filter(chartIndex => zoom?.[chartIndex] !== null && zoom?.[chartIndex] !== undefined);
 
   useEffect(() => {
     if (opened && popupRef.current) {
@@ -21,17 +23,18 @@ function ControlsSidebarZoom(props) {
     if (zoomedChartIndeces.length === 0) {
       setOpened(false);
     }
-  }, [props.zoom]);
+  }, [zoom]);
 
   return (
     <>
       <div
         className={classNames({
           ControlsSidebar__item: true,
-          active: props.zoomMode,
+          active: zoomMode,
         })}
         onClick={evt => props.setChartSettingsState({
-          zoomMode: !props.zoomMode
+          ...props.settings,
+          zoomMode: !zoomMode
         })}
         title='Zoom in'
       >
@@ -44,14 +47,18 @@ function ControlsSidebarZoom(props) {
             disabled: zoomedChartIndeces.length === 0,
           })}
           onClick={evt => {
-            if (props.zoom !== null) {
+            if (zoom !== null) {
               props.setChartSettingsState({
+                ...props.settings,
                 zoomMode: false,
-                zoom: props.zoomHistory[0] === null || props.zoomHistory[0] === undefined ? null : {
-                  ...props.zoom ?? {},
-                  [props.zoomHistory[0][0]]: props.zoomHistory[0][1]
+                zoomHistory: zoomHistory.slice(1),
+                persistent: {
+                  ...props.settings.persistent,
+                  zoom: zoomHistory[0] === null || zoomHistory[0] === undefined ? null : {
+                    ...zoom ?? {},
+                    [zoomHistory[0][0]]: zoomHistory[0][1]
+                  }
                 },
-                zoomHistory: props.zoomHistory.slice(1)
               });
               setOpened(false);
             }
@@ -60,7 +67,7 @@ function ControlsSidebarZoom(props) {
         >
           <UI.Icon i='zoom_out' scale={1.7} />
         </div>
-        {props.zoomHistory.length > 0 && (
+        {zoomHistory.length > 0 && (
           <div
             className={classNames({
               ControlsSidebar__item__popup__opener: true,
@@ -97,14 +104,18 @@ function ControlsSidebarZoom(props) {
                     key={chartIndex}
                     className='ControlsSidebar__item__popup__list__item'
                     onClick={evt => {
-                      let historyIndex = _.findIndex(props.zoomHistory, item => item[0] === +chartIndex);
+                      let historyIndex = _.findIndex(zoomHistory, item => item[0] === +chartIndex);
                       props.setChartSettingsState({
+                        ...props.settings,
                         zoomMode: false,
-                        zoom: {
-                          ...props.zoom ?? {},
-                          [chartIndex]: props.zoomHistory[historyIndex]?.[1] ?? null
-                        },
-                        zoomHistory: props.zoomHistory.filter((item, index) => index !== historyIndex)
+                        zoomHistory: zoomHistory.filter((item, index) => index !== historyIndex),
+                        persistent: {
+                          ...props.settings.persistent,
+                          zoom: {
+                            ...zoom ?? {},
+                            [chartIndex]: zoomHistory[historyIndex]?.[1] ?? null
+                          }
+                        }
                       });
                     }}
                   >
@@ -119,9 +130,13 @@ function ControlsSidebarZoom(props) {
                 className='ControlsSidebar__item__popup__list__item'
                 onClick={evt => {
                   props.setChartSettingsState({
+                    ...props.settings,
                     zoomMode: false,
-                    zoom: null,
-                    zoomHistory: []
+                    zoomHistory: [],
+                    persistent: {
+                      ...props.settings.persistent,
+                      zoom: null
+                    }
                   });
                   setOpened(false);
                 }}
@@ -137,9 +152,7 @@ function ControlsSidebarZoom(props) {
 }
 
 ControlsSidebarZoom.propTypes = {
-  zoomMode: PropTypes.bool,
-  zoom: PropTypes.object,
-  zoomHistory: PropTypes.array,
+  settings: PropTypes.object,
   setChartSettingsState: PropTypes.func,
 };
 
