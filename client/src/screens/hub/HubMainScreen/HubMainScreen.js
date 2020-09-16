@@ -49,6 +49,9 @@ class HubMainScreen extends React.Component {
           settings: {
             yScale: 0,
             displayOutliers: false,
+            zoom: null,
+            zoomMode: false,
+            zoomHistory: [],
           },
         },
 
@@ -88,7 +91,8 @@ class HubMainScreen extends React.Component {
 
     this.URLStateParams = [
       'chart.focused.circle',
-      'chart.settings',
+      'chart.settings.displayOutliers',
+      'chart.settings.zoom',
       'search',
       'contextFilter'
     ];
@@ -146,7 +150,7 @@ class HubMainScreen extends React.Component {
       //     state.search.query = this.defaultSearchQuery;
       //   }
 
-      this.setContextFilter(state.contextFilter, null, false);
+      this.setContextFilter(state.contextFilter, null, false, false);
       if (!deepEqual(state.search, this.state.context.search)) {
         this.setSearchState(state.search, () => {
           this.searchByQuery(false).then(() => {
@@ -200,8 +204,8 @@ class HubMainScreen extends React.Component {
     }
 
     for (let p in this.URLStateParams) {
-      if (!deepEqual(getObjectValueByPath(state, this.URLStateParams[p]),
-        getObjectValueByPath(this.state.context, this.URLStateParams[p]))) {
+      if (!deepEqual(getObjectValueByPath(state, this.URLStateParams[p]) ?? {},
+        getObjectValueByPath(this.state.context, this.URLStateParams[p]) ?? {})) {
         return true;
       }
     }
@@ -215,7 +219,10 @@ class HubMainScreen extends React.Component {
 
     const state = {
       chart: {
-        settings: this.state.context.chart.settings,
+        settings: {
+          displayOutliers: this.state.context.chart.settings.displayOutliers,
+          zoom: this.state.context.chart.settings.zoom,
+        },
         focused: {
           circle: this.state.context.chart.focused.circle,
         },
@@ -547,7 +554,7 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  setContextFilter = (contextFilter, callback = this.groupRuns, updateURL = true) => {
+  setContextFilter = (contextFilter, callback = this.groupRuns, updateURL = true, resetZoom = true) => {
     this.setState(prevState => {
       let stateUpdate = {
         ...prevState,
@@ -559,6 +566,12 @@ class HubMainScreen extends React.Component {
           },
         },
       };
+
+      if (resetZoom && contextFilter.hasOwnProperty('groupByChart')) {
+        stateUpdate.context.chart.settings.zoom = null;
+        stateUpdate.context.chart.settings.zoomMode = false;
+        stateUpdate.context.chart.settings.zoomHistory = [];
+      }
 
       if (
         stateUpdate.context.contextFilter.aggregated &&
@@ -659,7 +672,7 @@ class HubMainScreen extends React.Component {
             traceToHash: this.traceToHash,
             updateURL: this.updateURL,
             toggleOutliers: this.toggleOutliers,
-            setContextFilter: this.setContextFilter
+            setContextFilter: this.setContextFilter,
           }}
         >
           {this._renderContent()}

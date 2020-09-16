@@ -9,9 +9,10 @@ import GroupByStyle from './components/GroupByStyle/GroupByStyle';
 import GroupByChart from './components/GroupByChart/GroupByChart';
 import Aggregate from './components/Aggregate/Aggregate';
 import UI from '../../../../../ui';
+import ControlsSidebarZoom from './components/ControlsSidebarZoom/ControlsSidebarZoom';
 
 function ControlsSidebar() {
-  let { contextFilter, setContextFilter, runs, chart, toggleOutliers } = useContext(HubMainScreenContext);
+  let { contextFilter, setContextFilter, runs, chart, toggleOutliers, setChartSettingsState } = useContext(HubMainScreenContext);
 
   const { groupByColor, groupByStyle, groupByChart, aggregated } = contextFilter;
 
@@ -40,6 +41,13 @@ function ControlsSidebar() {
           disabled={runs.isLoading || runs.isEmpty}
           displayOutliers={chart.settings.displayOutliers}
           toggleOutliers={toggleOutliers}
+        />
+        <UI.Line />
+        <ControlsSidebarZoom
+          zoomMode={chart.settings.zoomMode}
+          zoom={chart.settings.zoom}
+          zoomHistory={chart.settings.zoomHistory}
+          setChartSettingsState={setChartSettingsState}
         />
         {/* <ControlsSidebarExport 
           disabled={runs.isLoading || runs.isEmpty} 

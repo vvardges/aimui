@@ -6,7 +6,7 @@ function ContextTrace(props) {
   let [expanded, setExpanded] = useState(true);
   let hubMainScreenContext = useContext(HubMainScreenContext);
 
-  const { trace, formatValue, step, colsCount } = props;
+  const { trace, formatValue, step, colsCount, theadHeight } = props;
 
   function formatGroupedValue(value) {
     if (value === null || value === undefined) {
@@ -27,7 +27,10 @@ function ContextTrace(props) {
       {
         hubMainScreenContext.traceList?.traces.length > 1 && (
           <tr>
-            <td className='ContextBox__table__group-indicator'>
+            <td
+              className='ContextBox__table__group-indicator'
+              style={{ top: theadHeight }}
+            >
               <div>
                 <div
                   className='ContextBox__table__group-indicator__toggle'
@@ -39,6 +42,13 @@ function ContextTrace(props) {
                     className='ContextBox__table__group-indicator__toggle__icon' 
                   />
                 </div>
+                {
+                  hubMainScreenContext.traceList?.grouping?.chart?.length > 0 && (
+                    <div className='ContextBox__table__group-indicator__chart'>
+                      <UI.Text small>{trace.chart + 1}</UI.Text>
+                    </div>
+                  )
+                }
                 {
                   hubMainScreenContext.traceList?.grouping?.color?.length > 0 && (
                     <div
@@ -84,8 +94,16 @@ function ContextTrace(props) {
                 </div>
               </div>
             </td>
-            <td className='ContextBox__table__group-indicator_placeholder' colSpan={colsCount - 4} />
-            <td className='ContextBox__table__group-aggregation' colSpan={3}>
+            <td
+              className='ContextBox__table__group-indicator__placeholder'
+              colSpan={colsCount - 4}
+              style={{ top: theadHeight }}
+            />
+            <td
+              className='ContextBox__table__group-aggregation'
+              colSpan={3}
+              style={{ top: theadHeight }}
+            >
               <div className='ContextBox__table__group-aggregation__data'>
                 <div className='ContextBox__table__group-aggregation__data__item'>
                   <UI.Text small>

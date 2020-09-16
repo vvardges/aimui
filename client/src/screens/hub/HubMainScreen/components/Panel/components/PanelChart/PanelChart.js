@@ -94,6 +94,9 @@ class PanelChart extends Component {
     this.axes = null;
     this.lines = null;
     this.attributes = null;
+    this.brush = null;
+
+    this.idleTimeout = null;
 
     this.curves =  [
       'curveLinear',
@@ -235,14 +238,14 @@ class PanelChart extends Component {
           .attr('text-anchor', 'middle')  
           .style('font-size', '0.7em') 
           .text(
-            this.context.traceList?.grouping.chart.map(key => {
+            this.context.traceList?.grouping.chart.length > 0 ? `#${this.props.index + 1} ${this.context.traceList?.grouping.chart.map(key => {
               return key + '=' + formatGroupedValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key]);
-            }).join(', ')
+            }).join(', ')}` : ''
           ).append('svg:title')
           .text(
-            this.context.traceList?.grouping.chart.map(key => {
+            this.context.traceList?.grouping.chart.length > 0 ? `#${this.props.index + 1} ${this.context.traceList?.grouping.chart.map(key => {
               return key + '=' + formatGroupedValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key]);
-            }).join(', ')
+            }).join(', ')}` : ''
           );
       }
 
@@ -271,6 +274,16 @@ class PanelChart extends Component {
 
       this.attributes = this.plot.append('g');
 
+      if (this.context.chart.settings.zoomMode) {
+        this.brush = d3.brush()
+          .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]])
+          .on('end', this.handleZoomChange);
+
+        this.svg.append('g')
+          .attr('class', 'brush')
+          .call(this.brush);
+      }
+
       if (cb) {
         cb();
       }
@@ -297,7 +310,7 @@ class PanelChart extends Component {
     }));
 
     const xScale = d3.scaleLinear()
-      .domain([0, xMax])
+      .domain(this.context.chart.settings.zoom?.[this.props.index]?.x ?? [0, xMax])
       .range([0, width - margin.left - margin.right]);
 
     let yMax = null, yMin = null;
@@ -361,7 +374,7 @@ class PanelChart extends Component {
     }
 
     const yScale = yScaleBase
-      .domain([yMin, yMax])
+      .domain(this.context.chart.settings.zoom?.[this.props.index]?.y ?? [yMin, yMax])
       .range([height - margin.top - margin.bottom, 0]);
 
     this.axes.append('g')
@@ -659,6 +672,55 @@ class PanelChart extends Component {
       .on('click', function () {
         handleBgRectClick(d3.mouse(this));
       });
+  };
+
+  idled = () => { 
+    this.idleTimeout = null;
+  };
+
+  handleZoomChange = () => {
+    let extent = d3.event.selection;
+
+    // If no selection, back to initial coordinate. Otherwise, update X axis domain
+    if (!extent) {
+      if (!this.idleTimeout) {
+        return this.idleTimeout = setTimeout(this.idled, 350); // This allows to wait a little bit
+      }
+      this.context.setChartSettingsState({
+        zoom: null
+      });
+    } else {
+      const { margin } = this.state.visBox;
+
+      let left = this.state.chart.xScale.invert(extent[0][0] - margin.left);
+      let right = this.state.chart.xScale.invert(extent[1][0] - margin.left);
+      
+      let top = this.state.chart.yScale.invert(extent[0][1] - margin.top);
+      let bottom = this.state.chart.yScale.invert(extent[1][1] - margin.top);
+      
+      let [xMin, xMax] = this.state.chart.xScale.domain();
+      let [yMin, yMax] = this.state.chart.yScale.domain();
+
+      this.context.setChartSettingsState({
+        zoom: {
+          ...this.context.chart.settings.zoom ?? {},
+          [this.props.index]: {
+            x: (extent[1][0] - extent[0][0]) < 50 ? null : [
+              left < xMin ? xMin : left,
+              right > xMax ? xMax : right,
+            ],
+            y: (extent[1][1] - extent[0][1]) < 50 ? null : [
+              bottom < yMin ? yMin : bottom,
+              top > yMax ? yMax : top,
+            ],
+          }
+        },
+        zoomMode: false,
+        zoomHistory: [[this.props.index, this.context.chart.settings.zoom?.[this.props.index] ?? null]].concat(this.context.chart.settings.zoomHistory)
+      });
+      // This remove the grey brush area as soon as the selection has been done
+      this.svg.select('.brush').call(this.brush.move, null);
+    }
   };
 
   handleAreaMouseMove = (mouse) => {

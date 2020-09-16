@@ -1,6 +1,6 @@
 import './ContextBox.less';
 
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Color from 'color';
@@ -17,6 +17,7 @@ import ColumnGroupPopup from './components/ColumnGroupPopup/ColumnGroupPopup';
 class ContextBox extends Component {
   paramKeys = {};
   tableColsCount = 5;
+  theadRef = createRef();
 
   handleRowMove = (runHash, metricName, traceContext) => {
     const focusedCircle = this.context.chart.focused.circle;
@@ -323,6 +324,7 @@ class ContextBox extends Component {
             formatValue={this.formatValue}
             step={step}
             colsCount={this.tableColsCount}
+            theadHeight={this.theadRef.current?.getBoundingClientRect()?.height}
           >
             {trace.series.map(series =>
               this._renderRow(
@@ -385,7 +387,7 @@ class ContextBox extends Component {
                   ))
                 }
               </tr>
-              <tr className='ContextBox__table__subheader'>
+              <tr className='ContextBox__table__subheader' ref={this.theadRef}>
                 <th>
                   <div className='ContextBox__table__subheader__item'>
                     <UI.Text overline>Metric</UI.Text>
