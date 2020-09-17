@@ -159,7 +159,7 @@ class HubMainScreen extends React.Component {
             this.setChartFocusedState(state.chart.focused, null, false);
             this.setChartSettingsState(state.chart.settings, null, false);
           });
-        }, false);
+        }, false, false);
       } else {
         this.setChartFocusedState(state.chart.focused, null, false);
         this.setChartSettingsState(state.chart.settings, null, false);
@@ -174,7 +174,7 @@ class HubMainScreen extends React.Component {
           query: setSearchQuery,
         }, () => {
           this.searchByQuery().then(() => { });
-        }, true);
+        }, true, false);
       }
     }
   };
@@ -280,7 +280,7 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  setSearchState = (searchState, callback = null, updateURL = true) => {
+  setSearchState = (searchState, callback = null, updateURL = true, resetZoom = true) => {
     this.setState(prevState => ({
       ...prevState,
       context: {
@@ -293,6 +293,20 @@ class HubMainScreen extends React.Component {
           ...prevState.context.searchInput,
           value: searchState.query || prevState.context.searchInput.value,
         },
+        ...resetZoom && {
+          chart: {
+            ...prevState.context.chart,
+            settings: {
+              ...prevState.context.chart.settings,
+              zoomMode: false,
+              zoomHistory: [],
+              persistent: {
+                ...prevState.context.chart.settings,
+                zoom: null
+              }
+            }
+          }
+        }
       },
     }), () => {
       if (callback !== null) {
