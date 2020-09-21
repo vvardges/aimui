@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.1.3 Sep 21 2020
 - Add runs dashboard (gorarakelyan, roubkar)
 
 ## 1.1.2 Sep 13 2020
