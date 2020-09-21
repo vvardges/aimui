@@ -2,6 +2,18 @@ import * as actionTypes from '../actionTypes';
 import callApi from '../../services/api';
 
 
+export function getRunsByQuery(query) {
+  return dispatch => {
+    return new Promise((resolve, reject) => {
+      callApi('Commit.getRunsByQuery', { query }).then((data) => {
+        resolve(data);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
+  }
+}
+
 export function getCommitsMetricsByQuery(query) {
   return dispatch => {
     return new Promise((resolve, reject) => {

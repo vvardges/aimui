@@ -1,33 +1,23 @@
 import React, { useState, useContext } from 'react';
 import HubMainScreenContext from '../../../../HubMainScreenContext/HubMainScreenContext';
 import UI from '../../../../../../../ui';
+import { formatValue, roundValue } from '../../../../../../../utils';
 
 function ContextTrace(props) {
   let [expanded, setExpanded] = useState(true);
   let hubMainScreenContext = useContext(HubMainScreenContext);
 
-  const { trace, formatValue, step, colsCount } = props;
-
-  function formatGroupedValue(value) {
-    if (value === null || value === undefined) {
-      return 'None';
-    }
-    if (value === true) {
-      return 'True';
-    }
-    if (value === false) {
-      return 'False';
-    }
-
-    return value;
-  }
+  const { trace, step, colsCount, theadHeight } = props;
 
   return (
     <tbody>
       {
         hubMainScreenContext.traceList?.traces.length > 1 && (
           <tr>
-            <td className='ContextBox__table__group-indicator'>
+            <td
+              className='ContextBox__table__group-indicator'
+              style={{ top: theadHeight }}
+            >
               <div>
                 <div
                   className='ContextBox__table__group-indicator__toggle'
@@ -39,6 +29,13 @@ function ContextTrace(props) {
                     className='ContextBox__table__group-indicator__toggle__icon' 
                   />
                 </div>
+                {
+                  hubMainScreenContext.traceList?.grouping?.chart?.length > 0 && (
+                    <div className='ContextBox__table__group-indicator__chart'>
+                      <UI.Text small>{trace.chart + 1}</UI.Text>
+                    </div>
+                  )
+                }
                 {
                   hubMainScreenContext.traceList?.grouping?.color?.length > 0 && (
                     <div
@@ -74,36 +71,44 @@ function ContextTrace(props) {
                   {Object.keys(trace.config).map(configName =>
                     <div 
                       key={configName}
-                      title={`${configName}=${formatGroupedValue(trace.config[configName])}`}
+                      title={`${configName}=${formatValue(trace.config[configName])}`}
                     >
                       <UI.Text small>
-                        {configName}={formatGroupedValue(trace.config[configName])}
+                        {configName}={formatValue(trace.config[configName])}
                       </UI.Text>
                     </div>
                   )}
                 </div>
               </div>
             </td>
-            <td className='ContextBox__table__group-indicator_placeholder' colSpan={colsCount - 4} />
-            <td className='ContextBox__table__group-aggregation' colSpan={3}>
+            <td
+              className='ContextBox__table__group-indicator__placeholder'
+              colSpan={colsCount - 4}
+              style={{ top: theadHeight }}
+            />
+            <td
+              className='ContextBox__table__group-aggregation'
+              colSpan={3}
+              style={{ top: theadHeight }}
+            >
               <div className='ContextBox__table__group-aggregation__data'>
                 <div className='ContextBox__table__group-aggregation__data__item'>
                   <UI.Text small>
-                    Min: {formatValue(
+                    Min: {roundValue(
                       hubMainScreenContext.getMetricStepDataByStepIdx(trace.aggregation.min.trace.data, step)?.[0]
                     ) || '-'}
                   </UI.Text>
                 </div>
                 <div className='ContextBox__table__group-aggregation__data__item'>
                   <UI.Text small>
-                    Avg: {formatValue(
+                    Avg: {roundValue(
                       hubMainScreenContext.getMetricStepDataByStepIdx(trace.aggregation.avg.trace.data, step)?.[0]
                     ) || '-'}
                   </UI.Text>
                 </div>
                 <div className='ContextBox__table__group-aggregation__data__item'>
                   <UI.Text small>
-                    Max: {formatValue(
+                    Max: {roundValue(
                       hubMainScreenContext.getMetricStepDataByStepIdx(trace.aggregation.max.trace.data, step)?.[0]
                     ) || '-'}
                   </UI.Text>

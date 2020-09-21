@@ -483,6 +483,25 @@ paths:
             application/json:
               schema:
                 type: object
+  "/commits/search/run?q={query}":
+    get:
+      operationId: getRunsByQuery
+      summary: Get runs
+      tags:
+        - Commit
+      parameters:
+          - name: query
+            in: path
+            required: false
+            schema:
+              type: string
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
   "/commits/search/metric?q={query}":
     get:
       operationId: getCommitsMetricsByQuery

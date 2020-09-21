@@ -294,6 +294,15 @@ class HubExperimentScreen extends React.Component {
       commitId = this.props.match.params.commit_id;
 
     this.props.getExperiment(experimentName, commitId).then((data) => {
+      console.log(data.maps);
+      if (data.maps && Array.isArray(data.maps)) {
+        data.maps.forEach(m => {
+          if ('__METRICS__' in m.data) {
+            delete m.data['__METRICS__'];
+          }
+        });
+      }
+
       let annotations = {};
       if (data.annotations) {
         data.annotations.forEach((annotationItem) => {
@@ -768,7 +777,7 @@ class HubExperimentScreen extends React.Component {
         <Redirect to={buildUrl(screens.HUB_PROJECT_EXPERIMENT, {
           experiment_name: this.state.selectBranch,
           commit_id: 'latest',
-        })} />
+        })} push />
       )
     }
 

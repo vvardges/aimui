@@ -17,9 +17,14 @@ class Menu extends Component {
 
     return (
       <div className={compClassName}>
-        {!!this.props.header &&
-          <div className='Menu__header'>{this.props.header}</div>
-        }
+        <div className='Menu__header__wrapper'>
+          {this.props.headerElem !== null
+            ? <>{this.props.headerElem}</>
+            : (!!this.props.header &&
+              <div className='Menu__header'>{this.props.header}</div>
+            )
+          }
+        </div>
         {this.props.children}
       </div>
     );
@@ -31,6 +36,7 @@ Menu.defaultProps = {
   lastChildBorder: false,
   outline: true,
   interactive: true,
+  headerElem: null,
 };
 
 Menu.propTypes = {
@@ -39,6 +45,7 @@ Menu.propTypes = {
   outline: PropTypes.bool,
   interactive: PropTypes.bool,
   header: PropTypes.string,
+  headerElem: PropTypes.node,
 };
 
 export default Menu;

@@ -1,13 +1,13 @@
 import './ContextBox.less';
 
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Color from 'color';
 import moment from 'moment';
 
 import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
-import { buildUrl, classNames, sortOnKeys } from '../../../../../utils';
+import { buildUrl, classNames, sortOnKeys, formatValue, roundValue } from '../../../../../utils';
 import UI from '../../../../../ui';
 import { HUB_PROJECT_EXPERIMENT } from '../../../../../constants/screens';
 import ContextTrace from './components/ContextTrace/ContextTrace';
@@ -17,6 +17,7 @@ import ColumnGroupPopup from './components/ColumnGroupPopup/ColumnGroupPopup';
 class ContextBox extends Component {
   paramKeys = {};
   tableColsCount = 5;
+  theadRef = createRef();
 
   handleRowMove = (runHash, metricName, traceContext) => {
     const focusedCircle = this.context.chart.focused.circle;
@@ -88,10 +89,6 @@ class ContextBox extends Component {
     });
   };
 
-  formatValue = (v) => {
-    return v ? Math.round(v * 10e6) / 10e6 : 0;
-  };
-
   _renderRow = (run, metric, trace, groupColor) => {
     const step = this.context.chart.focused.step;
     const contextHash = this.context.contextToHash(trace.context);
@@ -124,7 +121,7 @@ class ContextBox extends Component {
     }
 
     const className = classNames({
-      ContextBox__table__item: true,
+      Table__item: true,
       active: active,
     });
 
@@ -163,23 +160,6 @@ class ContextBox extends Component {
       });
     }
 
-    function formatParamValue(value) {
-      if (value === undefined) {
-        return '-';
-      }
-      if (value === null) {
-        return 'None';
-      }
-      if (value === true) {
-        return 'True';
-      }
-      if (value === false) {
-        return 'False';
-      }
-
-      return JSON.stringify(value);
-    }
-
     // if (!this.context.isTFSummaryScalar(lineData)) {
     //   return null;
     // }
@@ -214,7 +194,7 @@ class ContextBox extends Component {
           onMouseMove={highlightColumn}
           onMouseLeave={removeColumnHighlighting}
         >
-          {stepData !== null && stepData[0] !== null ? this.formatValue(stepData[0]) : '-'}
+          {stepData !== null && stepData[0] !== null ? roundValue(stepData[0]) : '-'}
         </td>
         <td
           onMouseMove={highlightColumn}
@@ -241,7 +221,7 @@ class ContextBox extends Component {
               onMouseMove={highlightColumn}
               onMouseLeave={removeColumnHighlighting}
             >
-              {formatParamValue(run.params?.[paramKey]?.[key])}
+              {formatValue(run.params?.[paramKey]?.[key], true)}
             </td>
           )))
         }
@@ -258,8 +238,7 @@ class ContextBox extends Component {
           commit_id: run.run_hash,
         })}
       >
-        {run.experiment_name}/
-        {metric.name}
+        {run.experiment_name} / {moment(run.date * 1000).format('HH:mm · D MMM, YY')} / {metric.name}
         {!!trace.context &&
           <>
             {' ['}
@@ -320,9 +299,9 @@ class ContextBox extends Component {
           <ContextTrace
             key={index}
             trace={trace}
-            formatValue={this.formatValue}
             step={step}
             colsCount={this.tableColsCount}
+            theadHeight={this.theadRef.current?.getBoundingClientRect()?.height}
           >
             {trace.series.map(series =>
               this._renderRow(
@@ -353,15 +332,17 @@ class ContextBox extends Component {
     this.context.traceList?.traces.forEach(trace => {
       trace.series.forEach(series => {
         Object.keys(series?.run.params).forEach(paramKey => {
-          if (!this.paramKeys.hasOwnProperty(paramKey)) {
-            this.paramKeys[paramKey] = [];
-          }
-          Object.keys(series?.run.params[paramKey]).forEach(key => {
-            if (!this.paramKeys[paramKey].includes(key)) {
-              this.paramKeys[paramKey].push(key);
-              this.tableColsCount++;
+          if (paramKey !== '__METRICS__') {
+            if (!this.paramKeys.hasOwnProperty(paramKey)) {
+              this.paramKeys[paramKey] = [];
             }
-          });
+            Object.keys(series?.run.params[paramKey]).forEach(key => {
+              if (!this.paramKeys[paramKey].includes(key)) {
+                this.paramKeys[paramKey].push(key);
+                this.tableColsCount++;
+              }
+            });
+          }
         });
       });
     });
@@ -371,23 +352,23 @@ class ContextBox extends Component {
     return (
       <div className='ContextBox__content'>
         <div className='ContextBox__table__wrapper'>
-          <table className='ContextBox__table' cellSpacing={0} cellPadding={0}>
+          <UI.Table>
             <thead>
-              <tr className='ContextBox__table__topheader'>
+              <tr className='Table__topheader'>
                 <th colSpan={5}>
                   <UI.Text overline>Metrics</UI.Text>
                 </th>
                 {
                   Object.keys(this.paramKeys).map(paramKey => (
                     <th key={paramKey} colSpan={this.paramKeys[paramKey].length}>
-                      <UI.Text className='ContextBox__table__topheader__item__name'>{paramKey}</UI.Text>
+                      <UI.Text className='Table__topheader__item__name'>{paramKey}</UI.Text>
                     </th>
                   ))
                 }
               </tr>
-              <tr className='ContextBox__table__subheader'>
+              <tr className='Table__subheader' ref={this.theadRef}>
                 <th>
-                  <div className='ContextBox__table__subheader__item'>
+                  <div className='Table__subheader__item'>
                     <UI.Text overline>Metric</UI.Text>
                     <ColumnGroupPopup
                       param='metric'
@@ -411,8 +392,8 @@ class ContextBox extends Component {
                 {
                   Object.keys(this.paramKeys).map(paramKey => this.paramKeys[paramKey].map(key => (
                     <th key={key}>
-                      <div className='ContextBox__table__subheader__item'>
-                        <UI.Text className='ContextBox__table__subheader__item__name'>{key}</UI.Text>
+                      <div className='Table__subheader__item'>
+                        <UI.Text className='Table__subheader__item__name'>{key}</UI.Text>
                         <ColumnGroupPopup
                           param={`params.${paramKey}.${key}`}
                           contextFilter={this.context.contextFilter}
@@ -425,7 +406,7 @@ class ContextBox extends Component {
               </tr>
             </thead>
             {this._renderRows()}
-          </table>
+          </UI.Table>
         </div>
       </div>
     );

@@ -24,13 +24,19 @@ function Button(props) {
       onClick={(e) => props.onClick && props.onClick(e)}
       style={props.style}
     >
-      <div className='Button__before'>
-        {props.beforeContent}
+      {!!props.iconLeft &&
+        <div className='Button__icon left'>
+          {props.iconLeft}
+        </div>
+      }
+      <div className='Button__content'>
+        {props.children}
       </div>
-      {props.children}
-      <div className='Button__after'>
-        {props.afterContent}
-      </div>
+      {!!props.iconRight &&
+        <div className='Button__icon right'>
+          {props.iconRight}
+        </div>
+      }
     </button>
   )
 }
@@ -52,17 +58,19 @@ Button.defaultProps = {
   ghost: false,
   gradient: false,
   style: {},
+  iconLeft: null,
+  iconRight: null,
 };
 
 Button.propTypes = {
   size: PropTypes.oneOf(['tiny', 'small', 'medium', 'large']),
   type: PropTypes.oneOf(['primary', 'secondary', 'positive', 'negative',]),
+  iconLeft: PropTypes.node,
+  iconRight: PropTypes.node,
   style: PropTypes.object,
   ghost: PropTypes.bool,
   gradient: PropTypes.bool,
   disabled: PropTypes.bool,
-  beforeContent: PropTypes.node,
-  afterContent: PropTypes.node,
   onClick: PropTypes.func,
   children: PropTypes.string,
 };

@@ -1,5 +1,7 @@
 @import '../../../vars';
 
+@activeCheckSize: 10px;
+
 .Menu {
   overflow: hidden;
 
@@ -55,6 +57,8 @@
 }
 
 .MenuItem {
+  display: flex;
+  align-items: center;
   padding: var(--component-spacing-sm);
   font-size: var(--text-sm);
   color: var(--primary);
@@ -67,6 +71,22 @@
     font-weight: 700;
     color: var(--grey-darker);
     border-left: 3px solid var(--primary);
+  }
+
+  &.activeCheck {
+    font-weight: 700;
+    color: var(--grey-darker);
+
+    &:before {
+      content: '';
+      display: block;
+      flex-shrink: 0;
+      width: @activeCheckSize;
+      height: @activeCheckSize;
+      background-color: var(--primary);
+      margin-right: var(--component-spacing-xs);
+      border-radius: var(--border-radius);
+    }
   }
 }
 

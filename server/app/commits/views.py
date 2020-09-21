@@ -27,6 +27,32 @@ commits_bp = Blueprint('commits', __name__)
 commits_api = Api(commits_bp)
 
 
+@commits_api.resource('/search/run')
+class CommitSearchApi(Resource):
+    def get(self):
+        expression = request.args.get('q').strip()
+
+        if 'run.archived' not in expression:
+            default_expression = 'run.archived is not True'
+        else:
+            default_expression = None
+
+        # Get project
+        project = Project()
+        if not project.exists():
+            return make_response(jsonify({}), 404)
+
+        runs = project.repo.select_runs(expression, default_expression)
+
+        serialized_runs = []
+        for run in runs:
+            serialized_runs.append(run.to_dict())
+
+        return jsonify({
+            'runs': serialized_runs,
+        })
+
+
 @commits_api.resource('/search/metric')
 class CommitMetricSearchApi(Resource):
     def get(self):
