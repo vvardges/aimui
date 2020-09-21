@@ -38,10 +38,7 @@ class Header extends React.Component {
                 <NavLink
                   to={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD}
                   className={classNames({
-                    active: (
-                      window.location.pathname.startsWith('/experiment')
-                      || window.location.pathname === 'dashboard'
-                    ),
+                    active: window.location.pathname === 'dashboard',
                   })}
                 >
                   <div className='Header__item'>
