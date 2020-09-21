@@ -1,4 +1,4 @@
-aim-cli==2.0.8
+aim-cli==2.0.15
 aimrecords==0.0.4
 alembic==1.1.0
 aniso8601==7.0.0

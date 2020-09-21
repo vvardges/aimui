@@ -50,8 +50,6 @@ export function getWithState(caseName, caseClass) {
         ...state.project,
       });
       break;
-    case classes.SEARCH_BAR:
-      break;
     case classes.PANEL_CHART:
       Object.assign(mapDispatch2Props, {
         getCommitTags: commitActions.getCommitTags,
@@ -146,6 +144,11 @@ export function getWithState(caseName, caseClass) {
         getExperimentComponent: projectActions.getExperimentComponent,
         getCommitTags: commitActions.getCommitTags,
         updateCommitArchivationFlag: commitActions.updateCommitArchivationFlag,
+      });
+      break;
+    case classes.HUB_PROJECT_EXPERIMENTS_DASHBOARD_SCREEN:
+      Object.assign(mapDispatch2Props, {
+        getRunsByQuery: commitActions.getRunsByQuery,
       });
       break;
     default:

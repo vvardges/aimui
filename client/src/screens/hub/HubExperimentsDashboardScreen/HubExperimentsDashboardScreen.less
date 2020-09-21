@@ -1,0 +1,117 @@
+.HubExperimentsDashboardScreen {
+  background-color: var(--grey-lighter);
+  padding: 10px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 0fr 1fr;
+}
+
+.HubExperimentsDashboardScreen__content {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(calc(100% - 300px), 3fr);
+  grid-template-rows: 1fr;
+  overflow: hidden;
+}
+
+.HubExperimentsDashboardScreen__nav {
+}
+
+.HubExperimentsDashboardScreen__runs {
+  margin: 10px 0 0 10px;
+  overflow: auto;
+}
+
+.HubExperimentsDashboardScreen__runs__content {
+  width: calc(100% - 10px);
+}
+
+.HubExperimentsDashboardScreen__runs__table__wrapper {
+  width: auto;
+  white-space: nowrap;
+
+  .Table {
+    background-color: #FFF;
+  }
+
+  .Table__topheader th {
+    position: sticky;
+    top: 0;
+    border: none;
+    box-shadow: inset 1px -1px 0 0 #CCC, inset 1px 1px 0 0 #CCC, 1px 0px 0 0 #CCC;
+
+    &:first-of-type {
+      left: 0;
+      z-index: 8;
+    }
+  }
+}
+
+.Table__subheader__item__name {
+  .HubExperimentsDashboardScreen__runs__context__item:last-child {
+    margin-right: 0 !important;
+  }
+}
+
+.HubExperimentsDashboardScreen__runs__context__cell {
+  display: flex;
+  align-items: stretch;
+  font-weight: 400;
+}
+
+.HubExperimentsDashboardScreen__runs__context__item {
+  margin-right: var(--component-spacing-xs);
+  background-color: var(--grey-light-xx) !important;
+  color: var(--grey-dark) !important;
+  border: 1px solid var(--grey-light-x) !important;
+}
+
+.HubExperimentsDashboardScreen__runs__context__icon {
+}
+
+.HubExperimentsDashboardScreen__runs__item {
+  cursor: default;
+}
+
+.HubExperimentsDashboardScreen__runs__item__cell {
+  cursor: pointer;
+
+  &.active {
+    background-color: var(--primary-lighter) !important;
+  }
+}
+
+.HubExperimentsDashboardScreen__runs__item__name {
+  display: inline;
+}
+
+.HubExperimentsDashboardScreen__experiments {
+  position: relative;
+  margin-top: 10px;
+  overflow: auto;
+}
+
+.HubExperimentsDashboardScreen__experiments__items {
+  .Menu {
+    background-color: #FFF;
+    border: 1px solid var(--grey-light-xx);
+  }
+}
+
+.HubExperimentsDashboardScreen__experiments__header {
+  padding: var(--component-spacing-sm);
+  background-color: var(--grey-bg);
+  border-bottom: var(--border);
+  color: var(--grey-dark);
+  font-size: var(--text-sm);
+}
+
+.HubExperimentsDashboardScreen__experiments__actions {
+  padding-top: var(--component-spacing-xs);
+  margin-top: var(--component-spacing-xs);
+  border-top: var(--border);
+}
+
+.HubExperimentsDashboardScreen__experiments__item {
+
+}

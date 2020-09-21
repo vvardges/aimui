@@ -14,13 +14,13 @@ function Label({ className, children, size, spacing, color, onClick }) {
   });
 
   return (
-    <div
+    <span
       className={elemClassName}
       style={{backgroundColor: color}}
       onClick={onClick || null}
     >
       {children}
-    </div>
+    </span>
   )
 }
 

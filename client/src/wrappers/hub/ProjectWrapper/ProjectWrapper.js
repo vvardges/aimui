@@ -97,7 +97,7 @@ class ProjectWrapper extends React.Component {
               <div className='ProjectWrapper__breadcrumb'>
                 <UI.Icon className='ProjectWrapper__breadcrumb__icon' i='link' scale={1} spacingRight />
                 <Link
-                  to={screens.MAIN}
+                  to={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD}
                 >
                   <UI.Text>{project.path}</UI.Text>
                 </Link>

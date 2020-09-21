@@ -69,16 +69,21 @@ function GroupByChart(props) {
             {groupByChart.length > 0 && (
               <div className='ControlsSidebar__item__popup__body__fields'>
                 {groupByChart.map(field => (
-                  <UI.Tag
+                  <UI.Button
                     key={field}
                     size='tiny'
                     className='ControlsSidebar__item__popup__body__field'
-                    onRemove={evt => props.setContextFilter({
-                      groupByChart: groupByChart.filter(elem => elem !== field)
-                    })}
+                    iconRight={
+                      <UI.Icon
+                        i='close'
+                        onClick={evt => props.setContextFilter({
+                          groupByChart: groupByChart.filter(elem => elem !== field)
+                        })}
+                      />
+                    }
                   >
                     {field}
-                  </UI.Tag>
+                  </UI.Button>
                 ))}
               </div>
             )}

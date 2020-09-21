@@ -69,16 +69,21 @@ function GroupByColor(props) {
             {groupByColor.length > 0 && (
               <div className='ControlsSidebar__item__popup__body__fields'>
                 {groupByColor.map(field => (
-                  <UI.Tag
+                  <UI.Button
                     key={field}
                     size='tiny'
                     className='ControlsSidebar__item__popup__body__field'
-                    onRemove={evt => props.setContextFilter({
-                      groupByColor: groupByColor.filter(elem => elem !== field)
-                    })}
+                    iconRight={
+                      <UI.Icon
+                        i='close'
+                        onClick={evt => props.setContextFilter({
+                          groupByColor: groupByColor.filter(elem => elem !== field)
+                        })}
+                      />
+                    }
                   >
                     {field}
-                  </UI.Tag>
+                  </UI.Button>
                 ))}
               </div>
             )}

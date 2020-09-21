@@ -7,7 +7,7 @@ import Color from 'color';
 
 import * as classes from '../../../../../../../constants/classes';
 import * as storeUtils from '../../../../../../../storeUtils';
-import { classNames, buildUrl, removeOutliers } from '../../../../../../../utils';
+import { classNames, buildUrl, removeOutliers, formatValue } from '../../../../../../../utils';
 import {
   HUB_PROJECT_EXPERIMENT,
   HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL,
@@ -196,20 +196,6 @@ class PanelChart extends Component {
     const width = this.props.width ? this.props.width : parentWidth;
     const height = this.props.height ? this.props.height : parentHeight;
 
-    function formatGroupedValue(value) {
-      if (value === null || value === undefined) {
-        return 'None';
-      }
-      if (value === true) {
-        return 'True';
-      }
-      if (value === false) {
-        return 'False';
-      }
-  
-      return value;
-    }
-
     this.setState({
       ...this.state,
       visBox: {
@@ -239,12 +225,12 @@ class PanelChart extends Component {
           .style('font-size', '0.7em') 
           .text(
             this.context.traceList?.grouping.chart.length > 0 ? `#${this.props.index + 1} ${this.context.traceList?.grouping.chart.map(key => {
-              return key + '=' + formatGroupedValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key]);
+              return key + '=' + formatValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key]);
             }).join(', ')}` : ''
           ).append('svg:title')
           .text(
             this.context.traceList?.grouping.chart.length > 0 ? `#${this.props.index + 1} ${this.context.traceList?.grouping.chart.map(key => {
-              return key + '=' + formatGroupedValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key]);
+              return key + '=' + formatValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key]);
             }).join(', ')}` : ''
           );
       }
@@ -801,7 +787,7 @@ class PanelChart extends Component {
         traceContext: null,
       },
     }, () => {
-      let activeRow = document.querySelector('.ContextBox__table__item.active');
+      let activeRow = document.querySelector('.Table__item.active');
       if (activeRow) {
         activeRow.scrollIntoView({ block: 'center',  behavior: 'smooth' })
       }

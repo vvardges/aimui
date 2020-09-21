@@ -1,5 +1,7 @@
 # Changelog
 
+- Add runs dashboard (gorarakelyan, roubkar)
+
 ## 1.1.2 Sep 13 2020
 - Show empty experiment message (gorarakelyan)
 

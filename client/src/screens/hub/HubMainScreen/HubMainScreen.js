@@ -12,7 +12,7 @@ import HubMainScreenContext from './HubMainScreenContext/HubMainScreenContext';
 import { setItem, getItem } from '../../../services/storage';
 import { USER_LAST_SEARCH_QUERY, AIM_QL_VERSION } from '../../../config';
 import Panel from './components/Panel/Panel';
-import SearchBar from './components/SearchBar/SearchBar';
+import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
 import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
 import { randomStr, deepEqual, buildUrl, getObjectValueByPath } from '../../../utils';
@@ -70,9 +70,6 @@ class HubMainScreen extends React.Component {
           query: undefined,
           v: AIM_QL_VERSION,
         },
-        searchInput: {
-          value: undefined,
-        },
 
         // Filter panel
         contextFilter: {
@@ -112,7 +109,7 @@ class HubMainScreen extends React.Component {
   componentDidMount() {
     this.props.completeProgress();
     this.updateWindowDimensions();
-    window.addEventListener('resize', () => this.updateWindowDimensions());
+    window.addEventListener('resize', this.updateWindowDimensions);
     this.recoverStateFromURL(window.location.search);
 
     // Analytics
@@ -120,7 +117,7 @@ class HubMainScreen extends React.Component {
   }
 
   componentWillUnmount() {
-    window.removeEventListener('resize', () => this.updateWindowDimensions());
+    window.removeEventListener('resize', this.updateWindowDimensions);
     this.unBindURLChangeListener();
   }
 
@@ -174,14 +171,14 @@ class HubMainScreen extends React.Component {
           query: setSearchQuery,
         }, () => {
           this.searchByQuery().then(() => { });
-        }, true, false);
+        }, true, false, true);
       }
     }
   };
 
   stateToURL = (state) => {
     const encodedState = btoa(JSON.stringify(state));
-    const URL = buildUrl(screens.MAIN_SEARCH, {
+    const URL = buildUrl(screens.EXPLORE_SEARCH, {
       search: encodedState,
     });
     return URL;
@@ -214,7 +211,7 @@ class HubMainScreen extends React.Component {
     return false;
   };
 
-  updateURL = () => {
+  updateURL = (replace = false) => {
     if (!this.isURLStateOutdated(window.location.search)) {
       return;
     }
@@ -237,8 +234,14 @@ class HubMainScreen extends React.Component {
 
     const URL = this.stateToURL(state);
     if (window.location.pathname + window.location.search !== URL) {
-      console.log(`Update: URL(${URL})`);
-      this.props.history.push(URL);
+      if (replace) {
+        this.props.history.replace(URL);
+        console.log(`Replace: URL(${URL})`);
+      } else {
+        this.props.history.push(URL);
+        console.log(`Update: URL(${URL})`);
+      }
+
       if (state.search.query !== null) {
         setItem(USER_LAST_SEARCH_QUERY, state.search.query);
       }
@@ -280,7 +283,7 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  setSearchState = (searchState, callback = null, updateURL = true, resetZoom = true) => {
+  setSearchState = (searchState, callback = null, updateURL = true, resetZoom = true, replaceURL = false) => {
     this.setState(prevState => ({
       ...prevState,
       context: {
@@ -313,24 +316,7 @@ class HubMainScreen extends React.Component {
         callback();
       }
       if (updateURL) {
-        this.updateURL();
-      }
-    });
-  };
-
-  setSearchInputValue = (value, callback = null) => {
-    this.setState(prevState => ({
-      ...prevState,
-      context: {
-        ...prevState.context,
-        searchInput: {
-          ...prevState.context.searchInput,
-          value,
-        },
-      },
-    }), () => {
-      if (callback !== null) {
-        callback();
+        this.updateURL(replaceURL);
       }
     });
   };
@@ -474,7 +460,6 @@ class HubMainScreen extends React.Component {
   };
 
   updateGroupsProperties = () => {
-
   };
 
   getMetricByHash = (hash) => {
@@ -602,6 +587,12 @@ class HubMainScreen extends React.Component {
     });
   };
 
+  handleSearchBarSubmit = (value = '') => {
+    this.setSearchState({ query: value }, () => {
+      this.searchByQuery(true).then();
+    }, false);
+  };
+
   _renderContent = () => {
     const headerWidth = 70;
     const controlsWidth = 75;
@@ -620,7 +611,12 @@ class HubMainScreen extends React.Component {
           <div className='HubMainScreen__grid'>
             <div className='HubMainScreen__grid__body'>
               <div className='HubMainScreen__grid__search-filter'>
-                <SearchBar />
+                <SearchBar
+                  placeholder={'e.g. `loss if experiment == nmt_syntok and hparams.lr >= 0.0001`'}
+                  initValue={this.state.context.search.query}
+                  onSubmit={(value) => this.handleSearchBarSubmit(value)}
+                  onClear={(value) => this.handleSearchBarSubmit(value)}
+                />
               </div>
               <div className='HubMainScreen__grid__panel' >
                 <Panel
@@ -666,7 +662,6 @@ class HubMainScreen extends React.Component {
             setChartSettingsState: this.setChartSettingsState,
             setChartFocusedState: this.setChartFocusedState,
             setSearchState: this.setSearchState,
-            setSearchInputValue: this.setSearchInputValue,
             setRunsState: this.setRunsState,
             getMetricByHash: this.getMetricByHash,
             getTraceData: this.getTraceData,

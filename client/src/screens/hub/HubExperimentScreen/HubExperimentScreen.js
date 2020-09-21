@@ -768,7 +768,7 @@ class HubExperimentScreen extends React.Component {
         <Redirect to={buildUrl(screens.HUB_PROJECT_EXPERIMENT, {
           experiment_name: this.state.selectBranch,
           commit_id: 'latest',
-        })} />
+        })} push />
       )
     }
 

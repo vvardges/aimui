@@ -84,7 +84,7 @@ class HubTagCreateScreen extends React.Component {
 
   render() {
     if (this.state.shouldRedirect) {
-      return <Redirect to={screens.HUB_PROJECT_TAGS} />
+      return <Redirect to={screens.HUB_PROJECT_TAGS} push />
     }
 
     return (

@@ -1,6 +1,5 @@
 import { useState, useLayoutEffect } from 'react';
 
-
 export function classNames() {
   let result = [];
 
@@ -215,4 +214,62 @@ export function randomString(length, chars) {
   }
 
   return result;
+}
+
+export function roundValue(v) {
+  return v ? Math.round(v * 10e6) / 10e6 : 0;
+}
+
+export function formatValue(value, sepCaseForUndefined = false) {
+  if (sepCaseForUndefined && value === undefined) {
+    return '-';
+  }
+  if (value === null || value === undefined) {
+    return 'None';
+  }
+  if (value === true) {
+    return 'True';
+  }
+  if (value === false) {
+    return 'False';
+  }
+
+  return JSON.stringify(value);
+}
+
+export function interpolateColors(values) {
+  let filteredValues = values.filter(elem => typeof elem === 'number');
+
+  if (filteredValues.length === 0) {
+    return;
+  }
+
+  let min = Math.min(...filteredValues);
+  let max = Math.max(...filteredValues);
+
+  if (min === max) {
+    return {
+      [min]: 'rgb(155, 233, 168)'
+    };
+  }
+
+  let colorsByValue = {};
+
+  let start = [155, 233, 168];
+  let end = [33, 110, 57];
+
+  function interpolateColor(color1, color2, factor) {
+    let result = color1.slice();
+    for (var i = 0; i < 3; i++) {
+      result[i] = Math.round(result[i] + factor * (color2[i] - color1[i]));
+    }
+    return result;
+  };
+
+  for (let val of filteredValues) {
+    let factor = (val - min) / (max - min);
+    colorsByValue[val] = `rgb(${interpolateColor(start, end, factor).join(',')})`;
+  }
+
+  return colorsByValue;
 }

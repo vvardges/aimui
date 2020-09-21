@@ -35,23 +35,26 @@ class Header extends React.Component {
                 </div>
               </div>
               <div className='Header__item__wrapper'>
-                <NavLink exact to={screens.MAIN}>
+                <NavLink
+                  to={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD}
+                  className={classNames({
+                    active: (
+                      window.location.pathname.startsWith('/experiment')
+                      || window.location.pathname === 'dashboard'
+                    ),
+                  })}
+                >
                   <div className='Header__item'>
-                    <UI.Icon i='tune' className='Header__item__icon' />
-                    <UI.Text className='Header__item__title'>Explore</UI.Text>
+                    <UI.Icon i='table_chart' className='Header__item__icon' />
+                    <UI.Text className='Header__item__title'>Dashboard</UI.Text>
                   </div>
                 </NavLink>
               </div>
               <div className='Header__item__wrapper'>
-                <NavLink
-                  to={screens.HUB_PROJECT_EXPERIMENT_DEFAULT}
-                  className={classNames({
-                    active: window.location.pathname.startsWith('/experiment'),
-                  })}
-                >
+                <NavLink exact to={screens.EXPLORE}>
                   <div className='Header__item'>
-                    <UI.Icon i='layers' className='Header__item__icon' />
-                    <UI.Text className='Header__item__title'>Runs</UI.Text>
+                    <UI.Icon i='timeline' className='Header__item__icon' />
+                    <UI.Text className='Header__item__title'>Explore</UI.Text>
                   </div>
                 </NavLink>
               </div>

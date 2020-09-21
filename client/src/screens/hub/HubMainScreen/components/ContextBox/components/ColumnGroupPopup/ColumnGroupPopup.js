@@ -37,15 +37,16 @@ function ColumnGroupPopup(props) {
   return (
     <>
       <div
-        className='ContextBox__table__group__popup__toggle'
+        className={classNames({
+          Table__header__action: true,
+          active: opened || filterIncludesParam(groupByColor) || filterIncludesParam(groupByStyle) || filterIncludesParam(groupByChart)
+        })}
         onClick={e => setOpened(!opened)}
       >
         <UI.Icon
           i='layers'
-          scale={1}
           className={classNames({
-            'ContextBox__table__group__popup__toggle__icon': true,
-            active: opened || filterIncludesParam(groupByColor) || filterIncludesParam(groupByStyle) || filterIncludesParam(groupByChart)
+            Table__header__action__icon: true,
           })}
         />
       </div>

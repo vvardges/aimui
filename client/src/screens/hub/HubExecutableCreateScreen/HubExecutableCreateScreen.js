@@ -137,7 +137,7 @@ class HubExecutableCreateScreen extends React.Component {
 
   render() {
     if (this.state.redirectMain) {
-      return <Redirect to={screens.HUB_PROJECT_EXECUTABLES} />
+      return <Redirect to={screens.HUB_PROJECT_EXECUTABLES} push />
     }
 
     return (

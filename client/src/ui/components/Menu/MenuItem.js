@@ -22,18 +22,17 @@ class MenuItem extends Component {
       return;
     }
 
-    const active = this.state.active;
-
-    this.setState({
-      active: !active,
-    });
+    this.setState((prevState) => ({
+      ...prevState,
+      active: !prevState.active,
+    }));
   };
 
   render() {
     const compClassName = classNames({
       MenuItem: true,
       [this.props.className]: !!this.props.className,
-      active: this.props.innerInteraction ? this.state.active : this.props.active,
+      [this.props.activeClass]: this.props.innerInteraction ? this.state.active : this.props.active,
       select: !!this.props.subMenu.length,
     });
 
@@ -66,6 +65,7 @@ MenuItem.defaultProps = {
   active: false,
   subMenu: [],
   innerInteraction: false,
+  activeClass: 'active',
 };
 
 MenuItem.propTypes = {
@@ -74,6 +74,7 @@ MenuItem.propTypes = {
   subMenu: PropTypes.array,
   onClick: PropTypes.func,
   innerInteraction: PropTypes.bool,
+  activeClass: PropTypes.oneOf(['active', 'activeCheck']),
 };
 
 export default MenuItem;
