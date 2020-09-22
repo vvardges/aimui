@@ -10,6 +10,7 @@ import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper'
 import * as analytics from '../../../services/analytics';
 import * as storeUtils from '../../../storeUtils';
 import * as classes from '../../../constants/classes';
+import * as screens from '../../../constants/screens';
 import UI from '../../../ui';
 import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 
@@ -24,6 +25,15 @@ class HubExperimentsDashboardScreen extends React.Component {
   constructor(props) {
     super(props);
 
+    this.searchKey = '';
+
+    if (props.location.search) {
+      let state = this.URLSearchToState(props.location.search);
+      if (state) {
+        this.searchKey = state.searchKey ?? '';
+      }
+    }
+
     this.state = {
       height: 0,
       subheaderTop: 0,
@@ -33,7 +43,7 @@ class HubExperimentsDashboardScreen extends React.Component {
       experiments: [],
       selectedExperiments: [],
       selectedRuns: [],
-      coloredCols: {}
+      coloredCols: {},
     };
 
     this.searchBarRef = React.createRef();
@@ -46,7 +56,7 @@ class HubExperimentsDashboardScreen extends React.Component {
   }
 
   componentDidMount() {
-    this.getRuns('');
+    this.getRuns(this.searchKey, false);
     this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions);
 
@@ -72,7 +82,7 @@ class HubExperimentsDashboardScreen extends React.Component {
     }
   };
 
-  getRuns = (query) => {
+  getRuns = (query, updateURL = true) => {
     window.scrollTo(0, 0);
 
     this.setState({
@@ -138,7 +148,12 @@ class HubExperimentsDashboardScreen extends React.Component {
     }).finally(() => {
       this.setState({
         isLoading: false,
-      }, this.updateWindowDimensions);
+      }, () => {
+        this.updateWindowDimensions();
+        if (updateURL) {
+          this.updateURL();
+        }
+      });
     });
   };
 
@@ -261,6 +276,40 @@ class HubExperimentsDashboardScreen extends React.Component {
         )
       }
     }));
+  };
+
+  stateToURL = (state) => {
+    const encodedState = btoa(JSON.stringify(state));
+    const URL = buildUrl(screens.HUB_PROJECT_EXPERIMENT_DASHBOARD_SEARCH, {
+      search: encodedState,
+    });
+    return URL;
+  };
+
+  updateURL = () => {
+    const state = {
+      searchKey: this.searchBarRef.current?.getValue()
+    };
+
+    const URL = this.stateToURL(state);
+    if (this.props.location.pathname + this.props.location.search !== URL) {
+      this.props.history.push(URL);
+
+      // Analytics
+      analytics.pageView('dashboard');
+    }
+  };
+
+  URLSearchToState = (search) => {
+    if (search.indexOf('?search=') !== -1) {
+      try {
+        const encodedState = search.substr(8);
+        return JSON.parse(atob(encodedState));
+      } catch(e) {
+        return null;
+      }
+    }
+    return null;
   };
 
   _renderExperiments = () => {
@@ -543,7 +592,7 @@ class HubExperimentsDashboardScreen extends React.Component {
         <div className='HubExperimentsDashboardScreen__nav'>
           <SearchBar
             ref={this.searchBarRef}
-            // initValue={this.state.context.search.query}
+            initValue={this.searchKey}
             placeholder={'e.g. `experiment in (nmt_syntok_dynamic, nmt_syntok_greedy) and hparams.lr >= 0.0001`'}
             onSubmit={(value) => this.handleSearchBarSubmit(value)}
             onClear={(value) => this.handleSearchBarSubmit(value)}
