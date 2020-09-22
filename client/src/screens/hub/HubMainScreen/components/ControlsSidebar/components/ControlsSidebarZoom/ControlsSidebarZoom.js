@@ -11,7 +11,7 @@ function ControlsSidebarZoom(props) {
 
   const {persistent: { zoom }, zoomHistory, zoomMode} = props.settings;
 
-  let zoomedChartIndeces = Object.keys(zoom || {}).filter(chartIndex => zoom?.[chartIndex] !== null && zoom?.[chartIndex] !== undefined);
+  let zoomedChartIndices = Object.keys(zoom || {}).filter(chartIndex => zoom?.[chartIndex] !== null && zoom?.[chartIndex] !== undefined);
 
   useEffect(() => {
     if (opened && popupRef.current) {
@@ -20,53 +20,55 @@ function ControlsSidebarZoom(props) {
   }, [opened]);
 
   useEffect(() => {
-    if (zoomedChartIndeces.length === 0) {
+    if (zoomedChartIndices.length === 0) {
       setOpened(false);
     }
   }, [zoom]);
 
   return (
     <>
-      <div
-        className={classNames({
-          ControlsSidebar__item: true,
-          active: zoomMode,
-        })}
-        onClick={evt => props.setChartSettingsState({
-          ...props.settings,
-          zoomMode: !zoomMode
-        })}
-        title='Zoom in'
-      >
-        <UI.Icon i='zoom_in' scale={1.7} />
-      </div>
-      <div className='ControlsSidebar__item__wrapper'>
+      <UI.Tooltip tooltip='Zoom in'>
         <div
           className={classNames({
             ControlsSidebar__item: true,
-            disabled: zoomedChartIndeces.length === 0,
+            active: zoomMode,
           })}
-          onClick={evt => {
-            if (zoom !== null) {
-              props.setChartSettingsState({
-                ...props.settings,
-                zoomMode: false,
-                zoomHistory: zoomHistory.slice(1),
-                persistent: {
-                  ...props.settings.persistent,
-                  zoom: zoomHistory[0] === null || zoomHistory[0] === undefined ? null : {
-                    ...zoom ?? {},
-                    [zoomHistory[0][0]]: zoomHistory[0][1]
-                  }
-                },
-              });
-              setOpened(false);
-            }
-          }}
-          title='Zoom out'
+          onClick={evt => props.setChartSettingsState({
+            ...props.settings,
+            zoomMode: !zoomMode
+          })}
         >
-          <UI.Icon i='zoom_out' scale={1.7} />
+          <UI.Icon i='zoom_in' scale={1.7} />
         </div>
+      </UI.Tooltip>
+      <div className='ControlsSidebar__item__wrapper'>
+        <UI.Tooltip tooltip='Zoom out'>
+          <div
+            className={classNames({
+              ControlsSidebar__item: true,
+              disabled: zoomedChartIndices.length === 0,
+            })}
+            onClick={evt => {
+              if (zoom !== null) {
+                props.setChartSettingsState({
+                  ...props.settings,
+                  zoomMode: false,
+                  zoomHistory: zoomHistory.slice(1),
+                  persistent: {
+                    ...props.settings.persistent,
+                    zoom: zoomHistory[0] === null || zoomHistory[0] === undefined ? null : {
+                      ...zoom ?? {},
+                      [zoomHistory[0][0]]: zoomHistory[0][1]
+                    }
+                  },
+                });
+                setOpened(false);
+              }
+            }}
+          >
+            <UI.Icon i='zoom_out' scale={1.7} />
+          </div>
+        </UI.Tooltip>
         {zoomHistory.length > 0 && (
           <div
             className={classNames({
@@ -99,7 +101,7 @@ function ControlsSidebarZoom(props) {
             </div>
             <div className='ControlsSidebar__item__popup__list'>
               {
-                zoomedChartIndeces.map(chartIndex => (
+                zoomedChartIndices.map(chartIndex => (
                   <div
                     key={chartIndex}
                     className='ControlsSidebar__item__popup__list__item'

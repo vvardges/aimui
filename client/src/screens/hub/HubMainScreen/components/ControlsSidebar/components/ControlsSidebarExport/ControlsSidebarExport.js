@@ -56,16 +56,19 @@ function ControlsSidebarExport(props) {
   }
 
   return (
-    <div
-      className={classNames({
-        ControlsSidebar__item: true,
-        disabled: props.disabled
-      })}
-      onClick={exportPanel}
-      title={props.disabled ? 'Export is disabled' : 'Export panel as JPEG'}
+    <UI.Tooltip
+      tooltip={props.disabled ? 'Export is disabled' : 'Export panel as JPEG'}
     >
-      <UI.Icon i='get_app' scale={1.7} />
-    </div>
+      <div
+        className={classNames({
+          ControlsSidebar__item: true,
+          disabled: props.disabled
+        })}
+        onClick={exportPanel}
+      >
+        <UI.Icon i='get_app' scale={1.7} />
+      </div>
+    </UI.Tooltip>
   );
 }
 
