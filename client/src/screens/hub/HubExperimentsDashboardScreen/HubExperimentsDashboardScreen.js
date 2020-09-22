@@ -266,6 +266,10 @@ class HubExperimentsDashboardScreen extends React.Component {
     });
   };
 
+  checkAbilityForColoring = (prop) => {
+    return this.state.runs.map(run => _.get(run, prop)).filter(elem => typeof elem === 'number').length > 0;
+  };
+
   toggleColoring = (prop) => {
     let key = JSON.stringify(prop);
     this.setState(prevState => ({
@@ -445,6 +449,8 @@ class HubExperimentsDashboardScreen extends React.Component {
                               No context
                             </UI.Label>
                           }
+                        </div>
+                        <div className='Table__header__action__container'>
                           <div
                             className='Table__header__action'
                             onClick={() => this.exploreMetric(metricName, metricContext)}
@@ -456,15 +462,16 @@ class HubExperimentsDashboardScreen extends React.Component {
                             />
                           </div>
                           <div
-                            className='Table__header__action'
+                            className={classNames({
+                              Table__header__action: true,
+                              active: !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])],
+                              disabled: !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])
+                            })}
                             onClick={evt => this.toggleColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])}
                           >
                             <UI.Icon
                               i='filter_list'
-                              className={classNames({
-                                'Table__header__action__icon': true,
-                                active: !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])]
-                              })}
+                              className='Table__header__action__icon'
                             />
                           </div>
                         </div>
@@ -478,15 +485,16 @@ class HubExperimentsDashboardScreen extends React.Component {
                       <div className='Table__subheader__item'>
                         <UI.Text className='Table__subheader__item__name'>{key}</UI.Text>
                         <div
-                          className='Table__header__action'
+                          className={classNames({
+                            Table__header__action: true,
+                            active: !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])],
+                            disabled: !this.checkAbilityForColoring(['params', paramKey, key])
+                          })}
                           onClick={evt => this.toggleColoring(['params', paramKey, key])}
                         >
                           <UI.Icon
                             i='filter_list'
-                            className={classNames({
-                              'Table__header__action__icon': true,
-                              active: !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])]
-                            })}
+                            className='Table__header__action__icon'
                           />
                         </div>
                       </div>
@@ -612,7 +620,7 @@ class HubExperimentsDashboardScreen extends React.Component {
               </div>
             )
             : (
-              <>
+              <div>
                 {!!this.searchBarRef?.current?.getValue()
                   ? <UI.Text type='grey' center spacingTop>You haven't recorded experiments matching this query.</UI.Text>
                   : <UI.Text type='grey' center spacingTop>It's super easy to search Aim experiments.</UI.Text>
@@ -631,7 +639,7 @@ class HubExperimentsDashboardScreen extends React.Component {
                   {' '}
                   to learn more.
                 </UI.Text>
-              </>
+              </div>
             )
           )
         }
