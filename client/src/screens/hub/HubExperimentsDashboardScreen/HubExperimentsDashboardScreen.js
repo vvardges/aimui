@@ -14,7 +14,15 @@ import * as screens from '../../../constants/screens';
 import UI from '../../../ui';
 import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 
-import { buildUrl, deepEqual, interpolateColors, formatValue, classNames, roundValue } from '../../../utils';
+import {
+  buildUrl,
+  deepEqual,
+  interpolateColors,
+  formatValue,
+  classNames,
+  roundValue,
+  getObjectValueByPath
+} from '../../../utils';
 import { HUB_PROJECT_EXPERIMENT, EXPLORE } from '../../../constants/screens';
 import { setItem } from '../../../services/storage';
 import { USER_LAST_SEARCH_QUERY } from '../../../config';
@@ -24,15 +32,6 @@ import moment from 'moment';
 class HubExperimentsDashboardScreen extends React.Component {
   constructor(props) {
     super(props);
-
-    this.searchKey = '';
-
-    if (props.location.search) {
-      let state = this.URLSearchToState(props.location.search);
-      if (state) {
-        this.searchKey = state.searchKey ?? '';
-      }
-    }
 
     this.state = {
       height: 0,
@@ -46,27 +45,101 @@ class HubExperimentsDashboardScreen extends React.Component {
       coloredCols: {},
     };
 
-    this.searchBarRef = React.createRef();
     this.paramKeys = {};
     this.metricKeys = {};
     this.firstMetricName = null;
     this.defaultMetricName = 'loss';
+    this.initSearchQuery = '';
+
+    this.searchBarRef = React.createRef();
     this.projectWrapperRef = React.createRef();
     this.topHeaderRef = React.createRef();
   }
 
   componentDidMount() {
-    this.getRuns(this.searchKey, false);
     this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions);
+
+    this.recoverStateFromURL(window.location.search);
 
     // Analytics
     analytics.pageView('dashboard');
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.location !== prevProps.location) {
+      this.recoverStateFromURL(location.search);
+    }
+  }
+
   componentWillUnmount() {
     window.removeEventListener('resize', this.updateWindowDimensions);
   }
+
+  recoverStateFromURL = (search) => {
+    if (!!search && search.indexOf('?search=') !== -1) {
+      if (!this.isURLStateOutdated(search)) {
+        return;
+      }
+
+      const state = this.URLSearchToState(search);
+      const searchKey = state?.searchKey ?? '';
+      this.initSearchQuery = searchKey;
+      this.searchBarRef?.current?.setValue(searchKey, false);
+      this.getRuns(searchKey, false);
+    } else {
+      this.searchBarRef?.current?.setValue('', false);
+      this.getRuns('', false);
+    }
+  };
+
+  stateToURL = (state) => {
+    const encodedState = btoa(JSON.stringify(state));
+    const URL = buildUrl(screens.HUB_PROJECT_EXPERIMENT_DASHBOARD_SEARCH, {
+      search: encodedState,
+    });
+    return URL;
+  };
+
+  URLSearchToState = (search) => {
+    if (search.indexOf('?search=') !== -1) {
+      try {
+        const encodedState = search.substr(8);
+        return JSON.parse(atob(encodedState));
+      } catch(e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  isURLStateOutdated = (searchQuery) => {
+    const state = this.URLSearchToState(searchQuery);
+    if (state === null) {
+      return !(!!searchQuery && searchQuery.indexOf('?search=') !== -1);
+    }
+
+    if (this.searchBarRef?.current?.getValue() !== state.searchKey) {
+      return true;
+    }
+
+    return false;
+  };
+
+
+  updateURL = () => {
+    const state = {
+      searchKey: this.searchBarRef.current?.getValue(),
+    };
+
+    const URL = this.stateToURL(state);
+    if (this.props.location.pathname + this.props.location.search !== URL) {
+      this.props.history.push(URL);
+
+      // Analytics
+      analytics.pageView('dashboard');
+    }
+  };
 
   updateWindowDimensions = () => {
     const wrapper = this.projectWrapperRef.current;
@@ -210,7 +283,11 @@ class HubExperimentsDashboardScreen extends React.Component {
 
     let condition = contextQuery.join(' and ');
     if (!!queryPrefix) {
-      condition = `(${queryPrefix}) and ${condition}`;
+      if (!!condition) {
+        condition = `(${queryPrefix}) and ${condition}`;
+      } else {
+        condition = queryPrefix;
+      }
     }
 
     const query = !!condition ? `${metricName} if ${condition}` : metricName;
@@ -280,40 +357,6 @@ class HubExperimentsDashboardScreen extends React.Component {
         )
       }
     }));
-  };
-
-  stateToURL = (state) => {
-    const encodedState = btoa(JSON.stringify(state));
-    const URL = buildUrl(screens.HUB_PROJECT_EXPERIMENT_DASHBOARD_SEARCH, {
-      search: encodedState,
-    });
-    return URL;
-  };
-
-  updateURL = () => {
-    const state = {
-      searchKey: this.searchBarRef.current?.getValue()
-    };
-
-    const URL = this.stateToURL(state);
-    if (this.props.location.pathname + this.props.location.search !== URL) {
-      this.props.history.push(URL);
-
-      // Analytics
-      analytics.pageView('dashboard');
-    }
-  };
-
-  URLSearchToState = (search) => {
-    if (search.indexOf('?search=') !== -1) {
-      try {
-        const encodedState = search.substr(8);
-        return JSON.parse(atob(encodedState));
-      } catch(e) {
-        return null;
-      }
-    }
-    return null;
   };
 
   _renderExperiments = () => {
@@ -600,7 +643,7 @@ class HubExperimentsDashboardScreen extends React.Component {
         <div className='HubExperimentsDashboardScreen__nav'>
           <SearchBar
             ref={this.searchBarRef}
-            initValue={this.searchKey}
+            initValue={this.initSearchQuery}
             placeholder={'e.g. `experiment in (nmt_syntok_dynamic, nmt_syntok_greedy) and hparams.lr >= 0.0001`'}
             onSubmit={(value) => this.handleSearchBarSubmit(value)}
             onClear={(value) => this.handleSearchBarSubmit(value)}

@@ -101,9 +101,6 @@ class HubMainScreen extends React.Component {
 
   componentWillMount() {
     this.props.resetProgress();
-    this.unBindURLChangeListener = this.props.history.listen((location) => {
-      this.recoverStateFromURL(location.search);
-    });
   }
 
   componentDidMount() {
@@ -116,9 +113,14 @@ class HubMainScreen extends React.Component {
     analytics.pageView('search');
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.location !== prevProps.location) {
+      this.recoverStateFromURL(location.search);
+    }
+  }
+
   componentWillUnmount() {
     window.removeEventListener('resize', this.updateWindowDimensions);
-    this.unBindURLChangeListener();
   }
 
   updateWindowDimensions = () => {
@@ -149,7 +151,7 @@ class HubMainScreen extends React.Component {
       //     state.search.query = this.defaultSearchQuery;
       //   }
 
-      this.setContextFilter(state.contextFilter, null, false, false);
+      this.setContextFilter(state.contextFilter, this.groupRuns, false, false);
       if (!deepEqual(state.search, this.state.context.search)) {
         this.setSearchState(state.search, () => {
           this.searchByQuery(false).then(() => {
