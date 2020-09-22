@@ -81,6 +81,7 @@ class App extends React.Component {
           <Route exact path={screens.HUB_PROJECT_EDIT_TAG} component={HubTagDetailScreen}/>
           <Route exact path={screens.HUB_TF_SUMMARY_LIST} component={HubTFSummaryListScreen}/>
           <Route exact path={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD} component={HubExperimentsDashboardScreen}/>
+          <Route exact path={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD_SEARCH} component={HubExperimentsDashboardScreen}/>
           <Route exact path={screens.HUB_PROJECT_EXPERIMENT} component={HubExperimentScreen}/>
           <Route component={SiteNotFoundScreen}/>
         </Switch>

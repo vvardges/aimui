@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.4 Sep 22 2020
+- Add dashboard URL update listener (gorarakelyan)
+- Add Tooltip component to UI kit (roubkar)
+
 ## 1.1.3 Sep 21 2020
 - Add runs dashboard (gorarakelyan, roubkar)
 

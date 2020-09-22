@@ -437,7 +437,7 @@ class PanelChart extends Component {
         .x((d, i) => this.state.chart.xScale(d[1]))
         .y0((d, i) => this.state.chart.yScale(d[0]))
         .y1((d, i) => this.state.chart.yScale(traceMin.data[i][0]))
-        .curve(d3[this.curves[this.context.chart.settings.interpolate ? 5 : 0]]);
+        .curve(d3[this.curves[this.context.chart.settings.persistent.interpolate ? 5 : 0]]);
 
       this.lines.append('path')
         .attr('class', 'PlotArea' + (traceModel.hasRun(focusedLineAttr?.runHash, focusedLineAttr?.metricName, focusedLineAttr?.traceContext) ? ' active' : ''))
@@ -452,7 +452,7 @@ class PanelChart extends Component {
       const line = d3.line()
         .x(d => this.state.chart.xScale(d[1]))
         .y(d => this.state.chart.yScale(d[0]))
-        .curve(d3[this.curves[this.context.chart.settings.interpolate ? 5 : 0]]);
+        .curve(d3[this.curves[this.context.chart.settings.persistent.interpolate ? 5 : 0]]);
 
       this.lines.append('path')
         .attr('class', 'PlotLine ' + 'PlotLine-' + this.context.traceToHash(runAvg.run_hash, metricAvg.name, traceAvg.context))

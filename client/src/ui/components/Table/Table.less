@@ -79,11 +79,18 @@
   letter-spacing: 0.08rem;
 }
 
+.Table__header__action__container {
+  display: flex;
+}
+
 .Table__header__action {
   display: flex;
   align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 25px;
+  height: 22px;
   margin-left: var(--space-xxs);
-  padding: 3px;
   background-color: var(--primary-bg);
   border: 1px solid var(--primary-lighter);
   border-radius: var(--border-radius);
@@ -95,6 +102,15 @@
 
   &:hover, &.active {
     border-color: var(--primary-light);
+  }
+
+  &.disabled {
+    opacity: 0.65;
+    cursor: default;
+    pointer-events: none;
+    background-color: var(--grey-bg);
+    border-color: var(--grey-light-xx);
+    color: var(--grey);
   }
 }
 

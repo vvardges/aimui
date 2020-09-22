@@ -6,19 +6,20 @@ import { classNames } from '../../../../../../../ui/utils';
 function Aggregate(props) {
   const { aggregated, setContextFilter, disabled } = props;
   return (
-    <div
-      className={classNames({
-        ControlsSidebar__item: true,
-        active: aggregated,
-        disabled: disabled
-      })}
-      onClick={evt => setContextFilter({
-        aggregated: !aggregated
-      })}
-      title={aggregated ? 'Deaggregate' : 'Aggregate'}
-    >
-      <UI.Icon i='group_work' scale={1.7} />
-    </div>
+    <UI.Tooltip tooltip={aggregated ? 'Deaggregate metrics' : 'Aggregate metrics'}>
+      <div
+        className={classNames({
+          ControlsSidebar__item: true,
+          active: aggregated,
+          disabled: disabled
+        })}
+        onClick={evt => setContextFilter({
+          aggregated: !aggregated
+        })}
+      >
+        <UI.Icon i='group_work' scale={1.7} />
+      </div>
+    </UI.Tooltip>
   );
 }
 

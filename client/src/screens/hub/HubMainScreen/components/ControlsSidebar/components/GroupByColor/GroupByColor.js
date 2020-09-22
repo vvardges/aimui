@@ -19,16 +19,19 @@ function GroupByColor(props) {
 
   return (
     <div className='ControlsSidebar__item__wrapper'>
-      <div
-        className={classNames({
-          ControlsSidebar__item: true,
-          active: opened || groupByColor.length > 0
-        })}
-        onClick={evt => setOpened(!opened)}
-        title={groupByColor.length > 0 ? `Colored by ${groupByColor.length} field${groupByColor.length > 1 ? 's' : ''}` : 'Group by color'}
+      <UI.Tooltip
+        tooltip={groupByColor.length > 0 ? `Colored by ${groupByColor.length} field${groupByColor.length > 1 ? 's' : ''}` : 'Group by color'}
       >
-        <UI.Icon i='palette' scale={1.7} />
-      </div>
+        <div
+          className={classNames({
+            ControlsSidebar__item: true,
+            active: opened || groupByColor.length > 0
+          })}
+          onClick={evt => setOpened(!opened)}
+        >
+          <UI.Icon i='palette' scale={1.7} />
+        </div>
+      </UI.Tooltip>
       {opened && (
         <div
           className='ControlsSidebar__item__popup'

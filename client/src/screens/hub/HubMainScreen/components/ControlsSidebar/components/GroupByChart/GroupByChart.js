@@ -19,16 +19,19 @@ function GroupByChart(props) {
 
   return (
     <div className='ControlsSidebar__item__wrapper'>
-      <div
-        className={classNames({
-          ControlsSidebar__item: true,
-          active: opened || groupByChart.length > 0
-        })}
-        onClick={evt => setOpened(!opened)}
-        title={groupByChart.length > 0 ? `Divided into charts by ${groupByChart.length} field${groupByChart.length > 1 ? 's' : ''}` : 'Divide into charts'}
+      <UI.Tooltip
+        tooltip={groupByChart.length > 0 ? `Divided into charts by ${groupByChart.length} field${groupByChart.length > 1 ? 's' : ''}` : 'Divide into charts'}
       >
-        <UI.Icon i='dashboard' scale={1.7} />
-      </div>
+        <div
+          className={classNames({
+            ControlsSidebar__item: true,
+            active: opened || groupByChart.length > 0
+          })}
+          onClick={evt => setOpened(!opened)}
+        >
+          <UI.Icon i='dashboard' scale={1.7} />
+        </div>
+      </UI.Tooltip>
       {opened && (
         <div
           className='ControlsSidebar__item__popup'

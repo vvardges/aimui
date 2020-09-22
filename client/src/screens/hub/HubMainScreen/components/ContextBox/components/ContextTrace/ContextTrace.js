@@ -69,14 +69,14 @@ function ContextTrace(props) {
                 }
                 <div className='ContextBox__table__group-indicator__props'>
                   {Object.keys(trace.config).map(configName =>
-                    <div 
+                    <UI.Tooltip
                       key={configName}
-                      title={`${configName}=${formatValue(trace.config[configName])}`}
+                      tooltip={`${configName}=${formatValue(trace.config[configName])}`}
                     >
                       <UI.Text small>
                         {configName}={formatValue(trace.config[configName])}
                       </UI.Text>
-                    </div>
+                    </UI.Tooltip>
                   )}
                 </div>
               </div>

@@ -10,10 +10,19 @@ import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper'
 import * as analytics from '../../../services/analytics';
 import * as storeUtils from '../../../storeUtils';
 import * as classes from '../../../constants/classes';
+import * as screens from '../../../constants/screens';
 import UI from '../../../ui';
 import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 
-import { buildUrl, deepEqual, interpolateColors, formatValue, classNames, roundValue } from '../../../utils';
+import {
+  buildUrl,
+  deepEqual,
+  interpolateColors,
+  formatValue,
+  classNames,
+  roundValue,
+  getObjectValueByPath
+} from '../../../utils';
 import { HUB_PROJECT_EXPERIMENT, EXPLORE } from '../../../constants/screens';
 import { setItem } from '../../../services/storage';
 import { USER_LAST_SEARCH_QUERY } from '../../../config';
@@ -33,30 +42,104 @@ class HubExperimentsDashboardScreen extends React.Component {
       experiments: [],
       selectedExperiments: [],
       selectedRuns: [],
-      coloredCols: {}
+      coloredCols: {},
     };
 
-    this.searchBarRef = React.createRef();
     this.paramKeys = {};
     this.metricKeys = {};
     this.firstMetricName = null;
     this.defaultMetricName = 'loss';
+    this.initSearchQuery = '';
+
+    this.searchBarRef = React.createRef();
     this.projectWrapperRef = React.createRef();
     this.topHeaderRef = React.createRef();
   }
 
   componentDidMount() {
-    this.getRuns('');
     this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions);
+
+    this.recoverStateFromURL(window.location.search);
 
     // Analytics
     analytics.pageView('dashboard');
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.location !== prevProps.location) {
+      this.recoverStateFromURL(location.search);
+    }
+  }
+
   componentWillUnmount() {
     window.removeEventListener('resize', this.updateWindowDimensions);
   }
+
+  recoverStateFromURL = (search) => {
+    if (!!search && search.indexOf('?search=') !== -1) {
+      if (!this.isURLStateOutdated(search)) {
+        return;
+      }
+
+      const state = this.URLSearchToState(search);
+      const searchKey = state?.searchKey ?? '';
+      this.initSearchQuery = searchKey;
+      this.searchBarRef?.current?.setValue(searchKey, false);
+      this.getRuns(searchKey, false);
+    } else {
+      this.searchBarRef?.current?.setValue('', false);
+      this.getRuns('', false);
+    }
+  };
+
+  stateToURL = (state) => {
+    const encodedState = btoa(JSON.stringify(state));
+    const URL = buildUrl(screens.HUB_PROJECT_EXPERIMENT_DASHBOARD_SEARCH, {
+      search: encodedState,
+    });
+    return URL;
+  };
+
+  URLSearchToState = (search) => {
+    if (search.indexOf('?search=') !== -1) {
+      try {
+        const encodedState = search.substr(8);
+        return JSON.parse(atob(encodedState));
+      } catch(e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  isURLStateOutdated = (searchQuery) => {
+    const state = this.URLSearchToState(searchQuery);
+    if (state === null) {
+      return !(!!searchQuery && searchQuery.indexOf('?search=') !== -1);
+    }
+
+    if (this.searchBarRef?.current?.getValue() !== state.searchKey) {
+      return true;
+    }
+
+    return false;
+  };
+
+
+  updateURL = () => {
+    const state = {
+      searchKey: this.searchBarRef.current?.getValue(),
+    };
+
+    const URL = this.stateToURL(state);
+    if (this.props.location.pathname + this.props.location.search !== URL) {
+      this.props.history.push(URL);
+
+      // Analytics
+      analytics.pageView('dashboard');
+    }
+  };
 
   updateWindowDimensions = () => {
     const wrapper = this.projectWrapperRef.current;
@@ -72,7 +155,7 @@ class HubExperimentsDashboardScreen extends React.Component {
     }
   };
 
-  getRuns = (query) => {
+  getRuns = (query, updateURL = true) => {
     window.scrollTo(0, 0);
 
     this.setState({
@@ -138,7 +221,12 @@ class HubExperimentsDashboardScreen extends React.Component {
     }).finally(() => {
       this.setState({
         isLoading: false,
-      }, this.updateWindowDimensions);
+      }, () => {
+        this.updateWindowDimensions();
+        if (updateURL) {
+          this.updateURL();
+        }
+      });
     });
   };
 
@@ -195,7 +283,11 @@ class HubExperimentsDashboardScreen extends React.Component {
 
     let condition = contextQuery.join(' and ');
     if (!!queryPrefix) {
-      condition = `(${queryPrefix}) and ${condition}`;
+      if (!!condition) {
+        condition = `(${queryPrefix}) and ${condition}`;
+      } else {
+        condition = queryPrefix;
+      }
     }
 
     const query = !!condition ? `${metricName} if ${condition}` : metricName;
@@ -249,6 +341,10 @@ class HubExperimentsDashboardScreen extends React.Component {
         selectedRuns,
       };
     });
+  };
+
+  checkAbilityForColoring = (prop) => {
+    return this.state.runs.map(run => _.get(run, prop)).filter(elem => typeof elem === 'number').length > 0;
   };
 
   toggleColoring = (prop) => {
@@ -396,6 +492,8 @@ class HubExperimentsDashboardScreen extends React.Component {
                               No context
                             </UI.Label>
                           }
+                        </div>
+                        <div className='Table__header__action__container'>
                           <div
                             className='Table__header__action'
                             onClick={() => this.exploreMetric(metricName, metricContext)}
@@ -407,15 +505,16 @@ class HubExperimentsDashboardScreen extends React.Component {
                             />
                           </div>
                           <div
-                            className='Table__header__action'
+                            className={classNames({
+                              Table__header__action: true,
+                              active: !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])],
+                              disabled: !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])
+                            })}
                             onClick={evt => this.toggleColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])}
                           >
                             <UI.Icon
                               i='filter_list'
-                              className={classNames({
-                                'Table__header__action__icon': true,
-                                active: !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])]
-                              })}
+                              className='Table__header__action__icon'
                             />
                           </div>
                         </div>
@@ -429,15 +528,16 @@ class HubExperimentsDashboardScreen extends React.Component {
                       <div className='Table__subheader__item'>
                         <UI.Text className='Table__subheader__item__name'>{key}</UI.Text>
                         <div
-                          className='Table__header__action'
+                          className={classNames({
+                            Table__header__action: true,
+                            active: !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])],
+                            disabled: !this.checkAbilityForColoring(['params', paramKey, key])
+                          })}
                           onClick={evt => this.toggleColoring(['params', paramKey, key])}
                         >
                           <UI.Icon
                             i='filter_list'
-                            className={classNames({
-                              'Table__header__action__icon': true,
-                              active: !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])]
-                            })}
+                            className='Table__header__action__icon'
                           />
                         </div>
                       </div>
@@ -543,7 +643,7 @@ class HubExperimentsDashboardScreen extends React.Component {
         <div className='HubExperimentsDashboardScreen__nav'>
           <SearchBar
             ref={this.searchBarRef}
-            // initValue={this.state.context.search.query}
+            initValue={this.initSearchQuery}
             placeholder={'e.g. `experiment in (nmt_syntok_dynamic, nmt_syntok_greedy) and hparams.lr >= 0.0001`'}
             onSubmit={(value) => this.handleSearchBarSubmit(value)}
             onClear={(value) => this.handleSearchBarSubmit(value)}
@@ -563,7 +663,7 @@ class HubExperimentsDashboardScreen extends React.Component {
               </div>
             )
             : (
-              <>
+              <div>
                 {!!this.searchBarRef?.current?.getValue()
                   ? <UI.Text type='grey' center spacingTop>You haven't recorded experiments matching this query.</UI.Text>
                   : <UI.Text type='grey' center spacingTop>It's super easy to search Aim experiments.</UI.Text>
@@ -582,7 +682,7 @@ class HubExperimentsDashboardScreen extends React.Component {
                   {' '}
                   to learn more.
                 </UI.Text>
-              </>
+              </div>
             )
           )
         }

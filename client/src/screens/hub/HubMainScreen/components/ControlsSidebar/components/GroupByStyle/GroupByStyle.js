@@ -19,16 +19,19 @@ function GroupByStyle(props) {
 
   return (
     <div className='ControlsSidebar__item__wrapper'>
-      <div
-        className={classNames({
-          ControlsSidebar__item: true,
-          active: opened || groupByStyle.length > 0
-        })}
-        onClick={evt => setOpened(!opened)}
-        title={groupByStyle.length > 0 ? `Styled by ${groupByStyle.length} field${groupByStyle.length > 1 ? 's' : ''}` : 'Group by style'}
+      <UI.Tooltip
+        tooltip={groupByStyle.length > 0 ? `Styled by ${groupByStyle.length} field${groupByStyle.length > 1 ? 's' : ''}` : 'Group by style'}
       >
-        <UI.Icon i='line_style' scale={1.7} />
-      </div>
+        <div
+          className={classNames({
+            ControlsSidebar__item: true,
+            active: opened || groupByStyle.length > 0
+          })}
+          onClick={evt => setOpened(!opened)}
+        >
+          <UI.Icon i='line_style' scale={1.7} />
+        </div>
+      </UI.Tooltip>
       {opened && (
         <div
           className='ControlsSidebar__item__popup'

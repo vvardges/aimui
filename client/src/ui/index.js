@@ -22,6 +22,7 @@ import RangeSlider from './components/RangeSlider/RangeSlider';
 import Label from './components/Label/Label';
 import Tag from './components/Tag/Tag';
 import Table from './components/Table/Table';
+import Tooltip from './components/Tooltip/Tooltip';
 
 
 export default {
@@ -45,4 +46,5 @@ export default {
   Label,
   Tag,
   Table,
+  Tooltip,
 };
