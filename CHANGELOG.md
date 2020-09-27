@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.5 Sep 27 2020
+- Add sidebar submenu (gorarakelyan)
+- Add tooltips to table column actions (roubkar)
+- Recover explore panel last config when navigating from sidebar (roubkar)
+- Add reset controls option (roubkar)
+
 ## 1.1.4 Sep 22 2020
 - Add dashboard URL update listener (gorarakelyan)
 - Add Tooltip component to UI kit (roubkar)

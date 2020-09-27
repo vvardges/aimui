@@ -4,10 +4,17 @@ import PropTypes from 'prop-types';
 import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
 
-function ControlsSiderbarToggleOutliers(props) {
+function ControlsSidebarToggleOutliers(props) {
   return (
     <UI.Tooltip
-      tooltip={props.disabled ? 'Outlier toggler is disabled' : props.settings.persistent.displayOutliers ? 'Ignore outliers' : 'Display outliers'}
+      tooltip={
+        props.disabled
+          ? 'Outlier toggler is disabled'
+          : (
+            props.settings.persistent.displayOutliers
+              ? 'Ignore outliers'
+              : 'Outliers are ignored'
+          )}
     >
       <div
         className={classNames({
@@ -15,7 +22,7 @@ function ControlsSiderbarToggleOutliers(props) {
           disabled: props.disabled,
           active: !props.settings.persistent.displayOutliers
         })}
-        onClick={evt => !props.disabled && props.setChartSettingsState({
+        onClick={() => !props.disabled && props.setChartSettingsState({
           ...props.settings,
           persistent: {
             ...props.settings.persistent,
@@ -23,16 +30,19 @@ function ControlsSiderbarToggleOutliers(props) {
           }
         })}
       >
-        <UI.Icon i='scatter_plot' scale={1.7} />
+        {props.settings.persistent.displayOutliers
+          ? <UI.Icon i='blur_on' scale={1.9} />
+          : <UI.Icon i='blur_circular' scale={1.9} />
+        }
       </div>
     </UI.Tooltip>
   );
 }
 
-ControlsSiderbarToggleOutliers.propTypes = {
+ControlsSidebarToggleOutliers.propTypes = {
   settings: PropTypes.object,
   disabled: PropTypes.bool,
   setChartSettingsState: PropTypes.func
 };
 
-export default ControlsSiderbarToggleOutliers;
+export default ControlsSidebarToggleOutliers;

@@ -9,6 +9,8 @@ import * as storeUtils from '../../../storeUtils';
 import * as classes from '../../../constants/classes';
 import * as screens from '../../../constants/screens';
 import ReactSVG from 'react-svg';
+import { getItem } from '../../../services/storage';
+import { USER_LAST_EXPLORE_CONFIG } from '../../../config';
 
 
 class Header extends React.Component {
@@ -48,7 +50,7 @@ class Header extends React.Component {
                 </NavLink>
               </div>
               <div className='Header__item__wrapper'>
-                <NavLink exact to={screens.EXPLORE}>
+                <NavLink exact to={getItem(USER_LAST_EXPLORE_CONFIG) ?? screens.EXPLORE}>
                   <div className='Header__item'>
                     <UI.Icon i='timeline' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Explore</UI.Text>

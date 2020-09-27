@@ -15,7 +15,7 @@ function GroupByStyle(props) {
     if (opened && popupRef.current) {
       popupRef.current.focus();
     }
-  }, [opened])
+  }, [opened]);
 
   return (
     <div className='ControlsSidebar__item__wrapper'>
@@ -44,7 +44,7 @@ function GroupByStyle(props) {
                 if (!currentTarget.contains(document.activeElement)) {
                   setOpened(false);
                 }
-              }, 200);
+              }, 100);
             }
           }}
         >

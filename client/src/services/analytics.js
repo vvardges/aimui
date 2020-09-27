@@ -1,5 +1,5 @@
 import { isDev } from '../utils';
-import { SEGMENT_WRITE_KEY } from '../config';
+import { SEGMENT_WRITE_KEY, SEGMENT_DEMO_WRITE_KEY } from '../config';
 
 
 const enabled = () => {
@@ -11,7 +11,11 @@ const init = () => {
     return;
   }
 
-  window.analytics.load(SEGMENT_WRITE_KEY);
+  if (window.location.hostname.indexOf('demo') !== -1 && window.location.hostname.indexOf('aimstack.io') !== -1) {
+    window.analytics.load(SEGMENT_DEMO_WRITE_KEY);
+  } else {
+    window.analytics.load(SEGMENT_WRITE_KEY);
+  }
 };
 
 const pageView = (pageName, pageCat=null) => {

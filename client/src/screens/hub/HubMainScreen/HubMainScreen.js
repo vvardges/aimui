@@ -3,14 +3,15 @@ import './HubMainScreen.less';
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { withRouter } from 'react-router-dom';
+import * as _ from 'lodash';
 
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import * as classes from '../../../constants/classes';
 import * as screens from '../../../constants/screens';
 import * as storeUtils from '../../../storeUtils';
 import HubMainScreenContext from './HubMainScreenContext/HubMainScreenContext';
-import { setItem, getItem } from '../../../services/storage';
-import { USER_LAST_SEARCH_QUERY, AIM_QL_VERSION } from '../../../config';
+import { setItem, getItem, removeItem } from '../../../services/storage';
+import { USER_LAST_SEARCH_QUERY, AIM_QL_VERSION, USER_LAST_EXPLORE_CONFIG } from '../../../config';
 import Panel from './components/Panel/Panel';
 import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
@@ -123,6 +124,62 @@ class HubMainScreen extends React.Component {
     window.removeEventListener('resize', this.updateWindowDimensions);
   }
 
+  getInitialControls = () => {
+    return {
+      // Chart config
+      chart: {
+        settings: {
+          yScale: 0,
+          zoomMode: false,
+          zoomHistory: [],
+          persistent: {
+            displayOutliers: false,
+            zoom: null,
+            interpolate: false,
+          }
+        },
+      },
+
+      // Filter panel
+      contextFilter: {
+        groupByColor: [],
+        groupByStyle: [],
+        groupByChart: [],
+        aggregated: false
+      },
+    };
+  };
+
+  resetControls = () => {
+    let initialControls = this.getInitialControls();
+    this.setState(prevState => ({
+      context: {
+        ...prevState.context,
+        chart: {
+          ...prevState.context.chart,
+          settings: initialControls.chart.settings,
+        },
+        contextFilter: initialControls.contextFilter
+      }
+    }), () => {
+      this.updateURL();
+      this.groupRuns();
+      removeItem(USER_LAST_EXPLORE_CONFIG);
+    });
+  };
+
+  areControlsChanged = () => {
+    return !_.isEqual(
+      {
+        chart: {
+          settings: this.state.context.chart.settings
+        },
+        contextFilter: this.state.context.contextFilter
+      },
+      this.getInitialControls()
+    );
+  };
+
   updateWindowDimensions = () => {
     const wrapper = this.projectWrapperRef.current;
     const projectWrapperHeight = wrapper ? this.projectWrapperRef.current.getHeaderHeight() : null;
@@ -191,7 +248,7 @@ class HubMainScreen extends React.Component {
       try {
         const encodedState = search.substr(8);
         return JSON.parse(atob(encodedState));
-      } catch(e) {
+      } catch (e) {
         return null;
       }
     }
@@ -235,6 +292,7 @@ class HubMainScreen extends React.Component {
     };
 
     const URL = this.stateToURL(state);
+    setItem(USER_LAST_EXPLORE_CONFIG, URL);
     if (window.location.pathname + window.location.search !== URL) {
       if (replace) {
         this.props.history.replace(URL);
@@ -678,6 +736,8 @@ class HubMainScreen extends React.Component {
             traceToHash: this.traceToHash,
             updateURL: this.updateURL,
             setContextFilter: this.setContextFilter,
+            resetControls: this.resetControls,
+            areControlsChanged: this.areControlsChanged,
           }}
         >
           {this._renderContent()}
