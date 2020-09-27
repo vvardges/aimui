@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.1.5 Sep 27 2020
 - Add sidebar submenu (gorarakelyan)
 - Add tooltips to table column actions (roubkar)
 - Recover explore panel last config when navigating from sidebar (roubkar)
