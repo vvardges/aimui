@@ -207,10 +207,18 @@ class HubExperimentsDashboardScreen extends React.Component {
         });
       });
       
-      this.setState({
-        runs: data.runs,
-        experiments: _.uniq(experiments),
-        selectedExperiments: [],
+      this.setState(prevState => {
+        let coloredCols = {};
+        Object.keys(prevState.coloredCols).filter(key => !!prevState.coloredCols[key]).forEach(prop => {
+          coloredCols[prop] = interpolateColors(data.runs.map(run => _.get(run, JSON.parse(prop))));
+        });
+
+        return {
+          runs: data.runs,
+          experiments: _.uniq(experiments),
+          selectedExperiments: [],
+          coloredCols: coloredCols
+        };
       });
     }).catch(() => {
       this.setState({
@@ -494,29 +502,41 @@ class HubExperimentsDashboardScreen extends React.Component {
                           }
                         </div>
                         <div className='Table__header__action__container'>
-                          <div
-                            className='Table__header__action'
-                            onClick={() => this.exploreMetric(metricName, metricContext)}
+                          <UI.Tooltip tooltip='Explore metric'>
+                            <div
+                              className='Table__header__action'
+                              onClick={() => this.exploreMetric(metricName, metricContext)}
+                            >
+                              <UI.Icon
+                                i='timeline'
+                                scale={1.2}
+                                className='HubExperimentsDashboardScreen__runs__context__icon'
+                              />
+                            </div>
+                          </UI.Tooltip>
+                          <UI.Tooltip
+                            tooltip={
+                              !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last']) ? (
+                                'Unable to apply coloring to this column'
+                              ) : !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])] ? (
+                                'Remove coloring'
+                              ) : 'Apply coloring'
+                            }
                           >
-                            <UI.Icon
-                              i='timeline'
-                              scale={1.2}
-                              className='HubExperimentsDashboardScreen__runs__context__icon'
-                            />
-                          </div>
-                          <div
-                            className={classNames({
-                              Table__header__action: true,
-                              active: !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])],
-                              disabled: !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])
-                            })}
-                            onClick={evt => this.toggleColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])}
-                          >
-                            <UI.Icon
-                              i='filter_list'
-                              className='Table__header__action__icon'
-                            />
-                          </div>
+                            <div
+                              className={classNames({
+                                Table__header__action: true,
+                                active: !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])],
+                                disabled: !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])
+                              })}
+                              onClick={evt => this.toggleColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])}
+                            >
+                              <UI.Icon
+                                i='filter_list'
+                                className='Table__header__action__icon'
+                              />
+                            </div>
+                          </UI.Tooltip>
                         </div>
                       </div>
                     </th>
@@ -527,19 +547,29 @@ class HubExperimentsDashboardScreen extends React.Component {
                     <th key={`${paramKey}-${key}`} style={{ top: this.state.subheaderTop }}>
                       <div className='Table__subheader__item'>
                         <UI.Text className='Table__subheader__item__name'>{key}</UI.Text>
-                        <div
-                          className={classNames({
-                            Table__header__action: true,
-                            active: !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])],
-                            disabled: !this.checkAbilityForColoring(['params', paramKey, key])
-                          })}
-                          onClick={evt => this.toggleColoring(['params', paramKey, key])}
+                        <UI.Tooltip
+                          tooltip={
+                            !this.checkAbilityForColoring(['params', paramKey, key]) ? (
+                              'Unable to apply coloring to this column'
+                            ) : !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])] ? (
+                              'Remove coloring'
+                            ) : 'Apply coloring'
+                          }
                         >
-                          <UI.Icon
-                            i='filter_list'
-                            className='Table__header__action__icon'
-                          />
-                        </div>
+                          <div
+                            className={classNames({
+                              Table__header__action: true,
+                              active: !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])],
+                              disabled: !this.checkAbilityForColoring(['params', paramKey, key])
+                            })}
+                            onClick={evt => this.toggleColoring(['params', paramKey, key])}
+                          >
+                            <UI.Icon
+                              i='filter_list'
+                              className='Table__header__action__icon'
+                            />
+                          </div>
+                        </UI.Tooltip>
                       </div>
                     </th>
                   )))

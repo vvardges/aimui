@@ -3,7 +3,7 @@ import './ControlsSidebar.less';
 import React, { useContext } from 'react';
 import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
 import ControlsSidebarExport from './components/ControlsSidebarExport/ControlsSidebarExport';
-import ControlsSiderbarToggleOutliers from './components/ControlsSidebarToggleOutliers/ControlsSidebarToggleOutliers';
+import ControlsSidebarToggleOutliers from './components/ControlsSidebarToggleOutliers/ControlsSidebarToggleOutliers';
 import GroupByColor from './components/GroupByColor/GroupByColor';
 import GroupByStyle from './components/GroupByStyle/GroupByStyle';
 import GroupByChart from './components/GroupByChart/GroupByChart';
@@ -11,14 +11,21 @@ import Aggregate from './components/Aggregate/Aggregate';
 import UI from '../../../../../ui';
 import ControlsSidebarZoom from './components/ControlsSidebarZoom/ControlsSidebarZoom';
 import ControlsSidebarToggleInterpolation from './components/ControlsSidebarToggleInterpolation/ControlsSidebarToggleInterpolation';
+import SidebarMenu from './components/SidebarMenu/SidebarMenu';
 
 function ControlsSidebar() {
-  let { contextFilter, setContextFilter, runs, chart, toggleOutliers, setChartSettingsState } = useContext(HubMainScreenContext);
+  let {
+    runs, chart,
+    contextFilter, setContextFilter, setChartSettingsState,
+  } = useContext(HubMainScreenContext);
 
   const { groupByColor, groupByStyle, groupByChart, aggregated } = contextFilter;
 
   return (
     <div className='ControlsSidebar'>
+      <SidebarMenu
+
+      />
       <div className='ControlsSidebar__items'>
         <GroupByColor
           groupByColor={groupByColor}
@@ -38,7 +45,7 @@ function ControlsSidebar() {
           disabled={groupByColor.length === 0 && groupByStyle.length === 0 && groupByChart.length === 0}
         />
         <UI.Line />
-        <ControlsSiderbarToggleOutliers 
+        <ControlsSidebarToggleOutliers
           disabled={runs.isLoading || runs.isEmpty}
           settings={chart.settings}
           setChartSettingsState={setChartSettingsState}

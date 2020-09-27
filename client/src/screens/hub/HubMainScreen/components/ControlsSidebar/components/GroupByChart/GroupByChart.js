@@ -44,7 +44,7 @@ function GroupByChart(props) {
                 if (!currentTarget.contains(document.activeElement)) {
                   setOpened(false);
                 }
-              }, 200);
+              }, 100);
             }
           }}
         >

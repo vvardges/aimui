@@ -5,6 +5,8 @@ import PropTypes from 'prop-types';
 
 import UI from '../..';
 
+const offset = 10;
+
 function Tooltip(props) {
   let containerRef = useRef();
   let tooltipRef = useRef();
@@ -35,16 +37,16 @@ function Tooltip(props) {
       let containerRect = containerRef.current.getBoundingClientRect();
       let tooltipRect = tooltipRef.current.getBoundingClientRect();
 
-      if ((containerRect.y + containerRect.height + 5 + tooltipRect.height) >= window.innerHeight) {
-        positions.top = containerRect.top - tooltipRect.height - 5;
+      if ((containerRect.y + containerRect.height + offset + tooltipRect.height) >= window.innerHeight) {
+        positions.top = containerRect.top - tooltipRect.height - offset;
       } else {
-        positions.top = containerRect.bottom + 5;
+        positions.top = containerRect.bottom + offset;
       }
 
       if ((containerRect.x + containerRect.width / 2 - tooltipRect.width / 2) <= 0) {
-        positions.left = 5;
+        positions.left = offset;
       } else if ((containerRect.x + containerRect.width / 2 + tooltipRect.width / 2) >= window.innerWidth) {
-        positions.left = window.innerWidth - tooltipRect.width - 5;
+        positions.left = window.innerWidth - tooltipRect.width - offset;
       } else {
         positions.left = containerRect.x + containerRect.width / 2 - tooltipRect.width / 2;
       }

@@ -122,6 +122,7 @@ class PanelChart extends Component {
   componentDidMount() {
     this.initD3();
     this.renderChart();
+    // setTimeout(this.renderChart, 500);
     window.addEventListener('resize', () => this.resize());
   }
 

@@ -36,20 +36,22 @@ function ColumnGroupPopup(props) {
 
   return (
     <>
-      <div
-        className={classNames({
-          Table__header__action: true,
-          active: opened || filterIncludesParam(groupByColor) || filterIncludesParam(groupByStyle) || filterIncludesParam(groupByChart)
-        })}
-        onClick={e => setOpened(!opened)}
-      >
-        <UI.Icon
-          i='layers'
+      <UI.Tooltip tooltip='Apply grouping'>
+        <div
           className={classNames({
-            Table__header__action__icon: true,
+            Table__header__action: true,
+            active: opened || filterIncludesParam(groupByColor) || filterIncludesParam(groupByStyle) || filterIncludesParam(groupByChart)
           })}
-        />
-      </div>
+          onClick={e => setOpened(!opened)}
+        >
+          <UI.Icon
+            i='layers'
+            className={classNames({
+              Table__header__action__icon: true,
+            })}
+          />
+        </div>
+      </UI.Tooltip>
       {opened && (
         <div
           className='ContextBox__table__group__popup'
@@ -62,7 +64,7 @@ function ColumnGroupPopup(props) {
                 if (!currentTarget.contains(document.activeElement)) {
                   setOpened(false);
                 }
-              }, 200);
+              }, 100);
             }
           }}
         >
