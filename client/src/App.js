@@ -72,10 +72,10 @@ class App extends React.Component {
           <Route exact path={screens.MAIN} component={RedirectFromMainScreen}/>
           <Route exact path={screens.EXPLORE} component={HubMainScreen}/>
           <Route exact path={screens.EXPLORE_SEARCH} component={HubMainScreen}/>
-          <Route exact path={screens.HUB_PROJECT_EXECUTABLES} component={HubExecutablesScreen}/>
-          <Route exact path={screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL} component={HubExecutableProcessDetailScreen}/>
-          <Route exact path={screens.HUB_PROJECT_CREATE_EXECUTABLE} component={HubExecutableCreateScreen}/>
-          <Route exact path={screens.HUB_PROJECT_EXECUTABLE_DETAIL} component={HubExecutableDetailScreen}/>
+          {/*<Route exact path={screens.HUB_PROJECT_EXECUTABLES} component={HubExecutablesScreen}/>*/}
+          {/*<Route exact path={screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL} component={HubExecutableProcessDetailScreen}/>*/}
+          {/*<Route exact path={screens.HUB_PROJECT_CREATE_EXECUTABLE} component={HubExecutableCreateScreen}/>*/}
+          {/*<Route exact path={screens.HUB_PROJECT_EXECUTABLE_DETAIL} component={HubExecutableDetailScreen}/>*/}
           <Route exact path={screens.HUB_PROJECT_TAGS} component={HubTagsScreen}/>
           <Route exact path={screens.HUB_PROJECT_CREATE_TAG} component={HubTagCreateScreen}/>
           <Route exact path={screens.HUB_PROJECT_EDIT_TAG} component={HubTagDetailScreen}/>

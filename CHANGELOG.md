@@ -1,5 +1,7 @@
 # Changelog
 
+- Disable processes module (gorarakelyan)
+
 ## 1.1.5 Sep 27 2020
 - Add sidebar submenu (gorarakelyan)
 - Add tooltips to table column actions (roubkar)
