@@ -11,14 +11,15 @@ import * as screens from '../../../constants/screens';
 import * as storeUtils from '../../../storeUtils';
 import HubMainScreenContext from './HubMainScreenContext/HubMainScreenContext';
 import { setItem, getItem, removeItem } from '../../../services/storage';
-import { USER_LAST_SEARCH_QUERY, AIM_QL_VERSION, USER_LAST_EXPLORE_CONFIG } from '../../../config';
+import { USER_LAST_SEARCH_QUERY, AIM_QL_VERSION, USER_LAST_EXPLORE_CONFIG, EXPLORE_PANEL_FLEX_STYLE } from '../../../config';
 import Panel from './components/Panel/Panel';
 import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
 import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
-import { randomStr, deepEqual, buildUrl, getObjectValueByPath } from '../../../utils';
+import { randomStr, deepEqual, buildUrl, getObjectValueByPath, classNames } from '../../../utils';
 import * as analytics from '../../../services/analytics';
 import TraceList from './models/TraceList';
+import UI from '../../../ui';
 
 class HubMainScreen extends React.Component {
   constructor(props) {
@@ -27,6 +28,8 @@ class HubMainScreen extends React.Component {
     this.state = {
       height: 0,
       width: 0,
+      resizing: false,
+      panelFlex: getItem(EXPLORE_PANEL_FLEX_STYLE),
 
       // Context state
       context: {
@@ -88,7 +91,7 @@ class HubMainScreen extends React.Component {
     };
 
     this.projectWrapperRef = React.createRef();
-    this.panelRef = React.createRef();
+    this.searchBarRef = React.createRef();
 
     this.URLStateParams = [
       'chart.focused.circle',
@@ -122,6 +125,8 @@ class HubMainScreen extends React.Component {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.updateWindowDimensions);
+    document.removeEventListener('mouseup', this.endResize);
+    document.removeEventListener('mousemove', this.resizeHandler);
   }
 
   getInitialControls = () => {
@@ -191,6 +196,31 @@ class HubMainScreen extends React.Component {
     } else {
       setTimeout(() => this.updateWindowDimensions(), 25);
     }
+  };
+
+  startResize = () => {
+    document.addEventListener('mouseup', this.endResize);
+    document.addEventListener('mousemove', this.resizeHandler);
+    document.body.style.cursor = 'row-resize';
+    this.setState({ resizing: true });
+  };
+
+  endResize = () => {
+    document.removeEventListener('mouseup', this.endResize);
+    document.removeEventListener('mousemove', this.resizeHandler);
+    document.body.style.cursor = 'auto';
+    this.setState({ resizing: false }, () => {
+      setItem(EXPLORE_PANEL_FLEX_STYLE, this.state.panelFlex);
+    });
+  };
+
+  resizeHandler = (evt) => {
+    window.requestAnimationFrame(() => {
+      const searchBarHeight = this.searchBarRef.current.clientHeight;
+      const height = evt.clientY - this.projectWrapperRef.current.getHeaderHeight() - searchBarHeight;
+      const flex = height / (this.state.height - searchBarHeight);
+      this.setState({ panelFlex: flex });
+    });
   };
 
   recoverStateFromURL = (search) => {
@@ -670,7 +700,7 @@ class HubMainScreen extends React.Component {
         <div className='HubMainScreen'>
           <div className='HubMainScreen__grid'>
             <div className='HubMainScreen__grid__body'>
-              <div className='HubMainScreen__grid__search-filter'>
+              <div className='HubMainScreen__grid__search-filter' ref={this.searchBarRef}>
                 <SearchBar
                   placeholder={'e.g. `loss if experiment == nmt_syntok and hparams.lr >= 0.0001`'}
                   initValue={this.state.context.search.query}
@@ -678,17 +708,41 @@ class HubMainScreen extends React.Component {
                   onClear={(value) => this.handleSearchBarSubmit(value)}
                 />
               </div>
-              <div className='HubMainScreen__grid__panel' >
+              <div
+                className='HubMainScreen__grid__panel'
+                style={{
+                  flex: this.state.panelFlex
+                }}
+              >
                 <Panel
-                  ref={this.panelRef}
                   parentHeight={this.state.height}
                   parentWidth={this.state.width}
                   indices={panelIndices}
+                  resizing={this.state.resizing}
                 />
               </div>
-              <div className='HubMainScreen__grid__context'>
+              <div
+                className='HubMainScreen__grid__resize__area'
+                onMouseDown={this.startResize}
+              >
+                <div
+                  className={classNames({
+                    HubMainScreen__grid__resize__handler: true,
+                    active: this.state.resizing
+                  })}
+                >
+                  <div className='HubMainScreen__grid__resize__icon' />
+                </div>
+              </div>
+              <div
+                className='HubMainScreen__grid__context'
+                style={{
+                  flex: 1 - this.state.panelFlex
+                }}
+              >
                 <ContextBox
                   width={this.state.width - headerWidth - controlsWidth - 10}
+                  resizing={this.state.resizing}
                 />
               </div>
             </div>

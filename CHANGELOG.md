@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.6 Oct 2 2020
+- Make explore panel resizable (roubkar, gorarakelyan)
+- Disable processes module (gorarakelyan)
+
 ## 1.1.5 Sep 27 2020
 - Add sidebar submenu (gorarakelyan)
 - Add tooltips to table column actions (roubkar)

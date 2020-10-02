@@ -6,7 +6,7 @@ from flask_cors import CORS
 from utils import Singleton
 from app.config import config
 from app.db import Db
-from services.executables.manager import Executables as ExecutablesManager
+# from services.executables.manager import Executables as ExecutablesManager
 
 
 class App(metaclass=Singleton):
@@ -60,8 +60,9 @@ class App(metaclass=Singleton):
 
         cls.api = api
 
-        if cls.executables_manager is not None:
-            cls.executables_manager.stop()
-        if cls.executables_manager is None:
-            cls.executables_manager = ExecutablesManager()
-        cls.executables_manager.start()
+        # Disable executables module
+        # if cls.executables_manager is not None:
+        #     cls.executables_manager.stop()
+        # if cls.executables_manager is None:
+        #     cls.executables_manager = ExecutablesManager()
+        # cls.executables_manager.start()

@@ -32,9 +32,8 @@
 .HubMainScreen__grid__body {
   overflow: hidden;
   background-color: var(--grey-lighter);
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: @search-filter-height 4fr 4fr;
+  display: flex;
+  flex-direction: column;
 
   > div {
     box-sizing: border-box;
@@ -46,11 +45,74 @@
 }
 
 .HubMainScreen__grid__panel {
+  min-height: 300px;
   margin: 0 5px;
   overflow: hidden;
+  flex: 1;
 }
 
 .HubMainScreen__grid__context {
+  padding-bottom: 5px;
+  min-height: 150px;
+  height: auto;
   overflow: hidden;
-  padding: 5px 0;
+  flex: 1;
+}
+
+.HubMainScreen__grid__resize__area {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+  margin: -6px 5px 0;
+  height: 14px;
+  cursor: row-resize;
+  user-select: none;
+  z-index: 999;
+
+  &:hover {
+    .HubMainScreen__grid__resize__handler {
+      background-color: var(--primary);
+    }
+    .HubMainScreen__grid__resize__icon {
+      opacity: 0;
+    }
+  }
+}
+
+.HubMainScreen__grid__resize__handler {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 2px;
+  height: 4px;
+  width: 100%;
+  transition: background-color 150ms ease 250ms;
+
+  &.active {
+    transition: background-color 150ms ease 0ms;
+    background-color: var(--primary) !important;
+    box-shadow: 0 0 7px 0 var(--primary-light);
+
+    .HubMainScreen__grid__resize__icon {
+      opacity: 0;
+    }
+  }
+}
+
+.HubMainScreen__grid__resize__icon {
+  width: 39px;
+  height: 4px;
+  opacity: 1;
+  transition: opacity 150ms ease 230ms;
+  background: repeating-linear-gradient(
+          0.25turn,
+          transparent 2px,
+          var(--grey-light-x) 2px,
+          var(--grey-light-x) 6px,
+          transparent 6px,
+          transparent 10px,
+          var(--grey-light-x) 10px,
+          var(--grey-light-x) 10px);
 }
