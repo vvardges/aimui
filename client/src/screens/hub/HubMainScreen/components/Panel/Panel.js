@@ -39,7 +39,7 @@ class Panel extends Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (prevProps.parentHeight !== this.props.parentHeight || prevProps.parentWidth !== this.props.parentWidth) {
+    if ((this.panelRef.current.clientHeight !== this.state.height) || prevProps.parentHeight !== this.props.parentHeight || prevProps.parentWidth !== this.props.parentWidth) {
       this.handleResize();
     }
   }
@@ -56,13 +56,6 @@ class Panel extends Component {
       height,
       width,
     });
-
-    setTimeout(() => {
-      this.setState({
-        height,
-        width,
-      });
-    }, 1000);
   };
 
   _renderPanelMsg = (Elem) => {
@@ -109,7 +102,11 @@ class Panel extends Component {
   render() {
     return (
       <div className='Panel' ref={this.panelRef}>
-        {this.context.runs.isLoading
+        {this.props.resizing ? (
+          <div className='Panel__resizing'>
+            <UI.Text type='primary' center>Release to resize</UI.Text>
+          </div>
+        ) : this.context.runs.isLoading
           ? (
             this.context.search.query.indexOf('tf:') === -1
               ? this._renderPanelMsg(<UI.Text type='grey' center>Loading..</UI.Text>)
@@ -151,12 +148,14 @@ class Panel extends Component {
 Panel.defautlProps = {
   parentHeight: null,
   parentWidth: null,
+  resized: false,
   indices: null,
 };
 
 Panel.propTypes = {
   parentHeight: PropTypes.number,
   parentWidth: PropTypes.number,
+  resized: PropTypes.bool,
   indices: PropTypes.array,
 };
 

@@ -7,10 +7,22 @@
   margin: auto;
 }
 
+.ContextBox__resizing {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-bg);
+  user-select: none;
+}
+
 .ContextBox__content {
   width: 100%;
   height: 100%;
   overflow: auto;
+
+  &.resizing {
+    user-select: none;
+  }
 }
 
 .ContextBox__table__wrapper {

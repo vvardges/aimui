@@ -318,8 +318,12 @@ class ContextBox extends Component {
   };
 
   _renderContent = () => {
+    // if (this.props.resizing) {
+    //   return <div className='ContextBox__resizing' />;
+    // }
+
     if (this.context.runs.isLoading) {
-      return <UI.Text type='grey' center spacingTop>Loading..</UI.Text>
+      return <UI.Text type='grey' center spacingTop>Loading..</UI.Text>;
     }
 
     if (this.context.runs.isEmpty || !this.context.runs.data.length) {
@@ -350,7 +354,10 @@ class ContextBox extends Component {
     this.paramKeys = sortOnKeys(this.paramKeys);
 
     return (
-      <div className='ContextBox__content'>
+      <div className={classNames({
+        ContextBox__content: true,
+        resizing: this.props.resizing,
+      })}>
         <div className='ContextBox__table__wrapper'>
           <UI.Table>
             <thead>
