@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.1.6 Oct 2 2020
 - Make explore panel resizable (roubkar, gorarakelyan)
 - Disable processes module (gorarakelyan)
 
