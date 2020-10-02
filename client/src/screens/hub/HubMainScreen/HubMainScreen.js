@@ -91,6 +91,7 @@ class HubMainScreen extends React.Component {
     };
 
     this.projectWrapperRef = React.createRef();
+    this.searchBarRef = React.createRef();
 
     this.URLStateParams = [
       'chart.focused.circle',
@@ -215,8 +216,9 @@ class HubMainScreen extends React.Component {
 
   resizeHandler = (evt) => {
     window.requestAnimationFrame(() => {
-      const height = evt.clientY - this.projectWrapperRef.current.getHeaderHeight() - 50;
-      const flex = height / (this.state.height - 50);
+      const searchBarHeight = this.searchBarRef.current.clientHeight;
+      const height = evt.clientY - this.projectWrapperRef.current.getHeaderHeight() - searchBarHeight;
+      const flex = height / (this.state.height - searchBarHeight);
       this.setState({ panelFlex: flex });
     });
   };
@@ -698,7 +700,7 @@ class HubMainScreen extends React.Component {
         <div className='HubMainScreen'>
           <div className='HubMainScreen__grid'>
             <div className='HubMainScreen__grid__body'>
-              <div className='HubMainScreen__grid__search-filter'>
+              <div className='HubMainScreen__grid__search-filter' ref={this.searchBarRef}>
                 <SearchBar
                   placeholder={'e.g. `loss if experiment == nmt_syntok and hparams.lr >= 0.0001`'}
                   initValue={this.state.context.search.query}
