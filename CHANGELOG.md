@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.1.7 Oct 5 2020
 - Update web page title (gorarakelyan)
 
 ## 1.1.6 Oct 2 2020
