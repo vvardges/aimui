@@ -2,7 +2,7 @@
 
 ![GitHub Top Language](https://img.shields.io/github/languages/top/aimhubio/aimde)
 [![Image pulls](https://img.shields.io/docker/pulls/aimhubio/aim-board)](https://hub.docker.com/r/aimhubio/aim-board)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 
 **A super-easy way to record, search and compare AI experiments.**
 
