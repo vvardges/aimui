@@ -6,7 +6,7 @@
 
 **A super-easy way to record, search and compare AI experiments.**
 
-This project hosts the Aim UI code. Please file issues at [aim](https://github.com/aimhubio/aim) primary repo.
+This project hosts the Aim UI code. Please file issues at [Aim](https://github.com/aimhubio/aim) primary repo.
 
 > Check out a [LIVE DEMO](http://demo-1.aimstack.io:43900/dashboard) and a quick [VIDEO](https://www.youtube.com/watch?v=TeAkyRIMxx4&ab_channel=Aim) on what you can achieve with Aim.
 
