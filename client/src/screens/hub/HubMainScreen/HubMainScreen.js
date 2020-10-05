@@ -74,6 +74,9 @@ class HubMainScreen extends React.Component {
           query: undefined,
           v: AIM_QL_VERSION,
         },
+        searchInput: {
+          value: undefined,
+        },
 
         // Filter panel
         contextFilter: {
@@ -308,15 +311,15 @@ class HubMainScreen extends React.Component {
     const state = {
       chart: {
         settings: {
-          persistent: this.state.context.chart.settings.persistent,
+          persistent: this.state.context.chart.settings?.persistent,
         },
         focused: {
-          circle: this.state.context.chart.focused.circle,
+          circle: this.state.context.chart.focused?.circle,
         },
       },
       search: {
-        query: this.state.context.search.query,
-        v: this.state.context.search.v,
+        query: this.state.context.search?.query,
+        v: this.state.context.search?.v,
       },
       contextFilter: this.state.context.contextFilter
     };
@@ -332,8 +335,8 @@ class HubMainScreen extends React.Component {
         console.log(`Update: URL(${URL})`);
       }
 
-      if (state.search.query !== null) {
-        setItem(USER_LAST_SEARCH_QUERY, state.search.query);
+      if (state.search?.query !== null) {
+        setItem(USER_LAST_SEARCH_QUERY, state.search?.query);
       }
 
       // Analytics
@@ -379,22 +382,22 @@ class HubMainScreen extends React.Component {
       context: {
         ...prevState.context,
         search: {
-          ...prevState.context.search,
+          ...prevState.context.search ?? {},
           ...searchState,
         },
         searchInput: {
-          ...prevState.context.searchInput,
-          value: searchState.query || prevState.context.searchInput.value,
+          ...prevState.context.searchInput ?? {},
+          value: searchState.query || prevState.context.searchInput?.value,
         },
         ...resetZoom && {
           chart: {
-            ...prevState.context.chart,
+            ...prevState.context.chart ?? {},
             settings: {
-              ...prevState.context.chart.settings,
+              ...prevState.context.chart?.settings ?? {},
               zoomMode: false,
               zoomHistory: [],
               persistent: {
-                ...prevState.context.chart.settings,
+                ...prevState.context.chart?.settings ?? {},
                 zoom: null
               }
             }
@@ -435,7 +438,7 @@ class HubMainScreen extends React.Component {
     this.setChartState({
       // FIXME: Not pass current state value
       settings: {
-        ...this.state.context.chart.settings,
+        ...this.state.context.chart?.settings ?? {},
         ...settingsState,
       },
     }, callback, updateURL);
@@ -445,7 +448,7 @@ class HubMainScreen extends React.Component {
     this.setChartState({
       // FIXME: Not pass current state value
       focused: {
-        ...this.state.context.chart.focused,
+        ...this.state.context.chart?.focused ?? {},
         ...focusedState,
       },
     }, callback, updateURL);
@@ -485,7 +488,7 @@ class HubMainScreen extends React.Component {
 
   searchByQuery = (updateURL) => {
     return new Promise(resolve => {
-      const query = this.state.context.search.query.trim();
+      const query = this.state.context.search?.query.trim();
       this.setChartFocusedState({
         step: null,
         metric: {
