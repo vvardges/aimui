@@ -25,7 +25,7 @@ aim.set_params(hyperparam_dict, name='params_name')
 aim.track(metric_value, name='metric_name', epoch=the_epoch_value)
 ...
 ```
-3. Run the training like you are used to and start the AI Dev Environment
+3. Run the training like you are used to and start Aim UI
 ```shell
 $ aim up
 ```
