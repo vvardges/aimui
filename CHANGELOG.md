@@ -1,5 +1,7 @@
 # Changelog
 
+- Add Table component to UI Kit (roubkar)
+
 ## 1.1.8 Oct 5 2020
 - Return searchInput property of HubMainScreen state (gorarakelyan)
 

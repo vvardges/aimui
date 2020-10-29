@@ -1,6 +1,7 @@
 import './Tooltip.less';
 
 import React, { useState, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 
 import UI from '../..';
@@ -8,12 +9,13 @@ import UI from '../..';
 const offset = 10;
 
 function Tooltip(props) {
+  let portalRef = useRef(document.createElement('div'));
   let containerRef = useRef();
   let tooltipRef = useRef();
   let timerId = useRef();
 
   let [visible, setVisible] = useState(false);
-  let [style, setStyle] = useState({});
+  let [position, setPosition] = useState({});
 
   function toggleVisibility(show) {
     clearTimeout(timerId.current);
@@ -27,6 +29,19 @@ function Tooltip(props) {
       setVisible(false);
     }
   }
+
+  useEffect(() => {
+    if (visible && !document.body.contains(portalRef.current)) {
+      document.body.append(portalRef.current);
+    } else if (!visible && document.body.contains(portalRef.current)) {
+      document.body.removeChild(portalRef.current);
+    }
+    return () => {
+      if (document.body.contains(portalRef.current)) {
+        document.body.removeChild(portalRef.current);
+      }
+    };
+  }, [visible]);
 
   useEffect(() => {
     if (visible && containerRef.current && tooltipRef.current) {
@@ -51,8 +66,8 @@ function Tooltip(props) {
         positions.left = containerRect.x + containerRect.width / 2 - tooltipRect.width / 2;
       }
 
-      setStyle(s => ({
-        ...s,
+      setPosition(p => ({
+        ...p,
         ...positions
       }));
     }
@@ -62,22 +77,26 @@ function Tooltip(props) {
   }, [visible]);
 
   return (
-    <div 
+    <div
       className='Tooltip__container'
       onMouseOver={evt => toggleVisibility(true)}
       onMouseLeave={evt => toggleVisibility(false)}
+      onClick={evt => {
+        evt.stopPropagation();
+        toggleVisibility(false);
+      }}
       ref={containerRef}
     >
       {props.children}
-      {visible && props.tooltip && (
-        <div 
+      {visible && props.tooltip && ReactDOM.createPortal((
+        <div
           className='Tooltip'
           ref={tooltipRef}
-          style={style}
+          style={position}
         >
           <UI.Text small>{props.tooltip}</UI.Text>
         </div>
-      )}
+      ), portalRef.current)}
     </div>
   );
 }

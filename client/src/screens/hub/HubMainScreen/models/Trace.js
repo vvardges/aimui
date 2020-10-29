@@ -15,10 +15,16 @@ export default class Trace {
     this.color = null;
     this.stroke = null;
     this.chart = null;
+    this.experiments = [];
+    this.metrics = [];
   }
 
   addSeries = (series) => {
     this.series.push(series);
+    
+    this.setExperiments(series.run.experiment_name);
+    this.setMetrics(series.metric.name);
+
     // TODO: Implement 'lazy' aggregation
     this.aggregate();
   };
@@ -117,5 +123,17 @@ export default class Trace {
     }
 
     return false;
-  }
+  };
+
+  setExperiments = (experiment_name) => {
+    if (!this.experiments.includes(experiment_name)) {
+      this.experiments.push(experiment_name);
+    }
+  };
+
+  setMetrics = (metric_name) => {
+    if (!this.metrics.includes(metric_name)) {
+      this.metrics.push(metric_name);
+    }
+  };
 }

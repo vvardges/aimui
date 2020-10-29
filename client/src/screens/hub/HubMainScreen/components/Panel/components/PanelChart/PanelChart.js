@@ -788,7 +788,7 @@ class PanelChart extends Component {
         traceContext: null,
       },
     }, () => {
-      let activeRow = document.querySelector('.Table__item.active');
+      let activeRow = document.querySelector('.ContextBox__table__cell.active');
       if (activeRow) {
         activeRow.scrollIntoView({ block: 'center',  behavior: 'smooth' })
       }
