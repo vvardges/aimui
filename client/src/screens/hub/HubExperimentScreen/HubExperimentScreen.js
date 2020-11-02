@@ -452,6 +452,9 @@ class HubExperimentScreen extends React.Component {
         >
           <div className='ExperimentParams__item title' key={0}>
             <div>
+              <UI.Text type='primary' right overline bold>#</UI.Text>
+            </div>
+            <div>
               <UI.Text type='primary' overline bold>Key</UI.Text>
             </div>
             <div>
@@ -460,7 +463,11 @@ class HubExperimentScreen extends React.Component {
           </div>
           {Object.keys(mapItem.data).map((item, key) =>
             <div className='ExperimentParams__item' key={key}>
-              <div className='ExperimentParams__item__idx'>{key+1}</div>
+              <div className='ExperimentParams__item__idx__wrapper'>
+                <div className='ExperimentParams__item__idx'>
+                  {key+1}
+                </div>
+              </div>
               <div>{item}</div>
               <div>{JSON.stringify(mapItem.data[item])}</div>
             </div>
@@ -548,7 +555,7 @@ class HubExperimentScreen extends React.Component {
                               : <UI.Text inline>Process</UI.Text>
                             }
                             {' '}
-                            started at {moment.unix(this.state.commit.process.start_date).format('D MMM, YY')}
+                            started at {moment.unix(this.state.commit.process.start_date).format('HH:mm:ss · D MMM, YY')}
                           </UI.Text>
                         }
                         {!!processDuration &&

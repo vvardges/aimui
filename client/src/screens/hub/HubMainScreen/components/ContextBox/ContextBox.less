@@ -5,6 +5,7 @@
   overflow: hidden;
   background-color: #FFF;
   margin: auto;
+  border-radius: var(--border-radius);
 }
 
 .ContextBox__resizing {
@@ -27,32 +28,50 @@
 
 .ContextBox__table__wrapper {
   width: auto;
+  height: 100%;
   white-space: nowrap;
 }
 
-.ContextBox__table__group-indicator {
-  position: sticky;
-  top: 0;
-  left: 0;
-  z-index: 4;
-  padding: var(--space-xxs) var(--space-sm);
-  background-color: #f5f5f5;
-  box-shadow: inset 1px -1px 0 0 var(--grey-lighter), 1px 0px 0 0 var(--grey-lighter);
-  
-  & > div {
-    display: flex;
-    align-items: center;
+.ContextBox__table__row {
+  cursor: pointer;
+}
 
-    & > * {
-      margin-right: var(--space-xs);
-    }
+.ContextBox__table__metric-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 110px;
+  padding: 0 15px;
+  overflow: visible;
+
+  &:first-of-type {
+    padding-left: 0;
+  }
+
+  &:last-of-type {
+    padding-right: 0;
+  }
+}
+
+.ContextBox__table__item__run {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ContextBox__table__item__name {
+  color: inherit;
+  &:hover, &:active, &:visited {
+    color: inherit;
   }
 }
 
 .ContextBox__table__group-indicator__chart {
-  display: inline-block;
   width: var(--space-sm);
   height: var(--space-sm);
+  margin-left: var(--space-xxs);
   border: 1px solid;
   border-radius: var(--border-radius);
   display: flex;
@@ -67,6 +86,7 @@
 .ContextBox__table__group-indicator__color {
   width: var(--space-sm);
   height: var(--space-sm);
+  margin-left: var(--space-xxs);
   border: 1px solid;
   border-radius: var(--border-radius);
 }
@@ -75,6 +95,7 @@
   background-color: #FFF;
   width: var(--space-lg);
   height: var(--space-sm);
+  margin-left: var(--space-xxs);
   border: 1px solid;
   border-radius: var(--border-radius);
   padding: 0 var(--space-xxs);
@@ -85,125 +106,19 @@
   }
 }
 
-.ContextBox__table__group-indicator__toggle {
+.ContextBox__table__item-context__wrapper {
   display: flex;
-  align-items: center;
-  width: var(--space-sm);
-  height: var(--space-sm);
-  cursor: pointer;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  padding: 1px;
 }
 
-.ContextBox__table__group-indicator__toggle__icon {
-  opacity: 0.7;
-
-  &:hover {
-    opacity: 1;
-  }
+.ContextBox__table__item-context__item {
+  margin-right: var(--space-sm);
 }
 
-
-.ContextBox__table__group-indicator__props {
-  .Text {
-    max-width: 250px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.ContextBox__table__item-aggregated_label {
+  color: #FFF;
+  text-shadow: none;
 }
-
-.ContextBox__table__group-indicator__placeholder  {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  padding: var(--space-xxs) var(--space-sm);
-  background-color: #f5f5f5 !important;
-  box-shadow: inset 0px -1px 0 0 var(--grey-lighter);
-}
-
-.ContextBox__table__group-aggregation {
-  position: sticky;
-  top: 0;
-  right: 0;
-  z-index: 3;
-  padding: var(--space-xxs) var(--space-sm);
-  background-color: #f5f5f5 !important;
-  box-shadow: inset 0px -1px 0 0 var(--grey-lighter), 1px 0px 0 0 var(--grey-lighter);
-}
-
-.ContextBox__table__group-aggregation__data {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.ContextBox__table__group-aggregation__data__item {
-  width: 90px;
-  padding: 0 var(--space-sm);
-  border-right: 1px solid #CCC;
-
-  &:last-of-type {
-    border-right: none;
-  }
-}
-
-.ContextBox__table__item__run {
-}
-
-.ContextBox__table__item__run__dot {
-  display: inline-block;
-  width: 0.5em;
-  height: 0.5em;
-  border-radius: 50%;
-  margin-right: var(--component-spacing-sm);
-}
-
-.ContextBox__table__item__name {
-  color: inherit;
-  &:hover, &:active, &:visited {
-    color: inherit;
-  }
-}
-
-.ContextBox__table__item__context {
-  display: inline-block;
-
-  > * {
-    margin-right: 5px;
-
-    &:after {
-      content: ',';
-      display: inline;
-    }
-
-    &:last-child {
-      margin-right: 0;
-      &:after {
-        content: '';
-      }
-    }
-  }
-}
-
-.ContextBox__param__items {
-  display: inline-block;
-  margin-right: 10px;
-}
-
-.ContextBox__param__items__name {
-  display: inline-block;
-  margin-right: 10px;
-}
-
-.ContextBox__param__item {
-  display: inline-block;
-  margin-right: 10px;
-}
-
-@media not all and (min-resolution:.001dpcm)
-{ @supports (-webkit-appearance:none) {
-  .ContextBox__table__group-indicator,
-  .ContextBox__table__group-indicator__placeholder,
-  .ContextBox__table__group-aggregation {
-    top: initial !important;
-  }
-}}

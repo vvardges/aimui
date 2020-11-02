@@ -279,7 +279,7 @@ class HubExperimentsDashboardScreen extends React.Component {
     const contextQuery = [];
     Object.keys(context).forEach(contextKey => {
       if (typeof context[contextKey] === 'boolean') {
-        contextQuery.push(`context.${contextKey} is ${formatValue(context[contextKey])}`);
+        contextQuery.push(`context.${contextKey} is ${formatValue(context[contextKey], false)}`);
       } else if (typeof context[contextKey] === 'number') {
         contextQuery.push(`context.${contextKey} == ${context[contextKey]}`);
       } else {
@@ -429,216 +429,197 @@ class HubExperimentsDashboardScreen extends React.Component {
       return null;
     }
 
+    let columns = [{ 
+      key: 'run',
+      content: !!this.state.selectedRuns?.length ? (
+        <UI.Buttons className=''>
+          <UI.Button
+            type='positive'
+            size='tiny'
+            onClick={this.exploreRuns}
+            iconLeft={<UI.Icon i='timeline' />}
+          >
+            Explore
+          </UI.Button>
+          <UI.Button
+            type='secondary'
+            size='tiny' 
+            onClick={() => this.resetRuns()}
+          >
+            Reset
+          </UI.Button>
+        </UI.Buttons>
+      ) : <UI.Text overline>Runs</UI.Text>,
+      minWidth: 200,
+      stick: 'left' 
+    }];
+
+    Object.keys(this.metricKeys).forEach((metricName, metricKey) => this.metricKeys[metricName].forEach((metricContext, contextKey) => {
+      columns.push({
+        key: `${metricKey}-${contextKey}`,
+        content: (
+          <>
+            <div className='HubExperimentsDashboardScreen__runs__context__cell'>
+              {!!metricContext && Object.keys(metricContext).map(metricContextKey =>
+                <UI.Label
+                  key={metricContextKey}
+                  size='small'
+                  className='HubExperimentsDashboardScreen__runs__context__item'
+                >
+                  {metricContextKey}: {formatValue(metricContext[metricContextKey])}
+                </UI.Label>
+              )}
+              {(metricContext === null || Object.keys(metricContext).length === 0) &&
+                <UI.Label
+                  key={0}
+                  size='small'
+                  className='HubExperimentsDashboardScreen__runs__context__item'
+                >
+                  No context
+                </UI.Label>
+              }
+            </div>
+            <div className='Table__header__action__container'>
+              <UI.Tooltip tooltip='Explore metric'>
+                <div
+                  className='Table__header__action'
+                  onClick={() => this.exploreMetric(metricName, metricContext)}
+                >
+                  <UI.Icon
+                    i='timeline'
+                    scale={1.2}
+                    className='HubExperimentsDashboardScreen__runs__context__icon'
+                  />
+                </div>
+              </UI.Tooltip>
+              <UI.Tooltip
+                tooltip={
+                  !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last']) ? (
+                    'Unable to apply coloring to this column'
+                  ) : !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])] ? (
+                    'Remove coloring'
+                  ) : 'Apply coloring'
+                }
+              >
+                <div
+                  className={classNames({
+                    Table__header__action: true,
+                    active: !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])],
+                    disabled: !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])
+                  })}
+                  onClick={evt => this.toggleColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])}
+                >
+                  <UI.Icon
+                    i='filter_list'
+                    className='Table__header__action__icon'
+                  />
+                </div>
+              </UI.Tooltip>
+            </div>
+          </>
+        ),
+        topHeader: metricName,
+        minWidth: 180,
+      });
+    }));
+
+    Object.keys(this.paramKeys).forEach(paramKey => this.paramKeys[paramKey].forEach((key, index) => {
+      columns.push({
+        key: `${paramKey}-${key}`,
+        content: (
+          <>
+            <UI.Text small>{key}</UI.Text>
+            <UI.Tooltip
+              tooltip={
+                !this.checkAbilityForColoring(['params', paramKey, key]) ? (
+                  'Unable to apply coloring to this column'
+                ) : !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])] ? (
+                  'Remove coloring'
+                ) : 'Apply coloring'
+              }
+            >
+              <div
+                className={classNames({
+                  Table__header__action: true,
+                  active: !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])],
+                  disabled: !this.checkAbilityForColoring(['params', paramKey, key])
+                })}
+                onClick={evt => this.toggleColoring(['params', paramKey, key])}
+              >
+                <UI.Icon
+                  i='filter_list'
+                  className='Table__header__action__icon'
+                />
+              </div>
+            </UI.Tooltip>
+          </>
+        ),
+        topHeader: paramKey,
+        minWidth: 150
+      })
+    }));
+
+    let data = this.state.runs.map(run => {
+      let item = {
+        run: {
+          content: (
+            <Link
+              to={buildUrl(HUB_PROJECT_EXPERIMENT, {
+                experiment_name: run.experiment_name,
+                commit_id: run.run_hash,
+              })}
+            >
+              <UI.Text
+                className='HubExperimentsDashboardScreen__runs__item__name'
+              >
+                {run.experiment_name} | {moment(run.date * 1000).format('HH:mm · D MMM, YY')}
+              </UI.Text>
+            </Link>
+          ),
+          className: classNames({
+            HubExperimentsDashboardScreen__runs__item__cell: true,
+            active: this.state.selectedRuns.includes(run.run_hash),
+          }),
+          props: {
+            onClick: () => this.toggleRun(run.experiment_name, run.run_hash)
+          }
+        },
+      };
+
+      Object.keys(this.metricKeys).forEach((metricName, metricKey) => this.metricKeys[metricName].forEach((metricContext, contextKey) => {
+        let metricValue = this.getMetricValue(run, metricName, metricContext)
+        let color = this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])]?.[metricValue];
+        item[`${metricKey}-${contextKey}`] = {
+          content: formatValue(typeof metricValue === 'number' ? roundValue(metricValue) : undefined),
+          style: {
+            backgroundColor: color,
+            color: !!color && Color(color).isDark() ? '#FFF' : 'var(--grey)'
+          }
+        };
+      }));
+
+      Object.keys(this.paramKeys).forEach(paramKey => this.paramKeys[paramKey].forEach(key => {
+        let color = this.state.coloredCols[JSON.stringify(['params', paramKey, key])]?.[run.params?.[paramKey]?.[key]];
+        item[`${paramKey}-${key}`] = {
+          content: formatValue(run.params?.[paramKey]?.[key]),
+          style: {
+            backgroundColor: color,
+            color: (!!color && Color(color).isDark() ? '#FFF' : 'var(--grey)'),
+          }
+        };
+      }));
+
+      return item;
+    });
+
     return (
       <div className='HubExperimentsDashboardScreen__runs__content'>
         <div className='HubExperimentsDashboardScreen__runs__table__wrapper'>
-          <UI.Table>
-            <thead>
-              <tr className='Table__topheader' ref={this.topHeaderRef}>
-                <th>
-                  <UI.Text overline>&nbsp;</UI.Text>
-                </th>
-                {
-                  Object.keys(this.metricKeys).map(metricName => (
-                    <th key={metricName} colSpan={this.metricKeys[metricName].length}>
-                      <UI.Text className='Table__topheader__item__name'>{metricName}</UI.Text>
-                    </th>
-                  ))
-                }
-                {
-                  Object.keys(this.paramKeys).map(paramKey => (
-                    <th key={paramKey} colSpan={this.paramKeys[paramKey].length}>
-                      <UI.Text className='Table__topheader__item__name'>{paramKey}</UI.Text>
-                    </th>
-                  ))
-                }
-              </tr>
-              <tr className='Table__subheader'>
-                <th style={{ top: this.state.subheaderTop }}>
-                  <div className='Table__subheader__item'>
-                    {!!this.state.selectedRuns?.length
-                      ? (
-                        <UI.Buttons className=''>
-                          <UI.Button
-                            type='positive'
-                            size='small'
-                            onClick={() => this.exploreRuns()}
-                            iconLeft={
-                              <UI.Icon i='timeline' />
-                            }
-                          >
-                            Explore
-                          </UI.Button>
-                          <UI.Button type='secondary' size='small' onClick={() => this.resetRuns()}>Reset</UI.Button>
-                        </UI.Buttons>
-                      ) : (
-                        <>Runs</>
-                      )
-                    }
-                  </div>
-                </th>
-                {
-                  Object.keys(this.metricKeys).map((metricName, metricKey) => this.metricKeys[metricName].map((metricContext, contextKey) => (
-                    <th key={`${metricKey}-${contextKey}`} style={{ top: this.state.subheaderTop }}>
-                      <div className='Table__subheader__item'>
-                        <div className='HubExperimentsDashboardScreen__runs__context__cell'>
-                          {!!metricContext && Object.keys(metricContext).map(metricContextKey =>
-                            <UI.Label
-                              key={metricContextKey}
-                              size='small'
-                              className='HubExperimentsDashboardScreen__runs__context__item'
-                            >
-                              {metricContextKey}: {formatValue(metricContext[metricContextKey])}
-                            </UI.Label>
-                          )}
-                          {(metricContext === null || Object.keys(metricContext).length === 0) &&
-                            <UI.Label
-                              key={0}
-                              size='small'
-                              className='HubExperimentsDashboardScreen__runs__context__item'
-                            >
-                              No context
-                            </UI.Label>
-                          }
-                        </div>
-                        <div className='Table__header__action__container'>
-                          <UI.Tooltip tooltip='Explore metric'>
-                            <div
-                              className='Table__header__action'
-                              onClick={() => this.exploreMetric(metricName, metricContext)}
-                            >
-                              <UI.Icon
-                                i='timeline'
-                                scale={1.2}
-                                className='HubExperimentsDashboardScreen__runs__context__icon'
-                              />
-                            </div>
-                          </UI.Tooltip>
-                          <UI.Tooltip
-                            tooltip={
-                              !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last']) ? (
-                                'Unable to apply coloring to this column'
-                              ) : !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])] ? (
-                                'Remove coloring'
-                              ) : 'Apply coloring'
-                            }
-                          >
-                            <div
-                              className={classNames({
-                                Table__header__action: true,
-                                active: !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])],
-                                disabled: !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])
-                              })}
-                              onClick={evt => this.toggleColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])}
-                            >
-                              <UI.Icon
-                                i='filter_list'
-                                className='Table__header__action__icon'
-                              />
-                            </div>
-                          </UI.Tooltip>
-                        </div>
-                      </div>
-                    </th>
-                  )))
-                }
-                {
-                  Object.keys(this.paramKeys).map(paramKey => this.paramKeys[paramKey].map((key, index) => (
-                    <th key={`${paramKey}-${key}`} style={{ top: this.state.subheaderTop }}>
-                      <div className='Table__subheader__item'>
-                        <UI.Text className='Table__subheader__item__name'>{key}</UI.Text>
-                        <UI.Tooltip
-                          tooltip={
-                            !this.checkAbilityForColoring(['params', paramKey, key]) ? (
-                              'Unable to apply coloring to this column'
-                            ) : !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])] ? (
-                              'Remove coloring'
-                            ) : 'Apply coloring'
-                          }
-                        >
-                          <div
-                            className={classNames({
-                              Table__header__action: true,
-                              active: !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])],
-                              disabled: !this.checkAbilityForColoring(['params', paramKey, key])
-                            })}
-                            onClick={evt => this.toggleColoring(['params', paramKey, key])}
-                          >
-                            <UI.Icon
-                              i='filter_list'
-                              className='Table__header__action__icon'
-                            />
-                          </div>
-                        </UI.Tooltip>
-                      </div>
-                    </th>
-                  )))
-                }
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.runs.map((run, i) =>
-                <tr
-                  className='HubExperimentsDashboardScreen__runs__item Table__item' 
-                  key={i}
-                >
-                  <td
-                    className={classNames({
-                      HubExperimentsDashboardScreen__runs__item__cell: true,
-                      active: this.state.selectedRuns.indexOf(run.run_hash) !== -1,
-                    })}
-                    onClick={() => this.toggleRun(run.experiment_name, run.run_hash)}
-                  >
-                    <Link
-                      to={buildUrl(HUB_PROJECT_EXPERIMENT, {
-                        experiment_name: run.experiment_name,
-                        commit_id: run.run_hash,
-                      })}
-                    >
-                      <UI.Text
-                        className='HubExperimentsDashboardScreen__runs__item__name'
-                      >
-                        {run.experiment_name} | {moment(run.date * 1000).format('HH:mm · D MMM, YY')}
-                      </UI.Text>
-                    </Link>
-                  </td>
-                  {
-                    Object.keys(this.metricKeys).map((metricName, metricKey) => this.metricKeys[metricName].map((metricContext, contextKey) => {
-                      let metricValue = this.getMetricValue(run, metricName, metricContext)
-                      let color = this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])]?.[metricValue];
-                      return (
-                        <td
-                          key={`${metricKey}-${contextKey}`}
-                          style={{
-                            backgroundColor: color,
-                            color: !!color && Color(color).isDark() ? '#FFF' : 'var(--grey)'
-                          }}
-                        >
-                          {formatValue(typeof metricValue === 'number' ? roundValue(metricValue) : undefined, true)}
-                        </td>
-                      );
-                    }))
-                  }
-                  {
-                    Object.keys(this.paramKeys).map(paramKey => this.paramKeys[paramKey].map(key => {
-                      let color = this.state.coloredCols[JSON.stringify(['params', paramKey, key])]?.[run.params?.[paramKey]?.[key]];
-                      return (
-                        <td 
-                          key={`${paramKey}-${key}`}
-                          style={{
-                            backgroundColor: color,
-                            color: (!!color && Color(color).isDark() ? '#FFF' : 'var(--grey)'),
-                          }}
-                        >
-                          {formatValue(run.params?.[paramKey]?.[key], true)}
-                        </td>
-                      );
-                    }))
-                  }
-                </tr>
-              )}
-            </tbody>
-          </UI.Table>
+          <UI.Table
+            topHeader
+            columns={columns}
+            data={data}
+          />
         </div>
       </div>
     );

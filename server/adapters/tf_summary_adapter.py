@@ -75,6 +75,7 @@ class TFSummaryAdapter:
             return []
 
         scalars = {}
+        start_time = None
 
         # Get data
         for ea in self.ea_list:
@@ -99,6 +100,8 @@ class TFSummaryAdapter:
                         },
                     })
                     for idx, r in enumerate(records):
+                        if start_time is None or start_time > r.wall_time:
+                            start_time = r.wall_time
                         scalars[filter_tag]['traces'][0]['data'].append([
                             r.value,
                             idx,
@@ -131,4 +134,7 @@ class TFSummaryAdapter:
             # scalar['date'] = date
             # scalar['msg'] = date
 
-        return list(scalars.values())
+        return {
+            'scalars': list(scalars.values()),
+            'start_time': start_time,
+        }

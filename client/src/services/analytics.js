@@ -11,7 +11,11 @@ const init = () => {
     return;
   }
 
-  if (window.location.hostname.indexOf('demo') !== -1 && window.location.hostname.indexOf('aimstack.io') !== -1) {
+  if (window.location.hostname.indexOf('aimstack.io') !== -1
+    && (
+      window.location.hostname.indexOf('demo') !== -1
+      || window.location.hostname.indexOf('play') !== -1
+    )) {
     window.analytics.load(SEGMENT_DEMO_WRITE_KEY);
   } else {
     window.analytics.load(SEGMENT_WRITE_KEY);
