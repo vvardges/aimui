@@ -548,7 +548,7 @@ class HubExperimentScreen extends React.Component {
                               : <UI.Text inline>Process</UI.Text>
                             }
                             {' '}
-                            started at {moment.unix(this.state.commit.process.start_date).format('D MMM, YY')}
+                            started at {moment.unix(this.state.commit.process.start_date).format('HH:mm:ss · D MMM, YY')}
                           </UI.Text>
                         }
                         {!!processDuration &&
