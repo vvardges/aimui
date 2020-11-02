@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.1.9 Nov 2 2020
 - Show when run was started in experiment screen (gorarakelyan)
 - Add Table component to UI Kit (roubkar)
 
