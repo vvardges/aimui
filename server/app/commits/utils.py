@@ -40,8 +40,8 @@ def select_tf_summary_scalars(tags, expression: Optional[Expression] = None):
         tf = TFSummaryAdapter(log_path)
         scalars = tf.get_scalars(tags)
         dir_scalars = scalars['scalars']
-        start_time = isinstance(scalars['start_time'], (int, float)) \
-            if int(scalars['start_time']) else 0
+        start_time = int(scalars['start_time']) \
+            if isinstance(scalars['start_time'], (int, float)) else 0
         if dir_scalars and len(dir_scalars) > 0:
             runs.append({
                 'name': log_path,
