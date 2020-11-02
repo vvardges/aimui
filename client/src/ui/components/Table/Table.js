@@ -194,7 +194,8 @@ function Cell({ item, className }) {
       className={classNames({
         Table__cell: true,
         [`${typeof item === 'object' && item.className}`]: true,
-        [className]: !!className
+        [className]: !!className,
+        clickable: typeof item === 'object' && !!item.props?.onClick,
       })}
       style={{
         cursor: typeof item === 'object' && item.props?.onClick ? 'pointer' : 'inherit',

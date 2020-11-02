@@ -254,7 +254,7 @@ class ContextBox extends Component {
       },
     ];
 
-    Object.keys(this.paramKeys).forEach(paramKey => this.paramKeys[paramKey].forEach(key => {
+    Object.keys(this.paramKeys).forEach(paramKey => this.paramKeys[paramKey].sort().forEach(key => {
       const param = `params.${paramKey}.${key}`;
       columns.push({
         key: param,
@@ -317,7 +317,7 @@ class ContextBox extends Component {
         const highlightColumn = (evt) => {
           this.handleRowMove(run.run_hash, metric.name, contextHash);
           evt.currentTarget.parentNode.style.backgroundColor = style.backgroundColor;
-        }
+        };
 
         function removeColumnHighlighting(evt) {
           evt.currentTarget.parentNode.style.backgroundColor = 'inherit';
@@ -369,19 +369,28 @@ class ContextBox extends Component {
             }
           },
           context: {
-            content: !!trace.context && Object.keys(trace.context).map((contextCat, contextCatKey) => (
-              <ColumnGroupPopup
-                key={contextCatKey}
-                param={`context.${contextCat}`}
-                triggerer={(
-                  <UI.Label size='small' color={active ? '#FFF' : '#CCC'}>
-                    <UI.Text inline>{contextCat}: {trace.context[contextCat]}</UI.Text>
-                  </UI.Label>
-                )}
-                contextFilter={this.context.contextFilter}
-                setContextFilter={this.context.setContextFilter}
-              />
-            )),
+            content: !!trace.context &&
+              <div className='ContextBox__table__item-context__wrapper'>
+                {Object.keys(trace.context).map((contextCat, contextCatKey) => (
+                  <ColumnGroupPopup
+                    key={contextCatKey}
+                    param={`context.${contextCat}`}
+                    triggerer={(
+                      <UI.Button
+                        className='ContextBox__table__item-context__item'
+                        size='small'
+                        type='primary'
+                        ghost={true}
+                      >
+                        <UI.Text inline>{contextCat}={formatValue(trace.context[contextCat])}</UI.Text>
+                      </UI.Button>
+                    )}
+                    contextFilter={this.context.contextFilter}
+                    setContextFilter={this.context.setContextFilter}
+                  />
+                ))}
+              </div>
+            ,
             style: {
               backgroundColor: active ? color : '#FAFAFA'
             },
@@ -430,7 +439,7 @@ class ContextBox extends Component {
 
         Object.keys(this.paramKeys).forEach(paramKey => this.paramKeys[paramKey].forEach(key => {
           row[`params.${paramKey}.${key}`] = {
-            content: formatValue(run.params?.[paramKey]?.[key], true),
+            content: formatValue(run.params?.[paramKey]?.[key]),
             style: style,
             props: {
               onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
@@ -450,7 +459,7 @@ class ContextBox extends Component {
               data: {
                 experiment: {
                   content: (
-                    <UI.Label>
+                    <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
                       {traceModel.experiments.length === 1 ? traceModel.experiments[0] : (
                         <UI.Tooltip tooltip={traceModel.experiments.join(', ')}>
                           {traceModel.experiments.length} experiments
@@ -462,7 +471,7 @@ class ContextBox extends Component {
                 },
                 run: {
                   content: (
-                    <UI.Label>
+                    <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
                       {traceModel?.series?.length} run{traceModel.series.length > 1 ? 's' : ''}
                     </UI.Label>
                   ),
@@ -470,7 +479,7 @@ class ContextBox extends Component {
                 },
                 metric: {
                   content: (
-                    <UI.Label>
+                    <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
                       {traceModel.metrics.length === 1 ? traceModel.metrics[0] : (
                         <UI.Tooltip tooltip={traceModel.metrics.join(', ')}>
                           {traceModel.metrics.length} metrics
@@ -532,7 +541,7 @@ class ContextBox extends Component {
             Object.keys(this.paramKeys).forEach(paramKey => this.paramKeys[paramKey].forEach(key => {
               const param = `params.${paramKey}.${key}`;
               if (traceModel.config.hasOwnProperty(param)) {
-                data[JSON.stringify(traceModel.config)].data[param] = traceModel.config[param];
+                data[JSON.stringify(traceModel.config)].data[param] = formatValue(traceModel.config[param]);
               } else {
                 let value;
                 for (let i = 0; i < traceModel.series.length; i++) {
@@ -546,7 +555,7 @@ class ContextBox extends Component {
                     }
                   }
                 }
-                data[JSON.stringify(traceModel.config)].data[param] = value;
+                data[JSON.stringify(traceModel.config)].data[param] = formatValue(value);
               }
             }));
           }

@@ -220,7 +220,7 @@ export function roundValue(v) {
   return v ? Math.round(v * 10e6) / 10e6 : 0;
 }
 
-export function formatValue(value, sepCaseForUndefined = false) {
+export function formatValue(value, sepCaseForUndefined = true) {
   if (sepCaseForUndefined && value === undefined) {
     return '-';
   }

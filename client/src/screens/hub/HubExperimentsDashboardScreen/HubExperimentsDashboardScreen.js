@@ -279,7 +279,7 @@ class HubExperimentsDashboardScreen extends React.Component {
     const contextQuery = [];
     Object.keys(context).forEach(contextKey => {
       if (typeof context[contextKey] === 'boolean') {
-        contextQuery.push(`context.${contextKey} is ${formatValue(context[contextKey])}`);
+        contextQuery.push(`context.${contextKey} is ${formatValue(context[contextKey], false)}`);
       } else if (typeof context[contextKey] === 'number') {
         contextQuery.push(`context.${contextKey} == ${context[contextKey]}`);
       } else {
@@ -590,7 +590,7 @@ class HubExperimentsDashboardScreen extends React.Component {
         let metricValue = this.getMetricValue(run, metricName, metricContext)
         let color = this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])]?.[metricValue];
         item[`${metricKey}-${contextKey}`] = {
-          content: formatValue(typeof metricValue === 'number' ? roundValue(metricValue) : undefined, true),
+          content: formatValue(typeof metricValue === 'number' ? roundValue(metricValue) : undefined),
           style: {
             backgroundColor: color,
             color: !!color && Color(color).isDark() ? '#FFF' : 'var(--grey)'
@@ -601,7 +601,7 @@ class HubExperimentsDashboardScreen extends React.Component {
       Object.keys(this.paramKeys).forEach(paramKey => this.paramKeys[paramKey].forEach(key => {
         let color = this.state.coloredCols[JSON.stringify(['params', paramKey, key])]?.[run.params?.[paramKey]?.[key]];
         item[`${paramKey}-${key}`] = {
-          content: formatValue(run.params?.[paramKey]?.[key], true),
+          content: formatValue(run.params?.[paramKey]?.[key]),
           style: {
             backgroundColor: color,
             color: (!!color && Color(color).isDark() ? '#FFF' : 'var(--grey)'),

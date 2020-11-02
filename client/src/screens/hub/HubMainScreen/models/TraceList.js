@@ -1,5 +1,5 @@
 import Trace from './Trace';
-import { deepEqual, getObjectValueByPath, arraysIntersection } from '../../../../utils';
+import { deepEqual, getObjectValueByPath, arraysIntersection, formatValue } from '../../../../utils';
 import { COLORS } from '../../../../constants/colors';
 import { STROKES } from '../../../../constants/strokes';
 import _ from 'lodash';
@@ -115,18 +115,18 @@ export default class TraceList {
       return metric.name;
     } else if (paramName.startsWith('context.')) {
       const contextKey = paramName.substring(8);
-      return !!trace.context && Object.keys(trace.context).indexOf(contextKey) !== -1 ? trace.context[contextKey] : 'None';
+      return !!trace.context && Object.keys(trace.context).indexOf(contextKey) !== -1 ? trace.context[contextKey] : undefined;
     } else if (paramName.startsWith('params.')) {
       try {
         return getObjectValueByPath(run.params, paramName.substring(7));
       } catch (e) {
-        return 'None';
+        return undefined;
       }
     } else {
       try {
         return getObjectValueByPath(run.params, paramName);
       } catch (e) {
-        return 'None';
+        return undefined;
       }
     }
   };

@@ -226,12 +226,12 @@ class PanelChart extends Component {
           .style('font-size', '0.7em') 
           .text(
             this.context.traceList?.grouping.chart.length > 0 ? `#${this.props.index + 1} ${this.context.traceList?.grouping.chart.map(key => {
-              return key + '=' + formatValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key]);
+              return key + '=' + formatValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key], false);
             }).join(', ')}` : ''
           ).append('svg:title')
           .text(
             this.context.traceList?.grouping.chart.length > 0 ? `#${this.props.index + 1} ${this.context.traceList?.grouping.chart.map(key => {
-              return key + '=' + formatValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key]);
+              return key + '=' + formatValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key], false);
             }).join(', ')}` : ''
           );
       }
