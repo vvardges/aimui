@@ -38,12 +38,16 @@ def select_tf_summary_scalars(tags, expression: Optional[Expression] = None):
     # Get scalar paths
     for log_path in log_paths:
         tf = TFSummaryAdapter(log_path)
-        dir_scalars = tf.get_scalars(tags)
+        scalars = tf.get_scalars(tags)
+        dir_scalars = scalars['scalars']
+        start_time = isinstance(scalars['start_time'], (int, float)) \
+            if int(scalars['start_time']) else 0
         if dir_scalars and len(dir_scalars) > 0:
             runs.append({
                 'name': log_path,
+                'date': start_time,
                 'run_hash': TFSummaryAdapter.name_to_hash(log_path),
-                'experiment_name': None,
+                'experiment_name': 'TF',
                 'metrics': dir_scalars,
                 'params': {
                     'params': params.get(log_path) or {},

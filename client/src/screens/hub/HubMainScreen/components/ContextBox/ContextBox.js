@@ -88,46 +88,6 @@ class ContextBox extends Component {
     });
   };
 
-  _renderAimRowName = (run, metric, trace, active) => {
-    return (
-      <>
-        <div className='ContextBox__table__metric-item'>
-          {run.experiment_name}
-        </div>
-            /
-        <div className='ContextBox__table__metric-item'>
-          <Link
-            className='ContextBox__table__item__name'
-            to={buildUrl(HUB_PROJECT_EXPERIMENT, {
-              experiment_name: run.experiment_name,
-              commit_id: run.run_hash,
-            })}
-          >
-            {moment(run.date * 1000).format('HH:mm · D MMM, YY')}
-          </Link>
-        </div>
-            /
-        <div className='ContextBox__table__metric-item'>
-          {metric.name}
-        </div>
-            /
-        <div className='ContextBox__table__metric-item'>
-          {!!trace.context && Object.keys(trace.context).map((contextCat, contextCatKey) => (
-            <UI.Label key={contextCatKey} size='small' color={active ? '#FFF' : '#CCC'}>
-              <UI.Text inline>{contextCat}: {trace.context[contextCat]}</UI.Text>
-            </UI.Label>
-          ))}
-        </div>
-      </>
-    );
-  };
-
-  _renderTFRowName = (metric) => {
-    return (
-      <>TF:{metric.name}</>
-    )
-  };
-
   // _renderRows = () => {
   //   const step = this.context.chart.focused.step;
 
