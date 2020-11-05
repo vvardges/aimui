@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.1.10 Nov 5 2020
 - Expand group and scroll to the corresponding item, when clicking on a line chart (roubkar)
 - Upgrade Aim version (gorarakelyan)
 - Upgrade AimRecords version (gorarakelyan)
