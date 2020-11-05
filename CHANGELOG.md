@@ -1,5 +1,6 @@
 # Changelog
 
+- Expand group and scroll to the corresponding item, when clicking on a line chart (roubkar)
 - Upgrade Aim version (gorarakelyan)
 - Upgrade AimRecords version (gorarakelyan)
 

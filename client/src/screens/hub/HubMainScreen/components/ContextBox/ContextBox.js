@@ -233,6 +233,7 @@ class ContextBox extends Component {
     }));
 
     const data = this.context.traceList?.traces.length > 1 ? {} : [];
+    const expanded = {};
     const step = this.context.chart.focused.step;
     const focusedCircle = this.context.chart.focused.circle;
     const focusedMetric = this.context.chart.focused.metric;
@@ -260,6 +261,12 @@ class ContextBox extends Component {
             && focusedMetric.metricName === metric.name
             && focusedMetric.traceContext === contextHash)) {
           active = true;
+        }
+
+        if (focusedCircle.runHash === run.run_hash
+          && focusedCircle.metricName === metric.name
+          && focusedCircle.traceContext === contextHash) {
+          expanded[JSON.stringify(traceModel.config)] = true;
         }
 
         const className = classNames({
@@ -537,6 +544,7 @@ class ContextBox extends Component {
             columns={columns}
             data={data}
             groups={this.context.traceList?.traces.length > 1}
+            expanded={expanded}
           />
         </div>
       </div>

@@ -6,10 +6,33 @@ import UI from '../..';
 
 function Table(props) {
   let [expanded, setExpanded] = useState({});
+  let prevExpanded = useRef(props.expanded);
+
+  useEffect(() => {
+    if (props.expanded && props.groups) {
+      for (let groupKey in props.expanded) {
+        if (props.expanded[groupKey] && prevExpanded.current[groupKey] !== props.expanded[groupKey]) {
+          setExpanded(exp => ({
+            ...exp,
+            [groupKey]: true
+          }));
+        }
+      }
+    }
+    prevExpanded.current = props.expanded;
+  }, [props.expanded]);
   
   const leftPane = props.columns.some(col => col.stick === 'left') ? props.columns.filter(col => col.stick === 'left') : null;
   const middlePane = props.columns.filter(col => !col.hasOwnProperty('stick'));
   const rightPane = props.columns.some(col => col.stick === 'right') ? props.columns.filter(col => col.stick === 'right') : null;
+
+  function expand(groupKey) {
+    prevExpanded.current[groupKey] = !expanded[groupKey];
+    setExpanded({
+      ...expanded,
+      [groupKey]: !expanded[groupKey]
+    });
+  }
 
   return (
     <div className='Table__container'>
@@ -28,7 +51,7 @@ function Table(props) {
                     data={props.data}
                     groups={props.groups}
                     expanded={expanded}
-                    setExpanded={setExpanded}
+                    expand={expand}
                     showGroupConfig={index === 0}
                   />
                 ))
@@ -52,7 +75,7 @@ function Table(props) {
                 data={props.data}
                 groups={props.groups}
                 expanded={expanded}
-                setExpanded={setExpanded}
+                expand={expand}
                 showGroupConfig={
                   index === 0 && props.columns.filter(col => col.stick === 'left').length === 0
                 }
@@ -78,7 +101,7 @@ function Table(props) {
                     data={props.data}
                     groups={props.groups}
                     expanded={expanded}
-                    setExpanded={setExpanded}
+                    expand={expand}
                     showGroupConfig={
                       index === 0 && rightPane.length === props.columns.length
                     }
@@ -101,7 +124,7 @@ function Column({
   data,
   groups,
   expanded,
-  setExpanded,
+  expand,
   showGroupConfig
 }) {
   return (
@@ -142,10 +165,7 @@ function Column({
                 <>
                   <div
                     className='Table__group__expand__toggle'
-                    onClick={e => setExpanded({
-                      ...expanded,
-                      [groupKey]: !expanded[groupKey]
-                    })}
+                    onClick={e => expand(groupKey)}
                   >
                     <UI.Icon
                       i={expanded[groupKey] ? 'unfold_less' : 'unfold_more'}
@@ -163,10 +183,7 @@ function Column({
                 ...data[groupKey].data[col.key],
                 props: {
                   ...data[groupKey].data[col.key]?.props,
-                  onClick: e => setExpanded({
-                    ...expanded,
-                    [groupKey]: !expanded[groupKey]
-                  })
+                  onClick: e => expand(groupKey)
                 }
               } : data[groupKey].data[col.key]}
               className={classNames({
