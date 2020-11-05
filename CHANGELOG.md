@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.10 Nov 5 2020
+- Expand group and scroll to the corresponding item, when clicking on a line chart (roubkar)
+- Upgrade Aim version (gorarakelyan)
+- Upgrade AimRecords version (gorarakelyan)
+
 ## 1.1.9 Nov 2 2020
 - Show when run was started in experiment screen (gorarakelyan)
 - Add Table component to UI Kit (roubkar)

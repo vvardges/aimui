@@ -9,7 +9,7 @@ export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.7/site-packages:/usr/lib/py
 printf "client_max_body_size 0;\n" > /etc/nginx/conf.d/upload.conf
 
 export FLASK_ENV=prod
-export FLASK_DEBUG=0
+export FLASK_DEBUG=1
 export FLASK_APP=/server/run.py
 export TORNADO_ENV=prod
 
