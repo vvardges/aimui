@@ -36,7 +36,10 @@ function Table(props) {
 
   return (
     <div className='Table__container'>
-      <div className='Table'>
+      <div className={classNames({
+        Table: true,
+        'Table--grouped': props.groups
+      })}>
         {
           leftPane && (
             <div className='Table__pane Table__pane--left'>
@@ -154,7 +157,7 @@ function Column({
       </div>
       {
         groups ? Object.keys(data).map(groupKey => (
-          <Fragment key={groupKey}>
+          <div key={groupKey} className='Table__group'>
             <div
               className={classNames({
                 Table__group__config__cell: true,
@@ -196,7 +199,7 @@ function Column({
                 <Cell key={col.key + i} col={col} item={item[col.key]} />
               ))
             }
-          </Fragment>
+          </div>
         )) : data.map((item, i) => (
           <Cell key={col.key + i} col={col} item={item[col.key]} />
         ))

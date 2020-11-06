@@ -65,7 +65,8 @@
   align-items: center;
   background-color: var(--grey-bg);
   height: @cell-height;
-  box-shadow: inset 0px -1px 0 0 @border-color-dark, 0px -1px 0 0 @border-color-dark;
+  box-shadow: inset 0px -1px 0 0 @border-color-dark;
+  box-sizing: border-box;
   z-index: 1;
 
   &.expanded {
@@ -172,5 +173,61 @@
     background-color: var(--grey-bg);
     border-color: var(--grey-light-xx);
     color: var(--grey);
+  }
+}
+
+.Table__group {
+  margin-top: 10px;
+  background-color: #FFF;
+  border-top: 1px solid @border-color-dark;
+
+  .Table__cell:last-of-type {
+    border-bottom: 1px solid @border-color-dark;
+  }
+}
+
+.Table--grouped {
+  padding-bottom: 10px;
+  .Table__pane {
+    &:first-of-type {
+      .Table__column {
+        &:first-of-type {
+          .Table__group {
+            margin-left: 10px;
+            border-left: 1px solid @border-color-dark;
+            border-top-left-radius: var(--border-radius);
+            border-bottom-left-radius: var(--border-radius);
+
+            .Table__group__config__cell {
+              border-top-left-radius: var(--border-radius);
+            }
+
+            .Table__cell:last-of-type {
+              border-bottom-left-radius: var(--border-radius);
+            }
+          }
+        }
+      }
+    }
+    &:last-of-type {
+      .Table__column {
+        &:last-of-type {
+          .Table__group {
+            margin-right: 10px;
+            border-right: 1px solid @border-color-dark;
+            border-top-right-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+
+            .Table__group__config__cell {
+              border-top-right-radius: var(--border-radius);
+            }
+
+            .Table__cell:last-of-type {
+              border-bottom-right-radius: var(--border-radius);
+            }
+          }
+        }
+      }
+    }
   }
 }

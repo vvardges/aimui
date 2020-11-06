@@ -456,7 +456,18 @@ class ContextBox extends Component {
                   ),
                   expandable: true
                 },
-                value: `min: ${min !== null && min !== undefined ? roundValue(min) : '-'} / avg: ${avg !== null && avg !== undefined ? roundValue(avg) : '-'} / max: ${max !== null && max !== undefined ? roundValue(max) : '-'}`,
+                value: {
+                  // content: (
+                  //   <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
+                  //     min: {min !== null && min !== undefined ? roundValue(min) : '-'} / avg: {avg !== null && avg !== undefined ? roundValue(avg) : '-'} / max: {max !== null && max !== undefined ? roundValue(max) : '-'}
+                  //   </UI.Label>
+                  // )
+                  content: (
+                    <>
+                      min: {min !== null && min !== undefined ? roundValue(min) : '-'} / avg: {avg !== null && avg !== undefined ? roundValue(avg) : '-'} / max: {max !== null && max !== undefined ? roundValue(max) : '-'}
+                    </>
+                  )
+                },
                 step: {
                   content: stepData !== null && stepData[1] !== null ? stepData[1] : '-',
                 },
