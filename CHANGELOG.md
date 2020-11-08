@@ -1,5 +1,6 @@
 # Changelog
 
+- Sort runs by date in Dashboard screen (roubkar)
 - Add offset for grouped items (roubkar)
 
 ## 1.1.10 Nov 5 2020

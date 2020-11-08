@@ -214,7 +214,7 @@ class HubExperimentsDashboardScreen extends React.Component {
         });
 
         return {
-          runs: data.runs,
+          runs: data.runs.sort((a, b) => b.date - a.date),
           experiments: _.uniq(experiments),
           selectedExperiments: [],
           coloredCols: coloredCols
