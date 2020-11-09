@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.11 Nov 9 2020
+- Display group config in a group header (roubkar, gorarakelyan)
+- Sort runs by date in Dashboard screen (roubkar)
+- Add offset for grouped items (roubkar)
+- Add group context info to context table (roubkar)
+
 ## 1.1.10 Nov 5 2020
 - Expand group and scroll to the corresponding item, when clicking on a line chart (roubkar)
 - Upgrade Aim version (gorarakelyan)
