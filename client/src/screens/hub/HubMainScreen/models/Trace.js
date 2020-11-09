@@ -1,4 +1,4 @@
-import { deepEqual } from '../../../../utils';
+import { deepEqual, formatValue } from '../../../../utils';
 import Series from './Series';
 import _ from 'lodash';
 
@@ -17,6 +17,7 @@ export default class Trace {
     this.chart = null;
     this.experiments = [];
     this.metrics = [];
+    this.contexts = [];
   }
 
   addSeries = (series) => {
@@ -24,6 +25,7 @@ export default class Trace {
     
     this.setExperiments(series.run.experiment_name);
     this.setMetrics(series.metric.name);
+    this.setContexts(series.trace.context);
 
     // TODO: Implement 'lazy' aggregation
     this.aggregate();
@@ -135,5 +137,14 @@ export default class Trace {
     if (!this.metrics.includes(metric_name)) {
       this.metrics.push(metric_name);
     }
+  };
+
+  setContexts = (context) => {
+    Object.keys(context).forEach(contextKey => {
+      let contextValue = `${contextKey}=${formatValue(context[contextKey])}`;
+      if (!this.contexts.includes(contextValue)) {
+        this.contexts.push(contextValue);
+      }
+    });
   };
 }

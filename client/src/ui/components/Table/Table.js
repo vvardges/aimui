@@ -191,7 +191,8 @@ function Column({
               } : data[groupKey].data[col.key]}
               className={classNames({
                 Table__group__header__cell: true,
-                expanded: expanded[groupKey]
+                expanded: expanded[groupKey],
+                expandable: typeof data[groupKey].data[col.key] === 'object' && data[groupKey].data[col.key].expandable
               })}
             />
             {

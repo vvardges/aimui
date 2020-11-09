@@ -457,6 +457,35 @@ class ContextBox extends Component {
                   ),
                   expandable: true
                 },
+                context: {
+                  content: (
+                    <div className='ContextBox__table__item-aggregated_labels'>
+                      {
+                        !!traceModel.contexts?.length
+                          ? (
+                            <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
+                              {traceModel.contexts[0]}
+                            </UI.Label>
+                          )
+                          : '-'
+                      }
+                      {
+                        traceModel.contexts?.length > 1 && (
+                          <UI.Label
+                            className='ContextBox__table__item-aggregated_label'
+                            color={color}
+                            rounded
+                          >
+                            <UI.Tooltip tooltip={traceModel.contexts.slice(1).join(', ')}>
+                              +{traceModel.contexts.length - 1}
+                            </UI.Tooltip>
+                          </UI.Label>
+                        )
+                      }
+                    </div>
+                  ),
+                  expandable: true
+                },
                 value: {
                   // content: (
                   //   <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>

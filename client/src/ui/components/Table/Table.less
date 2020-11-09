@@ -120,10 +120,15 @@
     background-color: #FAFAFA;
     border-color: @border-color-dark;
     z-index: 1;
+    transition: background-color 0.2s ease-out;
 
     &.expanded {
       position: sticky;
       top: calc(3 * @cell-height);
+    }
+
+    &.expandable:hover {
+      background-color: #f3f3f3;
     }
   }
 

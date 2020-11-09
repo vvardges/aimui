@@ -72,7 +72,7 @@ Button.propTypes = {
   gradient: PropTypes.bool,
   disabled: PropTypes.bool,
   onClick: PropTypes.func,
-  children: PropTypes.string,
+  children: PropTypes.node,
 };
 
 export default React.memo(Button);
