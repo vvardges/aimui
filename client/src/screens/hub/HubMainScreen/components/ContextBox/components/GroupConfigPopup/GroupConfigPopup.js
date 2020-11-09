@@ -128,7 +128,7 @@ function GroupConfigPopup(props) {
             {configKeys.map((configKey, i) => (
               <Fragment key={configKey}>
                 <div className='GroupConfigPopup__body__row'>
-                  <UI.Text type='grey-darker' small>{configKey}</UI.Text>
+                  <UI.Text type='grey-darker' small>{configKey}:</UI.Text>
                   <UI.Text type='grey-dark' small>{formatValue(props.config[configKey])}</UI.Text>
                 </div>
               </Fragment>

@@ -15,13 +15,17 @@ function Label({ className, children, size, spacing, color, outline, rounded, ic
     [className]: !!className,
   });
 
+  const styles = {};
+  if (outline) {
+    styles['borderColor'] = color;
+  } else {
+    styles['backgroundColor'] = color;
+  }
+
   return (
     <div
       className={elemClassName}
-      style={{
-        backgroundColor: outline ? '' : color,
-        borderColor: outline ? color : 'transparent',
-      }}
+      style={styles}
       onClick={onClick || null}
     >
       {!!iconLeft &&
