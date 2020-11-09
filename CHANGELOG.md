@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.1.11 Nov 9 2020
 - Display group config in a group header (roubkar, gorarakelyan)
 - Sort runs by date in Dashboard screen (roubkar)
 - Add offset for grouped items (roubkar)
