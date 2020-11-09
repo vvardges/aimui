@@ -705,6 +705,7 @@ class HubMainScreen extends React.Component {
             <div className='HubMainScreen__grid__body'>
               <div className='HubMainScreen__grid__search-filter' ref={this.searchBarRef}>
                 <SearchBar
+                  key={this.state.context.search.query}
                   placeholder={'e.g. `loss if experiment == nmt_syntok and hparams.lr >= 0.0001`'}
                   initValue={this.state.context.search.query}
                   onSubmit={(value) => this.handleSearchBarSubmit(value)}
