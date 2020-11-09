@@ -3,11 +3,8 @@
 .Label {
   position: relative;
   display: inline-flex;
-  align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding: 0.35em 1em;
-  line-height: 1em;
   border: 1px solid transparent;
   border-radius: calc(var(--border-radius));
   color: rgb(0, 0, 0);
@@ -55,4 +52,43 @@
     font-size: var(--button-lg);
     padding: 0.95em 2.2em;
   }
+
+  &.rounded {
+    border-radius: 5em;
+  }
+
+  &.outline {
+    background-color: #FFF;
+
+    .Label__icon {
+      border-radius: 5em 0 0 5em;
+    }
+
+    .Label__content {
+      padding-left: 1em;
+      padding-right: 1.2em;
+    }
+  }
+}
+
+.Label__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid;
+  border-color: inherit;
+  padding: 0 0.35em 0 0.6em;
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+
+  .Icon {
+    cursor: auto;
+  }
+}
+
+.Label__content {
+  display: flex;
+  padding: 0.35em 1em;
+  line-height: 1em;
+  align-items: center;
+  justify-content: center;
 }

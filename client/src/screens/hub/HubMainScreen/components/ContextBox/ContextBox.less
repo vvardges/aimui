@@ -69,14 +69,16 @@
 }
 
 .ContextBox__table__group-indicator__chart {
-  width: var(--space-sm);
-  height: var(--space-sm);
-  margin-left: var(--space-xxs);
-  border: 1px solid;
-  border-radius: var(--border-radius);
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-left: var(--space-xxs);
+  color: var(--grey-dark);
+  border: 1px solid var(--grey-light);
+  border-radius: var(--border-radius);
+  font-size: var(--text-xs);
 
   .Text {
     font-size: 0.6em;
@@ -84,17 +86,18 @@
 }
 
 .ContextBox__table__group-indicator__color {
-  width: var(--space-sm);
-  height: var(--space-sm);
+  width: 0.85rem;
+  height: 0.85rem;
   margin-left: var(--space-xxs);
   border: 1px solid;
   border-radius: var(--border-radius);
 }
 
 .ContextBox__table__group-indicator__stroke {
+  display: block;
   background-color: #FFF;
-  width: var(--space-lg);
-  height: var(--space-sm);
+  width: 1.8rem;
+  height: 0.85rem;
   margin-left: var(--space-xxs);
   border: 1px solid;
   border-radius: var(--border-radius);
@@ -118,7 +121,29 @@
   margin-right: var(--space-sm);
 }
 
+.ContextBox__table__item-aggregated_labels {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1px;
+}
+
 .ContextBox__table__item-aggregated_label {
   color: #FFF;
   text-shadow: none;
+  margin-right: var(--space-xxs);
+
+  &:last-of-type {
+    margin-right: 0;
+  }
+
+  &.outline {
+    color: inherit;
+  }
+}
+
+.ContextBox__table__item-aggregated_icon {
+  cursor: default !important;
+  user-select: none;
+  vertical-align: middle;
 }

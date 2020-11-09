@@ -12,6 +12,7 @@ import { buildUrl, classNames, sortOnKeys, formatValue, roundValue } from '../..
 import UI from '../../../../../ui';
 import { HUB_PROJECT_EXPERIMENT } from '../../../../../constants/screens';
 import ColumnGroupPopup from './components/ColumnGroupPopup/ColumnGroupPopup';
+import GroupConfigPopup from './components/GroupConfigPopup/GroupConfigPopup';
 
 class ContextBox extends Component {
   paramKeys = {};
@@ -463,9 +464,62 @@ class ContextBox extends Component {
                   //   </UI.Label>
                   // )
                   content: (
-                    <>
-                      min: {min !== null && min !== undefined ? roundValue(min) : '-'} / avg: {avg !== null && avg !== undefined ? roundValue(avg) : '-'} / max: {max !== null && max !== undefined ? roundValue(max) : '-'}
-                    </>
+                    <div className='ContextBox__table__item-aggregated_labels'>
+                      <UI.Label
+                        className='ContextBox__table__item-aggregated_label'
+                        iconLeft={
+                          <UI.Tooltip tooltip={
+                            'Minimum value'
+                          }>
+                            <UI.Icon
+                              i='vertical_align_bottom'
+                              className='ContextBox__table__item-aggregated_icon'
+                              scale={1.2}
+                            />
+                          </UI.Tooltip>
+                        }
+                        rounded
+                        outline
+                      >
+                        {min !== null && min !== undefined ? roundValue(min) : '-'}
+                      </UI.Label>
+                      <UI.Label
+                        className='ContextBox__table__item-aggregated_label'
+                        iconLeft={
+                          <UI.Tooltip tooltip={
+                            'Average value'
+                          }>
+                            <UI.Icon
+                              i='vertical_align_center'
+                              className='ContextBox__table__item-aggregated_icon'
+                              scale={1.2}
+                            />
+                          </UI.Tooltip>
+                        }
+                        outline
+                        rounded
+                      >
+                        {avg !== null && avg !== undefined ? roundValue(avg) : '-'}
+                      </UI.Label>
+                      <UI.Label
+                        className='ContextBox__table__item-aggregated_label'
+                        iconLeft={
+                          <UI.Tooltip tooltip={
+                            'Maximum value'
+                          }>
+                            <UI.Icon
+                              i='vertical_align_top'
+                              className='ContextBox__table__item-aggregated_icon'
+                              scale={1.2}
+                            />
+                          </UI.Tooltip>
+                        }
+                        outline
+                        rounded
+                      >
+                        {max !== null && max !== undefined ? roundValue(max) : '-'}
+                      </UI.Label>
+                    </div>
                   )
                 },
                 step: {
@@ -474,42 +528,51 @@ class ContextBox extends Component {
               },
               config: (
                 <>
+                  <GroupConfigPopup
+                    config={traceModel.config}
+                  />
                   {
                     this.context.traceList?.grouping?.chart?.length > 0 && (
-                      <div className='ContextBox__table__group-indicator__chart'>
-                        <UI.Text small>{traceModel.chart + 1}</UI.Text>
-                      </div>
+                      <UI.Tooltip tooltip='Group Chart ID'>
+                        <div className='ContextBox__table__group-indicator__chart'>
+                          {traceModel.chart + 1}
+                        </div>
+                      </UI.Tooltip>
                     )
                   }
                   {
                     this.context.traceList?.grouping?.color?.length > 0 && (
-                      <div
-                        className='ContextBox__table__group-indicator__color'
-                        style={{
-                          backgroundColor: traceModel.color,
-                          borderColor: traceModel.color
-                        }}
-                      />
+                      <UI.Tooltip tooltip='Group Color'>
+                        <div
+                          className='ContextBox__table__group-indicator__color'
+                          style={{
+                            backgroundColor: traceModel.color,
+                            borderColor: traceModel.color
+                          }}
+                        />
+                      </UI.Tooltip>
                     )
                   }
                   {
                     this.context.traceList?.grouping?.stroke?.length > 0 && (
-                      <svg
-                        className='ContextBox__table__group-indicator__stroke'
-                        style={{
-                          borderColor: traceModel.color
-                        }}
-                      >
-                        <line
-                          x1='0'
-                          y1='50%'
-                          x2='100%'
-                          y2='50%'
+                      <UI.Tooltip tooltip='Group Stroke Style'>
+                        <svg
+                          className='ContextBox__table__group-indicator__stroke'
                           style={{
-                            strokeDasharray: traceModel.stroke.split(' ').map(elem => (elem / 5) * 3).join(' ')
+                            borderColor: traceModel.color
                           }}
-                        />
-                      </svg>
+                        >
+                          <line
+                            x1='0'
+                            y1='50%'
+                            x2='100%'
+                            y2='50%'
+                            style={{
+                              strokeDasharray: traceModel.stroke.split(' ').map(elem => (elem / 5) * 3).join(' ')
+                            }}
+                          />
+                        </svg>
+                      </UI.Tooltip>
                     )
                   }
                 </>

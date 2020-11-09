@@ -80,7 +80,22 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  padding: var(--space-xs);
+  width: 25px;
+  height: 25px;
+  margin: 5px 0 5px 5px;
+  border-radius: 50%;
+  transition: background-color ease 110ms;
+  user-select: none;
+  color: var(--grey-dark);
+
+  &:hover {
+    background-color: var(--grey-lighter);
+  }
+
+  &:active {
+    background-color: var(--grey-light-xx);
+    color: var(--grey-darker);
+  }
 }
 
 .Table__cell {
