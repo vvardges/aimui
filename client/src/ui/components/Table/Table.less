@@ -67,7 +67,7 @@
   height: @cell-height;
   box-shadow: inset 0px -1px 0 0 @border-color-dark;
   box-sizing: border-box;
-  z-index: 1;
+  z-index: 2;
 
   &.expanded {
     position: sticky;
@@ -75,7 +75,7 @@
   }
 }
 
-.Table__group__expand__toggle {
+.Table__group__action {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -95,6 +95,43 @@
   &:active {
     background-color: var(--grey-light-xx);
     color: var(--grey-darker);
+  }
+}
+
+.Table__group__action__popup {
+  position: fixed;
+  background-color: #fff;
+  outline: 0;
+  overflow-y: auto;
+  border: 1px solid var(--primary-lighter);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  z-index: 9999;
+}
+
+.Table__group__action__popup__body {
+  min-width: 180px;
+}
+
+.Table__group__action__popup__item {
+  padding: var(--component-spacing-xs) var(--component-spacing-sm);
+  border-bottom: 1px solid var(--grey-lighter);
+  text-transform: capitalize;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: var(--grey-bg);
+  }
+
+  &:active {
+    background-color: var(--primary);
+    color: #FFF;
   }
 }
 
@@ -149,7 +186,7 @@
   border-color: @border-color-dark;
   color: var(--grey-dark);
   font-weight: bold;
-  z-index: 2;
+  z-index: 3;
   overflow: visible;
 }
 

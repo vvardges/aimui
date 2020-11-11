@@ -140,11 +140,13 @@ export default class Trace {
   };
 
   setContexts = (context) => {
-    Object.keys(context).forEach(contextKey => {
-      let contextValue = `${contextKey}=${formatValue(context[contextKey])}`;
-      if (!this.contexts.includes(contextValue)) {
-        this.contexts.push(contextValue);
-      }
-    });
+    if (!!context) {
+      Object.keys(context).forEach(contextKey => {
+        let contextValue = `${contextKey}=${formatValue(context[contextKey])}`;
+        if (!this.contexts.includes(contextValue)) {
+          this.contexts.push(contextValue);
+        }
+      });
+    }
   };
 }

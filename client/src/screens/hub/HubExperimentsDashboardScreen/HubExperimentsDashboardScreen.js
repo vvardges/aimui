@@ -214,7 +214,7 @@ class HubExperimentsDashboardScreen extends React.Component {
         });
 
         return {
-          runs: data.runs.sort((a, b) => b.date - a.date),
+          runs: data?.runs?.sort((a, b) => b.date - a.date) ?? [],
           experiments: _.uniq(experiments),
           selectedExperiments: [],
           selectedRuns: [],
@@ -278,15 +278,17 @@ class HubExperimentsDashboardScreen extends React.Component {
 
   exploreMetric = (metricName, context) => {
     const contextQuery = [];
-    Object.keys(context).forEach(contextKey => {
-      if (typeof context[contextKey] === 'boolean') {
-        contextQuery.push(`context.${contextKey} is ${formatValue(context[contextKey], false)}`);
-      } else if (typeof context[contextKey] === 'number') {
-        contextQuery.push(`context.${contextKey} == ${context[contextKey]}`);
-      } else {
-        contextQuery.push(`context.${contextKey} == "${context[contextKey]}"`);
-      }
-    });
+    if (!!context) {
+      Object.keys(context).forEach(contextKey => {
+        if (typeof context[contextKey] === 'boolean') {
+          contextQuery.push(`context.${contextKey} is ${formatValue(context[contextKey], false)}`);
+        } else if (typeof context[contextKey] === 'number') {
+          contextQuery.push(`context.${contextKey} == ${context[contextKey]}`);
+        } else {
+          contextQuery.push(`context.${contextKey} == "${context[contextKey]}"`);
+        }
+      });
+    }
 
     const queryPrefix = this.searchBarRef?.current?.getValue() || null;
 
