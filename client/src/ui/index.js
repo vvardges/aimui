@@ -23,7 +23,7 @@ import Label from './components/Label/Label';
 import Tag from './components/Tag/Tag';
 import Table from './components/Table/Table';
 import Tooltip from './components/Tooltip/Tooltip';
-
+import Popover from './components/Popover/Popover';
 
 export default {
   Button, Buttons,
@@ -47,4 +47,5 @@ export default {
   Tag,
   Table,
   Tooltip,
+  Popover,
 };

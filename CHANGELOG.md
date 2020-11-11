@@ -1,5 +1,6 @@
 # Changelog
 
+- Add Popover component to UI Kit
 - Add ability to expand/collapse all groups in table (roubkar)
 
 ## 1.1.11 Nov 9 2020
