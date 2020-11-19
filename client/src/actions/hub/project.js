@@ -79,6 +79,22 @@ export function getExperimentComponent(experiment_name, commit_id, path) {
   }
 }
 
+export function getProjectParams() {
+  return dispatch => {
+    return new Promise((resolve, reject) => {
+      callApi('Project.getProjectParams').then((data) => {
+        dispatch({
+          type: actionTypes.HUB_PROJECT_UPDATE,
+          data,
+        });
+        resolve(data);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
+  }
+}
+
 export function downloadModel(experiment_name, model_name) {
   return dispatch => {
     return new Promise((resolve, reject) => {

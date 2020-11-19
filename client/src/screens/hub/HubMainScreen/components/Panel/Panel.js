@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 
 import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
 import PanelChart from './components/PanelChart/PanelChart';
+import ParallelCoordinatesChart from './components/ParallelCoordinatesChart/ParallelCoordinatesChart';
 import UI from '../../../../../ui';
 
 class Panel extends Component {
@@ -39,7 +40,9 @@ class Panel extends Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if ((this.panelRef.current.clientHeight !== this.state.height) || prevProps.parentHeight !== this.props.parentHeight || prevProps.parentWidth !== this.props.parentWidth) {
+    if (Math.abs(this.panelRef.current.clientHeight - this.state.height) > 4
+      || Math.abs(prevProps.parentHeight - this.props.parentHeight) > 4
+      || Math.abs(prevProps.parentWidth - this.props.parentWidth) > 4) {
       this.handleResize();
     }
   }
@@ -92,7 +95,10 @@ class Panel extends Component {
               height: this.templates[indices.length][i][1] * heightFr,
             }}
           >
-            <PanelChart key={this.context.key} index={i} />
+            {this.context.runs?.meta?.params_selected
+              ? <ParallelCoordinatesChart key={this.context.key} index={i} />
+              : <PanelChart key={this.context.key} index={i} />
+            }
           </div>
         )}
       </>
@@ -136,7 +142,11 @@ class Panel extends Component {
                   </UI.Text>
                 </>
               )
-              : this._renderCharts()
+              : (
+                this.context.enableExploreParamsMode() && this.context.getCountOfSelectedParams() === 1
+                  ? this._renderPanelMsg(<UI.Text type='grey' center>Please select two or more fields to display parallel coordinates plot.</UI.Text>)
+                  : this._renderCharts()
+              )
             }
           </>
         }

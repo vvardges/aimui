@@ -19,13 +19,16 @@
   display: flex;
   width: max-content;
   min-width: 100%;
+  min-height: 100%;
   box-sizing: border-box;
 }
 
 .Table__pane {
   display: flex;
-  width: fill-available;
+  width: stretch;
+  width: -webkit-fill-available;
   width: -moz-available;
+  min-height: 100%;
   box-sizing: border-box;
   z-index: 0;
 }
@@ -49,7 +52,8 @@
   flex-direction: column;
   background-color: #FFF;
   z-index: 0;
-  width: fill-available;
+  width: stretch;
+  width: -webkit-fill-available;
   width: -moz-available;
 
   &:last-of-type {
@@ -240,8 +244,8 @@
 }
 
 .Table--grouped {
-  padding-bottom: 10px;
   .Table__pane {
+    padding-bottom: 10px;
     &:first-of-type {
       .Table__column {
         &:first-of-type {

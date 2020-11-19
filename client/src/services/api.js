@@ -6,7 +6,7 @@ import { SERVER_HOST } from '../config';
 function setApiClient() {
   return new Promise((resolve, reject) => {
     if (!window.ApiClient) {
-      Swagger('/swagger.0.0.6.yaml').then(client => {
+      Swagger('/swagger.0.0.7.yaml').then(client => {
         client.spec.servers = [...client.spec.servers, ...[
           {
             'url': `http://${window.location.hostname}:${window.location.port}/{basePath}`,

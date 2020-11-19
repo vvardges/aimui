@@ -30,6 +30,7 @@ class ProjectWrapper extends React.Component {
 
   componentDidMount() {
     this.props.getProjectData().then((data) => {
+      this.props.getProjectParams();
       this.props.incProgress();
     }).catch(() => {
       this.setState( {
@@ -44,10 +45,11 @@ class ProjectWrapper extends React.Component {
   }
 
   getHeaderHeight = () => {
-    if (!this.state.isLoading && this.projectWrapperHeaderRef.current) {
-      return this.projectWrapperHeaderRef.current.clientHeight;
-    }
-    return null;
+    // if (!this.state.isLoading && this.projectWrapperHeaderRef.current) {
+    //   return this.projectWrapperHeaderRef.current.clientHeight;
+    // }
+    // return null;
+    return 0;
   };
 
   _renderNav = () => {
@@ -74,6 +76,28 @@ class ProjectWrapper extends React.Component {
     );
   };
 
+  _renderHeader = () => {
+    return null;
+
+    return (
+      <UI.Container size={this.props.size}>
+        <div className='ProjectWrapper__header__cont'>
+          <div className='ProjectWrapper__breadcrumb'>
+            <UI.Icon className='ProjectWrapper__breadcrumb__icon' i='link' scale={1} spacingRight />
+            <Link
+              to={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD}
+            >
+              <UI.Text>{project.path}</UI.Text>
+            </Link>
+          </div>
+        </div>
+        <div className='ProjectWrapper__navbar__wrapper'>
+          {this._renderNav()}
+        </div>
+      </UI.Container>
+    );
+  };
+
   _renderContent = () => {
     let project = this.props.project;
 
@@ -92,21 +116,7 @@ class ProjectWrapper extends React.Component {
           className='ProjectWrapper__header'
           ref={this.projectWrapperHeaderRef}
         >
-          <UI.Container size={this.props.size}>
-            <div className='ProjectWrapper__header__cont'>
-              <div className='ProjectWrapper__breadcrumb'>
-                <UI.Icon className='ProjectWrapper__breadcrumb__icon' i='link' scale={1} spacingRight />
-                <Link
-                  to={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD}
-                >
-                  <UI.Text>{project.path}</UI.Text>
-                </Link>
-              </div>
-            </div>
-            <div className='ProjectWrapper__navbar__wrapper'>
-              {this._renderNav()}
-            </div>
-          </UI.Container>
+          {this._renderHeader()}
         </div>
         <div className='ProjectWrapper__body'>
           {!!this.props.navigation &&

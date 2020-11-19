@@ -145,7 +145,7 @@ class HubExperimentsDashboardScreen extends React.Component {
     const wrapper = this.projectWrapperRef.current;
     const projectWrapperHeight = wrapper ? this.projectWrapperRef.current.getHeaderHeight() : null;
     const { height } = this.topHeaderRef.current?.getBoundingClientRect() ?? {};
-    if (projectWrapperHeight) {
+    if (projectWrapperHeight !== null) {
       this.setState({
         height: window.innerHeight - projectWrapperHeight - 1,
         subheaderTop: height ?? 0

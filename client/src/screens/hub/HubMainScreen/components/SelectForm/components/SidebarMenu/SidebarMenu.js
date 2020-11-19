@@ -5,7 +5,7 @@ import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
 import HubMainScreenContext from '../../../../HubMainScreenContext/HubMainScreenContext';
 
-function SidebarMenu() {
+function SidebarMenu(props) {
   let {
     resetControls, areControlsChanged,
   } = useContext(HubMainScreenContext);
@@ -21,23 +21,19 @@ function SidebarMenu() {
   }, [opened]);
 
   return (
-    <div className='ControlsSidebar__menu'>
-      <UI.Tooltip
-        tooltip={opened ? 'Hide menu' : 'Open menu'}
+    <div className=''>
+      <div
+        className={classNames({
+          [props.className]: true,
+          active: opened,
+        })}
+        onClick={() => setOpened(!opened)}
       >
-        <div
-          className={classNames({
-            ControlsSidebar__menu__btn: true,
-            active: opened,
-          })}
-          onClick={() => setOpened(!opened)}
-        >
-          {opened ? <UI.Icon i='close' /> : <UI.Icon i='menu' /> }
-        </div>
-      </UI.Tooltip>
+        <UI.Icon i='menu' />
+      </div>
       {opened && (
         <div
-          className='ControlsSidebar__item__popup list'
+          className='ControlsSidebar__item__popup list ControlsSidebar__item__popup-sidebar'
           tabIndex={0}
           ref={popupRef}
           onBlur={evt => {
@@ -52,7 +48,7 @@ function SidebarMenu() {
           }}
         >
           <div className='ControlsSidebar__item__popup__header'>
-            <UI.Text overline bold>Sidebar menu</UI.Text>
+            <UI.Text overline bold>Menu</UI.Text>
           </div>
           <div className='ControlsSidebar__item__popup__list'>
             <div
@@ -65,6 +61,20 @@ function SidebarMenu() {
             >
               <UI.Text small>Reset Controls to System Defaults</UI.Text>
             </div>
+            <a
+              href='https://github.com/aimhubio/aim#searching-experiments'
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              <div
+                className={classNames({
+                  ControlsSidebar__item__popup__list__item: true,
+                  text_normalized: true,
+                })}
+              >
+                <UI.Text small>Searching Experiments (docs)</UI.Text>
+              </div>
+            </a>
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@ import './HubWrapper.less';
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Helmet } from 'react-helmet';
 
 import * as classes from '../../../constants/classes';
 import * as storeUtils from '../../../storeUtils';
@@ -18,6 +19,10 @@ class HubWrapper extends React.Component {
 
     return (
       <BaseWrapper>
+        <Helmet>
+          <title>Aim: {this.props.project.path}</title>
+        </Helmet>
+
         <div className={hubClassName}>
           <div className='HubWrapper__cont'>
             {this.props.children}

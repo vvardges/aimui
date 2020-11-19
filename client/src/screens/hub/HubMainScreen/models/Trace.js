@@ -20,6 +20,23 @@ export default class Trace {
     this.contexts = [];
   }
 
+  get seriesLength() {
+    return this.series.length;
+  };
+
+  clone = () => {
+    const traceClone = new Trace(this.config);
+
+    traceClone.color = this.color;
+    traceClone.stroke = this.stroke;
+    traceClone.chart = this.chart;
+
+    traceClone.series = this.series.slice();
+    traceClone.aggregate();
+
+    return traceClone;
+  };
+
   addSeries = (series) => {
     this.series.push(series);
     
@@ -28,6 +45,11 @@ export default class Trace {
     this.setContexts(series.trace.context);
 
     // TODO: Implement 'lazy' aggregation
+    this.aggregate();
+  };
+
+  removeSeries = (index) => {
+    this.series.splice(index,1);
     this.aggregate();
   };
 
@@ -58,25 +80,25 @@ export default class Trace {
     const name = [];
     const experiment_name = [];
     const run_hash = [];
-    const params = {};
     const context = {};
+    const params = {};
     this.series.forEach(s => {
       name.push(s.metric.name);
       experiment_name.push(s.run.experiment_name);
       run_hash.push(s.run.run_hash);
       // FIXME: Use deepmerge to merge arrays as well
-      if (!!s.run.param) {
-        _.merge(params, s.run.param);
+      if (!!s.run.params) {
+        _.merge(params, s.run.params);
       }
       if (!!s.trace.context) {
         _.merge(context, s.trace.context);
       }
     });
+    run.params = params;
     trace.context = context;
     metric.name = _.uniq(name);
     run.run_hash = _.uniq(run_hash);
     run.experiment_name = _.uniq(experiment_name);
-    run.params = params;
 
     // Aggregate data
     let idx = 0;
@@ -148,5 +170,32 @@ export default class Trace {
         }
       });
     }
+  };
+
+  getAggregatedMetricMinMax = (metric, context) => {
+    let result = {
+      min: undefined,
+      avg: undefined,
+      max: undefined,
+    };
+    let lastValuesSum;
+    this.series.forEach(series => {
+      let seriesMetricValue = series.getAggregatedMetricValue(metric, context);
+      if (result.min === undefined || seriesMetricValue < result.min) {
+        result.min = seriesMetricValue;
+      }
+      if (result.max === undefined || seriesMetricValue > result.max) {
+        result.max = seriesMetricValue;
+      }
+      if (seriesMetricValue !== undefined && seriesMetricValue !== null) {
+        if (lastValuesSum === undefined) {
+          lastValuesSum = seriesMetricValue;
+        } else {
+          lastValuesSum += seriesMetricValue;
+        }
+      }
+    });
+    result.avg = lastValuesSum === undefined ? undefined : lastValuesSum / this.series.length;
+    return result;
   };
 }

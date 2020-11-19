@@ -4,8 +4,20 @@
   box-sizing: border-box;
   overflow: hidden;
   background-color: #FFF;
-  margin: auto;
+  margin-left: auto;
   border-radius: var(--border-radius);
+}
+
+.ContextBox__loader__wrapper,
+.ContextBox__empty__wrapper {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  border: 1px solid var(--grey-light-xx);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .ContextBox__resizing {
@@ -21,7 +33,7 @@
   height: 100%;
   overflow: auto;
 
-  &.resizing {
+  &.resizing * {
     user-select: none;
   }
 }
@@ -117,7 +129,8 @@
   margin-right: var(--space-sm);
 }
 
-.ContextBox__table__item-aggregated_labels {
+.ContextBox__table__item-aggregated_labels,
+.ContextBox__table__agg-metrics__labels {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -142,4 +155,16 @@
   cursor: default !important;
   user-select: none;
   vertical-align: middle;
+}
+
+.ContextBox__table__agg-metrics__label {
+  margin-right: var(--component-spacing-xs);
+  background-color: var(--grey-light-xx) !important;
+  color: var(--grey-dark) !important;
+  border: 1px solid var(--grey-light-x) !important;
+  font-weight: normal;
+
+  &:last-child {
+    margin-right: 0 !important;
+  }
 }

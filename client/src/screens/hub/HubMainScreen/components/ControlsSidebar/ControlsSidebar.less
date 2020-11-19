@@ -1,15 +1,24 @@
+@import '../../../../../vars';
+
+@control-item-width: @controls-width * 0.55;
+
 .ControlsSidebar {
-  width: 100%;
-  height: 100%;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+  position: relative;
+  top: 5px;
+  left: 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #FFF;
   box-sizing: border-box;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--grey-light-xx);
 }
 
 .ControlsSidebar__items {
-  margin: var(--component-spacing-sm) 0;
+  margin-top: var(--space-sm);
 }
 
 .ControlsSidebar__item__wrapper {
@@ -26,8 +35,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 45px;
-  height: 45px;
+  width: @control-item-width;
+  height: @control-item-width;
   margin-bottom: var(--component-spacing-xs);
   border-radius: var(--border-radius);
   border: 1px solid transparent;
@@ -67,7 +76,7 @@
 .ControlsSidebar__item__popup {
   position: absolute;
   top: 0;
-  right: 65px;
+  right: 55px;
   background-color: #fff;
   outline: 0;
   width: 350px;
@@ -80,6 +89,10 @@
   &.list {
     width: 250px;
   }
+}
+
+.ControlsSidebar__item__popup-sidebar {
+  right: 35px;
 }
 
 .ControlsSidebar__item__popup__header {
@@ -98,6 +111,12 @@
   margin-right: var(--component-spacing-xs);
 }
 
+.ControlsSidebar__item__popup__list {
+  a:hover {
+    text-decoration: none !important;
+  }
+}
+
 .ControlsSidebar__item__popup__list__item {
   padding: var(--component-spacing-xs) var(--component-spacing-sm);
   border-bottom: 1px solid var(--grey-lighter);
@@ -105,6 +124,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  color: var(--primary);
 
   &:last-of-type {
     border-bottom: none;

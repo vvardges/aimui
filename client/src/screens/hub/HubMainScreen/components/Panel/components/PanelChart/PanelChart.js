@@ -448,7 +448,7 @@ class PanelChart extends Component {
         .attr('fill', Color(this.context.traceList?.grouping?.color?.length > 0 ? traceModel.color : this.context.getMetricColor(runAvg, metricAvg, traceAvg)).alpha(0.3).hsl().string())
         .on('click', function () {
           handleLineClick(d3.mouse(this));
-        });;
+        });
 
       const line = d3.line()
         .x(d => this.state.chart.xScale(d[1]))
@@ -557,7 +557,12 @@ class PanelChart extends Component {
     }
 
     // Add focused circle and/or apply focused state
-    if (focusedCircle.active === true && (this.context.contextFilter.groupByChart.length === 0 || this.context.traceList?.traces.filter(trace => trace.chart === this.props.index).some(traceModel => traceModel.hasRun(focusedCircle.runHash, focusedCircle.metricName, focusedCircle.traceContext)))) {
+    if (focusedCircle.active === true
+      && (this.context.contextFilter.groupByChart.length === 0
+        || this.context.traceList?.traces
+          .filter(trace => trace.chart === this.props.index)
+          .some(traceModel => traceModel.hasRun(focusedCircle.runHash, focusedCircle.metricName, focusedCircle.traceContext))
+      )) {
       if (focusedCircleElem !== null) {
         focusedCircleElem
           .classed('focus', true)
