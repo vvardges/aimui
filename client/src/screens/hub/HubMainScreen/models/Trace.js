@@ -41,8 +41,8 @@ export default class Trace {
     this.series.push(series);
     
     this.setExperiments(series.run.experiment_name);
-    this.setMetrics(series.metric.name);
-    this.setContexts(series.trace.context);
+    if (series.metric !== null) this.setMetrics(series.metric.name);
+    if (series.trace !== null) this.setContexts(series.trace.context);
 
     // TODO: Implement 'lazy' aggregation
     this.aggregate();
@@ -83,14 +83,14 @@ export default class Trace {
     const context = {};
     const params = {};
     this.series.forEach(s => {
-      name.push(s.metric.name);
       experiment_name.push(s.run.experiment_name);
       run_hash.push(s.run.run_hash);
+      if (s.metric !== null) name.push(s.metric.name);
       // FIXME: Use deepmerge to merge arrays as well
       if (!!s.run.params) {
         _.merge(params, s.run.params);
       }
-      if (!!s.trace.context) {
+      if (!!s.trace?.context) {
         _.merge(context, s.trace.context);
       }
     });
@@ -107,12 +107,14 @@ export default class Trace {
       let step = null;
       let timestamp = null;
       this.series.forEach(s => {
-        const point = s.getPoint(idx);
-        if (point !== null) {
-          values.push(point[0]);
-          // TODO: Aggregate step(?) and relative time(!)
-          step = point[1];
-          timestamp = point[3];
+        if (s.trace !== null) {
+          const point = s.getPoint(idx);
+          if (point !== null) {
+            values.push(point[0]);
+            // TODO: Aggregate step(?) and relative time(!)
+            step = point[1];
+            timestamp = point[3];
+          }
         }
       });
       if (values.length > 0) {
@@ -139,7 +141,7 @@ export default class Trace {
       let series = this.series[i];
       if (
         series?.run?.run_hash === run_hash &&
-        series.metric.name === metricName &&
+        series.metric?.name === metricName &&
         btoa(JSON.stringify(series.trace.context)).replace(/[\=\+\/]/g, '') === traceContext
       ) {
         return true;

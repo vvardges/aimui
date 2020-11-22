@@ -206,7 +206,7 @@ class CommitMetricSearchApi(Resource):
         runs_list = []
         for run in runs:
             if not is_tf_run(run):
-                runs_list.append(run.to_dict())
+                runs_list.append(run.to_dict(include_only_selected_agg_metrics=True))
             else:
                 runs_list.append(run)
 

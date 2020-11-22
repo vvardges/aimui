@@ -1,6 +1,8 @@
 # Changelog
 
-- Add Popover component to UI Kit
+- Process series with empty metric and trace data (gorarakelyan, roubkar)
+- Add parallel coordinates plot for high dimensional data visualization (gorarakelyan, roubkar)
+- Add Popover component to UI Kit (roubkar)
 - Add ability to expand/collapse all groups in table (roubkar)
 
 ## 1.1.11 Nov 9 2020

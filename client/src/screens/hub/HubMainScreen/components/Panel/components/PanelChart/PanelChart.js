@@ -287,12 +287,12 @@ class PanelChart extends Component {
         return;
       }
       const {run, metric, trace} = series;
-      if (trace.num_steps > xMax) {
+      if (trace?.num_steps > xMax) {
         xMax = trace.num_steps;
       }
-      if (trace.data.length > xNum) {
-        xNum = trace.data.length;
-        xSteps = trace.data.map(s => s[1]);
+      if (trace?.data.length > xNum) {
+        xNum = trace?.data.length;
+        xSteps = trace?.data.map(s => s[1]);
       }
     }));
 
@@ -308,8 +308,8 @@ class PanelChart extends Component {
           return;
         }
         const {run, metric, trace} = series;
-        const traceMax = Math.max(...trace.data.map(elem => elem[0]));
-        const traceMin = Math.min(...trace.data.map(elem => elem[0]));
+        const traceMax = trace && trace.data ? Math.max(...trace.data.map(elem => elem[0])) : null;
+        const traceMin = trace && trace.data ? Math.min(...trace.data.map(elem => elem[0])) : null;
         if (yMax == null || traceMax > yMax) {
           yMax = traceMax;
         }
@@ -324,7 +324,7 @@ class PanelChart extends Component {
           return;
         }
         const { run, metric, trace } = series;
-        if (trace.data) {
+        if (trace?.data) {
           trace.data.forEach((elem, elemIdx) => {
             if (minData.length > elemIdx) {
               minData[elemIdx].push(elem[0]);
@@ -403,16 +403,16 @@ class PanelChart extends Component {
         .curve(d3[this.curves[this.context.chart.settings.persistent.interpolate ? 5 : 0]]);
 
       this.lines.append('path')
-        .attr('class', 'PlotLine PlotLine-' + this.context.traceToHash(run.run_hash, metric.name, trace.context))
-        .datum(trace.data)
+        .attr('class', 'PlotLine PlotLine-' + this.context.traceToHash(run.run_hash, metric?.name, trace?.context))
+        .datum(trace?.data ?? [])
         .attr('d', line)
         .attr('clip-path', 'url(#lines-rect-clip-' + this.props.index + ')')
         .style('fill', 'none')
         .style('stroke', this.context.traceList?.grouping?.color?.length > 0 ? traceModel.color : this.context.getMetricColor(run, metric, trace))
         .style('stroke-dasharray', this.context.traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0')
         .attr('data-run-hash', run.run_hash)
-        .attr('data-metric-name', metric.name)
-        .attr('data-trace-context-hash', this.context.contextToHash(trace.context))
+        .attr('data-metric-name', metric?.name)
+        .attr('data-trace-context-hash', this.context.contextToHash(trace?.context))
         .on('click', function () {
           handleLineClick(d3.mouse(this));
         });
@@ -510,12 +510,12 @@ class PanelChart extends Component {
         return;
       }
       const { run, metric, trace } = series;
-      const val = this.context.getMetricStepValueByStepIdx(trace.data, step);
+      const val = this.context.getMetricStepValueByStepIdx(trace?.data, step);
       if (val !== null) {
         const y = this.state.chart.yScale(val);
-        const traceContext = this.context.contextToHash(trace.context);
+        const traceContext = this.context.contextToHash(trace?.context);
         const circle = this.circles.append('circle')
-          .attr('class', 'HoverCircle HoverCircle-' + step + ' HoverCircle-' + this.context.traceToHash(run.run_hash, metric.name, traceContext))
+          .attr('class', 'HoverCircle HoverCircle-' + step + ' HoverCircle-' + this.context.traceToHash(run.run_hash, metric?.name, traceContext))
           .attr('cx', x)
           .attr('cy', y)
           .attr('r', circleRadius)
@@ -523,12 +523,12 @@ class PanelChart extends Component {
           .attr('data-y', y)
           .attr('data-step', step)
           .attr('data-run-hash', run.run_hash)
-          .attr('data-metric-name', metric.name)
-          .attr('data-trace-context-hash', this.context.contextToHash(trace.context))
+          .attr('data-metric-name', metric?.name)
+          .attr('data-trace-context-hash', this.context.contextToHash(trace?.context))
           .attr('clip-path', 'url(#lines-rect-clip-' + this.props.index + ')')
           .style('fill', this.context.traceList?.grouping?.color?.length > 0 ? traceModel.color : this.context.getMetricColor(run, metric, trace))
           .on('click', function () {
-            handlePointClick(step, run.run_hash, metric.name, traceContext);
+            handlePointClick(step, run.run_hash, metric?.name, traceContext);
           });
 
         if (focusedCircle.active === true

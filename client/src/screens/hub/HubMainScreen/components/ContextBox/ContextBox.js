@@ -293,33 +293,32 @@ class ContextBox extends Component {
     const focusedCircle = this.context.chart.focused.circle;
     const focusedMetric = this.context.chart.focused.metric;
 
-    this.context.traceList?.traces.forEach((traceModel, index) => {
-      _.uniqBy(traceModel.series, 'run.run_hash').forEach(series => {
+    this.context.traceList?.traces.forEach(traceModel => {
+      (this.context.runs?.meta?.params_selected ? _.uniqBy(traceModel.series, 'run.run_hash') : traceModel.series).forEach(series => {
         const { run, metric, trace } = series;
-        const contextHash = this.context.contextToHash(trace.context);
+        const contextHash = this.context.contextToHash(trace?.context);
 
-        const line = this.context.getTraceData(run.run_hash, metric.name, contextHash);
+        const line = this.context.getTraceData(run.run_hash, metric?.name, contextHash);
 
-        let stepData = null;
-        stepData = this.context.getMetricStepDataByStepIdx(line.data, step);
+        let stepData = line ? this.context.getMetricStepDataByStepIdx(line?.data, step) : null;
 
-        const color = this.context.traceList?.grouping?.color?.length > 0 ? traceModel.color : this.context.getMetricColor(line.run, line.metric, line.trace);
+        const color = this.context.traceList?.grouping?.color?.length > 0 ? traceModel.color : this.context.getMetricColor(line?.run, line?.metric, line?.trace);
         const colorObj = Color(color);
 
         let active = false;
         if ((
           focusedCircle.runHash === run.run_hash
-          && focusedCircle.metricName === metric.name
+          && focusedCircle.metricName === metric?.name
           && focusedCircle.traceContext === contextHash)
           || (
             focusedMetric.runHash === run.run_hash
-            && focusedMetric.metricName === metric.name
+            && focusedMetric.metricName === metric?.name
             && focusedMetric.traceContext === contextHash)) {
           active = true;
         }
 
         if (focusedCircle.runHash === run.run_hash
-          && focusedCircle.metricName === metric.name
+          && focusedCircle.metricName === metric?.name
           && focusedCircle.traceContext === contextHash) {
           expanded[JSON.stringify(traceModel.config)] = true;
         }
@@ -337,7 +336,7 @@ class ContextBox extends Component {
         }
 
         const highlightColumn = (evt) => {
-          this.handleRowMove(run.run_hash, metric.name, contextHash);
+          this.handleRowMove(run.run_hash, metric?.name, contextHash);
           evt.currentTarget.parentNode.style.backgroundColor = style.backgroundColor;
         };
 
@@ -354,8 +353,8 @@ class ContextBox extends Component {
             },
             className: className,
             props: {
-              onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
-              onMouseMove: () => this.handleRowMove(run.run_hash, metric.name, contextHash),
+              onClick: () => this.handleRowClick(run.run_hash, metric?.name, contextHash),
+              onMouseMove: () => this.handleRowMove(run.run_hash, metric?.name, contextHash),
             },
           },
           run: {
@@ -375,23 +374,23 @@ class ContextBox extends Component {
               backgroundColor: active ? color : '#FAFAFA',
             },
             props: {
-              onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
-              onMouseMove: () => this.handleRowMove(run.run_hash, metric.name, contextHash),
+              onClick: () => this.handleRowClick(run.run_hash, metric?.name, contextHash),
+              onMouseMove: () => this.handleRowMove(run.run_hash, metric?.name, contextHash),
             }
           },
           metric: {
-            content: metric.name,
+            content: metric?.name ?? '-',
             style: {
               color: active ? '#FFF' : color,
               backgroundColor: active ? color : '#FAFAFA'
             },
             props: {
-              onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
-              onMouseMove: () => this.handleRowMove(run.run_hash, metric.name, contextHash),
+              onClick: () => this.handleRowClick(run.run_hash, metric?.name, contextHash),
+              onMouseMove: () => this.handleRowMove(run.run_hash, metric?.name, contextHash),
             }
           },
           context: {
-            content: !!trace.context &&
+            content: !!trace?.context ? (
               <div className='ContextBox__table__item-context__wrapper'>
                 {Object.keys(trace.context).map((contextCat, contextCatKey) => (
                   <ColumnGroupPopup
@@ -404,7 +403,7 @@ class ContextBox extends Component {
                         type='primary'
                         ghost={true}
                       >
-                        <UI.Text inline>{contextCat}={formatValue(trace.context[contextCat])}</UI.Text>
+                        <UI.Text inline>{contextCat}={formatValue(trace.context?.[contextCat])}</UI.Text>
                       </UI.Button>
                     )}
                     contextFilter={this.context.contextFilter}
@@ -412,20 +411,20 @@ class ContextBox extends Component {
                   />
                 ))}
               </div>
-            ,
+            ) : '-',
             style: {
               backgroundColor: active ? color : '#FAFAFA'
             },
             props: {
-              onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
-              onMouseMove: () => this.handleRowMove(run.run_hash, metric.name, contextHash),
+              onClick: () => this.handleRowClick(run.run_hash, metric?.name, contextHash),
+              onMouseMove: () => this.handleRowMove(run.run_hash, metric?.name, contextHash),
             }
           },
           value: {
             content: stepData !== null && stepData[0] !== null ? roundValue(stepData[0]) : '-',
             style: style,
             props: {
-              onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
+              onClick: () => this.handleRowClick(run.run_hash, metric?.name, contextHash),
               onMouseMove: highlightColumn,
               onMouseLeave: removeColumnHighlighting
             }
@@ -434,7 +433,7 @@ class ContextBox extends Component {
             content: stepData !== null && stepData[1] !== null ? stepData[1] : '-',
             style: style,
             props: {
-              onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
+              onClick: () => this.handleRowClick(run.run_hash, metric?.name, contextHash),
               onMouseMove: highlightColumn,
               onMouseLeave: removeColumnHighlighting
             }
@@ -443,7 +442,7 @@ class ContextBox extends Component {
             content: stepData !== null && stepData[2] !== null ? stepData[2] : '-',
             style: style,
             props: {
-              onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
+              onClick: () => this.handleRowClick(run.run_hash, metric?.name, contextHash),
               onMouseMove: highlightColumn,
               onMouseLeave: removeColumnHighlighting
             }
@@ -452,7 +451,7 @@ class ContextBox extends Component {
             content: stepData !== null && stepData[3] !== null ? moment.unix(stepData[3]).format('HH:mm:ss · D MMM, YY') : '-',
             style: style,
             props: {
-              onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
+              onClick: () => this.handleRowClick(run.run_hash, metric?.name, contextHash),
               onMouseMove: highlightColumn,
               onMouseLeave: removeColumnHighlighting
             }
@@ -465,7 +464,7 @@ class ContextBox extends Component {
               content: formatValue(series.getAggregatedMetricValue(metricKey, metricContext), true),
               style: style,
               props: {
-                onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
+                onClick: () => this.handleRowClick(run.run_hash, metric?.name, contextHash),
                 onMouseMove: highlightColumn,
                 onMouseLeave: removeColumnHighlighting
               }
@@ -478,7 +477,7 @@ class ContextBox extends Component {
             content: formatValue(run.params?.[paramKey]?.[key]),
             style: style,
             props: {
-              onClick: () => this.handleRowClick(run.run_hash, metric.name, contextHash),
+              onClick: () => this.handleRowClick(run.run_hash, metric?.name, contextHash),
               onMouseMove: highlightColumn,
               onMouseLeave: removeColumnHighlighting
             }
@@ -490,6 +489,7 @@ class ContextBox extends Component {
             const min = this.context.getMetricStepDataByStepIdx(traceModel.aggregation.min.trace.data, step)?.[0];
             const avg = this.context.getMetricStepDataByStepIdx(traceModel.aggregation.avg.trace.data, step)?.[0];
             const max = this.context.getMetricStepDataByStepIdx(traceModel.aggregation.max.trace.data, step)?.[0];
+            const runsCount = (this.context.runs?.meta?.params_selected ? _.uniqBy(traceModel.series, 'run.run_hash') : traceModel.series).length;
             data[JSON.stringify(traceModel.config)] = {
               items: [],
               data: {
@@ -508,7 +508,7 @@ class ContextBox extends Component {
                 run: {
                   content: (
                     <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
-                      {traceModel?.series?.length} run{traceModel.series.length > 1 ? 's' : ''}
+                      {runsCount} run{runsCount > 1 ? 's' : ''}
                     </UI.Label>
                   ),
                   expandable: true

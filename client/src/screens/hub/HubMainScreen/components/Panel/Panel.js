@@ -144,7 +144,7 @@ class Panel extends Component {
               )
               : (
                 this.context.enableExploreParamsMode() && this.context.getCountOfSelectedParams() === 1
-                  ? this._renderPanelMsg(<UI.Text type='grey' center>Please select two or more fields to display parallel coordinates plot.</UI.Text>)
+                  ? this._renderPanelMsg(<UI.Text type='grey' center>Please select at least two params to see parallel coordinates plot displayed.</UI.Text>)
                   : this._renderCharts()
               )
             }

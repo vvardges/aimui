@@ -28,7 +28,7 @@ export default class Series {
   }
 
   getPoint = (index) => {
-    if (index >= 0 && !!this.trace.data && this.trace.data.length > index) {
+    if (index >= 0 && !!this.trace?.data && this.trace?.data?.length > index) {
       return this.trace.data[index];
     }
     return null;

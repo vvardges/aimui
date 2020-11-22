@@ -280,7 +280,7 @@ class ParallelCoordinatesChart extends Component {
         for (let key in seriesParams) {
           if (seriesParams[key]
             && typeof seriesParams[key] === 'string'
-            && seriesParams[key].length > 35) seriesParams[key] = seriesParams[key].slice(0, 36);
+            && seriesParams[key].length > 20) seriesParams[key] = seriesParams[key].slice(0, 21);
         }
       }));
 
@@ -512,12 +512,12 @@ class ParallelCoordinatesChart extends Component {
         if (line[0] === null) {
           this.lines.append('path')
             .attr('d', lineFunction(line.slice(1)))
-            .attr('class', `ParCoordsLine ParCoordsLine-${this.context.traceToHash(run.run_hash, metric.name, trace.context)} silhouette`)
+            .attr('class', `ParCoordsLine ParCoordsLine-${this.context.traceToHash(run.run_hash, metric?.name, trace?.context)} silhouette`)
             .style('fill', 'none');
         } else {
           this.lines.append('path')
             .attr('d', lineFunction(line))
-            .attr('class', `ParCoordsLine ParCoordsLine-${this.context.traceToHash(run.run_hash, metric.name, trace.context)}`)
+            .attr('class', `ParCoordsLine ParCoordsLine-${this.context.traceToHash(run.run_hash, metric?.name, trace?.context)}`)
             .style('fill', 'none')
             .style('stroke', strokeStyle)
             .style('stroke-dasharray', strokeDashArray);
@@ -589,9 +589,6 @@ class ParallelCoordinatesChart extends Component {
       traces.push(chartTrace);
     });
 
-    // ctx.clearRect(0, 0, this.state.plotBox.width, this.state.plotBox.height);
-    const length = _.sum(traces.map(traceModel => traceModel.seriesLength));
-    // ctx.globalAlpha = d3.min([0.85 / Math.pow(length, 0.3), 1]);
     this.clearLines();
 
     this.setState({

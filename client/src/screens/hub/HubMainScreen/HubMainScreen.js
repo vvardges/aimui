@@ -4,6 +4,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import { withRouter } from 'react-router-dom';
 import * as _ from 'lodash';
+import Color from 'color';
 
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import * as classes from '../../../constants/classes';
@@ -20,6 +21,7 @@ import { randomStr, deepEqual, buildUrl, getObjectValueByPath, classNames } from
 import * as analytics from '../../../services/analytics';
 import TraceList from './models/TraceList';
 import SelectForm from './components/SelectForm/SelectForm';
+import { COLORS } from '../../../constants/colors';
 
 class HubMainScreen extends React.Component {
   constructor(props) {
@@ -421,7 +423,7 @@ class HubMainScreen extends React.Component {
               zoomMode: false,
               zoomHistory: [],
               persistent: {
-                ...prevState.context.chart?.settings ?? {},
+                ...prevState.context.chart?.settings?.persistent ?? {},
                 zoom: null
               }
             }
@@ -591,18 +593,22 @@ class HubMainScreen extends React.Component {
     const traceList = new TraceList(grouping);
 
     runs.forEach((run) => {
-      run.metrics.forEach((metric) => {
-        metric.traces.forEach((trace) => {
-          traceList.addSeries(run, metric, trace);
+      if (!run.metrics?.length) {
+        traceList.addSeries(run, null, null);
+      } else {
+        run.metrics.forEach((metric) => {
+          metric.traces.forEach((trace) => {
+            traceList.addSeries(run, metric, trace);
+          });
         });
-      });
+      }
     });
 
     this.setState(prevState => ({
       ...prevState,
       context: {
         ...prevState.context,
-        traceList
+        traceList,
       },
     }), () => {
       this.reRenderChart();
@@ -686,15 +692,13 @@ class HubMainScreen extends React.Component {
 
   hashToColor = (hash, alpha = 1) => {
     const index = hash.split('').map((c, i) => hash.charCodeAt(i)).reduce((a, b) => a + b);
-    const r = 50;
-    const g = (index * 27) % 255;
-    const b = (index * 13) % 255;
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    const color = Color(COLORS[index % COLORS.length]).alpha(alpha);
+    return color.toString();
   };
 
   getMetricColor = (run, metric, trace, alpha = 1) => {
     // TODO: Add conditional coloring
-    const hash = this.traceToHash(run.run_hash, metric.name, trace.context);
+    const hash = this.traceToHash(run?.run_hash, metric?.name, trace?.context);
     return this.hashToColor(hash, alpha);
   };
 
