@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.2.0 Nov 24 2020
 - Process series with empty metric and trace data (gorarakelyan, roubkar)
 - Add parallel coordinates plot for high dimensional data visualization (gorarakelyan, roubkar)
 - Add Popover component to UI Kit (roubkar)
