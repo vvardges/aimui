@@ -1,8 +1,11 @@
 import './Table.less';
 
-import React, { Fragment, useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { classNames } from '../../../utils';
 import UI from '../..';
+
+const margin = 5;
+const offset = 30;
 
 function Table(props) {
   let [expanded, setExpanded] = useState({});
@@ -21,17 +24,34 @@ function Table(props) {
     }
     prevExpanded.current = props.expanded;
   }, [props.expanded]);
-  
+
   const leftPane = props.columns.some(col => col.stick === 'left') ? props.columns.filter(col => col.stick === 'left') : null;
   const middlePane = props.columns.filter(col => !col.hasOwnProperty('stick'));
   const rightPane = props.columns.some(col => col.stick === 'right') ? props.columns.filter(col => col.stick === 'right') : null;
 
   function expand(groupKey) {
-    prevExpanded.current[groupKey] = !expanded[groupKey];
-    setExpanded({
-      ...expanded,
-      [groupKey]: !expanded[groupKey]
-    });
+    if (groupKey === 'expand_all') {
+      let groupsForExpansion = {};
+      for (let key in props.data) {
+        groupsForExpansion[key] = true;
+        prevExpanded.current[key] = true;
+      }
+      setExpanded({
+        ...expanded,
+        ...groupsForExpansion
+      });
+    } else if (groupKey === 'collapse_all') {
+      for (let key in props.data) {
+        prevExpanded.current[key] = false;
+      }
+      setExpanded({});
+    } else {
+      prevExpanded.current[groupKey] = !expanded[groupKey];
+      setExpanded({
+        ...expanded,
+        [groupKey]: !expanded[groupKey]
+      });
+    }
   }
 
   return (
@@ -165,19 +185,13 @@ function Column({
               })}
             >
               {showGroupConfig && (
-                <>
-                  <div
-                    className='Table__group__expand__toggle'
-                    onClick={e => expand(groupKey)}
-                  >
-                    <UI.Icon
-                      i={expanded[groupKey] ? 'unfold_less' : 'unfold_more'}
-                      scale={1}
-                      className='Table__group__expand__toggle__icon'
-                    />
-                  </div>
-                  {data[groupKey].config}
-                </>
+                <GroupConfig
+                  config={data[groupKey].config}
+                  expand={expand}
+                  expanded={expanded}
+                  groupKeys={Object.keys(data)}
+                  groupKey={groupKey}
+                />
               )}
             </div>
             <Cell
@@ -228,6 +242,74 @@ function Cell({ item, className }) {
         item.content
       ) : item ?? '-'}
     </div>
+  );
+}
+
+function GroupConfig({ config, expand, expanded, groupKeys, groupKey }) {
+  return (
+    <>
+      <UI.Tooltip tooltip={expanded[groupKey] ? 'Collapse group' : 'Expand group'}>
+        <div
+          className='Table__group__action'
+          onClick={evt => expand(groupKey)}
+        >
+          <UI.Icon
+            i={expanded[groupKey] ? 'unfold_less' : 'unfold_more'}
+            scale={1}
+          />
+        </div>
+      </UI.Tooltip>
+      {config}
+      <UI.Tooltip tooltip='More actions'>
+        <UI.Popover
+          target={(
+            <UI.Icon
+              i='more_horiz'
+              scale={1}
+            />
+          )}
+          targetClassName='Table__group__action'
+          content={(opened, setOpened) => (
+            <div className='Table__group__action__popup__body'>
+              <div
+                className='Table__group__action__popup__item'
+                onClick={evt => {
+                  expand(groupKey);
+                  setOpened(false);
+                }}
+              >
+                <UI.Text small>
+                  {expanded[groupKey] ? 'Collapse group' : 'Expand group'}
+                </UI.Text>
+              </div>
+              {(expanded[groupKey] || groupKeys.some(key => !!expanded[key])) && (
+                <div
+                  className='Table__group__action__popup__item'
+                  onClick={evt => {
+                    expand('collapse_all');
+                    setOpened(false);
+                  }}
+                >
+                  <UI.Text small>Collapse all</UI.Text>
+                </div>
+              )}
+              {(!expanded[groupKey] || groupKeys.some(key => !expanded[key])) && (
+                <div
+                  className='Table__group__action__popup__item'
+                  onClick={evt => {
+                    expand('expand_all');
+                    setOpened(false);
+                  }}
+                >
+                  <UI.Text small>Expand all</UI.Text>
+                </div>
+              )}
+            </div>
+          )}
+          popupClassName='Table__group__action__popup'
+        />
+      </UI.Tooltip>
+    </>
   );
 }
 

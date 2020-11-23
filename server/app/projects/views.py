@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import copy
 
 from flask import (
     abort,
@@ -16,6 +17,8 @@ from app.db import db
 from app.projects.utils import (
     read_artifact_log,
     get_branch_commits,
+    deep_merge,
+    dump_dict_values,
 )
 from app.projects.project import Project
 from artifacts.artifact import Metric as MetricRecord
@@ -52,6 +55,40 @@ class ProjectDataApi(Resource):
 
         return jsonify({
             'branches': project.repo.list_branches(),
+        })
+
+
+@projects_api.resource('/params')
+class ProjectParamsApi(Resource):
+    def get(self):
+        project = Project()
+
+        if not project.exists():
+            return make_response(jsonify({}), 404)
+
+        repo = project.repo
+        metrics = set()
+        params = {}
+
+        for exp_name in repo.list_branches():
+            for run_hash in repo.list_branch_commits(exp_name):
+                run = repo.select_run_metrics(exp_name, run_hash)
+                if run is not None:
+                    run_params = copy.deepcopy(run.params)
+                    if run_params is None or len(run_params) == 0:
+                        continue
+                    if '__METRICS__' in run_params:
+                        del run_params['__METRICS__']
+                    dump_dict_values(run_params, {})
+                    params = deep_merge(params, run_params)
+                    for m in run.metrics.keys():
+                        metrics.add(m)
+
+        dump_dict_values(params, True)
+
+        return jsonify({
+            'params': params,
+            'metrics': list(metrics),
         })
 
 

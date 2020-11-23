@@ -124,7 +124,10 @@ export function getObjectValueByPath(obj, path) {
     const subs = path.split('.');
     let ret = obj;
     for (let i = 0; i < subs.length; i++) {
-      ret = ret[subs[i]]
+      ret = ret[subs[i]];
+      if (ret === undefined) {
+        return ret;
+      }
     }
     return ret;
   } else {
@@ -233,6 +236,9 @@ export function formatValue(value, sepCaseForUndefined = true) {
   if (value === false) {
     return 'False';
   }
+  if (typeof value === 'number') {
+    return value;
+  }
 
   return JSON.stringify(value);
 }
@@ -272,4 +278,98 @@ export function interpolateColors(values) {
   }
 
   return colorsByValue;
+}
+
+export const renderQueue = (function(func) {
+  let _queue = [],                 // Data to be rendered
+    _rate = 1000,                  // Number of calls per frame
+    _invalidate = function() {},   // Invalidate last render queue
+    _clear = function() {};        // Clearing function
+
+  let rq = function(data) {
+    if (data) rq.data(data);
+    _invalidate();
+    _clear();
+    rq.render();
+  };
+
+  rq.render = function() {
+    let valid = true;
+    _invalidate = rq.invalidate = function() {
+      valid = false;
+    };
+
+    function doFrame() {
+      if (!valid) return true;
+      let chunk = _queue.splice(0,_rate);
+      chunk.map(func);
+      timer_frame(doFrame);
+    }
+
+    doFrame();
+  };
+
+  rq.data = function(data) {
+    _invalidate();
+    _queue = data.slice(0);
+    return rq;
+  };
+
+  rq.add = function(data) {
+    _queue = _queue.concat(data);
+  };
+
+  rq.rate = function(value) {
+    if (!arguments.length) return _rate;
+    _rate = value;
+    return rq;
+  };
+
+  rq.remaining = function() {
+    return _queue.length;
+  };
+
+  rq.clear = function(func) {
+    if (!arguments.length) {
+      _clear();
+      return rq;
+    }
+    _clear = func;
+    return rq;
+  };
+
+  rq.invalidate = _invalidate;
+
+  let timer_frame = window.requestAnimationFrame
+    || window.webkitRequestAnimationFrame
+    || window.mozRequestAnimationFrame
+    || window.oRequestAnimationFrame
+    || window.msRequestAnimationFrame
+    || function(callback) { setTimeout(callback, 17); };
+
+  return rq;
+});
+
+export function flattenObject(ob, prefix = false, result = null) {
+  result = result || {};
+
+  // Preserve empty objects and arrays, they are lost otherwise
+  if (typeof ob === 'object' && ob !== null && Object.keys(ob).length === 0) {
+    result[prefix] = Array.isArray(ob) ? [] : {};
+    return result;
+  }
+
+  prefix = prefix ? prefix + '.' : '';
+
+  for (const i in ob) {
+    if (Object.prototype.hasOwnProperty.call(ob, i)) {
+      if (typeof ob[i] === 'object' && ob[i] !== null && !Array.isArray(ob[i])) {
+        // Recursion on deeper objects
+        flattenObject(ob[i], prefix + i, result);
+      } else {
+        result[prefix + i] = ob[i];
+      }
+    }
+  }
+  return result;
 }

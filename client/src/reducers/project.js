@@ -3,6 +3,8 @@ import * as actionTypes from '../actions/actionTypes';
 const initialState = {
   project: {
     tf_enabled: false,
+    metrics: null,
+    params: null,
   },
   isLoading: true,
   isUpdating: false,

@@ -1,7 +1,6 @@
 @import '../../../vars';
 
 @search-filter-height: 0fr;
-@controls-width: 75px;
 @padding: 0px;
 
 .HubMainScreen__wrapper {
@@ -21,38 +20,44 @@
 }
 
 .HubMainScreen__grid {
-  height: 100%;
   display: grid;
-  grid-template-columns: 1fr @controls-width;
+  grid-template-rows: @controls-width 1fr;
+  height: 100%;
+  background-color: var(--grey-lighter);
 }
 
-.HubMainScreen__grid__controls {
+.HubMainScreen__grid__search-filter {
 }
 
 .HubMainScreen__grid__body {
+  display: grid;
+  grid-template-columns: 1fr @controls-width;
+  border-top: 1px solid var(--grey-light-xx);
+  box-sizing: border-box;
+}
+
+.HubMainScreen__grid__body__blocks {
   overflow: hidden;
-  background-color: var(--grey-lighter);
   display: flex;
   flex-direction: column;
+  padding-bottom: 5px;
 
   > div {
     box-sizing: border-box;
   }
 }
 
-.HubMainScreen__grid__search-filter {
-  padding: 5px;
+.HubMainScreen__grid__controls {
 }
 
 .HubMainScreen__grid__panel {
   min-height: 300px;
-  margin: 0 5px;
+  margin: 5px 0 0 5px;
   overflow: hidden;
   flex: 1;
 }
 
 .HubMainScreen__grid__context {
-  padding-bottom: 5px;
   min-height: 150px;
   height: auto;
   overflow: hidden;
@@ -64,11 +69,11 @@
   flex-direction: column;
   justify-content: flex-end;
   position: relative;
-  margin: -6px 5px 0;
+  margin: -6px 2px 0 7px;
   height: 14px;
   cursor: row-resize;
   user-select: none;
-  z-index: 999;
+  z-index: 9;
 
   &:hover {
     .HubMainScreen__grid__resize__handler {

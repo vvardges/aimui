@@ -4,6 +4,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import { withRouter } from 'react-router-dom';
 import * as _ from 'lodash';
+import Color from 'color';
 
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import * as classes from '../../../constants/classes';
@@ -19,7 +20,8 @@ import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
 import { randomStr, deepEqual, buildUrl, getObjectValueByPath, classNames } from '../../../utils';
 import * as analytics from '../../../services/analytics';
 import TraceList from './models/TraceList';
-import UI from '../../../ui';
+import SelectForm from './components/SelectForm/SelectForm';
+import { COLORS } from '../../../constants/colors';
 
 class HubMainScreen extends React.Component {
   constructor(props) {
@@ -58,6 +60,7 @@ class HubMainScreen extends React.Component {
               displayOutliers: false,
               zoom: null,
               interpolate: false,
+              indicator: true,
             }
           },
         },
@@ -67,6 +70,9 @@ class HubMainScreen extends React.Component {
           isLoading: false,
           isEmpty: true,
           data: null,
+          params: [],
+          aggMetrics: {},
+          meta: null,
         },
 
         // Search
@@ -76,6 +82,8 @@ class HubMainScreen extends React.Component {
         },
         searchInput: {
           value: undefined,
+          selectInput: '',
+          selectConditionInput: '',
         },
 
         // Filter panel
@@ -144,6 +152,7 @@ class HubMainScreen extends React.Component {
             displayOutliers: false,
             zoom: null,
             interpolate: false,
+            indicator: true,
           }
         },
       },
@@ -191,7 +200,7 @@ class HubMainScreen extends React.Component {
   updateWindowDimensions = () => {
     const wrapper = this.projectWrapperRef.current;
     const projectWrapperHeight = wrapper ? this.projectWrapperRef.current.getHeaderHeight() : null;
-    if (projectWrapperHeight) {
+    if (projectWrapperHeight !== null) {
       this.setState({
         height: window.innerHeight - projectWrapperHeight - 1,
         width: window.innerWidth,
@@ -377,6 +386,21 @@ class HubMainScreen extends React.Component {
   };
 
   setSearchState = (searchState, callback = null, updateURL = true, resetZoom = true, replaceURL = false) => {
+    const searchQuery = searchState.query || prevState.context.searchInput?.value;
+
+    let selectInput = '';
+    let selectConditionInput = '';
+    if (searchQuery) {
+      const searchParts = searchQuery.split(' if ');
+      if (searchParts.length === 2) {
+        selectInput = searchParts[0];
+        selectConditionInput = searchParts[1];
+      } else if (searchParts.length === 1) {
+        selectInput = searchParts[0];
+        selectConditionInput = '';
+      }
+    }
+
     this.setState(prevState => ({
       ...prevState,
       context: {
@@ -387,7 +411,9 @@ class HubMainScreen extends React.Component {
         },
         searchInput: {
           ...prevState.context.searchInput ?? {},
-          value: searchState.query || prevState.context.searchInput?.value,
+          value: searchQuery,
+          selectInput,
+          selectConditionInput,
         },
         ...resetZoom && {
           chart: {
@@ -397,7 +423,7 @@ class HubMainScreen extends React.Component {
               zoomMode: false,
               zoomHistory: [],
               persistent: {
-                ...prevState.context.chart?.settings ?? {},
+                ...prevState.context.chart?.settings?.persistent ?? {},
                 zoom: null
               }
             }
@@ -411,6 +437,18 @@ class HubMainScreen extends React.Component {
       if (updateURL) {
         this.updateURL(replaceURL);
       }
+    });
+  };
+
+  setSearchInputState = (searchInput) => {
+    this.setState(prevState => {
+      const searchInputState = Object.assign({}, prevState.context.searchInput, searchInput);
+      const contextState = Object.assign({}, prevState.context, {
+        searchInput: searchInputState,
+      });
+      return Object.assign({}, prevState, {
+        context: contextState,
+      });
     });
   };
 
@@ -461,12 +499,18 @@ class HubMainScreen extends React.Component {
         this.setRunsState({
           isEmpty: !data.runs || data.runs.length === 0,
           data: data.runs,
+          params: data.params,
+          aggMetrics: data.agg_metrics,
+          meta: data.meta,
         }, resolve);
       }).catch((err) => {
         // console.log(err, err.status);
         this.setRunsState({
           isEmpty: true,
           data: null,
+          params: [],
+          aggMetrics: {},
+          meta: null,
         }, resolve);
       }).finally(() => {
         this.setRunsState({ isLoading: false });
@@ -484,6 +528,21 @@ class HubMainScreen extends React.Component {
 
   isTFSummaryScalar = (run) => {
     return run['source'] === 'tf_summary';
+  };
+
+  enableExploreMetricsMode = () => {
+    return this.state.context.runs?.meta?.params_selected !== true;
+  };
+
+  enableExploreParamsMode = () => {
+    return this.state.context.runs?.meta?.params_selected === true;
+  };
+
+  getCountOfSelectedParams = (includeMetrics = true) => {
+    const countOfParams = this.state.context?.runs?.params?.length;
+    const countOfMetrics = Object.keys(this.state.context?.runs?.aggMetrics ?? {}).map(k => this.state.context.runs.aggMetrics[k].length);
+
+    return includeMetrics ? countOfParams + countOfMetrics.reduce((a, b) => a + b, 0) : countOfParams;
   };
 
   searchByQuery = (updateURL) => {
@@ -534,18 +593,22 @@ class HubMainScreen extends React.Component {
     const traceList = new TraceList(grouping);
 
     runs.forEach((run) => {
-      run.metrics.forEach((metric) => {
-        metric.traces.forEach((trace) => {
-          traceList.addSeries(run, metric, trace);
+      if (!run.metrics?.length) {
+        traceList.addSeries(run, null, null);
+      } else {
+        run.metrics.forEach((metric) => {
+          metric.traces.forEach((trace) => {
+            traceList.addSeries(run, metric, trace);
+          });
         });
-      });
+      }
     });
 
     this.setState(prevState => ({
       ...prevState,
       context: {
         ...prevState.context,
-        traceList
+        traceList,
       },
     }), () => {
       this.reRenderChart();
@@ -629,15 +692,13 @@ class HubMainScreen extends React.Component {
 
   hashToColor = (hash, alpha = 1) => {
     const index = hash.split('').map((c, i) => hash.charCodeAt(i)).reduce((a, b) => a + b);
-    const r = 50;
-    const g = (index * 27) % 255;
-    const b = (index * 13) % 255;
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    const color = Color(COLORS[index % COLORS.length]).alpha(alpha);
+    return color.toString();
   };
 
   getMetricColor = (run, metric, trace, alpha = 1) => {
     // TODO: Add conditional coloring
-    const hash = this.traceToHash(run.run_hash, metric.name, trace.context);
+    const hash = this.traceToHash(run?.run_hash, metric?.name, trace?.context);
     return this.hashToColor(hash, alpha);
   };
 
@@ -669,6 +730,10 @@ class HubMainScreen extends React.Component {
         stateUpdate.context.contextFilter.aggregated = false;
       }
 
+      if (contextFilter.hasOwnProperty('groupByColor')) {
+        stateUpdate.context.chart.settings.persistent.indicator = false;
+      }
+
       return stateUpdate;
     }, () => {
       if (callback !== null) {
@@ -686,74 +751,63 @@ class HubMainScreen extends React.Component {
     }, false);
   };
 
-  _renderContent = () => {
-    const headerWidth = 70;
-    const controlsWidth = 75;
-
+  _renderBody = () => {
     const panelIndicesLen = this.state.context.traceList?.getChartsNumber();
     const panelIndices = [...Array(panelIndicesLen).keys()];
+    const headerWidth = 70;
+    const controlsWidth = 75;
+    const searchBarHeight = 75;
 
     return (
-      <div
-        className='HubMainScreen__wrapper'
+      <div 
+        className='HubMainScreen__grid__body'
         style={{
-          height: this.state.height,
+          height: `${this.state.height - searchBarHeight}px`,
         }}
       >
-        <div className='HubMainScreen'>
-          <div className='HubMainScreen__grid'>
-            <div className='HubMainScreen__grid__body'>
-              <div className='HubMainScreen__grid__search-filter' ref={this.searchBarRef}>
-                <SearchBar
-                  key={this.state.context.search.query}
-                  placeholder={'e.g. `loss if experiment == nmt_syntok and hparams.lr >= 0.0001`'}
-                  initValue={this.state.context.search.query}
-                  onSubmit={(value) => this.handleSearchBarSubmit(value)}
-                  onClear={(value) => this.handleSearchBarSubmit(value)}
-                />
-              </div>
-              <div
-                className='HubMainScreen__grid__panel'
-                style={{
-                  flex: this.state.panelFlex
-                }}
-              >
-                <Panel
-                  parentHeight={this.state.height}
-                  parentWidth={this.state.width}
-                  indices={panelIndices}
-                  resizing={this.state.resizing}
-                />
-              </div>
-              <div
-                className='HubMainScreen__grid__resize__area'
-                onMouseDown={this.startResize}
-              >
-                <div
-                  className={classNames({
-                    HubMainScreen__grid__resize__handler: true,
-                    active: this.state.resizing
-                  })}
-                >
-                  <div className='HubMainScreen__grid__resize__icon' />
-                </div>
-              </div>
-              <div
-                className='HubMainScreen__grid__context'
-                style={{
-                  flex: 1 - this.state.panelFlex
-                }}
-              >
-                <ContextBox
-                  width={this.state.width - headerWidth - controlsWidth - 10}
-                  resizing={this.state.resizing}
-                />
-              </div>
-            </div>
-            <div className='HubMainScreen__grid__controls'>
-              <ControlsSidebar />
+        <div
+          className='HubMainScreen__grid__body__blocks'
+        >
+          <div
+            className='HubMainScreen__grid__panel'
+            style={{
+              flex: this.state.panelFlex
+            }}
+          >
+            <Panel
+              parentHeight={this.state.height}
+              parentWidth={this.state.width}
+              indices={panelIndices}
+              resizing={this.state.resizing}
+            />
+          </div>
+          <div
+            className='HubMainScreen__grid__resize__area'
+            onMouseDown={this.startResize}
+          >
+            <div
+              className={classNames({
+                HubMainScreen__grid__resize__handler: true,
+                active: this.state.resizing
+              })}
+            >
+              <div className='HubMainScreen__grid__resize__icon' />
             </div>
           </div>
+          <div
+            className='HubMainScreen__grid__context'
+            style={{
+              flex: 1 - this.state.panelFlex
+            }}
+          >
+            <ContextBox
+              width={this.state.width - headerWidth - controlsWidth - 5}
+              resizing={this.state.resizing}
+            />
+          </div>
+        </div>
+        <div className='HubMainScreen__grid__controls'>
+          <ControlsSidebar />
         </div>
       </div>
     );
@@ -780,6 +834,7 @@ class HubMainScreen extends React.Component {
             setChartSettingsState: this.setChartSettingsState,
             setChartFocusedState: this.setChartFocusedState,
             setSearchState: this.setSearchState,
+            setSearchInputState: this.setSearchInputState,
             setRunsState: this.setRunsState,
             getMetricByHash: this.getMetricByHash,
             getTraceData: this.getTraceData,
@@ -796,9 +851,26 @@ class HubMainScreen extends React.Component {
             setContextFilter: this.setContextFilter,
             resetControls: this.resetControls,
             areControlsChanged: this.areControlsChanged,
+            enableExploreMetricsMode: this.enableExploreMetricsMode,
+            enableExploreParamsMode: this.enableExploreParamsMode,
+            getCountOfSelectedParams: this.getCountOfSelectedParams,
           }}
         >
-          {this._renderContent()}
+          <div
+            className='HubMainScreen__wrapper'
+            style={{
+              height: this.state.height,
+            }}
+          >
+            <div className='HubMainScreen'>
+              <div className='HubMainScreen__grid'>
+                <div className='HubMainScreen__grid__search-filter' ref={this.searchBarRef}>
+                  <SelectForm />
+                </div>
+                {this._renderBody()}
+              </div>
+            </div>
+          </div>
         </HubMainScreenContext.Provider>
       </ProjectWrapper>
     )

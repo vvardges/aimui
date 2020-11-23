@@ -1,5 +1,7 @@
 import os
 import json
+from copy import deepcopy
+from functools import reduce
 
 from file_read_backwards import FileReadBackwards
 
@@ -37,3 +39,26 @@ def read_artifact_log(file_path, limit=-1):
         pass
 
     return content
+
+
+def deep_merge(*dicts, update=False):
+    def merge_into(d1, d2):
+        for key in d2:
+            if key not in d1 or not isinstance(d1[key], dict):
+                d1[key] = deepcopy(d2[key])
+            else:
+                d1[key] = merge_into(d1[key], d2[key])
+        return d1
+
+    if update:
+        return reduce(merge_into, dicts[1:], dicts[0])
+    else:
+        return reduce(merge_into, dicts, {})
+
+
+def dump_dict_values(item, dump_to):
+    for k, v in item.items():
+        if isinstance(v, dict) and len(v):
+            dump_dict_values(v, dump_to)
+        else:
+            item[k] = dump_to

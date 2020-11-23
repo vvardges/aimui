@@ -21,6 +21,7 @@ class Icon extends Component {
         style={{
           ...this.props.style,
           fontSize: `${this.props.scale}em`,
+          transform: `rotate(${this.props.rotate}deg)`,
         }}
       >
         {this.props.i}
@@ -31,6 +32,7 @@ class Icon extends Component {
 
 Icon.defaultProps = {
   scale: 1,
+  rotate: null,
   onClick: () => {},
 };
 
@@ -38,6 +40,7 @@ Icon.propTypes = {
   i: PropTypes.string.isRequired,
   spacingRight: PropTypes.bool,
   scale: PropTypes.number,
+  rotate: PropTypes.number,
   onClick: PropTypes.func,
 };
 

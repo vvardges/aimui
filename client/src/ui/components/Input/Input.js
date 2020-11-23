@@ -12,6 +12,8 @@ class Input extends React.Component {
     this.state = {
       indicatorWidth: 0
     };
+
+    this.inputRef = React.createRef();
   }
 
   render() {
@@ -42,8 +44,13 @@ class Input extends React.Component {
       autoFocus: this.props.autoFocus,
       readOnly: this.props.readOnly,
       onFocus: this.props.onFocus,
+      onBlur: this.props.onBlur,
       onKeyDown: this.props.onKeyDown,
+      onChange: this._onChange,
+      onKeyPress: this._onKeyPress,
       required: true,
+      tabIndex: `${this.props.tabIndex}`,
+      ref: this.inputRef,
       style: {
         paddingRight: 16 + this.state.indicatorWidth
       }
@@ -51,15 +58,18 @@ class Input extends React.Component {
 
     let cont;
     if (this.props.multiLine) {
-      cont = <textarea id={this.props.id} ref={this.props.reference ? this.props.reference : 'input'} {...params} onChange={this._onChange} onKeyPress={this._onKeyPress} value={this.props.value} />;
+      cont = <textarea
+        id={this.props.id}
+        ref={this.props.reference ? this.props.reference : 'input'}
+        {...params}
+        value={this.props.value}
+      />;
     } else {
       cont = <input
         id={this.props.id}
         ref= {this.props.reference ? this.props.reference : 'input'}
         {...params}
         value={this.props.value}
-        onChange={this._onChange}
-        onKeyPress={this._onKeyPress}
         disabled={this.props.disabled}
       />;
     }
@@ -93,6 +103,7 @@ class Input extends React.Component {
 Input.defaultProps = {
   type: 'text',
   size: 'medium',
+  tabIndex: 0,
 };
 
 Input.propTypes = {
@@ -104,6 +115,8 @@ Input.propTypes = {
   value: PropTypes.any,
   indicator: PropTypes.node,
   onClick: PropTypes.func,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
   onKeyPress: PropTypes.func,
   classNameWrapper: PropTypes.string,
   disabled: PropTypes.bool,
@@ -111,6 +124,7 @@ Input.propTypes = {
   label: PropTypes.string,
   errorLabel: PropTypes.string,
   type: PropTypes.string,
+  tabIndex: PropTypes.number,
 };
 
 export default React.memo(Input);

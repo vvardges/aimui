@@ -22,7 +22,6 @@ from app.commits.utils import (
     is_tf_run,
 )
 
-
 commits_bp = Blueprint('commits', __name__)
 commits_api = Api(commits_bp)
 
@@ -61,8 +60,6 @@ class CommitMetricSearchApi(Resource):
         # TODO: get from request
         steps_num = 50
 
-        runs = []
-
         # Parse statement
         try:
             parser = Statement()
@@ -73,7 +70,7 @@ class CommitMetricSearchApi(Resource):
         statement_select = parsed_stmt.node['select']
         statement_expr = parsed_stmt.node['expression']
 
-        aim_runs, tf_logs = separate_select_statement(statement_select)
+        aim_select, tf_logs = separate_select_statement(statement_select)
 
         if 'run.archived' not in search_statement:
             default_expression = 'run.archived is not True'
@@ -85,90 +82,137 @@ class CommitMetricSearchApi(Resource):
         if not project.exists():
             return make_response(jsonify({}), 404)
 
-        aim_metrics = project.repo.select_metrics(aim_runs,
-                                                  statement_expr,
-                                                  default_expression)
-        if aim_metrics and len(aim_metrics):
-            runs += aim_metrics
+        aim_select_result = project.repo.select(aim_select,
+                                                statement_expr,
+                                                default_expression)
 
-        # Get tf.summary logs
+        (
+            aim_selected_runs,
+            aim_selected_params,
+            aim_selected_metrics,
+        ) = (
+            aim_select_result.runs,
+            aim_select_result.get_selected_params(),
+            aim_select_result.get_selected_metrics_context()
+        )
+
+        response = {
+            'runs': [],
+            'params': [],
+            'agg_metrics': {},
+            'meta': {
+                'tf_selected': False,
+                'params_selected': False,
+                'metrics_selected': False,
+            },
+        }
+
+        retrieve_traces = False
+        retrieve_agg_metrics = False
+
+        if len(aim_selected_params):
+            response['meta']['params_selected'] = True
+            response['params'] = aim_selected_params
+            if len(aim_selected_metrics):
+                response['meta']['metrics_selected'] = True
+                response['agg_metrics'] = aim_selected_metrics
+                retrieve_agg_metrics = True
+        elif len(aim_selected_metrics):
+            response['meta']['metrics_selected'] = True
+            retrieve_traces = True
+
+        runs = []
+
+        if aim_selected_runs and len(aim_selected_runs):
+            runs += aim_selected_runs
         if len(tf_logs) > 0:
-            try:
-                tf_runs = select_tf_summary_scalars(tf_logs, statement_expr)
-                if tf_runs and len(tf_runs):
-                    runs += tf_runs
-            except:
+            if not retrieve_traces:
+                # TODO: aggregate tf logs and return aggregated values
+                response['meta']['tf_selected'] = True
                 pass
-
-        # Get the longest trace length
-        max_num_records = 0
-        for run in runs:
-            if is_tf_run(run):
-                for metric in run['metrics']:
-                    for trace in metric['traces']:
-                        if trace['num_steps'] > max_num_records:
-                            max_num_records = trace['num_steps']
             else:
-                run.open_storage()
-                for metric in run.metrics.values():
-                    try:
-                        metric.open_artifact()
-                        for trace in metric.traces:
-                            if trace.num_records > max_num_records:
-                                max_num_records = trace.num_records
-                    except:
-                        pass
-                    finally:
-                        pass
-            #         metric.close_artifact()
-            # run.close_storage()
+                try:
+                    tf_runs = select_tf_summary_scalars(tf_logs, statement_expr)
+                    if tf_runs and len(tf_runs):
+                        runs += tf_runs
+                except:
+                    pass
+                else:
+                    response['meta']['tf_selected'] = True
 
-        # Scale all traces
-        steps = scale_trace_steps(max_num_records, steps_num)
+        if retrieve_traces:
+            # Get the longest trace length
+            max_num_records = 0
+            for run in runs:
+                if is_tf_run(run):
+                    for metric in run['metrics']:
+                        for trace in metric['traces']:
+                            if trace['num_steps'] > max_num_records:
+                                max_num_records = trace['num_steps']
+                else:
+                    run.open_storage()
+                    for metric in run.metrics.values():
+                        try:
+                            metric.open_artifact()
+                            for trace in metric.traces:
+                                if trace.num_records > max_num_records:
+                                    max_num_records = trace.num_records
+                        except:
+                            pass
+                        finally:
+                            pass
+                            # metric.close_artifact()
+                    # run.close_storage()
 
-        # Retrieve records
-        for run in runs:
-            if is_tf_run(run):
-                for metric in run['metrics']:
-                    for trace in metric['traces']:
-                        trace_range = range(len(trace['data']))[steps.start:
-                                                                steps.stop:
-                                                                steps.step]
-                        trace_scaled_data = []
-                        for i in trace_range:
-                            trace_scaled_data.append(trace['data'][i])
-                        trace['data'] = trace_scaled_data
-            else:
-                # run.open_storage()
-                for metric in run.metrics.values():
-                    try:
-                        # metric.open_artifact()
-                        for trace in metric.traces:
-                            for r in trace.read_records(steps):
-                                base, metric_record = MetricRecord.deserialize(r)
-                                trace.append((
-                                    metric_record.value,           # 0 => value
-                                    base.step,                     # 1 => step
-                                    (base.epoch if base.has_epoch  # 2 => epoch
-                                     else None),                   #
-                                     base.timestamp,               # 3 => time
-                                ))
-                    except:
-                        pass
-                    finally:
-                        metric.close_artifact()
-                run.close_storage()
+            # Scale all traces
+            steps = scale_trace_steps(max_num_records, steps_num)
+
+            # Retrieve records
+            for run in runs:
+                if is_tf_run(run):
+                    for metric in run['metrics']:
+                        for trace in metric['traces']:
+                            trace_range = range(len(trace['data']))[steps.start:
+                                                                    steps.stop:
+                                                                    steps.step]
+                            trace_scaled_data = []
+                            for i in trace_range:
+                                trace_scaled_data.append(trace['data'][i])
+                            trace['data'] = trace_scaled_data
+                else:
+                    # run.open_storage()
+                    for metric in run.metrics.values():
+                        try:
+                            # metric.open_artifact()
+                            for trace in metric.traces:
+                                for r in trace.read_records(steps):
+                                    base, metric_record = MetricRecord.deserialize(r)
+                                    trace.append((
+                                        metric_record.value,  # 0 => value
+                                        base.step,  # 1 => step
+                                        (base.epoch if base.has_epoch else None), # 2 => epoch
+                                        base.timestamp,  # 3 => time
+                                    ))
+                        except:
+                            pass
+                        finally:
+                            metric.close_artifact()
+                    run.close_storage()
+
+        if retrieve_agg_metrics:
+            # TODO: Retrieve and return aggregated metrics
+            pass
 
         runs_list = []
         for run in runs:
             if not is_tf_run(run):
-                runs_list.append(run.to_dict())
+                runs_list.append(run.to_dict(include_only_selected_agg_metrics=True))
             else:
                 runs_list.append(run)
 
-        return jsonify({
-            'runs': runs_list,
-        })
+        response['runs'] = runs_list
+
+        return response
 
 
 @commits_api.resource('/search/dictionary')

@@ -625,6 +625,19 @@ paths:
             application/json:
               schema:
                 type: object
+  "/projects/params":
+    get:
+      operationId: getProjectParams
+      summary: Get project params
+      tags:
+        - Project
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
   "/projects/{experiment_name}/{commit_id}":
     get:
       operationId: getExperiment

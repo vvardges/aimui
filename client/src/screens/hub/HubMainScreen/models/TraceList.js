@@ -1,5 +1,5 @@
 import Trace from './Trace';
-import { deepEqual, getObjectValueByPath, arraysIntersection, formatValue } from '../../../../utils';
+import { deepEqual, getObjectValueByPath, arraysIntersection, formatValue, flattenObject } from '../../../../utils';
 import { COLORS } from '../../../../constants/colors';
 import { STROKES } from '../../../../constants/strokes';
 import _ from 'lodash';
@@ -112,10 +112,10 @@ export default class TraceList {
     } else if (paramName === 'run.hash') {
       return run.run_hash;
     } else if (paramName === 'metric') {
-      return metric.name;
+      return metric !== null ? metric.name : undefined;
     } else if (paramName.startsWith('context.')) {
       const contextKey = paramName.substring(8);
-      return !!trace.context && Object.keys(trace.context).indexOf(contextKey) !== -1 ? trace.context[contextKey] : undefined;
+      return trace !== null && !!trace.context && Object.keys(trace.context).indexOf(contextKey) !== -1 ? trace.context[contextKey] : undefined;
     } else if (paramName.startsWith('params.')) {
       try {
         return getObjectValueByPath(run.params, paramName.substring(7));
@@ -131,7 +131,7 @@ export default class TraceList {
     }
   };
 
-  addSeries = (run, metric, trace) => {
+  addSeries = (run, metric = null, trace = null) => {
     let subGroup = this.groups;
     this.groupingFields.forEach(g => {
       const groupVal = this.getRunParam(g, run, metric, trace);

@@ -34,6 +34,9 @@ export function getWithState(caseName, caseClass) {
     case classes.SITE_WRAPPER:
       break;
     case classes.HUB_WRAPPER:
+      mapState2Props = (state) => ({
+        ...state.project,
+      });
       break;
     case classes.HUB_PROJECT_WRAPPER:
       mapState2Props = (state) => ({
@@ -42,6 +45,7 @@ export function getWithState(caseName, caseClass) {
       Object.assign(mapDispatch2Props, {
         getProjectData: projectActions.getProjectData,
         updateProjectData: projectActions.updateProjectData,
+        getProjectParams: projectActions.getProjectParams,
       });
       break;
     // Components
@@ -63,6 +67,13 @@ export function getWithState(caseName, caseClass) {
       Object.assign(mapDispatch2Props, {
         getRunningExecutables: executablesActions.getRunningExecutables,
         killRunningExecutable: executablesActions.killRunningExecutable,
+      });
+    case classes.EXPLORE_PARAMS_SELECT_INPUT:
+      mapState2Props = (state) => ({
+        ...state.project,
+      });
+      Object.assign(mapDispatch2Props, {
+        getProjectParams: projectActions.getProjectParams,
       });
     // Screens
     case classes.HUB_MAIN_SCREEN:

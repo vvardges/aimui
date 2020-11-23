@@ -20,14 +20,36 @@ export default class Trace {
     this.contexts = [];
   }
 
+  get seriesLength() {
+    return this.series.length;
+  };
+
+  clone = () => {
+    const traceClone = new Trace(this.config);
+
+    traceClone.color = this.color;
+    traceClone.stroke = this.stroke;
+    traceClone.chart = this.chart;
+
+    traceClone.series = this.series.slice();
+    traceClone.aggregate();
+
+    return traceClone;
+  };
+
   addSeries = (series) => {
     this.series.push(series);
     
     this.setExperiments(series.run.experiment_name);
-    this.setMetrics(series.metric.name);
-    this.setContexts(series.trace.context);
+    if (series.metric !== null) this.setMetrics(series.metric.name);
+    if (series.trace !== null) this.setContexts(series.trace.context);
 
     // TODO: Implement 'lazy' aggregation
+    this.aggregate();
+  };
+
+  removeSeries = (index) => {
+    this.series.splice(index,1);
     this.aggregate();
   };
 
@@ -58,25 +80,25 @@ export default class Trace {
     const name = [];
     const experiment_name = [];
     const run_hash = [];
-    const params = {};
     const context = {};
+    const params = {};
     this.series.forEach(s => {
-      name.push(s.metric.name);
       experiment_name.push(s.run.experiment_name);
       run_hash.push(s.run.run_hash);
+      if (s.metric !== null) name.push(s.metric.name);
       // FIXME: Use deepmerge to merge arrays as well
-      if (!!s.run.param) {
-        _.merge(params, s.run.param);
+      if (!!s.run.params) {
+        _.merge(params, s.run.params);
       }
-      if (!!s.trace.context) {
+      if (!!s.trace?.context) {
         _.merge(context, s.trace.context);
       }
     });
+    run.params = params;
     trace.context = context;
     metric.name = _.uniq(name);
     run.run_hash = _.uniq(run_hash);
     run.experiment_name = _.uniq(experiment_name);
-    run.params = params;
 
     // Aggregate data
     let idx = 0;
@@ -85,12 +107,14 @@ export default class Trace {
       let step = null;
       let timestamp = null;
       this.series.forEach(s => {
-        const point = s.getPoint(idx);
-        if (point !== null) {
-          values.push(point[0]);
-          // TODO: Aggregate step(?) and relative time(!)
-          step = point[1];
-          timestamp = point[3];
+        if (s.trace !== null) {
+          const point = s.getPoint(idx);
+          if (point !== null) {
+            values.push(point[0]);
+            // TODO: Aggregate step(?) and relative time(!)
+            step = point[1];
+            timestamp = point[3];
+          }
         }
       });
       if (values.length > 0) {
@@ -117,7 +141,7 @@ export default class Trace {
       let series = this.series[i];
       if (
         series?.run?.run_hash === run_hash &&
-        series.metric.name === metricName &&
+        series.metric?.name === metricName &&
         btoa(JSON.stringify(series.trace.context)).replace(/[\=\+\/]/g, '') === traceContext
       ) {
         return true;
@@ -140,11 +164,40 @@ export default class Trace {
   };
 
   setContexts = (context) => {
-    Object.keys(context).forEach(contextKey => {
-      let contextValue = `${contextKey}=${formatValue(context[contextKey])}`;
-      if (!this.contexts.includes(contextValue)) {
-        this.contexts.push(contextValue);
+    if (!!context) {
+      Object.keys(context).forEach(contextKey => {
+        let contextValue = `${contextKey}=${formatValue(context[contextKey])}`;
+        if (!this.contexts.includes(contextValue)) {
+          this.contexts.push(contextValue);
+        }
+      });
+    }
+  };
+
+  getAggregatedMetricMinMax = (metric, context) => {
+    let result = {
+      min: undefined,
+      avg: undefined,
+      max: undefined,
+    };
+    let lastValuesSum;
+    this.series.forEach(series => {
+      let seriesMetricValue = series.getAggregatedMetricValue(metric, context);
+      if (result.min === undefined || seriesMetricValue < result.min) {
+        result.min = seriesMetricValue;
+      }
+      if (result.max === undefined || seriesMetricValue > result.max) {
+        result.max = seriesMetricValue;
+      }
+      if (seriesMetricValue !== undefined && seriesMetricValue !== null) {
+        if (lastValuesSum === undefined) {
+          lastValuesSum = seriesMetricValue;
+        } else {
+          lastValuesSum += seriesMetricValue;
+        }
       }
     });
+    result.avg = lastValuesSum === undefined ? undefined : lastValuesSum / this.series.length;
+    return result;
   };
 }
