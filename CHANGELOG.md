@@ -1,5 +1,7 @@
 # Changelog
 
+- Fix empty contexts comparison issue (gorarakelyan)
+
 ## 1.2.0 Nov 24 2020
 - Process series with empty metric and trace data (gorarakelyan, roubkar)
 - Add parallel coordinates plot for high dimensional data visualization (gorarakelyan, roubkar)
