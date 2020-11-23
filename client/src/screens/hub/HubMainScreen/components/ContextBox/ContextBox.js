@@ -302,7 +302,11 @@ class ContextBox extends Component {
 
         let stepData = line ? this.context.getMetricStepDataByStepIdx(line?.data, step) : null;
 
-        const color = this.context.traceList?.grouping?.color?.length > 0 ? traceModel.color : this.context.getMetricColor(line?.run, line?.metric, line?.trace);
+        const color = this.context.traceList?.grouping?.color?.length > 0
+          ? traceModel.color
+          : this.context.getMetricColor(run,
+            this.context.enableExploreParamsMode() ? null : line?.metric,
+            this.context.enableExploreParamsMode() ? null : line?.trace);
         const colorObj = Color(color);
 
         let active = false;

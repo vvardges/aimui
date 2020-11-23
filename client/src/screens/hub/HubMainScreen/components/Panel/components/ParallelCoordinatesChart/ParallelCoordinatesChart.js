@@ -468,7 +468,7 @@ class ParallelCoordinatesChart extends Component {
         : (
           this.context.traceList?.grouping?.color?.length > 0
             ? traceModel.color
-            : this.context.getMetricColor(series.run, series.metric, series.trace)
+            : this.context.getMetricColor(series.run, null, null)
         );
 
       const strokeDashArray = traceModel.stroke.split(' ');
