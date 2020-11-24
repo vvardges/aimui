@@ -1,5 +1,6 @@
 # Changelog
 
+- Add ability to pin table columns (roubkar)
 - Hide select suggestions popup on ESC (gorarakelyan)
 - Hide select suggestions popup on enter (gorarakelyan)
 
