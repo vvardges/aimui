@@ -26,6 +26,10 @@ class SelectInput extends Component {
     this.timerId;
   }
 
+  componentDidMount() {
+    document.addEventListener('keydown', this.escapePressHandler);
+  }
+
   componentDidUpdate(prevProps, prevState) {
     if (this.state.dropdownIsOpen && !prevState.dropdownIsOpen) {
       this.incProgress();
@@ -37,7 +41,19 @@ class SelectInput extends Component {
 
   componentWillUnmount() {
     clearTimeout(this.timerId);
+    document.removeEventListener('keydown', this.escapePressHandler);
   }
+
+  escapePressHandler = (evt) => {
+    if (evt.key === 'Escape') {
+      const isNotCombinedKey = !(evt.ctrlKey || evt.altKey || evt.shiftKey);
+      if (isNotCombinedKey) {
+        if (this.state.dropdownIsOpen) {
+          this.blurSelectInput();
+        }
+      }
+    }
+  };
 
   incProgress = () => {
     clearTimeout(this.timerId);
@@ -67,6 +83,10 @@ class SelectInput extends Component {
     if (evt.relatedTarget !== this.dropdownRef?.current) {
       this.setState({ dropdownIsOpen: false });
     }
+  };
+
+  blurSelectInput = () => {
+    this.selectInputRef.current?.inputRef?.current?.blur();
   };
 
   getSelectedAttrs = () => {
@@ -249,10 +269,6 @@ class SelectInput extends Component {
         )}
       </ContentLoader>
     );
-  };
-
-  blurSelectInput = () => {
-    this.selectInputRef.current?.inputRef?.current?.blur();
   };
 
   render() {

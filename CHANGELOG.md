@@ -1,5 +1,6 @@
 # Changelog
 
+- Hide select suggestions popup on ESC (gorarakelyan)
 - Hide select suggestions popup on enter (gorarakelyan)
 
 ## 1.2.1 Nov 24 2020
