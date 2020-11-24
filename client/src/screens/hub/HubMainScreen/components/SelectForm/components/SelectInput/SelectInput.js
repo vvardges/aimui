@@ -251,6 +251,10 @@ class SelectInput extends Component {
     );
   };
 
+  blurSelectInput = () => {
+    this.selectInputRef.current?.inputRef?.current?.blur();
+  };
+
   render() {
     return (
       <div className='SelectInput'>
@@ -267,6 +271,7 @@ class SelectInput extends Component {
           onKeyPress={evt => {
             if (evt.charCode === 13) {
               this.props.search();
+              this.blurSelectInput();
             }
           }}
           onChange={(evt) => this.context.setSearchInputState({ selectInput: evt.target.value })}

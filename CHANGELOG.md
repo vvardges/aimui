@@ -1,5 +1,7 @@
 # Changelog
 
+- Hide select suggestions popup on enter (gorarakelyan)
+
 ## 1.2.1 Nov 24 2020
 - Fix empty contexts comparison issue (gorarakelyan)
 
