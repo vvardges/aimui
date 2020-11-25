@@ -19,7 +19,7 @@ class ParallelCoordinatesChart extends Component {
 
       visBox: {
         margin: {
-          top: 55, right: 45, bottom: 25, left: 60,
+          top: 60, right: 45, bottom: 25, left: 60,
         },
         height: null,
         width: null,
@@ -225,6 +225,24 @@ class ParallelCoordinatesChart extends Component {
       this.svg = container.append('svg')
         .attr('width', this.state.visBox.width)
         .attr('height', this.state.visBox.height);
+
+      if (this.context.traceList?.grouping.chart) {
+        this.svg.append('text')
+          .attr('x', (width / 2))             
+          .attr('y', 15)
+          .attr('text-anchor', 'middle')  
+          .style('font-size', '0.7em') 
+          .text(
+            this.context.traceList?.grouping.chart.length > 0 ? `#${this.props.index + 1} ${this.context.traceList?.grouping.chart.map(key => {
+              return key + '=' + formatValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key], false);
+            }).join(', ')}` : ''
+          ).append('svg:title')
+          .text(
+            this.context.traceList?.grouping.chart.length > 0 ? `#${this.props.index + 1} ${this.context.traceList?.grouping.chart.map(key => {
+              return key + '=' + formatValue(this.context.traceList.traces.find(elem => elem.chart === this.props.index)?.config[key], false);
+            }).join(', ')}` : ''
+          );
+      }
       
       this.plot = this.svg.append('g')
         .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
@@ -329,7 +347,7 @@ class ParallelCoordinatesChart extends Component {
           return 'translate(' + (i === 0 ? left : (
             i === this.state.dimensions.length - 1 ? left - width : left - width / 2
           )) + ', ' + (
-            i % 2 === 0 ? 10 : 30
+            i % 2 === 0 ? 15 : 35
           ) + ')';
         })
         .append('foreignObject')

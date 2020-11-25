@@ -1,5 +1,6 @@
 # Changelog
 
+- Add parallel coordinates plot chart number and config as title (roubkar)
 - Recover grouping popup focus in controls sidebar after button click (roubkar)
 - Make context table row heights lower (gorarakelyan)
 - Display run information inside chart popup (gorarakelyan)
