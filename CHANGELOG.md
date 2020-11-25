@@ -1,5 +1,6 @@
 # Changelog
 
+- Make context table row heights lower (gorarakelyan)
 - Display run information inside chart popup (gorarakelyan)
 - Add ability to pin table columns (roubkar)
 - Hide select suggestions popup on ESC (gorarakelyan)
