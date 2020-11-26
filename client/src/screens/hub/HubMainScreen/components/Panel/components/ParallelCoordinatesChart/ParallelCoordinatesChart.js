@@ -9,6 +9,9 @@ import { classNames, formatValue, getObjectValueByPath } from '../../../../../..
 
 const d3 = require('d3');
 
+const circleRadius = 4;
+const circleActiveRadius = 7;
+
 class ParallelCoordinatesChart extends Component {
   constructor(props) {
     super(props);
@@ -32,12 +35,18 @@ class ParallelCoordinatesChart extends Component {
       chart: {
         xScale: null,
       },
+
+      closestAxis: null,
+      closestValue: null,
     };
 
     this.parentRef = React.createRef();
     this.visRef = React.createRef();
+    this.bgRect = null;
     this.plot = null;
     this.lines = null;
+    this.circles = null;
+    this.brushSelection = null;
 
     this.gradientStartColor = '#2980B9';
     this.gradientEndColor = '#E74C3C';
@@ -59,13 +68,29 @@ class ParallelCoordinatesChart extends Component {
   }
 
   componentDidMount() {
+    this.initD3();
     this.renderChart();
     window.addEventListener('resize', () => this.resize());
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.contextKey !== this.props.contextKey) {
+      this.renderChart();
+    }
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', () => this.resize());
   }
+
+
+  initD3 = () => {
+    d3.selection.prototype.moveToFront = function() {
+      return this.each(function() {
+        this.parentNode.appendChild(this);
+      });
+    };
+  };
 
   resize = () => {
     this.renderChart();
@@ -78,7 +103,7 @@ class ParallelCoordinatesChart extends Component {
       return;
     }
 
-    this.draw();
+    this.draw(!!this.brushSelection);
   };
 
   clear = () => {
@@ -91,7 +116,7 @@ class ParallelCoordinatesChart extends Component {
     visArea.attr('style', null);
   };
 
-  draw = () => {
+  draw = (recoverBrushSelection = false) => {
     if (!this.visRef.current) {
       return;
     }
@@ -108,7 +133,109 @@ class ParallelCoordinatesChart extends Component {
       traces,
       dimensions: this.getDimensions(traces),
     }, () => {
-      this.drawArea();
+      this.drawArea(recoverBrushSelection);
+    });
+  };
+
+  handleAreaMouseMove = (mouse) => {
+    if (!this.context.chart.focused.circle.active) {
+      const x = mouse[0] - this.state.visBox.margin.left;
+      const y = mouse[1] - this.state.visBox.margin.top;
+      let diffX;
+      let diffY;
+      let axis;
+      let currAxis = null;
+      let currValue = null;
+      let currIndex;
+      const prevAxis = this.state.closestAxis;
+      this.state.dimensions.forEach((dim, index) => {
+        axis = this.state.chart.xScale(index);
+        if (index === 0) {
+          diffX = Math.abs(x - axis);
+          currAxis = axis;
+          currIndex = index;
+        } else if (diffX > Math.abs(x - axis)) {
+          diffX = Math.abs(x - axis);
+          currAxis = axis;
+          currIndex = index;
+        }
+      });
+      if (currAxis !== this.state.closestAxis) {
+        this.clearLines();
+        this.clearCircles();
+        this.setState({
+          closestAxis: currAxis
+        }, this.drawData);
+      }
+      let runHash;
+      this.state.traces.forEach(traceModel => traceModel.series.forEach((series, index) => {
+        const params = series.getParamsFlatDict();
+        const { run } = series;
+        let dim = this.state.dimensions[currIndex];
+        let val;
+  
+        if (dim.contentType === 'param') {
+          // check if data element has property and contains a value
+          if (!(dim.key in params) || params[dim.key] === null) {
+            return null;
+          }
+          val = params[dim.key];
+        } else {
+          val = series.getAggregatedMetricValue(dim.metricName, dim.context);
+        }
+        if (dim.scale(val) !== undefined) {
+          if (currValue === null) {
+            currValue = dim.scale(val);
+            diffY = Math.abs(y - currValue);
+            runHash = run.run_hash;
+          } else if (diffY > Math.abs(y - dim.scale(val))) {
+            currValue = dim.scale(val);
+            diffY = Math.abs(y - currValue);
+            runHash = run.run_hash;
+          }
+        }
+      }));
+      if (currValue !== null && (currValue !== this.state.closestValue || prevAxis !== currAxis)) {
+        this.setState({
+          closestValue: currValue
+        }, () => {
+          this.context.setChartFocusedState({
+            metric: {
+              runHash: runHash,
+              metricName: null,
+              traceContext: null,
+            },
+          });
+        });
+      }
+    }
+  };
+
+  handleAreaMouseOut = () => {
+    this.setState({
+      closestAxis: null,
+      closestValue: null,
+    });
+    this.context.setChartFocusedState({
+      metric: {
+        runHash: null,
+        metricName: null,
+        traceContext: null,
+      },
+    });
+  };
+  
+  handleBgRectClick = () => {
+    if (!this.context.chart.focused.circle.active) {
+      return;
+    }
+
+    this.context.setChartFocusedState({
+      circle: {
+        runHash: null,
+        metricName: null,
+        traceContext: null,
+      },
     });
   };
 
@@ -187,7 +314,7 @@ class ParallelCoordinatesChart extends Component {
     return dimensions;
   };
 
-  drawArea = () => {
+  drawArea = (recoverBrushSelection) => {
     const parent = d3.select(this.parentRef.current);
     const parentRect = parent.node().getBoundingClientRect();
 
@@ -217,14 +344,31 @@ class ParallelCoordinatesChart extends Component {
     }, () => {
       const devicePixelRatio = window.devicePixelRatio || 1;
 
+      const handleAreaMouseMove = this.handleAreaMouseMove;
+      const handleAreaMouseOut = this.handleAreaMouseOut;
+
       const container = d3.select(this.visRef.current).append('div')
         .attr('class', 'ParallelCoordinates')
         .style('width', `${this.state.visBox.width}px`)
         .style('height', `${this.state.visBox.height}px`);
+        // .on('mouseout', function() {
+        //   handleAreaMouseOut();
+        // });
 
       this.svg = container.append('svg')
         .attr('width', this.state.visBox.width)
-        .attr('height', this.state.visBox.height);
+        .attr('height', this.state.visBox.height)
+        .on('mousemove', function() {
+          handleAreaMouseMove(d3.mouse(this));
+        });
+
+      this.bgRect = this.svg.append('rect')
+        .attr('x', margin.left)
+        .attr('y', margin.top)
+        .attr('width', width - margin.left - margin.right)
+        .attr('height', height - margin.top - margin.bottom)
+        .style('fill', 'transparent')
+        .on('click', this.handleBgRectClick);
 
       if (this.context.traceList?.grouping.chart) {
         this.svg.append('text')
@@ -247,9 +391,17 @@ class ParallelCoordinatesChart extends Component {
       this.plot = this.svg.append('g')
         .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
-
       this.lines = this.plot.append('g')
         .attr('class', 'Lines');
+
+      const axis = this.plot.selectAll('.ParCoordsAxis')
+        .data(this.state.dimensions)
+        .enter().append('g')
+        .attr('class', d => `ParCoordsAxis ParCoordsAxis-${d.key}`)
+        .attr('transform', (d, i) => `translate(${this.state.chart.xScale(i)})`);
+
+      this.circles = this.plot.append('g')
+        .attr('class', 'Circles');
 
       // Draw color
       if (this.displayParamsIndicator()) {
@@ -277,12 +429,6 @@ class ParallelCoordinatesChart extends Component {
           .attr('stroke-width', 1)
           .attr('fill', `url(#ParCoordsGradient-${this.props.index})`);
       }
-
-      const axis = this.plot.selectAll('.ParCoordsAxis')
-        .data(this.state.dimensions)
-        .enter().append('g')
-        .attr('class', d => 'ParCoordsAxis')
-        .attr('transform', (d, i) => `translate(${this.state.chart.xScale(i)})`);
 
       this.state.traces.forEach(traceModel => traceModel.series.forEach(series => {
         const seriesParams = series.getParamsFlatDict();
@@ -398,6 +544,7 @@ class ParallelCoordinatesChart extends Component {
       const handleBrushEvent = this.handleBrushEvent;
 
       const brushHeight = this.state.plotBox.height;
+      const brushSelection = this.brushSelection;
       axis.append('g')
         .attr('class', 'ParCoordsAxis__brush')
         .each(function(d) {
@@ -411,10 +558,18 @@ class ParallelCoordinatesChart extends Component {
               handleBrushEvent();
             })
           )
+          brushSelection?.find(selection => selection?.dimension.key === d.key)?.extent;
+          if (recoverBrushSelection) {
+            d.brush.move(d3.select(this), brushSelection?.find(selection => selection?.dimension.key === d.key)?.extent ?? null);
+          }
         })
         .selectAll('rect')
-        .attr('x', -8)
-        .attr('width', 16);
+        .attr('x', -10)
+        .attr('width', 20);
+
+      if (recoverBrushSelection) {
+        this.handleBrushEvent(this.brushSelection);
+      }
     });
   };
 
@@ -499,6 +654,9 @@ class ParallelCoordinatesChart extends Component {
       let lines = [[]];
       let lineIndex = 0;
 
+      const { run } = series;
+      const handlePointClick = this.handlePointClick;
+
       coords.forEach((p, i) => {
         const prev = coords[i - 1];
         if (p === null) {
@@ -506,7 +664,7 @@ class ParallelCoordinatesChart extends Component {
             lineIndex++;
             lines[lineIndex] = [null];
             if (prev !== null) {
-              lines[lineIndex].push([prev[0] + 6, prev[1]]);
+              lines[lineIndex].push([prev[0], prev[1]]);
             }
           }
         } else {
@@ -515,6 +673,19 @@ class ParallelCoordinatesChart extends Component {
             lines[lineIndex] = [];
           } else {
             lines[lineIndex].push(p);
+            if (focusedMetric.runHash === run.run_hash || focusedCircle.runHash === run.run_hash || this.state.closestAxis === p[0]) {
+              this.circles.append('circle')
+                .attr('class', `ParCoordsCircle ParCoordsCircle-${this.context.traceToHash(run.run_hash, null, null)} ${!focusedCircle.runHash && focusedMetric.runHash === run.run_hash && this.state.closestValue === p[1] ? 'active' : ''} ${focusedCircle.runHash === run.run_hash ? 'focus' : ''}`)
+                .attr('cx', p[0])
+                .attr('cy', p[1])
+                .attr('r', !focusedCircle.runHash && focusedMetric.runHash === run.run_hash && this.state.closestValue === p[1] ? circleActiveRadius : circleRadius)
+                .attr('data-x', p[0])
+                .attr('data-y', p[1])
+                .style('fill', strokeStyle)
+                .on('click', function () {
+                  handlePointClick(run.run_hash, null, null);
+                });
+            }
             if (lines[lineIndex][0] === null) {
               lineIndex++;
               lines[lineIndex] = [];
@@ -523,36 +694,43 @@ class ParallelCoordinatesChart extends Component {
           }
         }
       });
-
-      const { run, metric, trace } = series;
       
       lines.forEach(line => {
         if (line[0] === null) {
           this.lines.append('path')
             .attr('d', lineFunction(line.slice(1)))
-            .attr('class', `ParCoordsLine ParCoordsLine-${this.context.traceToHash(run.run_hash, metric?.name, trace?.context)} silhouette`)
+            .attr('class', `ParCoordsLine ParCoordsLine-${this.context.traceToHash(run.run_hash, null, null)} silhouette`)
             .style('fill', 'none');
         } else {
           this.lines.append('path')
             .attr('d', lineFunction(line))
-            .attr('class', `ParCoordsLine ParCoordsLine-${this.context.traceToHash(run.run_hash, metric?.name, trace?.context)}`)
+            .attr('class', `ParCoordsLine ParCoordsLine-${this.context.traceToHash(run.run_hash, null, null)}`)
             .style('fill', 'none')
             .style('stroke', strokeStyle)
-            .style('stroke-dasharray', strokeDashArray);
+            .style('stroke-dasharray', strokeDashArray)
+            .moveToFront();
         }
       })
     }));
 
     if (focusedCircle.runHash !== null || focusedMetric.runHash !== null) {
       const focusedLineAttr = focusedCircle.runHash !== null ? focusedCircle : focusedMetric;
-      this.lines.selectAll(`.ParCoordsLine-${this.context.traceToHash(focusedLineAttr.runHash, focusedLineAttr.metricName, focusedLineAttr.traceContext)}`)
+      this.lines.selectAll(`.ParCoordsLine-${this.context.traceToHash(focusedLineAttr.runHash, null, null)}`)
         .classed('active', true)
-        .raise();
+        .moveToFront();
+      this.circles.selectAll(`.ParCoordsCircle-${this.context.traceToHash(focusedLineAttr.runHash, null, null)}`)
+        .classed('active', true)
+        .attr('r', circleActiveRadius)
+        .moveToFront();
     }
   };
 
   clearLines = () => {
-    this.lines.selectAll('*').remove();
+    this.lines?.selectAll('*')?.remove();
+  };
+
+  clearCircles = () => {
+    this.circles?.selectAll('*')?.remove();
   };
 
   displayParamsIndicator = () => {
@@ -561,26 +739,51 @@ class ParallelCoordinatesChart extends Component {
     );
   };
 
-  handleBrushStart = () => {
-    d3.event.sourceEvent.stopPropagation();
+  handlePointClick = (runHash, metricName, traceContext) => {
+    this.context.setChartFocusedState({
+      circle: {
+        active: true,
+        runHash,
+        metricName,
+        traceContext,
+      },
+      metric: {
+        runHash: null,
+        metricName: null,
+        traceContext: null,
+      },
+    }, () => {
+      setTimeout(() => {
+        let activeRow = document.querySelector('.ContextBox__table__cell.active');
+        if (activeRow) {
+          activeRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+      });
+    });
   };
 
-  handleBrushEvent = () => {
-    // const ctx = this.ctx;
+  handleBrushStart = () => {
+    d3.event?.sourceEvent?.stopPropagation();
+  };
+
+  handleBrushEvent = (brushSelection) => {
     const svg = this.plot;
 
     let actives = [];
     svg.selectAll('.ParCoordsAxis .ParCoordsAxis__brush')
       .filter(function(d) {
-        return d3.brushSelection(this);
+        return brushSelection ? brushSelection?.find(selection => selection?.dimension.key === d.key)?.extent : d3.brushSelection(this);
       })
       .each(function(d) {
         actives.push({
           dimension: d,
-          extent: d3.brushSelection(this)
+          extent: brushSelection ? brushSelection?.find(selection => selection?.dimension.key === d.key)?.extent : d3.brushSelection(this)
         });
       });
 
+    if (!brushSelection) {
+      this.brushSelection = actives.length > 0 ? actives : null;
+    }
     const traces = [];
     this.context.traceList?.traces.forEach(traceModel => {
       if (traceModel.chart !== this.props.index) {
@@ -607,6 +810,7 @@ class ParallelCoordinatesChart extends Component {
       traces.push(chartTrace);
     });
 
+    this.clearCircles();
     this.clearLines();
 
     this.setState({

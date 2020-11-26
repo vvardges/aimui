@@ -124,4 +124,26 @@
       stroke-dasharray: 5 3;
     }
   }
+
+  .ParCoordsCircle {
+    stroke: var(--primary);
+    stroke-width: 1 !important;
+    transition: all 200ms ease;
+    cursor: pointer;
+
+    &.active {
+      stroke: var(--primary-light);
+      stroke-width: 5 !important;
+    }
+
+    &:active {
+      stroke: var(--primary);
+      stroke-width: 2 !important;
+    }
+
+    &.focus {
+      stroke: var(--primary) !important;
+      stroke-width: 3 !important;
+    }
+  }
 }
