@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.2.2 Nov 27 2020
 - Add circles and interactions on parallel coordinates plot (roubkar)
 - Add parallel coordinates plot chart number and config as title (roubkar)
 - Recover grouping popup focus in controls sidebar after button click (roubkar)
