@@ -79,9 +79,12 @@ function GroupByChart(props) {
                     iconRight={
                       <UI.Icon
                         i='close'
-                        onClick={evt => props.setContextFilter({
-                          groupByChart: groupByChart.filter(elem => elem !== field)
-                        })}
+                        onClick={evt => {
+                          popupRef.current.focus();
+                          props.setContextFilter({
+                            groupByChart: groupByChart.filter(elem => elem !== field)
+                          });
+                        }}
                       />
                     }
                   >

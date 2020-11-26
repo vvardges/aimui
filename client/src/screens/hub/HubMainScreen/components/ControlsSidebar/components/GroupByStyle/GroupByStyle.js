@@ -79,9 +79,12 @@ function GroupByStyle(props) {
                     iconRight={
                       <UI.Icon
                         i='close'
-                        onClick={evt => props.setContextFilter({
-                          groupByStyle: groupByStyle.filter(elem => elem !== field)
-                        })}
+                        onClick={evt => {
+                          popupRef.current.focus();
+                          props.setContextFilter({
+                            groupByStyle: groupByStyle.filter(elem => elem !== field)
+                          });
+                        }}
                       />
                     }
                   >

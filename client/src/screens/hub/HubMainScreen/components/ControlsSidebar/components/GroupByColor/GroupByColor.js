@@ -79,9 +79,12 @@ function GroupByColor(props) {
                     iconRight={
                       <UI.Icon
                         i='close'
-                        onClick={evt => props.setContextFilter({
-                          groupByColor: groupByColor.filter(elem => elem !== field)
-                        })}
+                        onClick={evt => {
+                          popupRef.current.focus();
+                          props.setContextFilter({
+                            groupByColor: groupByColor.filter(elem => elem !== field)
+                          });
+                        }}
                       />
                     }
                   >

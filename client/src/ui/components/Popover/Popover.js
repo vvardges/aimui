@@ -3,6 +3,7 @@ import './Popover.less';
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { classNames } from '../../../utils';
+import UI from '../..';
 
 const margin = 5;
 const offset = 30;
@@ -88,16 +89,18 @@ function Popover(props) {
 
   return (
     <>
-      <div
-        ref={containerRef}
-        className={classNames({
-          Popover__target: true,
-          [typeof props.targetClassName === 'function' ? props.targetClassName(opened) : props.targetClassName]: !!props.targetClassName
-        })}
-        onClick={evt => setOpened(!opened)}
-      >
-        {typeof props.target === 'function' ? props.target(opened) : props.target}
-      </div>
+      <UI.Tooltip tooltip={props.tooltip}>
+        <div
+          ref={containerRef}
+          className={classNames({
+            Popover__target: true,
+            [typeof props.targetClassName === 'function' ? props.targetClassName(opened) : props.targetClassName]: !!props.targetClassName
+          })}
+          onClick={evt => setOpened(!opened)}
+        >
+          {typeof props.target === 'function' ? props.target(opened) : props.target}
+        </div>
+      </UI.Tooltip>
       {opened && ReactDOM.createPortal((
         <div
           className={classNames({

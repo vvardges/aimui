@@ -181,13 +181,13 @@ class ContextBox extends Component {
           </>
         ),
         topHeader: 'Metrics',
-        stick: 'left'
+        pin: 'left'
       },
       {
         key: 'run',
         content: <UI.Text overline>Run</UI.Text>,
         topHeader: 'Metrics',
-        stick: 'left'
+        pin: 'left'
       },
     ];
 
@@ -206,13 +206,13 @@ class ContextBox extends Component {
             </>
           ),
           topHeader: 'Metrics',
-          stick: 'left'
+          pin: 'left'
         },
         {
           key: 'context',
           content: <UI.Text overline>Context</UI.Text>,
           topHeader: 'Metrics',
-          stick: 'left'
+          pin: 'left'
         },
         {
           key: 'value',
@@ -310,20 +310,26 @@ class ContextBox extends Component {
         const colorObj = Color(color);
 
         let active = false;
-        if ((
-          focusedCircle.runHash === run.run_hash
-          && focusedCircle.metricName === metric?.name
-          && focusedCircle.traceContext === contextHash)
+
+        if ((this.context.runs?.meta?.params_selected 
+          && ((focusedCircle.runHash === run.run_hash) || (focusedMetric.runHash === run.run_hash)))
           || (
-            focusedMetric.runHash === run.run_hash
-            && focusedMetric.metricName === metric?.name
-            && focusedMetric.traceContext === contextHash)) {
+            focusedCircle.runHash === run.run_hash
+            && focusedCircle.metricName === metric?.name
+            && focusedCircle.traceContext === contextHash)
+            || (
+              focusedMetric.runHash === run.run_hash
+              && focusedMetric.metricName === metric?.name
+              && focusedMetric.traceContext === contextHash)) {
           active = true;
         }
 
-        if (focusedCircle.runHash === run.run_hash
-          && focusedCircle.metricName === metric?.name
-          && focusedCircle.traceContext === contextHash) {
+        if ((this.context.runs?.meta?.params_selected 
+          && (focusedCircle.runHash === run.run_hash))
+          || (
+            focusedCircle.runHash === run.run_hash
+            && focusedCircle.metricName === metric?.name
+            && focusedCircle.traceContext === contextHash)) {
           expanded[JSON.stringify(traceModel.config)] = true;
         }
 
@@ -776,6 +782,7 @@ class ContextBox extends Component {
       })}>
         <div className='ContextBox__table__wrapper'>
           <UI.Table
+            name='context'
             topHeader
             columns={columns}
             data={data}

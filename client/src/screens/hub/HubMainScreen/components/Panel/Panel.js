@@ -96,7 +96,7 @@ class Panel extends Component {
             }}
           >
             {this.context.runs?.meta?.params_selected
-              ? <ParallelCoordinatesChart key={this.context.key} index={i} />
+              ? <ParallelCoordinatesChart contextKey={this.context.key} index={i} />
               : <PanelChart key={this.context.key} index={i} />
             }
           </div>

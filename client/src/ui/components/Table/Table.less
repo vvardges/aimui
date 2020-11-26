@@ -2,7 +2,7 @@
 
 @border-color-dark: #CCC;
 @header-cell-bg-color: #EEE;
-@cell-height: 38px;
+@cell-height: 30px;
 
 .Table__container {
   height: 100%;
@@ -79,13 +79,13 @@
   }
 }
 
-.Table__group__action {
+.Table__action {
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  width: 25px;
-  height: 25px;
+  width: 23px;
+  height: 23px;
   margin: 5px 0 5px 5px;
   border-radius: 50%;
   transition: background-color ease 110ms;
@@ -102,18 +102,18 @@
   }
 }
 
-.Table__group__action__popup {
+.Table__action__popup {
   background-color: #fff;
   border: 1px solid var(--primary-lighter);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
 }
 
-.Table__group__action__popup__body {
+.Table__action__popup__body {
   min-width: 180px;
 }
 
-.Table__group__action__popup__item {
+.Table__action__popup__item {
   padding: var(--component-spacing-xs) var(--component-spacing-sm);
   border-bottom: 1px solid var(--grey-lighter);
   text-transform: capitalize;
@@ -188,6 +188,10 @@
   font-weight: bold;
   z-index: 3;
   overflow: visible;
+
+  & > *:first-child {
+    flex: 1;
+  }
 }
 
 .Table__cell--topHeader {

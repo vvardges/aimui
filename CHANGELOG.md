@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.2 Nov 27 2020
+- Add circles and interactions on parallel coordinates plot (roubkar)
+- Add parallel coordinates plot chart number and config as title (roubkar)
+- Recover grouping popup focus in controls sidebar after button click (roubkar)
+- Make context table row heights lower (gorarakelyan)
+- Display run information inside chart popup (gorarakelyan)
+- Add ability to pin table columns (roubkar)
+- Hide select suggestions popup on ESC (gorarakelyan)
+- Hide select suggestions popup on enter (gorarakelyan)
+
 ## 1.2.1 Nov 24 2020
 - Fix empty contexts comparison issue (gorarakelyan)
 

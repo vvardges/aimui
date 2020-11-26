@@ -1195,16 +1195,33 @@ class PanelChart extends Component {
                   <UI.Line />
                 </div>
               }
+              <UI.Text type='grey-dark'>
+                <span>
+                  Value: {Math.round(point[0] * 10e9) / 10e9}
+                </span>
+              </UI.Text>
+              {point[2] !== null &&
+                <UI.Text type='grey' small>Epoch: {point[2]}</UI.Text>
+              }
+              <UI.Text type='grey' small>
+                Step: {point[1]}
+                {this.context.isTFSummaryScalar(run) &&
+                  <> (local step: {point[4]}) </>
+                }
+              </UI.Text>
               {this.context.isAimRun(run) &&
                 <>
-                  <UI.Text
-                    className='link'
-                    type='primary'
-                    onClick={() => this.handleCommitInfoClick(run.run_hash, run.experiment_name)}
-                  >
-                    Run details
-                  </UI.Text>
                   <UI.Line />
+                  <Link
+                    to={buildUrl(HUB_PROJECT_EXPERIMENT, {
+                      experiment_name: run.experiment_name,
+                      commit_id: run.run_hash,
+                    })}
+                  >
+                    <UI.Text type='primary'>Run Details</UI.Text>
+                  </Link>
+                  <UI.Text type='grey' small>Experiment: {run.experiment_name}</UI.Text>
+                  <UI.Text type='grey' small>Hash: {run.run_hash}</UI.Text>
                 </>
               }
               {this.context.isTFSummaryScalar(run) &&
@@ -1224,18 +1241,6 @@ class PanelChart extends Component {
                   <UI.Line />
                 </>
               }
-              <UI.Text type='grey-darker'>
-                Value: {Math.round(point[0] * 10e9) / 10e9}
-              </UI.Text>
-              {point[2] !== null &&
-                <UI.Text type='grey' small>Epoch: {point[2]}</UI.Text>
-              }
-              <UI.Text type='grey' small>
-                Step: {point[1]}
-                {this.context.isTFSummaryScalar(run) &&
-                  <> (local step: {point[4]}) </>
-                }
-              </UI.Text>
             </div>
           </PopUp>
         }

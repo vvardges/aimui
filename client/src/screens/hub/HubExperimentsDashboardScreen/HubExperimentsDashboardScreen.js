@@ -454,7 +454,7 @@ class HubExperimentsDashboardScreen extends React.Component {
         </UI.Buttons>
       ) : <UI.Text overline>Runs</UI.Text>,
       minWidth: 200,
-      stick: 'left' 
+      pin: 'left' 
     }];
 
     Object.keys(this.metricKeys).forEach((metricName, metricKey) => this.metricKeys[metricName].forEach((metricContext, contextKey) => {
@@ -619,6 +619,7 @@ class HubExperimentsDashboardScreen extends React.Component {
       <div className='HubExperimentsDashboardScreen__runs__content'>
         <div className='HubExperimentsDashboardScreen__runs__table__wrapper'>
           <UI.Table
+            name='runs'
             topHeader
             columns={columns}
             data={data}
