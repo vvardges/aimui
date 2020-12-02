@@ -185,7 +185,16 @@ class ContextBox extends Component {
       },
       {
         key: 'run',
-        content: <UI.Text overline>Run</UI.Text>,
+        content: (
+          <>
+            <UI.Text overline>Run</UI.Text>
+            <ColumnGroupPopup
+              param='run.hash'
+              contextFilter={this.context.contextFilter}
+              setContextFilter={this.context.setContextFilter}
+            />
+          </>
+        ),
         topHeader: 'Metrics',
         pin: 'left'
       },
