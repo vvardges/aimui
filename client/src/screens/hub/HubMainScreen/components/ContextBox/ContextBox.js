@@ -313,9 +313,7 @@ class ContextBox extends Component {
 
         const color = this.context.traceList?.grouping?.color?.length > 0
           ? traceModel.color
-          : this.context.getMetricColor(run,
-            this.context.enableExploreParamsMode() ? null : line?.metric,
-            this.context.enableExploreParamsMode() ? null : line?.trace);
+          : '#3b5896';
         const colorObj = Color(color);
 
         let active = false;
@@ -670,7 +668,7 @@ class ContextBox extends Component {
                         <svg
                           className='ContextBox__table__group-indicator__stroke'
                           style={{
-                            borderColor: traceModel.color
+                            borderColor: this.context.traceList?.grouping?.color?.length > 0 ? traceModel.color : '#3b5896'
                           }}
                         >
                           <line
