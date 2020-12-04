@@ -1,21 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import UI from '../../../../../../../ui';
 import PropTypes from 'prop-types';
 import { classNames } from '../../../../../../../utils';
+import HubMainScreenContext from '../../../../HubMainScreenContext/HubMainScreenContext';
+import { getGroupingOptions } from '../../helpers';
 
 function GroupByChart(props) {
-  let [value, setValue] = useState('');
   let [opened, setOpened] = useState(false);
 
   const { groupByChart, setContextFilter } = props;
 
   let popupRef = useRef();
+  let dropdownRef = useRef();
+  let {
+    getAllParamsPaths, getAllContextKeys,
+    enableExploreMetricsMode, enableExploreParamsMode,
+  } = useContext(HubMainScreenContext);
 
   useEffect(() => {
-    if (opened && popupRef.current) {
-      popupRef.current.focus();
+    if (opened) {
+      popupRef.current?.focus();
+      dropdownRef.current?.selectRef?.current?.focus();
     }
-  }, [opened])
+  }, [opened]);
+
+  const options = getGroupingOptions(getAllParamsPaths(), getAllContextKeys(), enableExploreMetricsMode(), enableExploreParamsMode());
 
   return (
     <div className='ControlsSidebar__item__wrapper'>
@@ -52,47 +61,28 @@ function GroupByChart(props) {
             <UI.Text overline bold>Select fields to divide into charts</UI.Text>
           </div>
           <div className='ControlsSidebar__item__popup__body'>
-            <UI.Input
-              size='small'
-              placeholder='Type field names for grouping'
-              value={value}
-              onChange={evt => setValue(evt.target.value)}
-              onKeyPress={evt => {
-                if (evt.charCode === 13) {
-                  if (value.trim() && !groupByChart.includes(value.trim())) {
-                    setContextFilter({
-                      groupByChart: groupByChart.concat([value.trim()])
-                    });
-                  }
-                  setValue('');
-                  return false;
-                }
+            <UI.Dropdown
+              className='ControlsSidebar__groupingDropdown'
+              options={options}
+              inline={false}
+              formatGroupLabel={data => (
+                <div>
+                  <span>{data.label}</span>
+                  <span>{data.options.length}</span>
+                </div>
+              )}
+              defaultValue={groupByChart.map(field => ({ value: field, label: field.startsWith('params.') ? field.substring(7) : field }))}
+              ref={dropdownRef}
+              onChange={(data) => {
+                const selectedItems = !!data ? data : [];
+                const values = selectedItems.filter(i => !!i.value).map(i => i.value.trim());
+                setContextFilter({
+                  groupByChart: values,
+                });
               }}
+              isOpen
+              multi
             />
-            {groupByChart.length > 0 && (
-              <div className='ControlsSidebar__item__popup__body__fields'>
-                {groupByChart.map(field => (
-                  <UI.Button
-                    key={field}
-                    size='tiny'
-                    className='ControlsSidebar__item__popup__body__field'
-                    iconRight={
-                      <UI.Icon
-                        i='close'
-                        onClick={evt => {
-                          popupRef.current.focus();
-                          props.setContextFilter({
-                            groupByChart: groupByChart.filter(elem => elem !== field)
-                          });
-                        }}
-                      />
-                    }
-                  >
-                    {field}
-                  </UI.Button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       )}

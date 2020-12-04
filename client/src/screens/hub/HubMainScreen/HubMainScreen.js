@@ -17,7 +17,7 @@ import Panel from './components/Panel/Panel';
 import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
 import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
-import { randomStr, deepEqual, buildUrl, getObjectValueByPath, classNames } from '../../../utils';
+import { randomStr, deepEqual, buildUrl, getObjectValueByPath, classNames, sortOnKeys } from '../../../utils';
 import * as analytics from '../../../services/analytics';
 import TraceList from './models/TraceList';
 import SelectForm from './components/SelectForm/SelectForm';
@@ -545,6 +545,45 @@ class HubMainScreen extends React.Component {
     return includeMetrics ? countOfParams + countOfMetrics.reduce((a, b) => a + b, 0) : countOfParams;
   };
 
+  getAllParamsPaths = () => {
+    const paramPaths = {};
+
+    this.state.context.traceList?.traces.forEach(trace => {
+      trace.series.forEach(series => {
+        Object.keys(series?.run.params).forEach(paramKey => {
+          if (paramKey !== '__METRICS__') {
+            if (!paramPaths.hasOwnProperty(paramKey)) {
+              paramPaths[paramKey] = [];
+            }
+            Object.keys(series?.run.params[paramKey]).forEach(key => {
+              if (!paramPaths[paramKey].includes(key)) {
+                paramPaths[paramKey].push(key);
+              }
+            });
+          }
+        });
+      });
+    });
+
+    return sortOnKeys(paramPaths);
+  };
+
+  getAllContextKeys = () => {
+    const contextKeys = [];
+
+    this.state.context.traceList?.traces.forEach(trace => {
+      trace.series.forEach(series => {
+        series.metric?.traces?.forEach(metricTrace => {
+          if (!!metricTrace.context) {
+            contextKeys.push(...Object.keys(metricTrace.context));
+          }
+        })
+      });
+    });
+
+    return _.uniq(contextKeys).sort();
+  };
+
   searchByQuery = (updateURL) => {
     return new Promise(resolve => {
       const query = this.state.context.search?.query.trim();
@@ -745,12 +784,6 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  handleSearchBarSubmit = (value = '') => {
-    this.setSearchState({ query: value }, () => {
-      this.searchByQuery(true).then();
-    }, false);
-  };
-
   _renderBody = () => {
     const panelIndicesLen = this.state.context.traceList?.getChartsNumber();
     const panelIndices = [...Array(panelIndicesLen).keys()];
@@ -842,6 +875,8 @@ class HubMainScreen extends React.Component {
             getMetricStepDataByStepIdx: this.getMetricStepDataByStepIdx,
             getTFSummaryScalars: this.getTFSummaryScalars,
             getMetricColor: this.getMetricColor,
+            getAllParamsPaths: this.getAllParamsPaths,
+            getAllContextKeys: this.getAllContextKeys,
             isAimRun: this.isAimRun,
             isTFSummaryScalar: this.isTFSummaryScalar,
             hashToColor: this.hashToColor,

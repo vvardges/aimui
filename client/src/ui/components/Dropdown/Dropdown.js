@@ -7,6 +7,11 @@ import { classNames } from '../../utils';
 
 
 class Dropdown extends React.Component {
+  constructor(props) {
+    super(props);
+    this.selectRef = React.createRef();
+  }
+
   render() {
     const customStyles = {
       option: (provided, state) => ({
@@ -48,6 +53,11 @@ class Dropdown extends React.Component {
       right: this.props.right,
     });
 
+    const props = {};
+    if (this.props.isOpen) {
+      props.menuIsOpen = true;
+    }
+    
     return (
       <Select
         defaultValue={this.props.defaultValue}
@@ -58,6 +68,8 @@ class Dropdown extends React.Component {
         onInputChange={this.props.onInputChange}
         onChange={this.props.onChange}
         classNamePrefix='Dropdown'
+        ref={this.selectRef}
+        {...props}
       />
     )
   }
@@ -68,9 +80,11 @@ Dropdown.defaultProps = {
   inline: true,
   defaultValue: null,
   right: false,
+  isOpen: null,
 };
 
 Dropdown.propTypes = {
+  isOpen: PropTypes.bool,
   multi: PropTypes.bool,
   options: PropTypes.array,
   defaultValue: PropTypes.object,
