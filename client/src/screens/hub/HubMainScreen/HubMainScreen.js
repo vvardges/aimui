@@ -12,7 +12,7 @@ import * as screens from '../../../constants/screens';
 import * as storeUtils from '../../../storeUtils';
 import HubMainScreenContext from './HubMainScreenContext/HubMainScreenContext';
 import { setItem, getItem, removeItem } from '../../../services/storage';
-import { USER_LAST_SEARCH_QUERY, AIM_QL_VERSION, USER_LAST_EXPLORE_CONFIG, EXPLORE_PANEL_FLEX_STYLE } from '../../../config';
+import { USER_LAST_SEARCH_QUERY, AIM_QL_VERSION, USER_LAST_EXPLORE_CONFIG, EXPLORE_PANEL_FLEX_STYLE, EXPLORE_METRIC_HIGHLIGHT_MODE } from '../../../config';
 import Panel from './components/Panel/Panel';
 import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
@@ -56,6 +56,7 @@ class HubMainScreen extends React.Component {
             yScale: 0,
             zoomMode: false,
             zoomHistory: [],
+            highlightMode: getItem(EXPLORE_METRIC_HIGHLIGHT_MODE) ?? 'run',
             persistent: {
               displayOutliers: false,
               zoom: null,
@@ -483,6 +484,9 @@ class HubMainScreen extends React.Component {
   };
 
   setChartSettingsState = (settingsState, callback = null, updateURL = true) => {
+    if (settingsState.hasOwnProperty('highlightMode')) {
+      setItem(EXPLORE_METRIC_HIGHLIGHT_MODE, settingsState.highlightMode);
+    }
     this.setChartState({
       // FIXME: Not pass current state value
       settings: {

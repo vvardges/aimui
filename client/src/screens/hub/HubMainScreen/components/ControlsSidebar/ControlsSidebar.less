@@ -137,6 +137,7 @@
   display: flex;
   align-items: center;
   color: var(--primary);
+  transition: background-color 110ms ease;
 
   &:last-of-type {
     border-bottom: none;
@@ -146,9 +147,9 @@
     background-color: var(--grey-bg);
   }
 
-  &.active {
-    background-color: var(--primary);
-    color: #FFF;
+  &:active, &.active {
+    background-color: var(--primary-lighter);
+    color: var(--primary-dark);
   }
 
   &.text_normalized {

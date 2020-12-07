@@ -313,7 +313,9 @@ class ContextBox extends Component {
 
         const color = this.context.traceList?.grouping?.color?.length > 0
           ? traceModel.color
-          : '#3b5896';
+          : this.context.getMetricColor(run,
+            this.context.enableExploreParamsMode() ? null : line?.metric,
+            this.context.enableExploreParamsMode() ? null : line?.trace);
         const colorObj = Color(color);
 
         let active = false;
@@ -512,7 +514,10 @@ class ContextBox extends Component {
               data: {
                 experiment: {
                   content: (
-                    <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
+                    <UI.Label
+                      className='ContextBox__table__item-aggregated_label'
+                      color={this.context.traceList?.grouping?.color?.length > 0 ? color : '#3b5896'}
+                    >
                       {traceModel.experiments.length === 1 ? traceModel.experiments[0] : (
                         <UI.Tooltip tooltip={traceModel.experiments.join(', ')}>
                           {traceModel.experiments.length} experiments
@@ -524,7 +529,10 @@ class ContextBox extends Component {
                 },
                 run: {
                   content: (
-                    <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
+                    <UI.Label
+                      className='ContextBox__table__item-aggregated_label'
+                      color={this.context.traceList?.grouping?.color?.length > 0 ? color : '#3b5896'}
+                    >
                       {runsCount} run{runsCount > 1 ? 's' : ''}
                     </UI.Label>
                   ),
@@ -532,7 +540,10 @@ class ContextBox extends Component {
                 },
                 metric: {
                   content: (
-                    <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
+                    <UI.Label
+                      className='ContextBox__table__item-aggregated_label'
+                      color={this.context.traceList?.grouping?.color?.length > 0 ? color : '#3b5896'}
+                    >
                       {traceModel.metrics.length === 1 ? traceModel.metrics[0] : (
                         <UI.Tooltip tooltip={traceModel.metrics.join(', ')}>
                           {traceModel.metrics.length} metrics
@@ -548,7 +559,10 @@ class ContextBox extends Component {
                       {
                         !!traceModel.contexts?.length
                           ? (
-                            <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
+                            <UI.Label 
+                              className='ContextBox__table__item-aggregated_label'
+                              color={this.context.traceList?.grouping?.color?.length > 0 ? color : '#3b5896'}
+                            >
                               {traceModel.contexts[0]}
                             </UI.Label>
                           )
@@ -558,7 +572,7 @@ class ContextBox extends Component {
                         traceModel.contexts?.length > 1 && (
                           <UI.Label
                             className='ContextBox__table__item-aggregated_label'
-                            color={color}
+                            color={this.context.traceList?.grouping?.color?.length > 0 ? color : '#3b5896'}
                             rounded
                           >
                             <UI.Tooltip tooltip={traceModel.contexts.slice(1).join(', ')}>

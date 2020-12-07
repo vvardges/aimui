@@ -129,9 +129,21 @@
 
   .PlotLine {
     stroke-width: 1 !important;
+    opacity: 1;
+
+    &.inactive {
+      stroke-width: 1 !important;
+      opacity: 0.2;
+    }
 
     &.active {
+      stroke-width: 2 !important;
+      opacity: 0.7;
+    }
+
+    &.current {
       stroke-width: 3 !important;
+      opacity: 1;
     }
 
     &.fade {
