@@ -366,6 +366,8 @@ class HubMainScreen extends React.Component {
   };
 
   setRunsState = (runsState, callback = null) => {
+    const chartTypeChanged = runsState.hasOwnProperty('meta') && runsState.meta?.params_selected !== this.state.context.runs.meta?.params_selected;
+
     this.setState(prevState => ({
       ...prevState,
       context: {
@@ -374,6 +376,14 @@ class HubMainScreen extends React.Component {
           ...prevState.context.runs,
           ...runsState,
         },
+        ...chartTypeChanged && {
+          contextFilter: {
+            groupByColor: [],
+            groupByStyle: [],
+            groupByChart: [],
+            aggregated: false
+          }
+        }
       },
     }), () => {
       if (callback !== null) {
