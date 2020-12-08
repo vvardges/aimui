@@ -367,7 +367,10 @@ class HubMainScreen extends React.Component {
   };
 
   setRunsState = (runsState, callback = null) => {
-    const chartTypeChanged = runsState.hasOwnProperty('meta') && runsState.meta?.params_selected !== this.state.context.runs.meta?.params_selected;
+    const chartTypeChanged = runsState.hasOwnProperty('meta') 
+      && runsState.data !== null
+      && this.state.context.runs.data !== null
+      && runsState.meta?.params_selected !== this.state.context.runs.meta?.params_selected;
 
     this.setState(prevState => ({
       ...prevState,

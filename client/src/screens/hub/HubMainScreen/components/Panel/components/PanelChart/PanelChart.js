@@ -24,7 +24,6 @@ const popUpDefaultHeight = 200;
 const circleRadius = 4;
 const circleActiveRadius = 7;
 
-
 class PanelChart extends Component {
   constructor(props) {
     super(props);
@@ -472,7 +471,7 @@ class PanelChart extends Component {
         .curve(d3[this.curves[this.context.chart.settings.persistent.interpolate ? 5 : 0]]);
 
       this.lines.append('path')
-        .attr('class', `PlotLine PlotLine-${this.context.traceToHash(runAvg.run_hash, metricAvg.name, traceAvg.context)} ${active ? 'active' : ''}`)
+        .attr('class', `PlotLine PlotLine-${this.context.traceToHash(runAvg.run_hash, metricAvg.name, traceAvg.context)} ${active ? 'current' : ''}`)
         .datum(traceAvg.data)
         .attr('d', line)
         .attr('clip-path', 'url(#lines-rect-clip-' + this.props.index + ')')
@@ -559,6 +558,9 @@ class PanelChart extends Component {
 
     // Apply focused state to line and circle
     if (focusedMetric.runHash !== null) {
+      this.plot.selectAll('.PlotLine.current').moveToFront();
+      this.plot.selectAll('.PlotArea.active').moveToFront();
+      
       this.circles.selectAll('*.focus').moveToFront();
       this.circles.selectAll(`.HoverCircle-${this.context.traceToHash(focusedMetric.runHash, focusedMetric.metricName, focusedMetric.traceContext)}`)
         .classed('active', true)

@@ -1,5 +1,6 @@
 # Changelog
 
+- Apply color, stroke and grid pattern repeating logic (roubkar)
 - Add ability to select mode for highlighting metric plots (roubkar)
 - Enable autocomplete for grouping (gorarakelyan)
 
