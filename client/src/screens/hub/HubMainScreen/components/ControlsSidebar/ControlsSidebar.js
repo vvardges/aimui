@@ -74,6 +74,7 @@ function ControlsSidebar() {
                   setChartSettingsState={setChartSettingsState}
                 />
                 <ControlsSidebarHighlightMode
+                  disabled={contextFilter.aggregated === true}
                   settings={chart.settings}
                   setChartSettingsState={setChartSettingsState}
                 />

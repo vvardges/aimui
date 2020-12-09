@@ -31,6 +31,7 @@ function ControlsSidebarHighlightMode(props) {
           <div
             className={classNames({
               ControlsSidebar__item: true,
+              disabled: props.disabled,
               active: opened,
             })}
             onClick={evt => setOpened(!opened)}
