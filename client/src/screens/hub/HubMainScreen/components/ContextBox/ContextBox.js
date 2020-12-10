@@ -14,10 +14,61 @@ import UI from '../../../../../ui';
 import { HUB_PROJECT_EXPERIMENT } from '../../../../../constants/screens';
 import ColumnGroupPopup from './components/ColumnGroupPopup/ColumnGroupPopup';
 import GroupConfigPopup from './components/GroupConfigPopup/GroupConfigPopup';
+import { getItem } from '../../../../../services/storage';
+import { TABLE_COLUMNS } from '../../../../../config';
 
 class ContextBox extends Component {
   paramKeys = {};
   theadRef = createRef();
+
+  constructor(props) {
+    super(props);
+    const tableColumns = JSON.parse(getItem(TABLE_COLUMNS))?.context
+    this.state = {
+      forcePinnedColumns: tableColumns?.forcePinned
+    };
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const groupingFields = this.context.traceList?.groupingFields;
+    const forcePinnedColumns = {
+      ...this.state.forcePinnedColumns
+    };
+    for (let colKey in forcePinnedColumns) {
+      if (groupingFields && !groupingFields.includes(colKey)) {
+        forcePinnedColumns[colKey] = forcePinnedColumns[colKey] === null ? undefined : false;
+      }
+    }
+    groupingFields?.forEach(field => {
+      if (forcePinnedColumns?.[field] !== null) {
+        forcePinnedColumns[field] = true;
+      }
+    });
+    const newForcePinnedColumns = JSON.parse(JSON.stringify(forcePinnedColumns))
+    if (!_.isEqual(newForcePinnedColumns, this.state.forcePinnedColumns)) {
+      this.setState({
+        forcePinnedColumns: newForcePinnedColumns
+      });
+    }
+  }
+
+  updateForcePinnedColumns = (columnKey, value) => {
+    this.setState(state => {
+      let newCols = {};
+      for (let key in state.forcePinnedColumns) {
+        if (key === columnKey) {
+          if (value !== undefined) {
+            newCols[key] = value;
+          }
+        } else {
+          newCols[key] = state.forcePinnedColumns[key];
+        }
+      }
+      return {
+        forcePinnedColumns: newCols
+      };
+    });
+  };
 
   handleRowMove = (runHash, metricName, traceContext) => {
     const focusedCircle = this.context.chart.focused.circle;
@@ -181,7 +232,7 @@ class ContextBox extends Component {
           </>
         ),
         topHeader: 'Metrics',
-        pin: 'left'
+        pin: 'left',
       },
       {
         key: 'run',
@@ -350,7 +401,7 @@ class ContextBox extends Component {
         let style = {};
         if (active) {
           style = {
-            backgroundColor: colorObj.alpha(0.15).hsl().string(),
+            backgroundColor: colorObj.lightness(85).hsl().string(),
           };
         }
 
@@ -360,7 +411,7 @@ class ContextBox extends Component {
         };
 
         function removeColumnHighlighting(evt) {
-          evt.currentTarget.parentNode.style.backgroundColor = 'inherit';
+          evt.currentTarget.parentNode.style.backgroundColor = '#FFF';
         }
 
         const row = {
@@ -809,6 +860,8 @@ class ContextBox extends Component {
             data={data}
             groups={this.context.traceList?.traces.length > 1}
             expanded={expanded}
+            forcePinnedColumns={this.state.forcePinnedColumns}
+            updateForcePinnedColumns={this.updateForcePinnedColumns}
           />
         </div>
       </div>

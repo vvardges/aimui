@@ -243,7 +243,6 @@ export default class TraceList {
         chart = this.groupingConfigMap.charts.length ?
           Math.max(...this.groupingConfigMap.charts.map(chartGroup => chartGroup.value)) + 1
           : 0;
-        console.log(this.groupingConfigMap.charts, chart);
         this.groupingConfigMap.charts.push({
           config: modelChartConfig,
           value: chart,
