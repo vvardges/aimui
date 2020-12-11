@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.2.3 Dec 11 2020
 - Pin table column to the left when grouping by a corresponding field is applied (roubkar)
 - Disable highlight mode control if metrics are aggregated (gorarakelyan)
 - Apply color, stroke and grid pattern repeating logic (roubkar)
