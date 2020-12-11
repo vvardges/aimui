@@ -22,7 +22,7 @@ export default class Trace {
 
   get seriesLength() {
     return this.series.length;
-  };
+  }
 
   clone = () => {
     const traceClone = new Trace(this.config);
@@ -39,7 +39,7 @@ export default class Trace {
 
   addSeries = (series) => {
     this.series.push(series);
-    
+
     this.setExperiments(series.run.experiment_name);
     if (series.metric !== null) this.setMetrics(series.metric.name);
     if (series.trace !== null) this.setContexts(series.trace.context);
@@ -49,14 +49,16 @@ export default class Trace {
   };
 
   removeSeries = (index) => {
-    this.series.splice(index,1);
+    this.series.splice(index, 1);
     this.aggregate();
   };
 
   aggregate = () => {
-    this.aggregation.min = this.aggregateSeries(values => _.min(values));
-    this.aggregation.max = this.aggregateSeries(values => _.max(values));
-    this.aggregation.avg = this.aggregateSeries(values => _.sum(values) / values.length);
+    this.aggregation.min = this.aggregateSeries((values) => _.min(values));
+    this.aggregation.max = this.aggregateSeries((values) => _.max(values));
+    this.aggregation.avg = this.aggregateSeries(
+      (values) => _.sum(values) / values.length,
+    );
   };
 
   aggregateSeries = (aggFunc) => {
@@ -82,7 +84,7 @@ export default class Trace {
     const run_hash = [];
     const context = {};
     const params = {};
-    this.series.forEach(s => {
+    this.series.forEach((s) => {
       experiment_name.push(s.run.experiment_name);
       run_hash.push(s.run.run_hash);
       if (s.metric !== null) name.push(s.metric.name);
@@ -106,7 +108,7 @@ export default class Trace {
       const values = [];
       let step = null;
       let timestamp = null;
-      this.series.forEach(s => {
+      this.series.forEach((s) => {
         if (s.trace !== null) {
           const point = s.getPoint(idx);
           if (point !== null) {
@@ -126,7 +128,7 @@ export default class Trace {
     }
 
     if (trace.data.length) {
-      trace.num_steps = trace.data[trace.data.length-1][1];
+      trace.num_steps = trace.data[trace.data.length - 1][1];
     }
 
     return new Series(run, metric, trace);
@@ -142,7 +144,8 @@ export default class Trace {
       if (
         series?.run?.run_hash === run_hash &&
         series.metric?.name === metricName &&
-        btoa(JSON.stringify(series.trace.context)).replace(/[\=\+\/]/g, '') === traceContext
+        btoa(JSON.stringify(series.trace.context)).replace(/[\=\+\/]/g, '') ===
+          traceContext
       ) {
         return true;
       }
@@ -165,7 +168,7 @@ export default class Trace {
 
   setContexts = (context) => {
     if (!!context) {
-      Object.keys(context).forEach(contextKey => {
+      Object.keys(context).forEach((contextKey) => {
         let contextValue = `${contextKey}=${formatValue(context[contextKey])}`;
         if (!this.contexts.includes(contextValue)) {
           this.contexts.push(contextValue);
@@ -181,7 +184,7 @@ export default class Trace {
       max: undefined,
     };
     let lastValuesSum;
-    this.series.forEach(series => {
+    this.series.forEach((series) => {
       let seriesMetricValue = series.getAggregatedMetricValue(metric, context);
       if (result.min === undefined || seriesMetricValue < result.min) {
         result.min = seriesMetricValue;
@@ -197,7 +200,10 @@ export default class Trace {
         }
       }
     });
-    result.avg = lastValuesSum === undefined ? undefined : lastValuesSum / this.series.length;
+    result.avg =
+      lastValuesSum === undefined
+        ? undefined
+        : lastValuesSum / this.series.length;
     return result;
   };
 }

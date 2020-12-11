@@ -13,8 +13,10 @@ function GroupByChart(props) {
   let popupRef = useRef();
   let dropdownRef = useRef();
   let {
-    getAllParamsPaths, getAllContextKeys,
-    enableExploreMetricsMode, enableExploreParamsMode,
+    getAllParamsPaths,
+    getAllContextKeys,
+    enableExploreMetricsMode,
+    enableExploreParamsMode,
   } = useContext(HubMainScreenContext);
 
   useEffect(() => {
@@ -24,29 +26,40 @@ function GroupByChart(props) {
     }
   }, [opened]);
 
-  const options = getGroupingOptions(getAllParamsPaths(), getAllContextKeys(), enableExploreMetricsMode(), enableExploreParamsMode());
+  const options = getGroupingOptions(
+    getAllParamsPaths(),
+    getAllContextKeys(),
+    enableExploreMetricsMode(),
+    enableExploreParamsMode(),
+  );
 
   return (
-    <div className='ControlsSidebar__item__wrapper'>
+    <div className="ControlsSidebar__item__wrapper">
       <UI.Tooltip
-        tooltip={groupByChart.length > 0 ? `Divided into charts by ${groupByChart.length} field${groupByChart.length > 1 ? 's' : ''}` : 'Divide into charts'}
+        tooltip={
+          groupByChart.length > 0
+            ? `Divided into charts by ${groupByChart.length} field${
+                groupByChart.length > 1 ? 's' : ''
+              }`
+            : 'Divide into charts'
+        }
       >
         <div
           className={classNames({
             ControlsSidebar__item: true,
-            active: opened || groupByChart.length > 0
+            active: opened || groupByChart.length > 0,
           })}
-          onClick={evt => setOpened(!opened)}
+          onClick={(evt) => setOpened(!opened)}
         >
-          <UI.Icon i='dashboard' scale={1.7} />
+          <UI.Icon i="dashboard" scale={1.7} />
         </div>
       </UI.Tooltip>
       {opened && (
         <div
-          className='ControlsSidebar__item__popup'
+          className="ControlsSidebar__item__popup"
           tabIndex={0}
           ref={popupRef}
-          onBlur={evt => {
+          onBlur={(evt) => {
             const currentTarget = evt.currentTarget;
             if (opened) {
               window.setTimeout(() => {
@@ -57,25 +70,32 @@ function GroupByChart(props) {
             }
           }}
         >
-          <div className='ControlsSidebar__item__popup__header'>
-            <UI.Text overline bold>Select fields to divide into charts</UI.Text>
+          <div className="ControlsSidebar__item__popup__header">
+            <UI.Text overline bold>
+              Select fields to divide into charts
+            </UI.Text>
           </div>
-          <div className='ControlsSidebar__item__popup__body'>
+          <div className="ControlsSidebar__item__popup__body">
             <UI.Dropdown
-              className='ControlsSidebar__groupingDropdown'
+              className="ControlsSidebar__groupingDropdown"
               options={options}
               inline={false}
-              formatGroupLabel={data => (
+              formatGroupLabel={(data) => (
                 <div>
                   <span>{data.label}</span>
                   <span>{data.options.length}</span>
                 </div>
               )}
-              defaultValue={groupByChart.map(field => ({ value: field, label: field.startsWith('params.') ? field.substring(7) : field }))}
+              defaultValue={groupByChart.map((field) => ({
+                value: field,
+                label: field.startsWith('params.') ? field.substring(7) : field,
+              }))}
               ref={dropdownRef}
               onChange={(data) => {
                 const selectedItems = !!data ? data : [];
-                const values = selectedItems.filter(i => !!i.value).map(i => i.value.trim());
+                const values = selectedItems
+                  .filter((i) => !!i.value)
+                  .map((i) => i.value.trim());
                 setContextFilter({
                   groupByChart: values,
                 });
@@ -92,7 +112,7 @@ function GroupByChart(props) {
 
 GroupByChart.propTypes = {
   groupByChart: PropTypes.arrayOf(PropTypes.string),
-  setContextFilter: PropTypes.func
+  setContextFilter: PropTypes.func,
 };
 
 export default GroupByChart;

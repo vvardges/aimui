@@ -13,7 +13,7 @@ function ControlsSidebarYScale(props) {
     window.addEventListener('click', this.handleWindowClick);
     return () => {
       window.removeEventListener('click', this.handleWindowClick);
-    }
+    };
   }, []);
 
   handleWindowClick = () => {
@@ -36,11 +36,11 @@ function ControlsSidebarYScale(props) {
   };
 
   handleYScaleChange = (yScale) => {
-    props.setChartSettingsState({ 'yScale': yScale });
+    props.setChartSettingsState({ yScale: yScale });
   };
 
   return (
-    <div className='ControlsSidebar__item__wrapper'>
+    <div className="ControlsSidebar__item__wrapper">
       <div
         className={classNames({
           ControlsSidebar__item: true,
@@ -48,7 +48,7 @@ function ControlsSidebarYScale(props) {
         })}
         onClick={(e) => handleControlClick(e, 'yScale')}
       >
-        <UI.Icon i='settings' scale={1.4} />
+        <UI.Icon i="settings" scale={1.4} />
       </div>
       <div
         className={classNames({
@@ -57,19 +57,21 @@ function ControlsSidebarYScale(props) {
         })}
         onClick={(e) => handleMenuClick(e)}
       >
-        <div className='ControlsSidebar__menu__list'>
-          <div className='ControlsSidebar__menu__list__header'>
-            <UI.Text overline bold>Scale Y axis</UI.Text>
+        <div className="ControlsSidebar__menu__list">
+          <div className="ControlsSidebar__menu__list__header">
+            <UI.Text overline bold>
+              Scale Y axis
+            </UI.Text>
           </div>
-          <div className='ControlsSidebar__menu__list__items'>
+          <div className="ControlsSidebar__menu__list__items">
             <div
-              className='ControlsSidebar__menu__item'
+              className="ControlsSidebar__menu__item"
               onClick={() => handleYScaleChange(0)}
             >
               Linear
             </div>
             <div
-              className='ControlsSidebar__menu__item'
+              className="ControlsSidebar__menu__item"
               onClick={() => handleYScaleChange(1)}
             >
               Log
@@ -82,7 +84,7 @@ function ControlsSidebarYScale(props) {
 }
 
 ControlsSidebar.propTypes = {
-  setChartSettingsState: PropTypes.func
+  setChartSettingsState: PropTypes.func,
 };
 
 export default ControlsSidebarYScale;

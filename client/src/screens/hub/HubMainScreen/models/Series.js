@@ -48,9 +48,9 @@ export default class Series {
     const metricValues = runMetrics[metric];
     let lastValue = undefined;
 
-    metricValues.forEach(metricContext => {
+    metricValues.forEach((metricContext) => {
       const metricContextDict = {};
-      metricContext.context.forEach(contextItem => {
+      metricContext.context.forEach((contextItem) => {
         metricContextDict[contextItem[0]] = contextItem[1];
       });
 
@@ -62,7 +62,11 @@ export default class Series {
     return lastValue;
   };
 
-  getParamsFlatDict = (includeMetrics = false, preserveDefaultNamespace = true, formatValues = true) => {
+  getParamsFlatDict = (
+    includeMetrics = false,
+    preserveDefaultNamespace = true,
+    formatValues = true,
+  ) => {
     // TODO: Implement caching
     let paramsNested = Object.assign({}, this.run.params);
     if (!includeMetrics && paramsNested.hasOwnProperty('__METRICS__')) {
@@ -74,9 +78,15 @@ export default class Series {
     }
     const flatParams = flattenObject(paramsNested);
     if (formatValues === true) {
-      Object.keys(flatParams).forEach(paramKey => flatParams[paramKey] = formatValue(flatParams[paramKey]));
+      Object.keys(flatParams).forEach(
+        (paramKey) =>
+          (flatParams[paramKey] = formatValue(flatParams[paramKey])),
+      );
     } else if (!!formatValues) {
-      Object.keys(flatParams).forEach(paramKey => flatParams[paramKey] = formatValues(flatParams[paramKey]));
+      Object.keys(flatParams).forEach(
+        (paramKey) =>
+          (flatParams[paramKey] = formatValues(flatParams[paramKey])),
+      );
     }
     return flatParams;
   };

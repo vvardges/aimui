@@ -1,6 +1,5 @@
 import React from 'react';
-import UI from '../../../ui'
-
+import UI from '../../../ui';
 
 class DangerZone extends React.Component {
   constructor(props) {
@@ -8,7 +7,7 @@ class DangerZone extends React.Component {
     this.state = {
       deleteNameMatch: null,
       deleteNameMatchStatus: null,
-    }
+    };
   }
 
   handleDeleteButtonClick = () => {
@@ -23,19 +22,17 @@ class DangerZone extends React.Component {
     } else {
       this.setState({
         deleteNameMatchStatus: 'Name does not match',
-      })
+      });
     }
   };
 
   handleInputChange = (e) => {
     const value = e.target.value;
     const name = e.target.name;
-    this.setState(
-      (prevState) => ({
-        ...prevState,
-        [name]: value,
-      })
-    );
+    this.setState((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
   handleRevertButtonClick = () => {
@@ -44,23 +41,26 @@ class DangerZone extends React.Component {
 
   _renderDeleteContent = () => (
     <>
-      <UI.Text type='grey-dark' spacing>
+      <UI.Text type="grey-dark" spacing>
         {this.props.message}
       </UI.Text>
       <UI.Input
         onChange={this.handleInputChange}
-        name='deleteNameMatch'
+        name="deleteNameMatch"
         value={this.state.deleteNameMatch}
         label={`Please type "${this.props.name}" to confirm`}
       />
-      {!!this.state.deleteNameMatchStatus &&
-        <UI.Text type='negative' spacingTop small> {this.state.deleteNameMatchStatus} </UI.Text>
-      }
+      {!!this.state.deleteNameMatchStatus && (
+        <UI.Text type="negative" spacingTop small>
+          {' '}
+          {this.state.deleteNameMatchStatus}{' '}
+        </UI.Text>
+      )}
       <UI.Text spacingTop>
         <UI.Button
-          className='DangerZone__delete'
+          className="DangerZone__delete"
           onClick={() => this.handleDeleteButtonClick()}
-          type='negative'
+          type="negative"
         >
           Hide
         </UI.Button>
@@ -70,14 +70,14 @@ class DangerZone extends React.Component {
 
   _renderRevertContent = () => (
     <>
-      <UI.Text type='grey-dark' spacing>
+      <UI.Text type="grey-dark" spacing>
         <strong>{this.props.name}</strong> is hidden
       </UI.Text>
       <UI.Text spacingTop>
         <UI.Button
-          className='DangerZone__delete'
+          className="DangerZone__delete"
           onClick={() => this.handleRevertButtonClick()}
-          type='secondary'
+          type="secondary"
         >
           Bring back
         </UI.Button>
@@ -88,8 +88,10 @@ class DangerZone extends React.Component {
   render() {
     return (
       <>
-        <UI.Segment className='DangerZone' type='negative'>
-          {this.props.is_hidden ? this._renderRevertContent() : this._renderDeleteContent()}
+        <UI.Segment className="DangerZone" type="negative">
+          {this.props.is_hidden
+            ? this._renderRevertContent()
+            : this._renderDeleteContent()}
         </UI.Segment>
       </>
     );

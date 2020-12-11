@@ -10,7 +10,6 @@ import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper'
 import * as storeUtils from '../../../storeUtils';
 import ExecutableViewForm from '../../../components/hub/ExecutableViewForm/ExecutableViewForm';
 
-
 class HubExecutableCreateScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -40,31 +39,34 @@ class HubExecutableCreateScreen extends React.Component {
       createBtn: {
         loading: true,
         disabled: true,
-      }
+      },
     });
-    this.props.createExecutable({
-      name: form.name,
-      script_path: form.scriptPath,
-      arguments: form.parameter,
-      env_vars: form.environmentVariable,
-      interpreter_path: form.interpreterPath,
-      working_dir: form.workingDir,
-      aim_experiment: form.aimExperiment,
-    }).then((data) => {
-      this.setState(prevState => ({
-        ...prevState,
-        redirectMain: true,
-      }));
-    }).catch((err) => {
-    }).finally(() => {
-      this.setState(prevState => ({
-        ...prevState,
-        createBtn: {
-          loading: false,
-          disabled: false,
-        }
-      }));
-    });
+    this.props
+      .createExecutable({
+        name: form.name,
+        script_path: form.scriptPath,
+        arguments: form.parameter,
+        env_vars: form.environmentVariable,
+        interpreter_path: form.interpreterPath,
+        working_dir: form.workingDir,
+        aim_experiment: form.aimExperiment,
+      })
+      .then((data) => {
+        this.setState((prevState) => ({
+          ...prevState,
+          redirectMain: true,
+        }));
+      })
+      .catch((err) => {})
+      .finally(() => {
+        this.setState((prevState) => ({
+          ...prevState,
+          createBtn: {
+            loading: false,
+            disabled: false,
+          },
+        }));
+      });
   };
 
   handleExecuteBtnClick = () => {
@@ -73,7 +75,7 @@ class HubExecutableCreateScreen extends React.Component {
     }
     const form = this.form.current.getForm();
 
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       ...prevState,
       executeBtn: {
         ...prevState.executeBtn,
@@ -82,40 +84,46 @@ class HubExecutableCreateScreen extends React.Component {
       },
     }));
 
-    this.props.executeExecutable({
-      name: form.name,
-      script_path: form.scriptPath,
-      arguments: form.parameter,
-      env_vars: form.environmentVariable,
-      interpreter_path: form.interpreterPath,
-      working_dir: form.workingDir,
-      aim_experiment: form.aimExperiment,
-    }).then(() => {
-      this.setState(prevState => ({
-        ...prevState,
-        redirectMain: true,
-      }));
-    }).finally(() => {
-      this.setState(prevState => ({
-        ...prevState,
-        executeBtn: {
-          ...prevState.executeBtn,
-          loading: false,
-          disabled: false,
-        },
-      }));
-    });
+    this.props
+      .executeExecutable({
+        name: form.name,
+        script_path: form.scriptPath,
+        arguments: form.parameter,
+        env_vars: form.environmentVariable,
+        interpreter_path: form.interpreterPath,
+        working_dir: form.workingDir,
+        aim_experiment: form.aimExperiment,
+      })
+      .then(() => {
+        this.setState((prevState) => ({
+          ...prevState,
+          redirectMain: true,
+        }));
+      })
+      .finally(() => {
+        this.setState((prevState) => ({
+          ...prevState,
+          executeBtn: {
+            ...prevState.executeBtn,
+            loading: false,
+            disabled: false,
+          },
+        }));
+      });
   };
 
   _renderContent = () => {
     return (
-      <div className='HubExecutableCreateScreen__FormGroup__wrapper'>
-        <UI.Text size={6} header divided> Create Process Template </UI.Text>
+      <div className="HubExecutableCreateScreen__FormGroup__wrapper">
+        <UI.Text size={6} header divided>
+          {' '}
+          Create Process Template{' '}
+        </UI.Text>
         <ExecutableViewForm ref={this.form} />
         <UI.Buttons>
           <UI.Button
             onClick={() => this.handleCreateBtnClick()}
-            type='positive'
+            type="positive"
             {...this.state.createBtn}
           >
             Save as template
@@ -128,7 +136,7 @@ class HubExecutableCreateScreen extends React.Component {
           {/*  Execute now*/}
           {/*</UI.Button>*/}
           <Link to={screens.HUB_PROJECT_EXECUTABLES}>
-            <UI.Button type='secondary'> Cancel </UI.Button>
+            <UI.Button type="secondary"> Cancel </UI.Button>
           </Link>
         </UI.Buttons>
       </div>
@@ -137,14 +145,12 @@ class HubExecutableCreateScreen extends React.Component {
 
   render() {
     if (this.state.redirectMain) {
-      return <Redirect to={screens.HUB_PROJECT_EXECUTABLES} push />
+      return <Redirect to={screens.HUB_PROJECT_EXECUTABLES} push />;
     }
 
     return (
       <ProjectWrapper>
-        <UI.Container size='small'>
-          {this._renderContent()}
-        </UI.Container>
+        <UI.Container size="small">{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }
@@ -152,5 +158,5 @@ class HubExecutableCreateScreen extends React.Component {
 
 export default storeUtils.getWithState(
   classes.HUB_PROJECT_CREATE_EXECUTABLE,
-  HubExecutableCreateScreen
+  HubExecutableCreateScreen,
 );

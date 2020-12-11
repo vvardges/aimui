@@ -6,7 +6,6 @@ import MDReactComponent from 'markdown-react-js';
 
 import { classNames } from '../../utils';
 
-
 function Markdown(props) {
   const className = classNames({
     Markdown: true,
@@ -14,10 +13,10 @@ function Markdown(props) {
   });
 
   return (
-    <div className={className} >
+    <div className={className}>
       <MDReactComponent text={props.children} />
     </div>
-  )
+  );
 }
 
 Markdown.defaultProps = {

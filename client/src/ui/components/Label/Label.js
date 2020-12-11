@@ -5,7 +5,17 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-function Label({ className, children, size, spacing, color, outline, rounded, iconLeft, onClick }) {
+function Label({
+  className,
+  children,
+  size,
+  spacing,
+  color,
+  outline,
+  rounded,
+  iconLeft,
+  onClick,
+}) {
   const elemClassName = classNames({
     Label: true,
     [size]: true,
@@ -23,21 +33,11 @@ function Label({ className, children, size, spacing, color, outline, rounded, ic
   }
 
   return (
-    <div
-      className={elemClassName}
-      style={styles}
-      onClick={onClick || null}
-    >
-      {!!iconLeft &&
-        <div className='Label__icon'>
-          {iconLeft}
-        </div>
-      }
-      <div className='Label__content'>
-        {children}
-      </div>
+    <div className={elemClassName} style={styles} onClick={onClick || null}>
+      {!!iconLeft && <div className="Label__icon">{iconLeft}</div>}
+      <div className="Label__content">{children}</div>
     </div>
-  )
+  );
 }
 
 Label.defaultProps = {

@@ -17,13 +17,14 @@ class Menu extends Component {
 
     return (
       <div className={compClassName}>
-        <div className='Menu__header__wrapper'>
-          {this.props.headerElem !== null
-            ? <>{this.props.headerElem}</>
-            : (!!this.props.header &&
-              <div className='Menu__header'>{this.props.header}</div>
+        <div className="Menu__header__wrapper">
+          {this.props.headerElem !== null ? (
+            <>{this.props.headerElem}</>
+          ) : (
+            !!this.props.header && (
+              <div className="Menu__header">{this.props.header}</div>
             )
-          }
+          )}
         </div>
         {this.props.children}
       </div>

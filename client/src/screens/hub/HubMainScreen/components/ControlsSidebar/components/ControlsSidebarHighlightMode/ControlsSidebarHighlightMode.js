@@ -26,25 +26,25 @@ function ControlsSidebarHighlightMode(props) {
 
   return (
     <>
-      <div className='ControlsSidebar__item__wrapper'>
-        <UI.Tooltip tooltip='Highlight modes'>
+      <div className="ControlsSidebar__item__wrapper">
+        <UI.Tooltip tooltip="Highlight modes">
           <div
             className={classNames({
               ControlsSidebar__item: true,
               disabled: props.disabled,
               active: opened,
             })}
-            onClick={evt => setOpened(!opened)}
+            onClick={(evt) => setOpened(!opened)}
           >
-            <UI.Icon i='center_focus_weak' scale={1.7} />
+            <UI.Icon i="center_focus_weak" scale={1.7} />
           </div>
         </UI.Tooltip>
         {opened && (
           <div
-            className='ControlsSidebar__item__popup list'
+            className="ControlsSidebar__item__popup list"
             tabIndex={0}
             ref={popupRef}
-            onBlur={evt => {
+            onBlur={(evt) => {
               const currentTarget = evt.currentTarget;
               if (opened) {
                 window.setTimeout(() => {
@@ -55,38 +55,40 @@ function ControlsSidebarHighlightMode(props) {
               }
             }}
           >
-            <div className='ControlsSidebar__item__popup__header'>
-              <UI.Text overline bold>Highlight modes</UI.Text>
+            <div className="ControlsSidebar__item__popup__header">
+              <UI.Text overline bold>
+                Highlight modes
+              </UI.Text>
             </div>
-            <div className='ControlsSidebar__item__popup__list'>
+            <div className="ControlsSidebar__item__popup__list">
               <div
                 className={classNames({
                   ControlsSidebar__item__popup__list__item: true,
-                  active: highlightMode === 'default'
+                  active: highlightMode === 'default',
                 })}
-                onClick={evt => selectHighlightMode('default')}
+                onClick={(evt) => selectHighlightMode('default')}
               >
                 <UI.Text small>Highlight off</UI.Text>
               </div>
             </div>
-            <div className='ControlsSidebar__item__popup__list'>
+            <div className="ControlsSidebar__item__popup__list">
               <div
                 className={classNames({
                   ControlsSidebar__item__popup__list__item: true,
-                  active: highlightMode === 'metric'
+                  active: highlightMode === 'metric',
                 })}
-                onClick={evt => selectHighlightMode('metric')}
+                onClick={(evt) => selectHighlightMode('metric')}
               >
                 <UI.Text small>Highlight metric on hover</UI.Text>
               </div>
             </div>
-            <div className='ControlsSidebar__item__popup__list'>
+            <div className="ControlsSidebar__item__popup__list">
               <div
                 className={classNames({
                   ControlsSidebar__item__popup__list__item: true,
-                  active: highlightMode === 'run'
+                  active: highlightMode === 'run',
                 })}
-                onClick={evt => selectHighlightMode('run')}
+                onClick={(evt) => selectHighlightMode('run')}
               >
                 <UI.Text small>Highlight run on hover</UI.Text>
               </div>

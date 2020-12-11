@@ -6,9 +6,7 @@ import { classNames } from '../../../../../../../utils';
 import HubMainScreenContext from '../../../../HubMainScreenContext/HubMainScreenContext';
 
 function SidebarMenu(props) {
-  let {
-    resetControls, areControlsChanged,
-  } = useContext(HubMainScreenContext);
+  let { resetControls, areControlsChanged } = useContext(HubMainScreenContext);
 
   let [opened, setOpened] = useState(false);
 
@@ -21,7 +19,7 @@ function SidebarMenu(props) {
   }, [opened]);
 
   return (
-    <div className=''>
+    <div className="">
       <div
         className={classNames({
           [props.className]: true,
@@ -29,14 +27,14 @@ function SidebarMenu(props) {
         })}
         onClick={() => setOpened(!opened)}
       >
-        <UI.Icon i='menu' />
+        <UI.Icon i="menu" />
       </div>
       {opened && (
         <div
-          className='ControlsSidebar__item__popup list ControlsSidebar__item__popup-sidebar'
+          className="ControlsSidebar__item__popup list ControlsSidebar__item__popup-sidebar"
           tabIndex={0}
           ref={popupRef}
-          onBlur={evt => {
+          onBlur={(evt) => {
             const currentTarget = evt.currentTarget;
             if (opened) {
               window.setTimeout(() => {
@@ -47,10 +45,12 @@ function SidebarMenu(props) {
             }
           }}
         >
-          <div className='ControlsSidebar__item__popup__header'>
-            <UI.Text overline bold>Menu</UI.Text>
+          <div className="ControlsSidebar__item__popup__header">
+            <UI.Text overline bold>
+              Menu
+            </UI.Text>
           </div>
-          <div className='ControlsSidebar__item__popup__list'>
+          <div className="ControlsSidebar__item__popup__list">
             <div
               className={classNames({
                 ControlsSidebar__item__popup__list__item: true,
@@ -62,9 +62,9 @@ function SidebarMenu(props) {
               <UI.Text small>Reset Controls to System Defaults</UI.Text>
             </div>
             <a
-              href='https://github.com/aimhubio/aim#searching-experiments'
-              target='_blank'
-              rel='noopener noreferrer'
+              href="https://github.com/aimhubio/aim#searching-experiments"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <div
                 className={classNames({

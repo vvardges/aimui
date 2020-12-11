@@ -31,38 +31,44 @@ class SelectForm extends Component {
     this.setState({ searchActionActive: true });
     const query = this.getFullQuery();
 
-    this.context.setSearchState({
-      query,
-    }, () => {
-      this.context.searchByQuery(false).then(() => this.setState({ searchActionActive: false }));
-    }, true, true, false);
+    this.context.setSearchState(
+      {
+        query,
+      },
+      () => {
+        this.context
+          .searchByQuery(false)
+          .then(() => this.setState({ searchActionActive: false }));
+      },
+      true,
+      true,
+      false,
+    );
   };
 
   render() {
     return (
-      <div className='SelectForm'>
-        <div className='SelectForm__body'>
-          <div className='SelectForm__form'>
-            <div className='SelectForm__form__row'>
-              <div className='SelectForm__form__row__title'>
-                Select
-              </div>
-              <SelectInput
-                search={() => this.search()}
-              />
+      <div className="SelectForm">
+        <div className="SelectForm__body">
+          <div className="SelectForm__form">
+            <div className="SelectForm__form__row">
+              <div className="SelectForm__form__row__title">Select</div>
+              <SelectInput search={() => this.search()} />
             </div>
-            <div className='SelectForm__form__row'>
-              <div className='SelectForm__form__row__title'>
-                If
-              </div>
+            <div className="SelectForm__form__row">
+              <div className="SelectForm__form__row__title">If</div>
               <UI.Input
-                className='SelectForm__form__row__input'
-                classNameWrapper='SelectForm__form__row__input__wrapper'
-                placeholder='e.g. `experiment in (nmt_syntok_dynamic, nmt_syntok_greedy) and hparams.lr >= 0.0001`'
-                onChange={(evt) => this.context.setSearchInputState({ selectConditionInput: evt.target.value })}
+                className="SelectForm__form__row__input"
+                classNameWrapper="SelectForm__form__row__input__wrapper"
+                placeholder="e.g. `experiment in (nmt_syntok_dynamic, nmt_syntok_greedy) and hparams.lr >= 0.0001`"
+                onChange={(evt) =>
+                  this.context.setSearchInputState({
+                    selectConditionInput: evt.target.value,
+                  })
+                }
                 value={this.context.searchInput.selectConditionInput}
                 tabIndex={2}
-                onKeyPress={evt => {
+                onKeyPress={(evt) => {
                   if (evt.charCode === 13) {
                     this.search();
                   }
@@ -70,8 +76,8 @@ class SelectForm extends Component {
               />
             </div>
           </div>
-          <div className='SelectForm__actions'>
-            <div className='SelectForm__action__wrapper'>
+          <div className="SelectForm__actions">
+            <div className="SelectForm__action__wrapper">
               <div
                 className={classNames({
                   SelectForm__action: true,
@@ -80,32 +86,32 @@ class SelectForm extends Component {
                 })}
                 onClick={() => this.search()}
               >
-                <UI.Icon i='search' />
+                <UI.Icon i="search" />
               </div>
             </div>
-            <div className='SelectForm__action__wrapper'>
-              <SidebarMenu className='SelectForm__action' />
+            <div className="SelectForm__action__wrapper">
+              <SidebarMenu className="SelectForm__action" />
             </div>
-            <div className='SelectForm__action__wrapper'>
+            <div className="SelectForm__action__wrapper">
               <div
                 className={classNames({
                   SelectForm__action: true,
                   disabled: this.context.runs.isLoading,
                 })}
-                onClick={evt => this.props.history.goBack()}
+                onClick={(evt) => this.props.history.goBack()}
               >
-                <UI.Icon i='arrow_back_ios_new' />
+                <UI.Icon i="arrow_back_ios_new" />
               </div>
             </div>
-            <div className='SelectForm__action__wrapper'>
+            <div className="SelectForm__action__wrapper">
               <div
                 className={classNames({
                   SelectForm__action: true,
                   disabled: this.context.runs.isLoading,
                 })}
-                onClick={evt => this.props.history.goForward()}
+                onClick={(evt) => this.props.history.goForward()}
               >
-                <UI.Icon i='arrow_forward_ios' />
+                <UI.Icon i="arrow_forward_ios" />
               </div>
             </div>
           </div>

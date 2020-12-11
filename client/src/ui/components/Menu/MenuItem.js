@@ -32,7 +32,9 @@ class MenuItem extends Component {
     const compClassName = classNames({
       MenuItem: true,
       [this.props.className]: !!this.props.className,
-      [this.props.activeClass]: this.props.innerInteraction ? this.state.active : this.props.active,
+      [this.props.activeClass]: this.props.innerInteraction
+        ? this.state.active
+        : this.props.active,
       select: !!this.props.subMenu.length,
     });
 
@@ -44,18 +46,13 @@ class MenuItem extends Component {
     return (
       <>
         <div className={compClassName} onClick={() => this.handleClick()}>
-          {!!this.props.label
-            ? this.props.label
-            : this.props.children
-          }
+          {!!this.props.label ? this.props.label : this.props.children}
         </div>
-        {!!this.props.subMenu.length &&
+        {!!this.props.subMenu.length && (
           <div className={subClassName}>
-            {this.props.subMenu.map((item) =>
-              item
-            )}
+            {this.props.subMenu.map((item) => item)}
           </div>
-        }
+        )}
       </>
     );
   }

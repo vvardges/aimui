@@ -21,13 +21,12 @@ import {
   formatValue,
   classNames,
   roundValue,
-  getObjectValueByPath
+  getObjectValueByPath,
 } from '../../../utils';
 import { HUB_PROJECT_EXPERIMENT, EXPLORE } from '../../../constants/screens';
 import { setItem } from '../../../services/storage';
 import { USER_LAST_SEARCH_QUERY } from '../../../config';
 import moment from 'moment';
-
 
 class HubExperimentsDashboardScreen extends React.Component {
   constructor(props) {
@@ -106,7 +105,7 @@ class HubExperimentsDashboardScreen extends React.Component {
       try {
         const encodedState = search.substr(8);
         return JSON.parse(atob(encodedState));
-      } catch(e) {
+      } catch (e) {
         return null;
       }
     }
@@ -126,7 +125,6 @@ class HubExperimentsDashboardScreen extends React.Component {
     return false;
   };
 
-
   updateURL = () => {
     const state = {
       searchKey: this.searchBarRef.current?.getValue(),
@@ -143,12 +141,14 @@ class HubExperimentsDashboardScreen extends React.Component {
 
   updateWindowDimensions = () => {
     const wrapper = this.projectWrapperRef.current;
-    const projectWrapperHeight = wrapper ? this.projectWrapperRef.current.getHeaderHeight() : null;
+    const projectWrapperHeight = wrapper
+      ? this.projectWrapperRef.current.getHeaderHeight()
+      : null;
     const { height } = this.topHeaderRef.current?.getBoundingClientRect() ?? {};
     if (projectWrapperHeight !== null) {
       this.setState({
         height: window.innerHeight - projectWrapperHeight - 1,
-        subheaderTop: height ?? 0
+        subheaderTop: height ?? 0,
       });
     } else {
       setTimeout(() => this.updateWindowDimensions(), 25);
@@ -162,81 +162,94 @@ class HubExperimentsDashboardScreen extends React.Component {
       isLoading: true,
     });
 
-    this.props.getRunsByQuery(query).then((data) => {
-      this.paramKeys = {};
-      this.metricKeys = {};
-      const experiments = data?.runs.map(run => run.experiment_name);
-      data?.runs.forEach(run => {
-        Object.keys(run.params).forEach(paramKey => {
-          if (paramKey !== '__METRICS__') {
-            if (!this.paramKeys.hasOwnProperty(paramKey)) {
-              this.paramKeys[paramKey] = [];
-            }
-            Object.keys(run.params[paramKey]).forEach(key => {
-              if (!this.paramKeys[paramKey].includes(key)) {
-                this.paramKeys[paramKey].push(key);
+    this.props
+      .getRunsByQuery(query)
+      .then((data) => {
+        this.paramKeys = {};
+        this.metricKeys = {};
+        const experiments = data?.runs.map((run) => run.experiment_name);
+        data?.runs.forEach((run) => {
+          Object.keys(run.params).forEach((paramKey) => {
+            if (paramKey !== '__METRICS__') {
+              if (!this.paramKeys.hasOwnProperty(paramKey)) {
+                this.paramKeys[paramKey] = [];
               }
-            });
-          } else {
-            Object.keys(run.params[paramKey]).forEach(metricName => {
-              if (this.firstMetricName === null) {
-                this.firstMetricName = metricName;
-              }
-              if (!this.metricKeys.hasOwnProperty(metricName)) {
-                this.metricKeys[metricName] = [];
-              }
-              run.params[paramKey][metricName].forEach(metricContext => {
-                const contextDict = {};
-                if (metricContext.context !== null) {
-                  metricContext.context.forEach(contextItem => {
-                    contextDict[contextItem[0]] = contextItem[1];
-                  });
-                }
-                let contextExists = false;
-                this.metricKeys[metricName].forEach(existingMetricContext => {
-                  if (deepEqual(existingMetricContext, contextDict)) {
-                    contextExists = true;
-                  }
-                });
-                if (!contextExists) {
-                  this.metricKeys[metricName].push(contextDict);
+              Object.keys(run.params[paramKey]).forEach((key) => {
+                if (!this.paramKeys[paramKey].includes(key)) {
+                  this.paramKeys[paramKey].push(key);
                 }
               });
-            });
-          }
-        });
-      });
-      
-      this.setState(prevState => {
-        let coloredCols = {};
-        Object.keys(prevState.coloredCols).filter(key => !!prevState.coloredCols[key]).forEach(prop => {
-          coloredCols[prop] = interpolateColors(data.runs.map(run => _.get(run, JSON.parse(prop))));
+            } else {
+              Object.keys(run.params[paramKey]).forEach((metricName) => {
+                if (this.firstMetricName === null) {
+                  this.firstMetricName = metricName;
+                }
+                if (!this.metricKeys.hasOwnProperty(metricName)) {
+                  this.metricKeys[metricName] = [];
+                }
+                run.params[paramKey][metricName].forEach((metricContext) => {
+                  const contextDict = {};
+                  if (metricContext.context !== null) {
+                    metricContext.context.forEach((contextItem) => {
+                      contextDict[contextItem[0]] = contextItem[1];
+                    });
+                  }
+                  let contextExists = false;
+                  this.metricKeys[metricName].forEach(
+                    (existingMetricContext) => {
+                      if (deepEqual(existingMetricContext, contextDict)) {
+                        contextExists = true;
+                      }
+                    },
+                  );
+                  if (!contextExists) {
+                    this.metricKeys[metricName].push(contextDict);
+                  }
+                });
+              });
+            }
+          });
         });
 
-        return {
-          runs: data?.runs?.sort((a, b) => b.date - a.date) ?? [],
-          experiments: _.uniq(experiments),
+        this.setState((prevState) => {
+          let coloredCols = {};
+          Object.keys(prevState.coloredCols)
+            .filter((key) => !!prevState.coloredCols[key])
+            .forEach((prop) => {
+              coloredCols[prop] = interpolateColors(
+                data.runs.map((run) => _.get(run, JSON.parse(prop))),
+              );
+            });
+
+          return {
+            runs: data?.runs?.sort((a, b) => b.date - a.date) ?? [],
+            experiments: _.uniq(experiments),
+            selectedExperiments: [],
+            selectedRuns: [],
+            coloredCols: coloredCols,
+          };
+        });
+      })
+      .catch(() => {
+        this.setState({
+          runs: [],
+          experiments: [],
           selectedExperiments: [],
-          selectedRuns: [],
-          coloredCols: coloredCols
-        };
+        });
+      })
+      .finally(() => {
+        this.setState(
+          {
+            isLoading: false,
+          },
+          () => {
+            this.updateWindowDimensions();
+            if (updateURL) {
+              this.updateURL();
+            }
+          },
+        );
       });
-    }).catch(() => {
-      this.setState({
-        runs: [],
-        experiments: [],
-        selectedExperiments: [],
-      });
-    }).finally(() => {
-      this.setState({
-        isLoading: false,
-      }, () => {
-        this.updateWindowDimensions();
-        if (updateURL) {
-          this.updateURL();
-        }
-      });
-    });
   };
 
   handleSearchBarSubmit = (value) => {
@@ -249,14 +262,14 @@ class HubExperimentsDashboardScreen extends React.Component {
 
   searchExperiments = () => {
     const experiments = this.state.selectedExperiments;
-    const experimentsRow = experiments.map(e => `"${e}"`).join(', ');
+    const experimentsRow = experiments.map((e) => `"${e}"`).join(', ');
     const query = `experiment in (${experimentsRow})`;
     this.searchBarRef?.current?.setValue(query);
   };
 
   exploreExperiments = () => {
     const experiments = this.state.selectedExperiments;
-    const experimentsRow = experiments.map(e => `"${e}"`).join(', ');
+    const experimentsRow = experiments.map((e) => `"${e}"`).join(', ');
     const metricName = this.firstMetricName ?? this.defaultMetricName;
     const query = `${metricName} if experiment in (${experimentsRow})`;
     setItem(USER_LAST_SEARCH_QUERY, query);
@@ -267,7 +280,7 @@ class HubExperimentsDashboardScreen extends React.Component {
 
   exploreRuns = () => {
     const runs = this.state.selectedRuns;
-    const runsRow = runs.map(e => `"${e}"`).join(', ');
+    const runsRow = runs.map((e) => `"${e}"`).join(', ');
     const metricName = this.firstMetricName ?? this.defaultMetricName;
     const query = `${metricName} if run.hash in (${runsRow})`;
     setItem(USER_LAST_SEARCH_QUERY, query);
@@ -279,13 +292,20 @@ class HubExperimentsDashboardScreen extends React.Component {
   exploreMetric = (metricName, context) => {
     const contextQuery = [];
     if (!!context) {
-      Object.keys(context).forEach(contextKey => {
+      Object.keys(context).forEach((contextKey) => {
         if (typeof context[contextKey] === 'boolean') {
-          contextQuery.push(`context.${contextKey} is ${formatValue(context[contextKey], false)}`);
+          contextQuery.push(
+            `context.${contextKey} is ${formatValue(
+              context[contextKey],
+              false,
+            )}`,
+          );
         } else if (typeof context[contextKey] === 'number') {
           contextQuery.push(`context.${contextKey} == ${context[contextKey]}`);
         } else {
-          contextQuery.push(`context.${contextKey} == "${context[contextKey]}"`);
+          contextQuery.push(
+            `context.${contextKey} == "${context[contextKey]}"`,
+          );
         }
       });
     }
@@ -321,13 +341,16 @@ class HubExperimentsDashboardScreen extends React.Component {
   };
 
   toggleExperiment = (experimentName) => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       let { selectedExperiments } = prevState;
 
       if (selectedExperiments.indexOf(experimentName) === -1) {
         selectedExperiments.push(experimentName);
       } else {
-        selectedExperiments = _.remove(selectedExperiments, (v) => v !== experimentName);
+        selectedExperiments = _.remove(
+          selectedExperiments,
+          (v) => v !== experimentName,
+        );
       }
 
       return {
@@ -338,7 +361,7 @@ class HubExperimentsDashboardScreen extends React.Component {
   };
 
   toggleRun = (experimentName, runHash) => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       let { selectedRuns } = prevState;
 
       if (selectedRuns.indexOf(runHash) === -1) {
@@ -355,18 +378,22 @@ class HubExperimentsDashboardScreen extends React.Component {
   };
 
   checkAbilityForColoring = (prop) => {
-    return this.state.runs.map(run => _.get(run, prop)).filter(elem => typeof elem === 'number').length > 0;
+    return (
+      this.state.runs
+        .map((run) => _.get(run, prop))
+        .filter((elem) => typeof elem === 'number').length > 0
+    );
   };
 
   toggleColoring = (prop) => {
     let key = JSON.stringify(prop);
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       coloredCols: {
         ...prevState.coloredCols,
-        [key]: !!prevState.coloredCols[key] ? undefined : interpolateColors(
-          this.state.runs.map(run => _.get(run, prop))
-        )
-      }
+        [key]: !!prevState.coloredCols[key]
+          ? undefined
+          : interpolateColors(this.state.runs.map((run) => _.get(run, prop))),
+      },
     }));
   };
 
@@ -376,52 +403,54 @@ class HubExperimentsDashboardScreen extends React.Component {
     }
 
     return (
-      <div className='HubExperimentsDashboardScreen__experiments__items'>
+      <div className="HubExperimentsDashboardScreen__experiments__items">
         <UI.Menu
           bordered
           outline
           headerElem={
-            <div className='HubExperimentsDashboardScreen__experiments__header'>
+            <div className="HubExperimentsDashboardScreen__experiments__header">
               Experiments
-              {!!this.state.selectedExperiments?.length &&
-                <UI.Buttons className='HubExperimentsDashboardScreen__experiments__actions'>
+              {!!this.state.selectedExperiments?.length && (
+                <UI.Buttons className="HubExperimentsDashboardScreen__experiments__actions">
                   <UI.Button
-                    type='primary'
-                    size='small'
+                    type="primary"
+                    size="small"
                     onClick={() => this.searchExperiments()}
-                    iconLeft={
-                      <UI.Icon i='search' />
-                    }
+                    iconLeft={<UI.Icon i="search" />}
                   >
                     Search
                   </UI.Button>
                   <UI.Button
-                    type='positive'
-                    size='small'
+                    type="positive"
+                    size="small"
                     onClick={() => this.exploreExperiments()}
-                    iconLeft={
-                      <UI.Icon i='timeline' />
-                    }
+                    iconLeft={<UI.Icon i="timeline" />}
                   >
                     Explore
                   </UI.Button>
-                  <UI.Button type='secondary' size='small' onClick={() => this.resetExperiments()}>Reset</UI.Button>
+                  <UI.Button
+                    type="secondary"
+                    size="small"
+                    onClick={() => this.resetExperiments()}
+                  >
+                    Reset
+                  </UI.Button>
                 </UI.Buttons>
-              }
+              )}
             </div>
           }
         >
-          {this.state.experiments.map((exp, i) =>
+          {this.state.experiments.map((exp, i) => (
             <UI.MenuItem
-              className='HubExperimentsDashboardScreen__experiments__item'
+              className="HubExperimentsDashboardScreen__experiments__item"
               key={i}
               onClick={() => this.toggleExperiment(exp)}
               active={this.state.selectedExperiments.indexOf(exp) !== -1}
-              activeClass='activeCheck'
+              activeClass="activeCheck"
             >
               {exp}
             </UI.MenuItem>
-          )}
+          ))}
         </UI.Menu>
       </div>
     );
@@ -432,137 +461,201 @@ class HubExperimentsDashboardScreen extends React.Component {
       return null;
     }
 
-    let columns = [{ 
-      key: 'run',
-      content: !!this.state.selectedRuns?.length ? (
-        <UI.Buttons className=''>
-          <UI.Button
-            type='positive'
-            size='tiny'
-            onClick={this.exploreRuns}
-            iconLeft={<UI.Icon i='timeline' />}
-          >
-            Explore
-          </UI.Button>
-          <UI.Button
-            type='secondary'
-            size='tiny' 
-            onClick={() => this.resetRuns()}
-          >
-            Reset
-          </UI.Button>
-        </UI.Buttons>
-      ) : <UI.Text overline>Runs</UI.Text>,
-      minWidth: 200,
-      pin: 'left' 
-    }];
+    let columns = [
+      {
+        key: 'run',
+        content: !!this.state.selectedRuns?.length ? (
+          <UI.Buttons className="">
+            <UI.Button
+              type="positive"
+              size="tiny"
+              onClick={this.exploreRuns}
+              iconLeft={<UI.Icon i="timeline" />}
+            >
+              Explore
+            </UI.Button>
+            <UI.Button
+              type="secondary"
+              size="tiny"
+              onClick={() => this.resetRuns()}
+            >
+              Reset
+            </UI.Button>
+          </UI.Buttons>
+        ) : (
+          <UI.Text overline>Runs</UI.Text>
+        ),
+        minWidth: 200,
+        pin: 'left',
+      },
+    ];
 
-    Object.keys(this.metricKeys).forEach((metricName, metricKey) => this.metricKeys[metricName].forEach((metricContext, contextKey) => {
-      columns.push({
-        key: `${metricKey}-${contextKey}`,
-        content: (
-          <>
-            <div className='HubExperimentsDashboardScreen__runs__context__cell'>
-              {!!metricContext && Object.keys(metricContext).map(metricContextKey =>
-                <UI.Label
-                  key={metricContextKey}
-                  size='small'
-                  className='HubExperimentsDashboardScreen__runs__context__item'
+    Object.keys(this.metricKeys).forEach((metricName, metricKey) =>
+      this.metricKeys[metricName].forEach((metricContext, contextKey) => {
+        columns.push({
+          key: `${metricKey}-${contextKey}`,
+          content: (
+            <>
+              <div className="HubExperimentsDashboardScreen__runs__context__cell">
+                {!!metricContext &&
+                  Object.keys(metricContext).map((metricContextKey) => (
+                    <UI.Label
+                      key={metricContextKey}
+                      size="small"
+                      className="HubExperimentsDashboardScreen__runs__context__item"
+                    >
+                      {metricContextKey}:{' '}
+                      {formatValue(metricContext[metricContextKey])}
+                    </UI.Label>
+                  ))}
+                {(metricContext === null ||
+                  Object.keys(metricContext).length === 0) && (
+                  <UI.Label
+                    key={0}
+                    size="small"
+                    className="HubExperimentsDashboardScreen__runs__context__item"
+                  >
+                    No context
+                  </UI.Label>
+                )}
+              </div>
+              <div className="Table__header__action__container">
+                <UI.Tooltip tooltip="Explore metric">
+                  <div
+                    className="Table__header__action"
+                    onClick={() =>
+                      this.exploreMetric(metricName, metricContext)
+                    }
+                  >
+                    <UI.Icon
+                      i="timeline"
+                      scale={1.2}
+                      className="HubExperimentsDashboardScreen__runs__context__icon"
+                    />
+                  </div>
+                </UI.Tooltip>
+                <UI.Tooltip
+                  tooltip={
+                    !this.checkAbilityForColoring([
+                      'params',
+                      '__METRICS__',
+                      metricName,
+                      contextKey,
+                      'values',
+                      'last',
+                    ])
+                      ? 'Unable to apply coloring to this column'
+                      : !!this.state.coloredCols[
+                        JSON.stringify([
+                          'params',
+                          '__METRICS__',
+                          metricName,
+                          contextKey,
+                          'values',
+                          'last',
+                        ])
+                      ]
+                        ? 'Remove coloring'
+                        : 'Apply coloring'
+                  }
                 >
-                  {metricContextKey}: {formatValue(metricContext[metricContextKey])}
-                </UI.Label>
-              )}
-              {(metricContext === null || Object.keys(metricContext).length === 0) &&
-                <UI.Label
-                  key={0}
-                  size='small'
-                  className='HubExperimentsDashboardScreen__runs__context__item'
-                >
-                  No context
-                </UI.Label>
-              }
-            </div>
-            <div className='Table__header__action__container'>
-              <UI.Tooltip tooltip='Explore metric'>
-                <div
-                  className='Table__header__action'
-                  onClick={() => this.exploreMetric(metricName, metricContext)}
-                >
-                  <UI.Icon
-                    i='timeline'
-                    scale={1.2}
-                    className='HubExperimentsDashboardScreen__runs__context__icon'
-                  />
-                </div>
-              </UI.Tooltip>
+                  <div
+                    className={classNames({
+                      Table__header__action: true,
+                      active: !!this.state.coloredCols[
+                        JSON.stringify([
+                          'params',
+                          '__METRICS__',
+                          metricName,
+                          contextKey,
+                          'values',
+                          'last',
+                        ])
+                      ],
+                      disabled: !this.checkAbilityForColoring([
+                        'params',
+                        '__METRICS__',
+                        metricName,
+                        contextKey,
+                        'values',
+                        'last',
+                      ]),
+                    })}
+                    onClick={(evt) =>
+                      this.toggleColoring([
+                        'params',
+                        '__METRICS__',
+                        metricName,
+                        contextKey,
+                        'values',
+                        'last',
+                      ])
+                    }
+                  >
+                    <UI.Icon
+                      i="filter_list"
+                      className="Table__header__action__icon"
+                    />
+                  </div>
+                </UI.Tooltip>
+              </div>
+            </>
+          ),
+          topHeader: metricName,
+          minWidth: 180,
+        });
+      }),
+    );
+
+    Object.keys(this.paramKeys).forEach((paramKey) =>
+      this.paramKeys[paramKey].forEach((key, index) => {
+        columns.push({
+          key: `${paramKey}-${key}`,
+          content: (
+            <>
+              <UI.Text small>{key}</UI.Text>
               <UI.Tooltip
                 tooltip={
-                  !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last']) ? (
-                    'Unable to apply coloring to this column'
-                  ) : !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])] ? (
-                    'Remove coloring'
-                  ) : 'Apply coloring'
+                  !this.checkAbilityForColoring(['params', paramKey, key])
+                    ? 'Unable to apply coloring to this column'
+                    : !!this.state.coloredCols[
+                      JSON.stringify(['params', paramKey, key])
+                    ]
+                      ? 'Remove coloring'
+                      : 'Apply coloring'
                 }
               >
                 <div
                   className={classNames({
                     Table__header__action: true,
-                    active: !!this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])],
-                    disabled: !this.checkAbilityForColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])
+                    active: !!this.state.coloredCols[
+                      JSON.stringify(['params', paramKey, key])
+                    ],
+                    disabled: !this.checkAbilityForColoring([
+                      'params',
+                      paramKey,
+                      key,
+                    ]),
                   })}
-                  onClick={evt => this.toggleColoring(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])}
+                  onClick={(evt) =>
+                    this.toggleColoring(['params', paramKey, key])
+                  }
                 >
                   <UI.Icon
-                    i='filter_list'
-                    className='Table__header__action__icon'
+                    i="filter_list"
+                    className="Table__header__action__icon"
                   />
                 </div>
               </UI.Tooltip>
-            </div>
-          </>
-        ),
-        topHeader: metricName,
-        minWidth: 180,
-      });
-    }));
+            </>
+          ),
+          topHeader: paramKey,
+          minWidth: 150,
+        });
+      }),
+    );
 
-    Object.keys(this.paramKeys).forEach(paramKey => this.paramKeys[paramKey].forEach((key, index) => {
-      columns.push({
-        key: `${paramKey}-${key}`,
-        content: (
-          <>
-            <UI.Text small>{key}</UI.Text>
-            <UI.Tooltip
-              tooltip={
-                !this.checkAbilityForColoring(['params', paramKey, key]) ? (
-                  'Unable to apply coloring to this column'
-                ) : !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])] ? (
-                  'Remove coloring'
-                ) : 'Apply coloring'
-              }
-            >
-              <div
-                className={classNames({
-                  Table__header__action: true,
-                  active: !!this.state.coloredCols[JSON.stringify(['params', paramKey, key])],
-                  disabled: !this.checkAbilityForColoring(['params', paramKey, key])
-                })}
-                onClick={evt => this.toggleColoring(['params', paramKey, key])}
-              >
-                <UI.Icon
-                  i='filter_list'
-                  className='Table__header__action__icon'
-                />
-              </div>
-            </UI.Tooltip>
-          </>
-        ),
-        topHeader: paramKey,
-        minWidth: 150
-      })
-    }));
-
-    let data = this.state.runs.map(run => {
+    let data = this.state.runs.map((run) => {
       let item = {
         run: {
           content: (
@@ -572,10 +665,9 @@ class HubExperimentsDashboardScreen extends React.Component {
                 commit_id: run.run_hash,
               })}
             >
-              <UI.Text
-                className='HubExperimentsDashboardScreen__runs__item__name'
-              >
-                {run.experiment_name} | {moment(run.date * 1000).format('HH:mm · D MMM, YY')}
+              <UI.Text className="HubExperimentsDashboardScreen__runs__item__name">
+                {run.experiment_name} |{' '}
+                {moment(run.date * 1000).format('HH:mm · D MMM, YY')}
               </UI.Text>
             </Link>
           ),
@@ -584,46 +676,60 @@ class HubExperimentsDashboardScreen extends React.Component {
             active: this.state.selectedRuns.includes(run.run_hash),
           }),
           props: {
-            onClick: () => this.toggleRun(run.experiment_name, run.run_hash)
-          }
+            onClick: () => this.toggleRun(run.experiment_name, run.run_hash),
+          },
         },
       };
 
-      Object.keys(this.metricKeys).forEach((metricName, metricKey) => this.metricKeys[metricName].forEach((metricContext, contextKey) => {
-        let metricValue = this.getMetricValue(run, metricName, metricContext)
-        let color = this.state.coloredCols[JSON.stringify(['params', '__METRICS__', metricName, contextKey, 'values', 'last'])]?.[metricValue];
-        item[`${metricKey}-${contextKey}`] = {
-          content: formatValue(typeof metricValue === 'number' ? roundValue(metricValue) : undefined),
-          style: {
-            backgroundColor: color,
-            color: !!color && Color(color).isDark() ? '#FFF' : 'var(--grey)'
-          }
-        };
-      }));
+      Object.keys(this.metricKeys).forEach((metricName, metricKey) =>
+        this.metricKeys[metricName].forEach((metricContext, contextKey) => {
+          let metricValue = this.getMetricValue(run, metricName, metricContext);
+          let color = this.state.coloredCols[
+            JSON.stringify([
+              'params',
+              '__METRICS__',
+              metricName,
+              contextKey,
+              'values',
+              'last',
+            ])
+          ]?.[metricValue];
+          item[`${metricKey}-${contextKey}`] = {
+            content: formatValue(
+              typeof metricValue === 'number'
+                ? roundValue(metricValue)
+                : undefined,
+            ),
+            style: {
+              backgroundColor: color,
+              color: !!color && Color(color).isDark() ? '#FFF' : 'var(--grey)',
+            },
+          };
+        }),
+      );
 
-      Object.keys(this.paramKeys).forEach(paramKey => this.paramKeys[paramKey].forEach(key => {
-        let color = this.state.coloredCols[JSON.stringify(['params', paramKey, key])]?.[run.params?.[paramKey]?.[key]];
-        item[`${paramKey}-${key}`] = {
-          content: formatValue(run.params?.[paramKey]?.[key]),
-          style: {
-            backgroundColor: color,
-            color: (!!color && Color(color).isDark() ? '#FFF' : 'var(--grey)'),
-          }
-        };
-      }));
+      Object.keys(this.paramKeys).forEach((paramKey) =>
+        this.paramKeys[paramKey].forEach((key) => {
+          let color = this.state.coloredCols[
+            JSON.stringify(['params', paramKey, key])
+          ]?.[run.params?.[paramKey]?.[key]];
+          item[`${paramKey}-${key}`] = {
+            content: formatValue(run.params?.[paramKey]?.[key]),
+            style: {
+              backgroundColor: color,
+              color: !!color && Color(color).isDark() ? '#FFF' : 'var(--grey)',
+            },
+          };
+        }),
+      );
 
       return item;
     });
 
     return (
-      <div className='HubExperimentsDashboardScreen__runs__content'>
-        <div className='HubExperimentsDashboardScreen__runs__table__wrapper'>
-          <UI.Table
-            name='runs'
-            topHeader
-            columns={columns}
-            data={data}
-          />
+      <div className="HubExperimentsDashboardScreen__runs__content">
+        <div className="HubExperimentsDashboardScreen__runs__table__wrapper">
+          <UI.Table name="runs" topHeader columns={columns} data={data} />
         </div>
       </div>
     );
@@ -637,10 +743,10 @@ class HubExperimentsDashboardScreen extends React.Component {
     }
 
     let value = null;
-    metric.forEach(metricContextItem => {
+    metric.forEach((metricContextItem) => {
       const contextDict = {};
       if (metricContextItem.context !== null) {
-        metricContextItem.context.forEach(contextItem => {
+        metricContextItem.context.forEach((contextItem) => {
           contextDict[contextItem[0]] = contextItem[1];
         });
       }
@@ -654,81 +760,83 @@ class HubExperimentsDashboardScreen extends React.Component {
 
   _renderContent = () => {
     return (
-      <div className='HubExperimentsDashboardScreen' style={{ height: this.state.height }}>
-        <div className='HubExperimentsDashboardScreen__nav'>
+      <div
+        className="HubExperimentsDashboardScreen"
+        style={{ height: this.state.height }}
+      >
+        <div className="HubExperimentsDashboardScreen__nav">
           <SearchBar
             ref={this.searchBarRef}
             initValue={this.initSearchQuery}
-            placeholder={'e.g. `experiment in (nmt_syntok_dynamic, nmt_syntok_greedy) and hparams.lr >= 0.0001`'}
+            placeholder={
+              'e.g. `experiment in (nmt_syntok_dynamic, nmt_syntok_greedy) and hparams.lr >= 0.0001`'
+            }
             onSubmit={(value) => this.handleSearchBarSubmit(value)}
             onClear={(value) => this.handleSearchBarSubmit(value)}
           />
         </div>
-        {this.state.isLoading
-          ? <UI.Text className='' type='grey' center spacingTop>Loading..</UI.Text>
-          : (this.state.runs.length
-            ? (
-              <div className='HubExperimentsDashboardScreen__content'>
-                <div className='HubExperimentsDashboardScreen__experiments'>
-                  {this._renderExperiments()}
-                </div>
-                <div className='HubExperimentsDashboardScreen__runs'>
-                  {this._renderRuns()}
-                </div>
-              </div>
-            )
-            : (
-              <div>
-                {!!this.searchBarRef?.current?.getValue()
-                  ? <UI.Text type='grey' center spacingTop>You haven't recorded experiments matching this query.</UI.Text>
-                  : <UI.Text type='grey' center spacingTop>It's super easy to search Aim experiments.</UI.Text>
-                }
-                <UI.Text type='grey' center>
-                  Lookup
-                  {' '}
-                  <a
-                    className='link'
-                    href='https://github.com/aimhubio/aim#searching-experiments'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                  >
-                    search docs
-                  </a>
-                  {' '}
-                  to learn more.
-                </UI.Text>
-              </div>
-            )
-          )
-        }
+        {this.state.isLoading ? (
+          <UI.Text className="" type="grey" center spacingTop>
+            Loading..
+          </UI.Text>
+        ) : this.state.runs.length ? (
+          <div className="HubExperimentsDashboardScreen__content">
+            <div className="HubExperimentsDashboardScreen__experiments">
+              {this._renderExperiments()}
+            </div>
+            <div className="HubExperimentsDashboardScreen__runs">
+              {this._renderRuns()}
+            </div>
+          </div>
+        ) : (
+          <div>
+            {!!this.searchBarRef?.current?.getValue() ? (
+              <UI.Text type="grey" center spacingTop>
+                You haven't recorded experiments matching this query.
+              </UI.Text>
+            ) : (
+              <UI.Text type="grey" center spacingTop>
+                It's super easy to search Aim experiments.
+              </UI.Text>
+            )}
+            <UI.Text type="grey" center>
+              Lookup{' '}
+              <a
+                className="link"
+                href="https://github.com/aimhubio/aim#searching-experiments"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                search docs
+              </a>{' '}
+              to learn more.
+            </UI.Text>
+          </div>
+        )}
       </div>
     );
   };
 
   render() {
     if (this.state.redirectToPanel) {
-      return <Redirect to={EXPLORE} push />
+      return <Redirect to={EXPLORE} push />;
     }
 
     return (
-      <ProjectWrapper
-        size='fluid'
-        gap={false}
-        ref={this.projectWrapperRef}
-      >
+      <ProjectWrapper size="fluid" gap={false} ref={this.projectWrapperRef}>
         <Helmet>
-          <meta title='' content='' />
+          <meta title="" content="" />
         </Helmet>
 
-        <>
-          {this._renderContent()}
-        </>
+        <>{this._renderContent()}</>
       </ProjectWrapper>
-    )
+    );
   }
 }
 
-export default withRouter(storeUtils.getWithState(
-  classes.HUB_PROJECT_EXPERIMENTS_DASHBOARD_SCREEN,
-  HubExperimentsDashboardScreen
-));
+export default withRouter(
+  storeUtils.getWithState(
+    classes.HUB_PROJECT_EXPERIMENTS_DASHBOARD_SCREEN,
+    HubExperimentsDashboardScreen,
+  ),
+);

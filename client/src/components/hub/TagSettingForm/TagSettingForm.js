@@ -55,17 +55,20 @@ class TagSettingForm extends React.Component {
   };
 
   handleColorClick = (color) => {
-    this.setState((prevState) => ({
-      ...prevState,
-      form: {
-        ...prevState.form,
-        color,
+    this.setState(
+      (prevState) => ({
+        ...prevState,
+        form: {
+          ...prevState.form,
+          color,
+        },
+      }),
+      () => {
+        if (this.props.onUpdate) {
+          this.props.onUpdate();
+        }
       },
-    }), () => {
-      if (this.props.onUpdate) {
-        this.props.onUpdate();
-      }
-    });
+    );
   };
 
   handleInputChange = (e) => {
@@ -83,28 +86,28 @@ class TagSettingForm extends React.Component {
         if (this.props.onUpdate) {
           this.props.onUpdate();
         }
-      }
+      },
     );
   };
 
   render() {
     return (
-      <div className='TagSettingForm'>
-        <div className='TagSettingForm__field__wrapper'>
+      <div className="TagSettingForm">
+        <div className="TagSettingForm__field__wrapper">
           <UI.Input
             onChange={this.handleInputChange}
-            name='name'
+            name="name"
             value={this.state.form.name}
-            label='Tag Name'
+            label="Tag Name"
             placeholder={'best-cnn'}
           />
         </div>
-        <div className='TagSettingForm__field__wrapper'>
+        <div className="TagSettingForm__field__wrapper">
           <UI.Input
             onChange={this.handleInputChange}
-            name='color'
+            name="color"
             value={this.state.form.color}
-            label='Tag Color'
+            label="Tag Color"
             placeholder={'red'}
           />
           <div>

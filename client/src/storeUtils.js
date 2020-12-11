@@ -8,7 +8,6 @@ import * as executablesActions from './actions/hub/executables';
 import * as commitActions from './actions/hub/commit';
 import * as tagsActions from './actions/hub/tags';
 
-
 export function getWithState(caseName, caseClass) {
   let mapState2Props;
   let mapDispatch2Props = {
@@ -79,14 +78,15 @@ export function getWithState(caseName, caseClass) {
     case classes.HUB_MAIN_SCREEN:
       Object.assign(mapDispatch2Props, {
         getCommitsMetricsByQuery: commitActions.getCommitsMetricsByQuery,
-        getCommitsDictionariesByQuery: commitActions.getCommitsDictionariesByQuery,
+        getCommitsDictionariesByQuery:
+          commitActions.getCommitsDictionariesByQuery,
         getRunningExecutables: executablesActions.getRunningExecutables,
         killRunningExecutable: executablesActions.killRunningExecutable,
       });
       break;
     case classes.HUB_PROJECT_SCREEN:
       mapState2Props = (state) => ({
-        ...state.project
+        ...state.project,
       });
       break;
     case classes.HUB_PROJECT_EXECUTABLES:
@@ -166,5 +166,7 @@ export function getWithState(caseName, caseClass) {
       break;
   }
 
-  return connect(mapState2Props, mapDispatch2Props, null, { forwardRef: true })(memo(caseClass));
+  return connect(mapState2Props, mapDispatch2Props, null, { forwardRef: true })(
+    memo(caseClass),
+  );
 }

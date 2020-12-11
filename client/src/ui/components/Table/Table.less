@@ -1,7 +1,7 @@
 @import '../../../vars.less';
 
-@border-color-dark: #CCC;
-@header-cell-bg-color: #EEE;
+@border-color-dark: #ccc;
+@header-cell-bg-color: #eee;
 @cell-height: 30px;
 
 .Table__container {
@@ -11,7 +11,7 @@
   box-sizing: border-box;
   border-radius: var(--border-radius);
   border: 1px solid @border-color-dark;
-  background: #FFF;
+  background: #fff;
 }
 
 .Table {
@@ -50,7 +50,7 @@
 .Table__column {
   display: flex;
   flex-direction: column;
-  background-color: #FFF;
+  background-color: #fff;
   z-index: 0;
   width: stretch;
   width: -webkit-fill-available;
@@ -131,7 +131,7 @@
 
   &:active {
     background-color: var(--primary);
-    color: #FFF;
+    color: #fff;
   }
 }
 
@@ -154,7 +154,7 @@
 
   &.Table__group__header__cell {
     position: relative;
-    background-color: #FAFAFA;
+    background-color: #fafafa;
     border-color: @border-color-dark;
     z-index: 1;
     transition: background-color 0.2s ease-out;
@@ -223,7 +223,8 @@
   user-select: none;
   transition: border-color 110ms ease;
 
-  &:hover, &.active {
+  &:hover,
+  &.active {
     border-color: var(--primary-light);
   }
 
@@ -239,7 +240,7 @@
 
 .Table__group {
   margin-top: 10px;
-  background-color: #FFF;
+  background-color: #fff;
   border-top: 1px solid @border-color-dark;
 
   .Table__cell:last-of-type {

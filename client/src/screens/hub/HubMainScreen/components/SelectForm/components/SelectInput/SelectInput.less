@@ -10,14 +10,15 @@
 }
 
 .SelectInput__input {
-  &:focus, &.active {
+  &:focus,
+  &.active {
     border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
     border-color: var(--primary-light) !important;
   }
 }
 
 .SelectInput__dropdown {
-  background: #FFF;
+  background: #fff;
   box-shadow: var(--box-shadow-lg);
   border: 1px solid var(--primary-light);
   border-top: none;
@@ -58,15 +59,16 @@
 }
 
 .SelectInput__dropdown__group__body {
-  .SelectInput__dropdown__group__item:last-child .SelectInput__dropdown__group__item__name {
-      /* border-width: 2px; */
+  .SelectInput__dropdown__group__item:last-child
+    .SelectInput__dropdown__group__item__name {
+    /* border-width: 2px; */
   }
 }
 
 .SelectInput__dropdown__group__item {
   position: relative;
   cursor: pointer;
-  background-color: #FFF;
+  background-color: #fff;
   transition: background-color 110ms ease;
   color: var(--grey);
 
@@ -127,7 +129,7 @@
   left: -4px;
   height: 8px;
   width: calc(100% + 4px);
-  background-color: #FFF;
+  background-color: #fff;
 }
 
 .SelectInput__dropdown__group__title__label {
@@ -163,14 +165,16 @@
 
   &.param {
     color: var(--color-green);
-    &:before, .SelectInput__dropdown__group__item__icon__letter {
+    &:before,
+    .SelectInput__dropdown__group__item__icon__letter {
       background-color: var(--color-green);
     }
   }
 
   &.metric {
     color: var(--color-blue);
-    &:before, .SelectInput__dropdown__group__item__icon__letter {
+    &:before,
+    .SelectInput__dropdown__group__item__icon__letter {
       background-color: var(--color-blue);
     }
   }
@@ -196,7 +200,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  color: #FFF;
+  color: #fff;
 }
 
 .SelectInput__dropdown__group__item__name {

@@ -19,7 +19,7 @@ function ControlsSidebarExport(props) {
         hoverLine.remove();
       }
       if (hoverCircles.length > 0) {
-        hoverCircles.forEach(hoverCircle => {
+        hoverCircles.forEach((hoverCircle) => {
           hoverCircle.remove();
         });
       }
@@ -62,18 +62,18 @@ function ControlsSidebarExport(props) {
       <div
         className={classNames({
           ControlsSidebar__item: true,
-          disabled: props.disabled
+          disabled: props.disabled,
         })}
         onClick={exportPanel}
       >
-        <UI.Icon i='get_app' scale={1.7} />
+        <UI.Icon i="get_app" scale={1.7} />
       </div>
     </UI.Tooltip>
   );
 }
 
 ControlsSidebarExport.propTypes = {
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
 };
 
 export default ControlsSidebarExport;

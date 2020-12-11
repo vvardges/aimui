@@ -7,7 +7,7 @@ const initialState = {
 export default function reduce(state = initialState, action = {}) {
   switch (action.type) {
     case actionTypes.PROGRESS:
-      return Object.assign({}, state, {loadProgress: action.progress,});
+      return Object.assign({}, state, { loadProgress: action.progress });
 
     case actionTypes.INC_PROGRESS:
       let newValue = state.loadProgress + action.incProgress;
@@ -15,7 +15,7 @@ export default function reduce(state = initialState, action = {}) {
         newValue = 100;
       }
 
-      return Object.assign({}, state, {loadProgress: newValue,});
+      return Object.assign({}, state, { loadProgress: newValue });
 
     default:
       return state;

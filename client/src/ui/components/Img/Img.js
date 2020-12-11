@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-
 function Img({ className, rounded, cover, src }) {
   const imgClassName = classNames({
     Img: true,
@@ -15,7 +14,10 @@ function Img({ className, rounded, cover, src }) {
   });
 
   return (
-    <div className={imgClassName} style={{backgroundImage: `url('${src}')`}}></div>
+    <div
+      className={imgClassName}
+      style={{ backgroundImage: `url('${src}')` }}
+    ></div>
   );
 }
 

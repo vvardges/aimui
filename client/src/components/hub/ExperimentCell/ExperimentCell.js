@@ -6,8 +6,15 @@ import PropTypes from 'prop-types';
 import { classNames } from '../../../utils';
 import UI from '../../../ui';
 
-
-function ExperimentCell({ children, className, type, height, width, footerTitle, footerLabels }) {
+function ExperimentCell({
+  children,
+  className,
+  type,
+  height,
+  width,
+  footerTitle,
+  footerLabels,
+}) {
   const compClassName = classNames({
     ExperimentCell: true,
     [className]: !!className,
@@ -17,20 +24,33 @@ function ExperimentCell({ children, className, type, height, width, footerTitle,
 
   return (
     <div className={compClassName}>
-      <div className='ExperimentCell__body'>
-        {children}
-      </div>
-      <div className='ExperimentCell__footer'>
-        <UI.Text overline bold type='primary'>{type}</UI.Text>
-        <div className='ExperimentCell__footer__labels'>
-          {!!footerLabels && footerLabels.map((label, labelKey) =>
-            <UI.Label className='ExperimentCell__footer__label' key={labelKey}>{label}</UI.Label>
-          )}
+      <div className="ExperimentCell__body">{children}</div>
+      <div className="ExperimentCell__footer">
+        <UI.Text overline bold type="primary">
+          {type}
+        </UI.Text>
+        <div className="ExperimentCell__footer__labels">
+          {!!footerLabels &&
+            footerLabels.map((label, labelKey) => (
+              <UI.Label
+                className="ExperimentCell__footer__label"
+                key={labelKey}
+              >
+                {label}
+              </UI.Label>
+            ))}
         </div>
-        <UI.Text className='ExperimentCell__footer__title' type='grey-dark' caption inline>{footerTitle}</UI.Text>
+        <UI.Text
+          className="ExperimentCell__footer__title"
+          type="grey-dark"
+          caption
+          inline
+        >
+          {footerTitle}
+        </UI.Text>
       </div>
     </div>
-  )
+  );
 }
 
 ExperimentCell.defaultProps = {

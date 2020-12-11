@@ -9,34 +9,40 @@ function GroupConfigPopup(props) {
 
   return (
     <UI.Popover
-      target={(
+      target={
         <UI.Button
-          className='GroupConfigPopup__container-button'
-          size='tiny'
-          type='secondary'
+          className="GroupConfigPopup__container-button"
+          size="tiny"
+          type="secondary"
         >
           Grouped by {configKeys.length} field{configKeys.length > 1 ? 's' : ''}
         </UI.Button>
-      )}
+      }
       tooltip={configKeys.join(', ')}
-      content={(
+      content={
         <>
-          <div className='GroupConfigPopup__header'>
-            <UI.Text overline bold>Group config</UI.Text>
+          <div className="GroupConfigPopup__header">
+            <UI.Text overline bold>
+              Group config
+            </UI.Text>
           </div>
-          <div className='GroupConfigPopup__body'>
+          <div className="GroupConfigPopup__body">
             {configKeys.map((configKey, i) => (
               <Fragment key={configKey}>
-                <div className='GroupConfigPopup__body__row'>
-                  <UI.Text type='grey-darker' small>{configKey}:</UI.Text>
-                  <UI.Text type='grey-dark' small>{formatValue(props.config[configKey])}</UI.Text>
+                <div className="GroupConfigPopup__body__row">
+                  <UI.Text type="grey-darker" small>
+                    {configKey}:
+                  </UI.Text>
+                  <UI.Text type="grey-dark" small>
+                    {formatValue(props.config[configKey])}
+                  </UI.Text>
                 </div>
               </Fragment>
             ))}
           </div>
         </>
-      )}
-      popupClassName='GroupConfigPopup'
+      }
+      popupClassName="GroupConfigPopup"
     />
   );
 }

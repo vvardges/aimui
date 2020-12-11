@@ -11,7 +11,6 @@ import HubWrapper from '../HubWrapper/HubWrapper';
 import * as storeUtils from '../../../storeUtils';
 import { buildUrl, classNames } from '../../../utils';
 
-
 class ProjectWrapper extends React.Component {
   constructor(props) {
     super(props);
@@ -29,16 +28,19 @@ class ProjectWrapper extends React.Component {
   }
 
   componentDidMount() {
-    this.props.getProjectData().then((data) => {
-      this.props.getProjectParams();
-      this.props.incProgress();
-    }).catch(() => {
-      this.setState( {
-        notFound: true,
+    this.props
+      .getProjectData()
+      .then((data) => {
+        this.props.getProjectParams();
+        this.props.incProgress();
+      })
+      .catch(() => {
+        this.setState({
+          notFound: true,
+        });
       });
-    });
 
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       ...prevState,
       isLoading: false,
     }));
@@ -58,8 +60,8 @@ class ProjectWrapper extends React.Component {
     }
 
     return (
-      <nav className='ProjectWrapper__navbar'>
-        {this.props.nav.map((i, iKey) =>
+      <nav className="ProjectWrapper__navbar">
+        {this.props.nav.map((i, iKey) => (
           <div
             className={classNames({
               ProjectWrapper__navbar__item: true,
@@ -71,7 +73,7 @@ class ProjectWrapper extends React.Component {
             {i.icon}
             {i.title}
           </div>
-        )}
+        ))}
       </nav>
     );
   };
@@ -81,17 +83,20 @@ class ProjectWrapper extends React.Component {
 
     return (
       <UI.Container size={this.props.size}>
-        <div className='ProjectWrapper__header__cont'>
-          <div className='ProjectWrapper__breadcrumb'>
-            <UI.Icon className='ProjectWrapper__breadcrumb__icon' i='link' scale={1} spacingRight />
-            <Link
-              to={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD}
-            >
+        <div className="ProjectWrapper__header__cont">
+          <div className="ProjectWrapper__breadcrumb">
+            <UI.Icon
+              className="ProjectWrapper__breadcrumb__icon"
+              i="link"
+              scale={1}
+              spacingRight
+            />
+            <Link to={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD}>
               <UI.Text>{project.path}</UI.Text>
             </Link>
           </div>
         </div>
-        <div className='ProjectWrapper__navbar__wrapper'>
+        <div className="ProjectWrapper__navbar__wrapper">
           {this._renderNav()}
         </div>
       </UI.Container>
@@ -113,25 +118,25 @@ class ProjectWrapper extends React.Component {
         })}
       >
         <div
-          className='ProjectWrapper__header'
+          className="ProjectWrapper__header"
           ref={this.projectWrapperHeaderRef}
         >
           {this._renderHeader()}
         </div>
-        <div className='ProjectWrapper__body'>
-          {!!this.props.navigation &&
-          <div className='ProjectWrapper__navigation'>
-            {React.cloneElement(this.props.navigation, {
-              contentWidth: this.props.contentWidth,
-            })}
-          </div>
-          }
-          <div className='ProjectWrapper__cont' ref={this.contentRef}>
+        <div className="ProjectWrapper__body">
+          {!!this.props.navigation && (
+            <div className="ProjectWrapper__navigation">
+              {React.cloneElement(this.props.navigation, {
+                contentWidth: this.props.contentWidth,
+              })}
+            </div>
+          )}
+          <div className="ProjectWrapper__cont" ref={this.contentRef}>
             {this.props.children}
           </div>
         </div>
       </div>
-    )
+    );
   };
 
   render() {
@@ -140,16 +145,10 @@ class ProjectWrapper extends React.Component {
     }
 
     if (this.state.notFound) {
-      return (
-        <Redirect to={screens.NOT_FOUND} />
-      )
+      return <Redirect to={screens.NOT_FOUND} />;
     }
 
-    return (
-      <HubWrapper gap={false}>
-        {this._renderContent()}
-      </HubWrapper>
-    )
+    return <HubWrapper gap={false}>{this._renderContent()}</HubWrapper>;
   }
 }
 
@@ -170,5 +169,5 @@ ProjectWrapper.propTypes = {
 
 export default storeUtils.getWithState(
   classes.HUB_PROJECT_WRAPPER,
-  ProjectWrapper
+  ProjectWrapper,
 );

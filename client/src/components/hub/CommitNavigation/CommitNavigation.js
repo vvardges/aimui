@@ -10,7 +10,6 @@ import moment from 'moment';
 import UI from '../../../ui';
 import { HUB_PROJECT_EXPERIMENT } from '../../../constants/screens';
 
-
 class CommitNavigation extends Component {
   constructor(props) {
     super(props);
@@ -48,15 +47,16 @@ class CommitNavigation extends Component {
     this.handleResize();
   };
 
-
   handleResize = () => {
     if (!this.props.contentWidth) {
       setTimeout(() => this.handleResize(), 20);
       return;
     }
 
-    const left = (window.innerWidth - this.headerWidth - this.props.contentWidth)
-      / 2 - this.width - this.xMargin;
+    const left =
+      (window.innerWidth - this.headerWidth - this.props.contentWidth) / 2 -
+      this.width -
+      this.xMargin;
 
     if (left >= this.xMargin) {
       this.setLeft(left);
@@ -134,16 +134,19 @@ class CommitNavigation extends Component {
   };
 
   handleShowMoreClick = () => {
-    this.setState({
-      overflowHide: false,
-    }, () => this.init());
+    this.setState(
+      {
+        overflowHide: false,
+      },
+      () => this.init(),
+    );
   };
 
-  commitsCompare = ( a, b ) => {
-    if ( a.date > b.date ){
+  commitsCompare = (a, b) => {
+    if (a.date > b.date) {
       return -1;
     }
-    if ( a.date < b.date ){
+    if (a.date < b.date) {
       return 1;
     }
     return 0;
@@ -159,50 +162,52 @@ class CommitNavigation extends Component {
   _renderCommit = (commit) => {
     return (
       <>
-        <Link to={buildUrl(HUB_PROJECT_EXPERIMENT, {
-          experiment_name: this.props.experimentName,
-          commit_id: commit.hash,
-        })}>
-          <div className='CommitNavigation__item__short'>
-            {!!commit.process && commit.process.finish === false &&
-              <div className='CommitNavigation__item__indicator' />
-            }
+        <Link
+          to={buildUrl(HUB_PROJECT_EXPERIMENT, {
+            experiment_name: this.props.experimentName,
+            commit_id: commit.hash,
+          })}
+        >
+          <div className="CommitNavigation__item__short">
+            {!!commit.process && commit.process.finish === false && (
+              <div className="CommitNavigation__item__indicator" />
+            )}
             <Truncate lines={1}>
               <UI.Text small>{this.formatCommitMsg(commit.message)}</UI.Text>
             </Truncate>
           </div>
-          <div className='CommitNavigation__item__full'>
-            {!!commit.process && commit.process.finish === false &&
-              <div className='CommitNavigation__item__indicator' />
-            }
+          <div className="CommitNavigation__item__full">
+            {!!commit.process && commit.process.finish === false && (
+              <div className="CommitNavigation__item__indicator" />
+            )}
             <Truncate lines={4}>
               <UI.Text small>{this.formatCommitMsg(commit.message)}</UI.Text>
             </Truncate>
           </div>
         </Link>
       </>
-    )
+    );
   };
 
   _renderCommits = () => {
     const maxAmount = 12;
 
     let commits = this.props.commits;
-    commits = commits.filter(c => !c.archived);
+    commits = commits.filter((c) => !c.archived);
     commits.sort(this.commitsCompare);
 
     return (
       <>
-        {commits.slice(0, maxAmount).map((commit, key) =>
+        {commits.slice(0, maxAmount).map((commit, key) => (
           <UI.MenuItem
-            className='CommitNavigation__item'
+            className="CommitNavigation__item"
             key={key}
             active={this.props.active === commit.hash}
           >
             {this._renderCommit(commit)}
           </UI.MenuItem>
-        )}
-        {commits.slice(maxAmount, 50).map((commit, key) =>
+        ))}
+        {commits.slice(maxAmount, 50).map((commit, key) => (
           <UI.MenuItem
             className={classNames({
               CommitNavigation__item: true,
@@ -213,30 +218,44 @@ class CommitNavigation extends Component {
           >
             {this._renderCommit(commit)}
           </UI.MenuItem>
-        )}
-        {commits.length > maxAmount && this.state.overflowHide &&
+        ))}
+        {commits.length > maxAmount && this.state.overflowHide && (
           <UI.Text center spacingTop>
-            <UI.Button size='tiny' type='primary' ghost onClick={() => this.handleShowMoreClick()}>Show more</UI.Button>
+            <UI.Button
+              size="tiny"
+              type="primary"
+              ghost
+              onClick={() => this.handleShowMoreClick()}
+            >
+              Show more
+            </UI.Button>
           </UI.Text>
-        }
+        )}
       </>
-    )
+    );
   };
 
   _renderIndex = () => {
     return (
-      <div key='current' className={classNames({
-        CommitNavigation__current: true,
-        active: this.props.active === 'index',
-      })}>
-        <Link to={buildUrl(HUB_PROJECT_EXPERIMENT, {
-          experiment_name: this.props.experimentName,
-          commit_id: 'index',
-        })}>
-          <UI.Text className='CommitNavigation__current__title' small>Index</UI.Text>
+      <div
+        key="current"
+        className={classNames({
+          CommitNavigation__current: true,
+          active: this.props.active === 'index',
+        })}
+      >
+        <Link
+          to={buildUrl(HUB_PROJECT_EXPERIMENT, {
+            experiment_name: this.props.experimentName,
+            commit_id: 'index',
+          })}
+        >
+          <UI.Text className="CommitNavigation__current__title" small>
+            Index
+          </UI.Text>
         </Link>
       </div>
-    )
+    );
   };
 
   render() {
@@ -246,11 +265,15 @@ class CommitNavigation extends Component {
 
     return (
       <div className={className} ref={this.navbarRef}>
-        {this.props.commits.filter(c => !c.archived).length > 0 &&
-          <UI.Menu className='CommitNavigation__nav' outline={false} header='Runs:'>
+        {this.props.commits.filter((c) => !c.archived).length > 0 && (
+          <UI.Menu
+            className="CommitNavigation__nav"
+            outline={false}
+            header="Runs:"
+          >
             {this._renderCommits()}
           </UI.Menu>
-        }
+        )}
       </div>
     );
   }

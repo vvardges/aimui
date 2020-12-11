@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-
 class Text extends React.Component {
   render() {
     let textClassName = classNames({
@@ -69,7 +68,11 @@ class Text extends React.Component {
     }
 
     if (this.props.small && this.props.inline) {
-      comp = <small {...compProps} style={{display:'inline'}}>{this.props.children}</small>;
+      comp = (
+        <small {...compProps} style={{ display: 'inline' }}>
+          {this.props.children}
+        </small>
+      );
     } else if (this.props.small && !this.props.inline) {
       comp = <small {...compProps}>{this.props.children}</small>;
     } else if (this.props.inline) {
@@ -94,8 +97,16 @@ Text.defaultProps = {
 
 Text.propTypes = {
   type: PropTypes.oneOf([
-    'black', 'white', 'primary', 'positive', 'negative',
-    'grey-dark', 'grey-darker', 'grey', 'grey-light', 'grey-lighter',
+    'black',
+    'white',
+    'primary',
+    'positive',
+    'negative',
+    'grey-dark',
+    'grey-darker',
+    'grey',
+    'grey-light',
+    'grey-lighter',
     'unset',
   ]),
   size: PropTypes.oneOf([0, 1, 2, 3, 4, 5, 6]),

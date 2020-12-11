@@ -12,12 +12,25 @@ import * as screens from '../../../constants/screens';
 import * as storeUtils from '../../../storeUtils';
 import HubMainScreenContext from './HubMainScreenContext/HubMainScreenContext';
 import { setItem, getItem, removeItem } from '../../../services/storage';
-import { USER_LAST_SEARCH_QUERY, AIM_QL_VERSION, USER_LAST_EXPLORE_CONFIG, EXPLORE_PANEL_FLEX_STYLE, EXPLORE_METRIC_HIGHLIGHT_MODE } from '../../../config';
+import {
+  USER_LAST_SEARCH_QUERY,
+  AIM_QL_VERSION,
+  USER_LAST_EXPLORE_CONFIG,
+  EXPLORE_PANEL_FLEX_STYLE,
+  EXPLORE_METRIC_HIGHLIGHT_MODE,
+} from '../../../config';
 import Panel from './components/Panel/Panel';
 import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
 import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
-import { randomStr, deepEqual, buildUrl, getObjectValueByPath, classNames, sortOnKeys } from '../../../utils';
+import {
+  randomStr,
+  deepEqual,
+  buildUrl,
+  getObjectValueByPath,
+  classNames,
+  sortOnKeys,
+} from '../../../utils';
 import * as analytics from '../../../services/analytics';
 import TraceList from './models/TraceList';
 import SelectForm from './components/SelectForm/SelectForm';
@@ -62,7 +75,7 @@ class HubMainScreen extends React.Component {
               zoom: null,
               interpolate: false,
               indicator: true,
-            }
+            },
           },
         },
 
@@ -92,7 +105,7 @@ class HubMainScreen extends React.Component {
           groupByColor: [],
           groupByStyle: [],
           groupByChart: [],
-          aggregated: false
+          aggregated: false,
         },
 
         traceList: null,
@@ -109,7 +122,7 @@ class HubMainScreen extends React.Component {
       'chart.focused.circle',
       'chart.settings.persistent',
       'search',
-      'contextFilter'
+      'contextFilter',
     ];
 
     this.defaultSearchQuery = 'loss';
@@ -154,7 +167,7 @@ class HubMainScreen extends React.Component {
             zoom: null,
             interpolate: false,
             indicator: true,
-          }
+          },
         },
       },
 
@@ -163,44 +176,49 @@ class HubMainScreen extends React.Component {
         groupByColor: [],
         groupByStyle: [],
         groupByChart: [],
-        aggregated: false
+        aggregated: false,
       },
     };
   };
 
   resetControls = () => {
     let initialControls = this.getInitialControls();
-    this.setState(prevState => ({
-      context: {
-        ...prevState.context,
-        chart: {
-          ...prevState.context.chart,
-          settings: initialControls.chart.settings,
+    this.setState(
+      (prevState) => ({
+        context: {
+          ...prevState.context,
+          chart: {
+            ...prevState.context.chart,
+            settings: initialControls.chart.settings,
+          },
+          contextFilter: initialControls.contextFilter,
         },
-        contextFilter: initialControls.contextFilter
-      }
-    }), () => {
-      this.updateURL();
-      this.groupRuns();
-      removeItem(USER_LAST_EXPLORE_CONFIG);
-    });
+      }),
+      () => {
+        this.updateURL();
+        this.groupRuns();
+        removeItem(USER_LAST_EXPLORE_CONFIG);
+      },
+    );
   };
 
   areControlsChanged = () => {
     return !_.isEqual(
       {
         chart: {
-          settings: this.state.context.chart.settings
+          settings: this.state.context.chart.settings,
         },
-        contextFilter: this.state.context.contextFilter
+        contextFilter: this.state.context.contextFilter,
       },
-      this.getInitialControls()
+      this.getInitialControls(),
     );
   };
 
   updateWindowDimensions = () => {
     const wrapper = this.projectWrapperRef.current;
-    const projectWrapperHeight = wrapper ? this.projectWrapperRef.current.getHeaderHeight() : null;
+    const projectWrapperHeight = wrapper
+      ? this.projectWrapperRef.current.getHeaderHeight()
+      : null;
     if (projectWrapperHeight !== null) {
       this.setState({
         height: window.innerHeight - projectWrapperHeight - 1,
@@ -230,7 +248,10 @@ class HubMainScreen extends React.Component {
   resizeHandler = (evt) => {
     window.requestAnimationFrame(() => {
       const searchBarHeight = this.searchBarRef.current.clientHeight;
-      const height = evt.clientY - this.projectWrapperRef.current.getHeaderHeight() - searchBarHeight;
+      const height =
+        evt.clientY -
+        this.projectWrapperRef.current.getHeaderHeight() -
+        searchBarHeight;
       const flex = height / (this.state.height - searchBarHeight);
       this.setState({ panelFlex: flex });
     });
@@ -253,12 +274,17 @@ class HubMainScreen extends React.Component {
 
       this.setContextFilter(state.contextFilter, this.groupRuns, false, false);
       if (!deepEqual(state.search, this.state.context.search)) {
-        this.setSearchState(state.search, () => {
-          this.searchByQuery(false).then(() => {
-            this.setChartFocusedState(state.chart.focused, null, false);
-            this.setChartSettingsState(state.chart.settings, null, false);
-          });
-        }, false, false);
+        this.setSearchState(
+          state.search,
+          () => {
+            this.searchByQuery(false).then(() => {
+              this.setChartFocusedState(state.chart.focused, null, false);
+              this.setChartSettingsState(state.chart.settings, null, false);
+            });
+          },
+          false,
+          false,
+        );
       } else {
         this.setChartFocusedState(state.chart.focused, null, false);
         this.setChartSettingsState(state.chart.settings, null, false);
@@ -269,11 +295,17 @@ class HubMainScreen extends React.Component {
         setSearchQuery = this.defaultSearchQuery;
       }
       if (!!setSearchQuery) {
-        this.setSearchState({
-          query: setSearchQuery,
-        }, () => {
-          this.searchByQuery().then(() => { });
-        }, true, false, true);
+        this.setSearchState(
+          {
+            query: setSearchQuery,
+          },
+          () => {
+            this.searchByQuery().then(() => {});
+          },
+          true,
+          false,
+          true,
+        );
       }
     }
   };
@@ -305,8 +337,13 @@ class HubMainScreen extends React.Component {
     }
 
     for (let p in this.URLStateParams) {
-      if (!deepEqual(getObjectValueByPath(state, this.URLStateParams[p]) ?? {},
-        getObjectValueByPath(this.state.context, this.URLStateParams[p]) ?? {})) {
+      if (
+        !deepEqual(
+          getObjectValueByPath(state, this.URLStateParams[p]) ?? {},
+          getObjectValueByPath(this.state.context, this.URLStateParams[p]) ??
+            {},
+        )
+      ) {
         return true;
       }
     }
@@ -331,7 +368,7 @@ class HubMainScreen extends React.Component {
         query: this.state.context.search?.query,
         v: this.state.context.search?.v,
       },
-      contextFilter: this.state.context.contextFilter
+      contextFilter: this.state.context.contextFilter,
     };
 
     const URL = this.stateToURL(state);
@@ -357,7 +394,7 @@ class HubMainScreen extends React.Component {
   reRenderChart = () => {
     const key = randomStr(16);
     console.log(`Rerender: Panel(${key})`);
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       ...prevState,
       context: {
         ...prevState.context,
@@ -367,40 +404,52 @@ class HubMainScreen extends React.Component {
   };
 
   setRunsState = (runsState, callback = null) => {
-    const chartTypeChanged = runsState.hasOwnProperty('meta') 
-      && runsState.data !== null
-      && this.state.context.runs.data !== null
-      && runsState.meta?.params_selected !== this.state.context.runs.meta?.params_selected;
+    const chartTypeChanged =
+      runsState.hasOwnProperty('meta') &&
+      runsState.data !== null &&
+      this.state.context.runs.data !== null &&
+      runsState.meta?.params_selected !==
+        this.state.context.runs.meta?.params_selected;
 
-    this.setState(prevState => ({
-      ...prevState,
-      context: {
-        ...prevState.context,
-        runs: {
-          ...prevState.context.runs,
-          ...runsState,
+    this.setState(
+      (prevState) => ({
+        ...prevState,
+        context: {
+          ...prevState.context,
+          runs: {
+            ...prevState.context.runs,
+            ...runsState,
+          },
+          ...(chartTypeChanged && {
+            contextFilter: {
+              groupByColor: [],
+              groupByStyle: [],
+              groupByChart: [],
+              aggregated: false,
+            },
+          }),
         },
-        ...chartTypeChanged && {
-          contextFilter: {
-            groupByColor: [],
-            groupByStyle: [],
-            groupByChart: [],
-            aggregated: false
-          }
+      }),
+      () => {
+        if (callback !== null) {
+          callback();
         }
-      },
-    }), () => {
-      if (callback !== null) {
-        callback();
-      }
 
-      // FIXME
-      this.groupRuns();
-    });
+        // FIXME
+        this.groupRuns();
+      },
+    );
   };
 
-  setSearchState = (searchState, callback = null, updateURL = true, resetZoom = true, replaceURL = false) => {
-    const searchQuery = searchState.query || prevState.context.searchInput?.value;
+  setSearchState = (
+    searchState,
+    callback = null,
+    updateURL = true,
+    resetZoom = true,
+    replaceURL = false,
+  ) => {
+    const searchQuery =
+      searchState.query || prevState.context.searchInput?.value;
 
     let selectInput = '';
     let selectConditionInput = '';
@@ -415,48 +464,55 @@ class HubMainScreen extends React.Component {
       }
     }
 
-    this.setState(prevState => ({
-      ...prevState,
-      context: {
-        ...prevState.context,
-        search: {
-          ...prevState.context.search ?? {},
-          ...searchState,
+    this.setState(
+      (prevState) => ({
+        ...prevState,
+        context: {
+          ...prevState.context,
+          search: {
+            ...(prevState.context.search ?? {}),
+            ...searchState,
+          },
+          searchInput: {
+            ...(prevState.context.searchInput ?? {}),
+            value: searchQuery,
+            selectInput,
+            selectConditionInput,
+          },
+          ...(resetZoom && {
+            chart: {
+              ...(prevState.context.chart ?? {}),
+              settings: {
+                ...(prevState.context.chart?.settings ?? {}),
+                zoomMode: false,
+                zoomHistory: [],
+                persistent: {
+                  ...(prevState.context.chart?.settings?.persistent ?? {}),
+                  zoom: null,
+                },
+              },
+            },
+          }),
         },
-        searchInput: {
-          ...prevState.context.searchInput ?? {},
-          value: searchQuery,
-          selectInput,
-          selectConditionInput,
-        },
-        ...resetZoom && {
-          chart: {
-            ...prevState.context.chart ?? {},
-            settings: {
-              ...prevState.context.chart?.settings ?? {},
-              zoomMode: false,
-              zoomHistory: [],
-              persistent: {
-                ...prevState.context.chart?.settings?.persistent ?? {},
-                zoom: null
-              }
-            }
-          }
+      }),
+      () => {
+        if (callback !== null) {
+          callback();
+        }
+        if (updateURL) {
+          this.updateURL(replaceURL);
         }
       },
-    }), () => {
-      if (callback !== null) {
-        callback();
-      }
-      if (updateURL) {
-        this.updateURL(replaceURL);
-      }
-    });
+    );
   };
 
   setSearchInputState = (searchInput) => {
-    this.setState(prevState => {
-      const searchInputState = Object.assign({}, prevState.context.searchInput, searchInput);
+    this.setState((prevState) => {
+      const searchInputState = Object.assign(
+        {},
+        prevState.context.searchInput,
+        searchInput,
+      );
       const contextState = Object.assign({}, prevState.context, {
         searchInput: searchInputState,
       });
@@ -467,76 +523,107 @@ class HubMainScreen extends React.Component {
   };
 
   setChartState = (chartState, callback = null, updateURL) => {
-    this.setState(prevState => {
-      const chartStateUpd = Object.assign({}, prevState.context.chart, chartState);
-      const contextState = Object.assign({}, prevState.context, {
-        chart: chartStateUpd,
-      });
-      return Object.assign({}, prevState, {
-        context: contextState,
-      });
-    }, () => {
-      this.reRenderChart();
-      if (callback !== null) {
-        callback();
-      }
-      if (updateURL) {
-        this.updateURL();
-      }
-    });
+    this.setState(
+      (prevState) => {
+        const chartStateUpd = Object.assign(
+          {},
+          prevState.context.chart,
+          chartState,
+        );
+        const contextState = Object.assign({}, prevState.context, {
+          chart: chartStateUpd,
+        });
+        return Object.assign({}, prevState, {
+          context: contextState,
+        });
+      },
+      () => {
+        this.reRenderChart();
+        if (callback !== null) {
+          callback();
+        }
+        if (updateURL) {
+          this.updateURL();
+        }
+      },
+    );
   };
 
-  setChartSettingsState = (settingsState, callback = null, updateURL = true) => {
+  setChartSettingsState = (
+    settingsState,
+    callback = null,
+    updateURL = true,
+  ) => {
     if (settingsState.hasOwnProperty('highlightMode')) {
       setItem(EXPLORE_METRIC_HIGHLIGHT_MODE, settingsState.highlightMode);
     }
-    this.setChartState({
-      // FIXME: Not pass current state value
-      settings: {
-        ...this.state.context.chart?.settings ?? {},
-        ...settingsState,
+    this.setChartState(
+      {
+        // FIXME: Not pass current state value
+        settings: {
+          ...(this.state.context.chart?.settings ?? {}),
+          ...settingsState,
+        },
       },
-    }, callback, updateURL);
+      callback,
+      updateURL,
+    );
   };
 
   setChartFocusedState = (focusedState, callback = null, updateURL = true) => {
-    this.setChartState({
-      // FIXME: Not pass current state value
-      focused: {
-        ...this.state.context.chart?.focused ?? {},
-        ...focusedState,
+    this.setChartState(
+      {
+        // FIXME: Not pass current state value
+        focused: {
+          ...(this.state.context.chart?.focused ?? {}),
+          ...focusedState,
+        },
       },
-    }, callback, updateURL);
+      callback,
+      updateURL,
+    );
   };
 
   getRunsByQuery = (query) => {
     return new Promise((resolve, reject) => {
       this.setRunsState({ isLoading: true });
-      this.props.getCommitsMetricsByQuery(query).then((data) => {
-        this.setRunsState({
-          isEmpty: !data.runs || data.runs.length === 0,
-          data: data.runs,
-          params: data.params,
-          aggMetrics: data.agg_metrics,
-          meta: data.meta,
-        }, resolve);
-      }).catch((err) => {
-        // console.log(err, err.status);
-        this.setRunsState({
-          isEmpty: true,
-          data: null,
-          params: [],
-          aggMetrics: {},
-          meta: null,
-        }, resolve);
-      }).finally(() => {
-        this.setRunsState({ isLoading: false });
-      });
+      this.props
+        .getCommitsMetricsByQuery(query)
+        .then((data) => {
+          this.setRunsState(
+            {
+              isEmpty: !data.runs || data.runs.length === 0,
+              data: data.runs,
+              params: data.params,
+              aggMetrics: data.agg_metrics,
+              meta: data.meta,
+            },
+            resolve,
+          );
+        })
+        .catch((err) => {
+          // console.log(err, err.status);
+          this.setRunsState(
+            {
+              isEmpty: true,
+              data: null,
+              params: [],
+              aggMetrics: {},
+              meta: null,
+            },
+            resolve,
+          );
+        })
+        .finally(() => {
+          this.setRunsState({ isLoading: false });
+        });
     });
   };
 
   getTFSummaryScalars = () => {
-    return this.state.context.runs.data.filter(m => m.source !== undefined && m.source === 'tf_summary');
+    return this.state.context.runs.data.filter(
+      (m) => m.source !== undefined && m.source === 'tf_summary',
+    );
   };
 
   isAimRun = (run) => {
@@ -557,22 +644,26 @@ class HubMainScreen extends React.Component {
 
   getCountOfSelectedParams = (includeMetrics = true) => {
     const countOfParams = this.state.context?.runs?.params?.length;
-    const countOfMetrics = Object.keys(this.state.context?.runs?.aggMetrics ?? {}).map(k => this.state.context.runs.aggMetrics[k].length);
+    const countOfMetrics = Object.keys(
+      this.state.context?.runs?.aggMetrics ?? {},
+    ).map((k) => this.state.context.runs.aggMetrics[k].length);
 
-    return includeMetrics ? countOfParams + countOfMetrics.reduce((a, b) => a + b, 0) : countOfParams;
+    return includeMetrics
+      ? countOfParams + countOfMetrics.reduce((a, b) => a + b, 0)
+      : countOfParams;
   };
 
   getAllParamsPaths = () => {
     const paramPaths = {};
 
-    this.state.context.traceList?.traces.forEach(trace => {
-      trace.series.forEach(series => {
-        Object.keys(series?.run.params).forEach(paramKey => {
+    this.state.context.traceList?.traces.forEach((trace) => {
+      trace.series.forEach((series) => {
+        Object.keys(series?.run.params).forEach((paramKey) => {
           if (paramKey !== '__METRICS__') {
             if (!paramPaths.hasOwnProperty(paramKey)) {
               paramPaths[paramKey] = [];
             }
-            Object.keys(series?.run.params[paramKey]).forEach(key => {
+            Object.keys(series?.run.params[paramKey]).forEach((key) => {
               if (!paramPaths[paramKey].includes(key)) {
                 paramPaths[paramKey].push(key);
               }
@@ -588,13 +679,13 @@ class HubMainScreen extends React.Component {
   getAllContextKeys = () => {
     const contextKeys = [];
 
-    this.state.context.traceList?.traces.forEach(trace => {
-      trace.series.forEach(series => {
-        series.metric?.traces?.forEach(metricTrace => {
+    this.state.context.traceList?.traces.forEach((trace) => {
+      trace.series.forEach((series) => {
+        series.metric?.traces?.forEach((metricTrace) => {
           if (!!metricTrace.context) {
             contextKeys.push(...Object.keys(metricTrace.context));
           }
-        })
+        });
       });
     });
 
@@ -602,30 +693,34 @@ class HubMainScreen extends React.Component {
   };
 
   searchByQuery = (updateURL) => {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const query = this.state.context.search?.query.trim();
-      this.setChartFocusedState({
-        step: null,
-        metric: {
-          runHash: null,
-          metricName: null,
-          traceContext: null,
-        },
-        circle: {
-          active: false,
-          runHash: null,
-          metricName: null,
-          traceContext: null,
+      this.setChartFocusedState(
+        {
           step: null,
+          metric: {
+            runHash: null,
+            metricName: null,
+            traceContext: null,
+          },
+          circle: {
+            active: false,
+            runHash: null,
+            metricName: null,
+            traceContext: null,
+            step: null,
+          },
         },
-      }, () => {
-        Promise.all([
-          this.getRunsByQuery(query),
-          // Get other properties
-        ]).then(() => {
-          resolve();
-        });
-      }, updateURL);
+        () => {
+          Promise.all([
+            this.getRunsByQuery(query),
+            // Get other properties
+          ]).then(() => {
+            resolve();
+          });
+        },
+        updateURL,
+      );
     });
   };
 
@@ -641,9 +736,9 @@ class HubMainScreen extends React.Component {
     }
 
     const grouping = {
-      'color': this.state.context.contextFilter.groupByColor,
-      'stroke': this.state.context.contextFilter.groupByStyle,
-      'chart': this.state.context.contextFilter.groupByChart,
+      color: this.state.context.contextFilter.groupByColor,
+      stroke: this.state.context.contextFilter.groupByStyle,
+      chart: this.state.context.contextFilter.groupByChart,
     };
 
     const traceList = new TraceList(grouping);
@@ -660,19 +755,21 @@ class HubMainScreen extends React.Component {
       }
     });
 
-    this.setState(prevState => ({
-      ...prevState,
-      context: {
-        ...prevState.context,
-        traceList,
+    this.setState(
+      (prevState) => ({
+        ...prevState,
+        context: {
+          ...prevState.context,
+          traceList,
+        },
+      }),
+      () => {
+        this.reRenderChart();
       },
-    }), () => {
-      this.reRenderChart();
-    });
+    );
   };
 
-  updateGroupsProperties = () => {
-  };
+  updateGroupsProperties = () => {};
 
   getMetricByHash = (hash) => {
     for (let i in this.state.context.runs.data) {
@@ -705,7 +802,10 @@ class HubMainScreen extends React.Component {
   };
 
   getTraceData = (runHash, metricName, context) => {
-    let matchedRun = null, matchedMetric = null, matchedTrace = null, data = null;
+    let matchedRun = null,
+      matchedMetric = null,
+      matchedTrace = null,
+      data = null;
 
     this.state.context.runs.data.forEach((run) => {
       if (matchedTrace !== null) return;
@@ -713,7 +813,11 @@ class HubMainScreen extends React.Component {
         if (matchedTrace !== null) return;
         metric.traces.forEach((trace) => {
           if (matchedTrace !== null) return;
-          if (run.run_hash === runHash && metric.name === metricName && this.contextToHash(trace.context) === context) {
+          if (
+            run.run_hash === runHash &&
+            metric.name === metricName &&
+            this.contextToHash(trace.context) === context
+          ) {
             if (matchedTrace === null) {
               matchedRun = run;
               matchedMetric = metric;
@@ -743,11 +847,17 @@ class HubMainScreen extends React.Component {
       traceContext = this.contextToHash(traceContext);
     }
     // FIXME: Change encoding algorithm to base58
-    return btoa(`${runHash}/${metricName}/${traceContext}`).replace(/[\=\+\/]/g, '');
+    return btoa(`${runHash}/${metricName}/${traceContext}`).replace(
+      /[\=\+\/]/g,
+      '',
+    );
   };
 
   hashToColor = (hash, alpha = 1) => {
-    const index = hash.split('').map((c, i) => hash.charCodeAt(i)).reduce((a, b) => a + b);
+    const index = hash
+      .split('')
+      .map((c, i) => hash.charCodeAt(i))
+      .reduce((a, b) => a + b);
     const color = Color(COLORS[index % COLORS.length]).alpha(alpha);
     return color.toString();
   };
@@ -758,47 +868,55 @@ class HubMainScreen extends React.Component {
     return this.hashToColor(hash, alpha);
   };
 
-  setContextFilter = (contextFilter, callback = this.groupRuns, updateURL = true, resetZoom = true) => {
-    this.setState(prevState => {
-      let stateUpdate = {
-        ...prevState,
-        context: {
-          ...prevState.context,
-          contextFilter: {
-            ...prevState.context.contextFilter,
-            ...contextFilter,
+  setContextFilter = (
+    contextFilter,
+    callback = this.groupRuns,
+    updateURL = true,
+    resetZoom = true,
+  ) => {
+    this.setState(
+      (prevState) => {
+        let stateUpdate = {
+          ...prevState,
+          context: {
+            ...prevState.context,
+            contextFilter: {
+              ...prevState.context.contextFilter,
+              ...contextFilter,
+            },
           },
-        },
-      };
+        };
 
-      if (resetZoom && contextFilter.hasOwnProperty('groupByChart')) {
-        stateUpdate.context.chart.settings.persistent.zoom = null;
-        stateUpdate.context.chart.settings.zoomMode = false;
-        stateUpdate.context.chart.settings.zoomHistory = [];
-      }
+        if (resetZoom && contextFilter.hasOwnProperty('groupByChart')) {
+          stateUpdate.context.chart.settings.persistent.zoom = null;
+          stateUpdate.context.chart.settings.zoomMode = false;
+          stateUpdate.context.chart.settings.zoomHistory = [];
+        }
 
-      if (
-        stateUpdate.context.contextFilter.aggregated &&
-        stateUpdate.context.contextFilter.groupByColor.length === 0 &&
-        stateUpdate.context.contextFilter.groupByStyle.length === 0 &&
-        stateUpdate.context.contextFilter.groupByChart.length === 0
-      ) {
-        stateUpdate.context.contextFilter.aggregated = false;
-      }
+        if (
+          stateUpdate.context.contextFilter.aggregated &&
+          stateUpdate.context.contextFilter.groupByColor.length === 0 &&
+          stateUpdate.context.contextFilter.groupByStyle.length === 0 &&
+          stateUpdate.context.contextFilter.groupByChart.length === 0
+        ) {
+          stateUpdate.context.contextFilter.aggregated = false;
+        }
 
-      if (contextFilter.hasOwnProperty('groupByColor')) {
-        stateUpdate.context.chart.settings.persistent.indicator = false;
-      }
+        if (contextFilter.hasOwnProperty('groupByColor')) {
+          stateUpdate.context.chart.settings.persistent.indicator = false;
+        }
 
-      return stateUpdate;
-    }, () => {
-      if (callback !== null) {
-        callback();
-      }
-      if (updateURL) {
-        this.updateURL();
-      }
-    });
+        return stateUpdate;
+      },
+      () => {
+        if (callback !== null) {
+          callback();
+        }
+        if (updateURL) {
+          this.updateURL();
+        }
+      },
+    );
   };
 
   _renderBody = () => {
@@ -809,19 +927,17 @@ class HubMainScreen extends React.Component {
     const searchBarHeight = 75;
 
     return (
-      <div 
-        className='HubMainScreen__grid__body'
+      <div
+        className="HubMainScreen__grid__body"
         style={{
           height: `${this.state.height - searchBarHeight}px`,
         }}
       >
-        <div
-          className='HubMainScreen__grid__body__blocks'
-        >
+        <div className="HubMainScreen__grid__body__blocks">
           <div
-            className='HubMainScreen__grid__panel'
+            className="HubMainScreen__grid__panel"
             style={{
-              flex: this.state.panelFlex
+              flex: this.state.panelFlex,
             }}
           >
             <Panel
@@ -832,22 +948,22 @@ class HubMainScreen extends React.Component {
             />
           </div>
           <div
-            className='HubMainScreen__grid__resize__area'
+            className="HubMainScreen__grid__resize__area"
             onMouseDown={this.startResize}
           >
             <div
               className={classNames({
                 HubMainScreen__grid__resize__handler: true,
-                active: this.state.resizing
+                active: this.state.resizing,
               })}
             >
-              <div className='HubMainScreen__grid__resize__icon' />
+              <div className="HubMainScreen__grid__resize__icon" />
             </div>
           </div>
           <div
-            className='HubMainScreen__grid__context'
+            className="HubMainScreen__grid__context"
             style={{
-              flex: 1 - this.state.panelFlex
+              flex: 1 - this.state.panelFlex,
             }}
           >
             <ContextBox
@@ -856,7 +972,7 @@ class HubMainScreen extends React.Component {
             />
           </div>
         </div>
-        <div className='HubMainScreen__grid__controls'>
+        <div className="HubMainScreen__grid__controls">
           <ControlsSidebar />
         </div>
       </div>
@@ -865,13 +981,9 @@ class HubMainScreen extends React.Component {
 
   render() {
     return (
-      <ProjectWrapper
-        size='fluid'
-        gap={false}
-        ref={this.projectWrapperRef}
-      >
+      <ProjectWrapper size="fluid" gap={false} ref={this.projectWrapperRef}>
         <Helmet>
-          <meta title='' content='' />
+          <meta title="" content="" />
         </Helmet>
 
         <HubMainScreenContext.Provider
@@ -909,14 +1021,17 @@ class HubMainScreen extends React.Component {
           }}
         >
           <div
-            className='HubMainScreen__wrapper'
+            className="HubMainScreen__wrapper"
             style={{
               height: this.state.height,
             }}
           >
-            <div className='HubMainScreen'>
-              <div className='HubMainScreen__grid'>
-                <div className='HubMainScreen__grid__search-filter' ref={this.searchBarRef}>
+            <div className="HubMainScreen">
+              <div className="HubMainScreen__grid">
+                <div
+                  className="HubMainScreen__grid__search-filter"
+                  ref={this.searchBarRef}
+                >
                   <SelectForm />
                 </div>
                 {this._renderBody()}
@@ -925,11 +1040,10 @@ class HubMainScreen extends React.Component {
           </div>
         </HubMainScreenContext.Provider>
       </ProjectWrapper>
-    )
+    );
   }
 }
 
-export default withRouter(storeUtils.getWithState(
-  classes.HUB_MAIN_SCREEN,
-  HubMainScreen
-));
+export default withRouter(
+  storeUtils.getWithState(classes.HUB_MAIN_SCREEN, HubMainScreen),
+);

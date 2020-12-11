@@ -13,8 +13,10 @@ function GroupByColor(props) {
   let popupRef = useRef();
   let dropdownRef = useRef();
   let {
-    getAllParamsPaths, getAllContextKeys,
-    enableExploreMetricsMode, enableExploreParamsMode,
+    getAllParamsPaths,
+    getAllContextKeys,
+    enableExploreMetricsMode,
+    enableExploreParamsMode,
   } = useContext(HubMainScreenContext);
 
   useEffect(() => {
@@ -24,29 +26,40 @@ function GroupByColor(props) {
     }
   }, [opened]);
 
-  const options = getGroupingOptions(getAllParamsPaths(), getAllContextKeys(), enableExploreMetricsMode(), enableExploreParamsMode());
+  const options = getGroupingOptions(
+    getAllParamsPaths(),
+    getAllContextKeys(),
+    enableExploreMetricsMode(),
+    enableExploreParamsMode(),
+  );
 
   return (
-    <div className='ControlsSidebar__item__wrapper'>
+    <div className="ControlsSidebar__item__wrapper">
       <UI.Tooltip
-        tooltip={groupByColor.length > 0 ? `Colored by ${groupByColor.length} field${groupByColor.length > 1 ? 's' : ''}` : 'Group by color'}
+        tooltip={
+          groupByColor.length > 0
+            ? `Colored by ${groupByColor.length} field${
+                groupByColor.length > 1 ? 's' : ''
+              }`
+            : 'Group by color'
+        }
       >
         <div
           className={classNames({
             ControlsSidebar__item: true,
-            active: opened || groupByColor.length > 0
+            active: opened || groupByColor.length > 0,
           })}
-          onClick={evt => setOpened(!opened)}
+          onClick={(evt) => setOpened(!opened)}
         >
-          <UI.Icon i='palette' scale={1.7} />
+          <UI.Icon i="palette" scale={1.7} />
         </div>
       </UI.Tooltip>
       {opened && (
         <div
-          className='ControlsSidebar__item__popup'
+          className="ControlsSidebar__item__popup"
           tabIndex={0}
           ref={popupRef}
-          onBlur={evt => {
+          onBlur={(evt) => {
             const currentTarget = evt.currentTarget;
             if (opened) {
               window.setTimeout(() => {
@@ -57,25 +70,32 @@ function GroupByColor(props) {
             }
           }}
         >
-          <div className='ControlsSidebar__item__popup__header'>
-            <UI.Text overline bold>Select fields for grouping by color</UI.Text>
+          <div className="ControlsSidebar__item__popup__header">
+            <UI.Text overline bold>
+              Select fields for grouping by color
+            </UI.Text>
           </div>
-          <div className='ControlsSidebar__item__popup__body'>
+          <div className="ControlsSidebar__item__popup__body">
             <UI.Dropdown
-              className='ControlsSidebar__groupingDropdown'
+              className="ControlsSidebar__groupingDropdown"
               options={options}
               inline={false}
-              formatGroupLabel={data => (
+              formatGroupLabel={(data) => (
                 <div>
                   <span>{data.label}</span>
                   <span>{data.options.length}</span>
                 </div>
               )}
-              defaultValue={groupByColor.map(field => ({ value: field, label: field.startsWith('params.') ? field.substring(7) : field }))}
+              defaultValue={groupByColor.map((field) => ({
+                value: field,
+                label: field.startsWith('params.') ? field.substring(7) : field,
+              }))}
               ref={dropdownRef}
               onChange={(data) => {
                 const selectedItems = !!data ? data : [];
-                const values = selectedItems.filter(i => !!i.value).map(i => i.value.trim());
+                const values = selectedItems
+                  .filter((i) => !!i.value)
+                  .map((i) => i.value.trim());
                 setContextFilter({
                   groupByColor: values,
                 });
@@ -92,7 +112,7 @@ function GroupByColor(props) {
 
 GroupByColor.propTypes = {
   groupByColor: PropTypes.arrayOf(PropTypes.string),
-  setContextFilter: PropTypes.func
+  setContextFilter: PropTypes.func,
 };
 
 export default GroupByColor;
