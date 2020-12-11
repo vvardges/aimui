@@ -24,7 +24,6 @@ const popUpDefaultHeight = 200;
 const circleRadius = 4;
 const circleActiveRadius = 7;
 
-
 class PanelChart extends Component {
   constructor(props) {
     super(props);
@@ -392,6 +391,15 @@ class PanelChart extends Component {
 
   drawLines = () => {
     const handleLineClick = this.handleLineClick;
+    const focused = this.context.chart.focused;
+    const highlightMode = this.context.chart.settings.highlightMode
+
+    const focusedMetric = focused.metric;
+    const focusedCircle = focused.circle;
+    const focusedLineAttr = focusedCircle.runHash !== null ? focusedCircle : focusedMetric;
+
+    const noSelectedRun = highlightMode === 'default' || !focusedLineAttr.runHash;
+
     this.context.traceList?.traces.forEach(traceModel => traceModel.series.forEach(series => {
       if (traceModel.chart !== this.props.index) {
         return;
@@ -402,8 +410,13 @@ class PanelChart extends Component {
         .y(d => this.state.chart.yScale(d[0]))
         .curve(d3[this.curves[this.context.chart.settings.persistent.interpolate ? 5 : 0]]);
 
+      const traceContext = this.context.contextToHash(trace?.context);
+
+      const active = highlightMode === 'run' && focusedLineAttr.runHash === run.run_hash;
+      const current = focusedLineAttr.runHash === run.run_hash && focusedLineAttr.metricName === metric?.name && focusedLineAttr.traceContext === traceContext;
+
       this.lines.append('path')
-        .attr('class', 'PlotLine PlotLine-' + this.context.traceToHash(run.run_hash, metric?.name, trace?.context))
+        .attr('class', `PlotLine PlotLine-${run.run_hash} PlotLine-${this.context.traceToHash(run.run_hash, metric?.name, traceContext)} ${noSelectedRun ? '' : 'inactive'} ${active ? 'active' : ''} ${current ? 'current' : ''}`)
         .datum(trace?.data ?? [])
         .attr('d', line)
         .attr('clip-path', 'url(#lines-rect-clip-' + this.props.index + ')')
@@ -412,7 +425,7 @@ class PanelChart extends Component {
         .style('stroke-dasharray', this.context.traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0')
         .attr('data-run-hash', run.run_hash)
         .attr('data-metric-name', metric?.name)
-        .attr('data-trace-context-hash', this.context.contextToHash(trace?.context))
+        .attr('data-trace-context-hash', traceContext)
         .on('click', function () {
           handleLineClick(d3.mouse(this));
         });
@@ -440,8 +453,10 @@ class PanelChart extends Component {
         .y1((d, i) => this.state.chart.yScale(traceMin.data[i][0]))
         .curve(d3[this.curves[this.context.chart.settings.persistent.interpolate ? 5 : 0]]);
 
+      const active = traceModel.hasRun(focusedLineAttr?.runHash, focusedLineAttr?.metricName, focusedLineAttr?.traceContext);
+
       this.lines.append('path')
-        .attr('class', 'PlotArea' + (traceModel.hasRun(focusedLineAttr?.runHash, focusedLineAttr?.metricName, focusedLineAttr?.traceContext) ? ' active' : ''))
+        .attr('class', `PlotArea ${active ? 'active' : ''}`)
         .datum(traceMax.data)
         .attr('d', area)
         .attr('clip-path', 'url(#lines-rect-clip-' + this.props.index + ')')
@@ -456,7 +471,7 @@ class PanelChart extends Component {
         .curve(d3[this.curves[this.context.chart.settings.persistent.interpolate ? 5 : 0]]);
 
       this.lines.append('path')
-        .attr('class', 'PlotLine ' + 'PlotLine-' + this.context.traceToHash(runAvg.run_hash, metricAvg.name, traceAvg.context))
+        .attr('class', `PlotLine PlotLine-${this.context.traceToHash(runAvg.run_hash, metricAvg.name, traceAvg.context)} ${active ? 'current' : ''}`)
         .datum(traceAvg.data)
         .attr('d', line)
         .attr('clip-path', 'url(#lines-rect-clip-' + this.props.index + ')')
@@ -515,7 +530,7 @@ class PanelChart extends Component {
         const y = this.state.chart.yScale(val);
         const traceContext = this.context.contextToHash(trace?.context);
         const circle = this.circles.append('circle')
-          .attr('class', 'HoverCircle HoverCircle-' + step + ' HoverCircle-' + this.context.traceToHash(run.run_hash, metric?.name, traceContext))
+          .attr('class', `HoverCircle HoverCircle-${step} HoverCircle-${this.context.traceToHash(run.run_hash, metric?.name, traceContext)}`)
           .attr('cx', x)
           .attr('cy', y)
           .attr('r', circleRadius)
@@ -542,13 +557,10 @@ class PanelChart extends Component {
     }));
 
     // Apply focused state to line and circle
-    if (focusedCircle.runHash !== null || focusedMetric.runHash !== null) {
-      const focusedLineAttr = focusedCircle.runHash !== null ? focusedCircle : focusedMetric;
-      this.plot
-        .selectAll(`.PlotLine-${this.context.traceToHash(focusedLineAttr.runHash, focusedLineAttr.metricName, focusedLineAttr.traceContext)}`)
-        .classed('active', true);
-    }
     if (focusedMetric.runHash !== null) {
+      this.plot.selectAll('.PlotLine.current').moveToFront();
+      this.plot.selectAll('.PlotArea.active').moveToFront();
+      
       this.circles.selectAll('*.focus').moveToFront();
       this.circles.selectAll(`.HoverCircle-${this.context.traceToHash(focusedMetric.runHash, focusedMetric.metricName, focusedMetric.traceContext)}`)
         .classed('active', true)

@@ -1,10 +1,17 @@
 # Changelog
 
+## 1.2.3 Dec 11 2020
+- Pin table column to the left when grouping by a corresponding field is applied (roubkar)
+- Disable highlight mode control if metrics are aggregated (gorarakelyan)
+- Apply color, stroke and grid pattern repeating logic (roubkar)
+- Add ability to select mode for highlighting metric plots (roubkar)
+- Enable autocomplete for grouping (gorarakelyan)
+
 ## 1.2.2 Nov 27 2020
 - Add circles and interactions on parallel coordinates plot (roubkar)
 - Add parallel coordinates plot chart number and config as title (roubkar)
 - Recover grouping popup focus in controls sidebar after button click (roubkar)
-- Make context table row heights lower (gorarakelyan)
+- Make context table rows smaller (gorarakelyan)
 - Display run information inside chart popup (gorarakelyan)
 - Add ability to pin table columns (roubkar)
 - Hide select suggestions popup on ESC (gorarakelyan)

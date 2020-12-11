@@ -3,15 +3,19 @@
 .Panel {
   height: 100%;
   width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  /* justify-content: space-between; */
   box-sizing: border-box;
-  /* TODO: overflow: scroll if number of charts > 9 */
-  overflow: hidden;
+  overflow: auto;
   border-radius: var(--border-radius);
   background-color: #FFF;
   border: 1px solid var(--grey-light-xx);
+}
+
+.Panel__chart-container {
+  height: auto;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
 }
 
 .Panel__chart-wrapper {

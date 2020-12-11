@@ -9,8 +9,8 @@ import { TABLE_COLUMNS } from '../../../config';
 function Table(props) {
   let columnsOrder = JSON.parse(getItem(TABLE_COLUMNS))?.[props.name];
 
-  let [leftCols, setLeftCols] = useState(props.columns.filter(col => columnsOrder?.left.includes(col.key) ?? col.pin === 'left').map(col => col.key));
-  let [rightCols, setRightCols] = useState(props.columns.filter(col => columnsOrder?.right.includes(col.key) ?? col.pin === 'right').map(col => col.key));
+  let [leftCols, setLeftCols] = useState(props.columns.filter(col => props.forcePinnedColumns?.hasOwnProperty(col.key) ? !!props.forcePinnedColumns?.[col.key] : (columnsOrder?.left?.includes(col.key) ?? col.pin === 'left')).map(col => col.key));
+  let [rightCols, setRightCols] = useState(props.columns.filter(col => columnsOrder?.right?.includes(col.key) ?? col.pin === 'right').map(col => col.key));
   let [expanded, setExpanded] = useState({});
 
   let prevExpanded = useRef(props.expanded);
@@ -27,12 +27,30 @@ function Table(props) {
   useEffect(() => {
     let tableColumns = JSON.parse(getItem(TABLE_COLUMNS)) ?? {};
     let middleCols = middlePane.map(col => col.key)
+    if (!tableColumns.hasOwnProperty(props.name)) {
+      tableColumns[props.name] = {
+        left: leftCols,
+        middle: middleCols,
+        right: rightCols,
+        forcePinned: props.forcePinnedColumns
+      };
+    } else {
+      tableColumns[props.name].forcePinned = props.forcePinnedColumns;
+    }
+    setLeftCols(props.columns.filter(col => props.forcePinnedColumns?.hasOwnProperty(col.key) ? !!props.forcePinnedColumns?.[col.key] : (tableColumns[props.name].left?.includes(col.key) ?? col.pin === 'left')).map(col => col.key));
+    setItem(TABLE_COLUMNS, JSON.stringify(tableColumns));
+  }, [props.forcePinnedColumns]);
+
+  useEffect(() => {
+    let tableColumns = JSON.parse(getItem(TABLE_COLUMNS)) ?? {};
+    let middleCols = middlePane.map(col => col.key)
 
     if (!tableColumns.hasOwnProperty(props.name)) {
       tableColumns[props.name] = {
         left: leftCols,
         middle: middleCols,
         right: rightCols,
+        forcePinned: props.forcePinnedColumns,
       };
     } else {
       leftCols.forEach(col => {
@@ -111,25 +129,33 @@ function Table(props) {
   }
 
   function togglePin(colKey, side) {
-    if (side === 'left') {
-      if (leftCols.includes(colKey)) {
-        setLeftCols(leftCols.filter(key => key !== colKey));
-      } else {
-        if (rightCols.includes(colKey)) {
-          setRightCols(rightCols.filter(key => key !== colKey));
-        }
-        setLeftCols([...leftCols, colKey]);
-      }
-    } else {
-      if (rightCols.includes(colKey)) {
-        setRightCols(rightCols.filter(key => key !== colKey));
-      } else {
+    if (props?.forcePinnedColumns?.hasOwnProperty(colKey)) {
+      props.updateForcePinnedColumns(colKey, null);
+    }
+    setTimeout(() => {
+      if (side === 'left') {
         if (leftCols.includes(colKey)) {
           setLeftCols(leftCols.filter(key => key !== colKey));
+        } else {
+          if (rightCols.includes(colKey)) {
+            setRightCols(rightCols.filter(key => key !== colKey));
+          }
+          setLeftCols([...leftCols, colKey]);
         }
-        setRightCols([...rightCols, colKey]);
+      } else if (side === 'right') {
+        if (rightCols.includes(colKey)) {
+          setRightCols(rightCols.filter(key => key !== colKey));
+        } else {
+          if (leftCols.includes(colKey)) {
+            setLeftCols(leftCols.filter(key => key !== colKey));
+          }
+          setRightCols([...rightCols, colKey]);
+        }
+      } else {
+        setLeftCols(leftCols.filter(key => key !== colKey));
+        setRightCols(rightCols.filter(key => key !== colKey));
       }
-    }
+    });
   }
 
   return (
@@ -275,7 +301,7 @@ function Column({
               <div
                 className='Table__action__popup__item'
                 onClick={evt => {
-                  togglePin(col.key, pinnedTo);
+                  togglePin(col.key, null);
                   setOpened(false);
                 }}
               >

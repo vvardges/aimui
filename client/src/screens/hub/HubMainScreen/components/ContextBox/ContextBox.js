@@ -14,10 +14,61 @@ import UI from '../../../../../ui';
 import { HUB_PROJECT_EXPERIMENT } from '../../../../../constants/screens';
 import ColumnGroupPopup from './components/ColumnGroupPopup/ColumnGroupPopup';
 import GroupConfigPopup from './components/GroupConfigPopup/GroupConfigPopup';
+import { getItem } from '../../../../../services/storage';
+import { TABLE_COLUMNS } from '../../../../../config';
 
 class ContextBox extends Component {
   paramKeys = {};
   theadRef = createRef();
+
+  constructor(props) {
+    super(props);
+    const tableColumns = JSON.parse(getItem(TABLE_COLUMNS))?.context
+    this.state = {
+      forcePinnedColumns: tableColumns?.forcePinned
+    };
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const groupingFields = this.context.traceList?.groupingFields;
+    const forcePinnedColumns = {
+      ...this.state.forcePinnedColumns
+    };
+    for (let colKey in forcePinnedColumns) {
+      if (groupingFields && !groupingFields.includes(colKey)) {
+        forcePinnedColumns[colKey] = forcePinnedColumns[colKey] === null ? undefined : false;
+      }
+    }
+    groupingFields?.forEach(field => {
+      if (forcePinnedColumns?.[field] !== null) {
+        forcePinnedColumns[field] = true;
+      }
+    });
+    const newForcePinnedColumns = JSON.parse(JSON.stringify(forcePinnedColumns))
+    if (!_.isEqual(newForcePinnedColumns, this.state.forcePinnedColumns)) {
+      this.setState({
+        forcePinnedColumns: newForcePinnedColumns
+      });
+    }
+  }
+
+  updateForcePinnedColumns = (columnKey, value) => {
+    this.setState(state => {
+      let newCols = {};
+      for (let key in state.forcePinnedColumns) {
+        if (key === columnKey) {
+          if (value !== undefined) {
+            newCols[key] = value;
+          }
+        } else {
+          newCols[key] = state.forcePinnedColumns[key];
+        }
+      }
+      return {
+        forcePinnedColumns: newCols
+      };
+    });
+  };
 
   handleRowMove = (runHash, metricName, traceContext) => {
     const focusedCircle = this.context.chart.focused.circle;
@@ -181,11 +232,20 @@ class ContextBox extends Component {
           </>
         ),
         topHeader: 'Metrics',
-        pin: 'left'
+        pin: 'left',
       },
       {
         key: 'run',
-        content: <UI.Text overline>Run</UI.Text>,
+        content: (
+          <>
+            <UI.Text overline>Run</UI.Text>
+            <ColumnGroupPopup
+              param='run.hash'
+              contextFilter={this.context.contextFilter}
+              setContextFilter={this.context.setContextFilter}
+            />
+          </>
+        ),
         topHeader: 'Metrics',
         pin: 'left'
       },
@@ -341,7 +401,7 @@ class ContextBox extends Component {
         let style = {};
         if (active) {
           style = {
-            backgroundColor: colorObj.alpha(0.15).hsl().string(),
+            backgroundColor: colorObj.lightness(85).hsl().string(),
           };
         }
 
@@ -351,7 +411,7 @@ class ContextBox extends Component {
         };
 
         function removeColumnHighlighting(evt) {
-          evt.currentTarget.parentNode.style.backgroundColor = 'inherit';
+          evt.currentTarget.parentNode.style.backgroundColor = '#FFF';
         }
 
         const row = {
@@ -505,7 +565,10 @@ class ContextBox extends Component {
               data: {
                 experiment: {
                   content: (
-                    <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
+                    <UI.Label
+                      className='ContextBox__table__item-aggregated_label'
+                      color={this.context.traceList?.grouping?.color?.length > 0 ? color : '#3b5896'}
+                    >
                       {traceModel.experiments.length === 1 ? traceModel.experiments[0] : (
                         <UI.Tooltip tooltip={traceModel.experiments.join(', ')}>
                           {traceModel.experiments.length} experiments
@@ -517,7 +580,10 @@ class ContextBox extends Component {
                 },
                 run: {
                   content: (
-                    <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
+                    <UI.Label
+                      className='ContextBox__table__item-aggregated_label'
+                      color={this.context.traceList?.grouping?.color?.length > 0 ? color : '#3b5896'}
+                    >
                       {runsCount} run{runsCount > 1 ? 's' : ''}
                     </UI.Label>
                   ),
@@ -525,7 +591,10 @@ class ContextBox extends Component {
                 },
                 metric: {
                   content: (
-                    <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
+                    <UI.Label
+                      className='ContextBox__table__item-aggregated_label'
+                      color={this.context.traceList?.grouping?.color?.length > 0 ? color : '#3b5896'}
+                    >
                       {traceModel.metrics.length === 1 ? traceModel.metrics[0] : (
                         <UI.Tooltip tooltip={traceModel.metrics.join(', ')}>
                           {traceModel.metrics.length} metrics
@@ -541,7 +610,10 @@ class ContextBox extends Component {
                       {
                         !!traceModel.contexts?.length
                           ? (
-                            <UI.Label className='ContextBox__table__item-aggregated_label' color={color}>
+                            <UI.Label 
+                              className='ContextBox__table__item-aggregated_label'
+                              color={this.context.traceList?.grouping?.color?.length > 0 ? color : '#3b5896'}
+                            >
                               {traceModel.contexts[0]}
                             </UI.Label>
                           )
@@ -551,7 +623,7 @@ class ContextBox extends Component {
                         traceModel.contexts?.length > 1 && (
                           <UI.Label
                             className='ContextBox__table__item-aggregated_label'
-                            color={color}
+                            color={this.context.traceList?.grouping?.color?.length > 0 ? color : '#3b5896'}
                             rounded
                           >
                             <UI.Tooltip tooltip={traceModel.contexts.slice(1).join(', ')}>
@@ -661,7 +733,7 @@ class ContextBox extends Component {
                         <svg
                           className='ContextBox__table__group-indicator__stroke'
                           style={{
-                            borderColor: traceModel.color
+                            borderColor: this.context.traceList?.grouping?.color?.length > 0 ? traceModel.color : '#3b5896'
                           }}
                         >
                           <line
@@ -788,6 +860,8 @@ class ContextBox extends Component {
             data={data}
             groups={this.context.traceList?.traces.length > 1}
             expanded={expanded}
+            forcePinnedColumns={this.state.forcePinnedColumns}
+            updateForcePinnedColumns={this.updateForcePinnedColumns}
           />
         </div>
       </div>

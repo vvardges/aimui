@@ -190,10 +190,8 @@ export default class TraceList {
       });
       if (color === null) {
         // Get new color
-        const usedColors = this.groupingConfigMap.colors.map(colorGroup => colorGroup.value);
-        const availableColors = _.difference(COLORS, usedColors);
-        // TODO: Generate new colors
-        color = availableColors.length ? availableColors[0] : COLORS[0];
+        const groupsCount = this.groupingConfigMap.colors.map(colorGroup => colorGroup.value)?.length;
+        color = COLORS[groupsCount % COLORS.length];
         this.groupingConfigMap.colors.push({
           config: modelColorConfig,
           value: color,
@@ -217,10 +215,8 @@ export default class TraceList {
       });
       if (stroke === null) {
         // Get new stroke style
-        const usedStrokes = this.groupingConfigMap.strokes.map(strGroup => strGroup.value);
-        const availableStrokes = _.difference(STROKES, usedStrokes);
-        // TODO: Generate new strokes
-        stroke = availableStrokes.length ? availableStrokes[0] : STROKES[0];
+        const groupsCount = this.groupingConfigMap.strokes.map(strGroup => strGroup.value)?.length;
+        stroke = STROKES[groupsCount % STROKES.length];
         this.groupingConfigMap.strokes.push({
           config: modelStrokeConfig,
           value: stroke,
@@ -244,8 +240,9 @@ export default class TraceList {
         }
       });
       if (chart === null) {
-        const chartsIndices = this.groupingConfigMap.charts.map(chartGroup => chartGroup.value).sort();
-        chart = chartsIndices.length ? chartsIndices[chartsIndices.length-1] + 1 : 0;
+        chart = this.groupingConfigMap.charts.length ?
+          Math.max(...this.groupingConfigMap.charts.map(chartGroup => chartGroup.value)) + 1
+          : 0;
         this.groupingConfigMap.charts.push({
           config: modelChartConfig,
           value: chart,

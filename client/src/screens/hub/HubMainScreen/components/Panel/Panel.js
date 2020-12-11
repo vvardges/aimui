@@ -20,6 +20,7 @@ class Panel extends Component {
     this.panelRef = React.createRef();
 
     this.gridSize = 12;
+    this.templateGridCellsMaxCount = 9;
     this.templates = {
       // Grid size: 12x12; Cell props: [w, h]
       0: [],
@@ -81,8 +82,7 @@ class Panel extends Component {
     const widthFr = (this.state.width - 1) / this.gridSize;
     const heightFr = (this.state.height - 1) / this.gridSize;
 
-    // FIXME: Display all the charts
-    const indices = this.props.indices.slice(0, Math.min(9, this.props.indices.length));
+    const indices = this.props.indices;
 
     return (
       <>
@@ -91,8 +91,8 @@ class Panel extends Component {
             className='Panel__chart-wrapper'
             key={i}
             style={{
-              width: this.templates[indices.length][i][0] * widthFr,
-              height: this.templates[indices.length][i][1] * heightFr,
+              width: (indices.length >= this.templateGridCellsMaxCount ? 4 : this.templates[indices.length][i][0]) * widthFr,
+              height: (indices.length >= this.templateGridCellsMaxCount ? 4 : this.templates[indices.length][i][1]) * heightFr,
             }}
           >
             {this.context.runs?.meta?.params_selected
@@ -143,9 +143,13 @@ class Panel extends Component {
                 </>
               )
               : (
-                this.context.enableExploreParamsMode() && this.context.getCountOfSelectedParams() === 1
-                  ? this._renderPanelMsg(<UI.Text type='grey' center>Please select at least two params to see parallel coordinates plot displayed.</UI.Text>)
-                  : this._renderCharts()
+                <div className='Panel__chart-container'>
+                  {
+                    this.context.enableExploreParamsMode() && this.context.getCountOfSelectedParams() === 1
+                      ? this._renderPanelMsg(<UI.Text type='grey' center>Please select at least two params to see parallel coordinates plot displayed.</UI.Text>)
+                      : this._renderCharts()
+                  }
+                </div>
               )
             }
           </>

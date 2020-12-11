@@ -14,6 +14,7 @@ import ControlsSidebarZoom from './components/ControlsSidebarZoom/ControlsSideba
 import ToggleParPlotIndicator from './components/ToggleParPlotIndicator/ToggleParPlotIndicator';
 import ControlsSidebarToggleInterpolation from './components/ControlsSidebarToggleInterpolation/ControlsSidebarToggleInterpolation';
 import ControlsSidebarExport from './components/ControlsSidebarExport/ControlsSidebarExport';
+import ControlsSidebarHighlightMode from './components/ControlsSidebarHighlightMode/ControlsSidebarHighlightMode';
 
 function ControlsSidebar() {
   let {
@@ -69,6 +70,11 @@ function ControlsSidebar() {
                 />
                 <ControlsSidebarToggleInterpolation
                   disabled={runs.isLoading || runs.isEmpty}
+                  settings={chart.settings}
+                  setChartSettingsState={setChartSettingsState}
+                />
+                <ControlsSidebarHighlightMode
+                  disabled={contextFilter.aggregated === true}
                   settings={chart.settings}
                   setChartSettingsState={setChartSettingsState}
                 />

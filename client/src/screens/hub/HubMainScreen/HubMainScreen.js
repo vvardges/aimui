@@ -12,12 +12,12 @@ import * as screens from '../../../constants/screens';
 import * as storeUtils from '../../../storeUtils';
 import HubMainScreenContext from './HubMainScreenContext/HubMainScreenContext';
 import { setItem, getItem, removeItem } from '../../../services/storage';
-import { USER_LAST_SEARCH_QUERY, AIM_QL_VERSION, USER_LAST_EXPLORE_CONFIG, EXPLORE_PANEL_FLEX_STYLE } from '../../../config';
+import { USER_LAST_SEARCH_QUERY, AIM_QL_VERSION, USER_LAST_EXPLORE_CONFIG, EXPLORE_PANEL_FLEX_STYLE, EXPLORE_METRIC_HIGHLIGHT_MODE } from '../../../config';
 import Panel from './components/Panel/Panel';
 import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
 import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
-import { randomStr, deepEqual, buildUrl, getObjectValueByPath, classNames } from '../../../utils';
+import { randomStr, deepEqual, buildUrl, getObjectValueByPath, classNames, sortOnKeys } from '../../../utils';
 import * as analytics from '../../../services/analytics';
 import TraceList from './models/TraceList';
 import SelectForm from './components/SelectForm/SelectForm';
@@ -56,6 +56,7 @@ class HubMainScreen extends React.Component {
             yScale: 0,
             zoomMode: false,
             zoomHistory: [],
+            highlightMode: getItem(EXPLORE_METRIC_HIGHLIGHT_MODE) ?? 'run',
             persistent: {
               displayOutliers: false,
               zoom: null,
@@ -366,6 +367,11 @@ class HubMainScreen extends React.Component {
   };
 
   setRunsState = (runsState, callback = null) => {
+    const chartTypeChanged = runsState.hasOwnProperty('meta') 
+      && runsState.data !== null
+      && this.state.context.runs.data !== null
+      && runsState.meta?.params_selected !== this.state.context.runs.meta?.params_selected;
+
     this.setState(prevState => ({
       ...prevState,
       context: {
@@ -374,6 +380,14 @@ class HubMainScreen extends React.Component {
           ...prevState.context.runs,
           ...runsState,
         },
+        ...chartTypeChanged && {
+          contextFilter: {
+            groupByColor: [],
+            groupByStyle: [],
+            groupByChart: [],
+            aggregated: false
+          }
+        }
       },
     }), () => {
       if (callback !== null) {
@@ -473,6 +487,9 @@ class HubMainScreen extends React.Component {
   };
 
   setChartSettingsState = (settingsState, callback = null, updateURL = true) => {
+    if (settingsState.hasOwnProperty('highlightMode')) {
+      setItem(EXPLORE_METRIC_HIGHLIGHT_MODE, settingsState.highlightMode);
+    }
     this.setChartState({
       // FIXME: Not pass current state value
       settings: {
@@ -543,6 +560,45 @@ class HubMainScreen extends React.Component {
     const countOfMetrics = Object.keys(this.state.context?.runs?.aggMetrics ?? {}).map(k => this.state.context.runs.aggMetrics[k].length);
 
     return includeMetrics ? countOfParams + countOfMetrics.reduce((a, b) => a + b, 0) : countOfParams;
+  };
+
+  getAllParamsPaths = () => {
+    const paramPaths = {};
+
+    this.state.context.traceList?.traces.forEach(trace => {
+      trace.series.forEach(series => {
+        Object.keys(series?.run.params).forEach(paramKey => {
+          if (paramKey !== '__METRICS__') {
+            if (!paramPaths.hasOwnProperty(paramKey)) {
+              paramPaths[paramKey] = [];
+            }
+            Object.keys(series?.run.params[paramKey]).forEach(key => {
+              if (!paramPaths[paramKey].includes(key)) {
+                paramPaths[paramKey].push(key);
+              }
+            });
+          }
+        });
+      });
+    });
+
+    return sortOnKeys(paramPaths);
+  };
+
+  getAllContextKeys = () => {
+    const contextKeys = [];
+
+    this.state.context.traceList?.traces.forEach(trace => {
+      trace.series.forEach(series => {
+        series.metric?.traces?.forEach(metricTrace => {
+          if (!!metricTrace.context) {
+            contextKeys.push(...Object.keys(metricTrace.context));
+          }
+        })
+      });
+    });
+
+    return _.uniq(contextKeys).sort();
   };
 
   searchByQuery = (updateURL) => {
@@ -745,12 +801,6 @@ class HubMainScreen extends React.Component {
     });
   };
 
-  handleSearchBarSubmit = (value = '') => {
-    this.setSearchState({ query: value }, () => {
-      this.searchByQuery(true).then();
-    }, false);
-  };
-
   _renderBody = () => {
     const panelIndicesLen = this.state.context.traceList?.getChartsNumber();
     const panelIndices = [...Array(panelIndicesLen).keys()];
@@ -842,6 +892,8 @@ class HubMainScreen extends React.Component {
             getMetricStepDataByStepIdx: this.getMetricStepDataByStepIdx,
             getTFSummaryScalars: this.getTFSummaryScalars,
             getMetricColor: this.getMetricColor,
+            getAllParamsPaths: this.getAllParamsPaths,
+            getAllContextKeys: this.getAllContextKeys,
             isAimRun: this.isAimRun,
             isTFSummaryScalar: this.isTFSummaryScalar,
             hashToColor: this.hashToColor,

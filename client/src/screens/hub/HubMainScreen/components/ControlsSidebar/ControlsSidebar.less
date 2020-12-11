@@ -104,6 +104,18 @@
 
 .ControlsSidebar__item__popup__body {
   padding: var(--component-spacing-xs) var(--component-spacing-sm);
+
+  .ControlsSidebar__groupingDropdown {
+    .Dropdown__menu {
+      position: relative !important;
+      box-shadow: none !important;
+      margin-bottom: 0 !important;
+    }
+
+    .Dropdown__menu-list {
+      max-height: 200px !important;
+    }
+  }
 }
 
 .ControlsSidebar__item__popup__body__field {
@@ -125,6 +137,7 @@
   display: flex;
   align-items: center;
   color: var(--primary);
+  transition: background-color 110ms ease;
 
   &:last-of-type {
     border-bottom: none;
@@ -134,9 +147,9 @@
     background-color: var(--grey-bg);
   }
 
-  &.active {
-    background-color: var(--primary);
-    color: #FFF;
+  &:active, &.active {
+    background-color: var(--primary-lighter);
+    color: var(--primary-dark);
   }
 
   &.text_normalized {

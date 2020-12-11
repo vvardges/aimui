@@ -8,6 +8,13 @@
 
 .Dropdown__menu {
   z-index: 3!important;
+  box-shadow: var(--box-shadow) !important;
+  border: var(--border) !important;
+}
+
+.Dropdown__menu-notice {
+  font-size: var(--text-md) !important;
+  font-weight: normal !important;
 }
 
 .Dropdown__control {
@@ -17,6 +24,7 @@
   box-shadow: none !important;
   outline: none !important;
   transition: all 110ms ease;
+  font-size: var(--text-sm) !important;
 
   &:hover {
     border-color: var(--grey-light-xx) !important;
@@ -31,4 +39,12 @@
 
 .Dropdown__option {
   transition: all 110ms ease;
+}
+
+.Dropdown__multi-value__remove {
+  &:hover {
+    background-color: var(--grey-light-xx) !important;
+    color: var(--grey-darker) !important;
+    cursor: pointer;
+  }
 }

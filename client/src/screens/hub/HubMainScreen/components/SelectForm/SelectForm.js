@@ -94,7 +94,7 @@ class SelectForm extends Component {
                 })}
                 onClick={evt => this.props.history.goBack()}
               >
-                <UI.Icon i='arrow_back_ios' />
+                <UI.Icon i='arrow_back_ios_new' />
               </div>
             </div>
             <div className='SelectForm__action__wrapper'>
