@@ -23,10 +23,6 @@ class ProjectWrapper extends React.Component {
     this.projectWrapperHeaderRef = React.createRef();
   }
 
-  componentWillMount() {
-    this.props.updateProjectData();
-  }
-
   componentDidMount() {
     this.props
       .getProjectData()

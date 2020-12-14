@@ -29,10 +29,8 @@ class App extends React.Component {
     this.state = {
       isLoading: false,
     };
-  }
 
-  componentWillMount() {
-    this.props.resetProgress();
+    props.resetProgress();
   }
 
   componentDidMount() {

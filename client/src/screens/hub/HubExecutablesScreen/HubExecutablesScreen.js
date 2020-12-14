@@ -25,10 +25,8 @@ class HubExecutablesScreen extends React.Component {
     };
 
     this.runningExecsRef = React.createRef();
-  }
 
-  componentWillMount() {
-    this.props.resetProgress();
+    props.resetProgress();
   }
 
   componentDidMount() {

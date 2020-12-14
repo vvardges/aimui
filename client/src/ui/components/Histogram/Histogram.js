@@ -75,9 +75,6 @@ class Histogram extends Component {
     };
 
     this.chartRef = React.createRef();
-  }
-
-  componentWillMount() {
     histogram(Highcharts);
   }
 

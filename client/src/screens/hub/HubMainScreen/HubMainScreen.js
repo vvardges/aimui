@@ -126,10 +126,8 @@ class HubMainScreen extends React.Component {
     ];
 
     this.defaultSearchQuery = 'loss';
-  }
 
-  componentWillMount() {
-    this.props.resetProgress();
+    props.resetProgress();
   }
 
   componentDidMount() {

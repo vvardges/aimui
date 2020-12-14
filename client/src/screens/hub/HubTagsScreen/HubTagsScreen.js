@@ -20,10 +20,8 @@ class HubTagsScreen extends React.Component {
       isLoading: true,
       tags: [],
     };
-  }
 
-  componentWillMount() {
-    this.props.resetProgress();
+    props.resetProgress();
   }
 
   componentDidMount() {

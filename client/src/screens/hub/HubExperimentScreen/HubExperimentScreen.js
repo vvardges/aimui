@@ -52,10 +52,8 @@ class HubExperimentScreen extends React.Component {
     this.contentRef = React.createRef();
 
     this.WSClient = null;
-  }
 
-  componentWillMount() {
-    this.props.resetProgress();
+    props.resetProgress();
   }
 
   componentDidMount() {
@@ -71,8 +69,8 @@ class HubExperimentScreen extends React.Component {
     window.removeEventListener('resize', this.handleResize);
   }
 
-  componentWillReceiveProps(props) {
-    if (props.location.pathname !== this.props.location.pathname) {
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.location.pathname !== this.props.location.pathname) {
       this.WSClose();
       this.setState(
         {

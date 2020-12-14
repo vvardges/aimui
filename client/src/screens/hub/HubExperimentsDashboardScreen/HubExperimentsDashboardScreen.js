@@ -53,9 +53,12 @@ class HubExperimentsDashboardScreen extends React.Component {
     this.searchBarRef = React.createRef();
     this.projectWrapperRef = React.createRef();
     this.topHeaderRef = React.createRef();
+
+    props.resetProgress();
   }
 
   componentDidMount() {
+    this.props.completeProgress();
     this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions);
 

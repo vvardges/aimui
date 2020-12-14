@@ -3,9 +3,7 @@ import * as storeUtils from '../storeUtils';
 import * as classes from '../constants/classes';
 
 class BaseWrapper extends React.Component {
-  componentWillMount() {
-    this.loadBarFocus = true;
-  }
+  loadBarFocus = true;
 
   componentDidMount() {
     window.scrollTo(0, 0);

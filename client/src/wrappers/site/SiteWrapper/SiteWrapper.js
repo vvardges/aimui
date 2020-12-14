@@ -7,8 +7,10 @@ import * as classes from '../../../constants/classes';
 import * as storeUtils from '../../../storeUtils';
 
 class SiteWrapper extends React.Component {
-  componentWillMount() {
-    this.props.resetProgress();
+  constructor(props) {
+    super(props);
+
+    props.resetProgress();
   }
 
   componentDidMount() {
