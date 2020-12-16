@@ -55,14 +55,20 @@
 
   &.rounded {
     border-radius: 5em;
+
+    .Label__icon--left {
+      padding: 0 0.35em 0 0.6em;
+      border-radius: 5em 0 0 5em;
+    }
+
+    .Label__icon--right {
+      padding: 0 0.6em 0 0.35em;
+      border-radius: 0 5em 5em 0;
+    }
   }
 
   &.outline {
     background-color: #fff;
-
-    .Label__icon {
-      border-radius: 5em 0 0 5em;
-    }
 
     .Label__content {
       padding-left: 1em;
@@ -75,10 +81,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid;
+  border: 0 solid;
   border-color: inherit;
-  padding: 0 0.35em 0 0.6em;
-  border-radius: var(--border-radius) 0 0 var(--border-radius);
+  padding: 0 0.35em;
+
+  &.Label__icon--left {
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    border-right-width: 1px;
+  }
+
+  &.Label__icon--right {
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    border-left-width: 1px;
+  }
+
+  &.Label__icon--clickable {
+    cursor: pointer;
+    transition: background-color 110ms ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      background-color: rgba(0, 0, 0, 0.15);
+    }
+
+    .Icon {
+      cursor: pointer !important;
+      user-select: none;
+    }
+  }
 
   .Icon {
     cursor: auto;

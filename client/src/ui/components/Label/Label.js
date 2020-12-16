@@ -14,7 +14,10 @@ function Label({
   outline,
   rounded,
   iconLeft,
+  iconRight,
   onClick,
+  iconIsClickable,
+  iconOnClick,
 }) {
   const elemClassName = classNames({
     Label: true,
@@ -34,8 +37,31 @@ function Label({
 
   return (
     <div className={elemClassName} style={styles} onClick={onClick || null}>
-      {!!iconLeft && <div className="Label__icon">{iconLeft}</div>}
+      {!!iconLeft &&
+        <div
+          className={classNames({
+            Label__icon: true,
+            'Label__icon--left': true,
+            'Label__icon--clickable': iconIsClickable,
+          })}
+          onClick={iconOnClick ?? false}
+        >
+          {iconLeft}
+        </div>
+      }
       <div className="Label__content">{children}</div>
+      {!!iconRight &&
+        <div
+          className={classNames({
+            Label__icon: true,
+            'Label__icon--right': true,
+            'Label__icon--clickable': iconIsClickable,
+          })}
+          onClick={iconOnClick ?? false}
+        >
+          {iconRight}
+        </div>
+      }
     </div>
   );
 }
@@ -43,10 +69,13 @@ function Label({
 Label.defaultProps = {
   size: 'small',
   spacing: false,
-  color: '#CCC',
+  color: '#D4D4D4',
   outline: false,
   rounded: false,
   iconLeft: null,
+  iconRight: null,
+  iconIsClickable: false,
+  iconOnClick: null,
 };
 
 Label.propTypes = {
@@ -56,6 +85,9 @@ Label.propTypes = {
   outline: PropTypes.bool,
   rounded: PropTypes.bool,
   iconLeft: PropTypes.node,
+  iconRight: PropTypes.node,
+  iconIsClickable: PropTypes.bool,
+  iconOnClick: PropTypes.func,
 };
 
 export default React.memo(Label);

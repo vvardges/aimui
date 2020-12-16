@@ -1,5 +1,7 @@
 # Changelog
 
+- Implement autocomplete for select dropdown of explore screen (gorarakelyan)
+
 ## 1.2.3 Dec 11 2020
 - Pin table column to the left when grouping by a corresponding field is applied (roubkar)
 - Disable highlight mode control if metrics are aggregated (gorarakelyan)

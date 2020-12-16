@@ -7,9 +7,9 @@ export function getGroupingOptions(
   isParamsMode,
 ) {
   const paramsFields = [];
-  Object.keys(flattenObject(params)).map((paramPrefix) => {
+  Object.keys(flattenObject(params)).forEach((paramPrefix) => {
     !!params[paramPrefix] &&
-      params[paramPrefix].map((paramName) => {
+      params[paramPrefix].forEach((paramName) => {
         paramsFields.push(`${paramPrefix}.${paramName}`);
       });
   });

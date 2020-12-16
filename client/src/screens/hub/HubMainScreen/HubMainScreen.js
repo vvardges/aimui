@@ -504,7 +504,7 @@ class HubMainScreen extends React.Component {
     );
   };
 
-  setSearchInputState = (searchInput) => {
+  setSearchInputState = (searchInput, cb = null) => {
     this.setState((prevState) => {
       const searchInputState = Object.assign(
         {},
@@ -517,7 +517,7 @@ class HubMainScreen extends React.Component {
       return Object.assign({}, prevState, {
         context: contextState,
       });
-    });
+    }, () => cb !== null && cb());
   };
 
   setChartState = (chartState, callback = null, updateURL) => {
