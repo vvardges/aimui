@@ -389,3 +389,45 @@ export function flattenObject(ob, prefix = false, result = null) {
   }
   return result;
 }
+
+export function transformNestedArrToObj(item) {
+  // Transform {foo: ['bar', 'baz']} to {foo: {bar: true, baz: true}}
+  Object.keys(item).forEach(i => {
+    if (Array.isArray(item[i])) {
+      const d = {};
+      item[i].forEach(v => d[v] = true);
+      item[i] = d;
+    } else if (typeof item[i] === 'object') {
+      transformNestedArrToObj(item[i]);
+    }
+  });
+}
+
+export function searchNestedObject(item, path, baseMatched = false) {
+  Object.keys(item).forEach((i) => {
+    if (i === path[0] || (path.length === 1 && i.startsWith(path[0]))) {
+      if (path.length > 1) {
+        searchNestedObject(item[i], path.slice(1), true);
+      }
+    } else if (!baseMatched && item[i] !== true) {
+      searchNestedObject(item[i], path, false);
+    } else {
+      delete item[i];
+    }
+  });
+}
+
+export function removeObjectEmptyKeys(item) {
+  if (item === true) {
+    return false;
+  } else if (Object.keys(item).length === 0) {
+    return true;
+  } else {
+    Object.keys(item).forEach((i) => {
+      if (removeObjectEmptyKeys(item[i])) {
+        delete item[i];
+      }
+    });
+    return Object.keys(item).length === 0;
+  }
+}

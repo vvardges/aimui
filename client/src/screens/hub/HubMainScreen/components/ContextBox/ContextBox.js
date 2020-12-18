@@ -17,6 +17,7 @@ import {
   roundValue,
 } from '../../../../../utils';
 import UI from '../../../../../ui';
+import ContextTable from '../../../../../components/hub/ContextTable/ContextTable';
 import { HUB_PROJECT_EXPERIMENT } from '../../../../../constants/screens';
 import ColumnGroupPopup from './components/ColumnGroupPopup/ColumnGroupPopup';
 import GroupConfigPopup from './components/GroupConfigPopup/GroupConfigPopup';
@@ -32,6 +33,9 @@ class ContextBox extends Component {
     const tableColumns = JSON.parse(getItem(TABLE_COLUMNS))?.context;
     this.state = {
       forcePinnedColumns: tableColumns?.forcePinned,
+      searchFields: {
+        params: {},
+      },
     };
   }
 
@@ -57,6 +61,15 @@ class ContextBox extends Component {
     if (!_.isEqual(newForcePinnedColumns, this.state.forcePinnedColumns)) {
       this.setState({
         forcePinnedColumns: newForcePinnedColumns,
+      });
+    }
+
+    const paramFields = this.context.getAllParamsPaths();
+    if (!_.isEqual(paramFields, this.state.searchFields.params)) {
+      this.setState({
+        searchFields: {
+          params: paramFields,
+        },
       });
     }
   }
@@ -994,7 +1007,7 @@ class ContextBox extends Component {
         })}
       >
         <div className="ContextBox__table__wrapper">
-          <UI.Table
+          <ContextTable
             name="context"
             topHeader
             columns={columns}
@@ -1003,6 +1016,7 @@ class ContextBox extends Component {
             expanded={expanded}
             forcePinnedColumns={this.state.forcePinnedColumns}
             updateForcePinnedColumns={this.updateForcePinnedColumns}
+            searchFields={this.state.searchFields}
           />
         </div>
       </div>

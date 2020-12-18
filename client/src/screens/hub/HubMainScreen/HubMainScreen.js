@@ -652,21 +652,24 @@ class HubMainScreen extends React.Component {
   };
 
   getAllParamsPaths = () => {
+    // TODO: get params recursively !!!!
     const paramPaths = {};
 
     this.state.context.traceList?.traces.forEach((trace) => {
       trace.series.forEach((series) => {
         Object.keys(series?.run.params).forEach((paramKey) => {
-          if (paramKey !== '__METRICS__') {
-            if (!paramPaths.hasOwnProperty(paramKey)) {
-              paramPaths[paramKey] = [];
-            }
-            Object.keys(series?.run.params[paramKey]).forEach((key) => {
-              if (!paramPaths[paramKey].includes(key)) {
-                paramPaths[paramKey].push(key);
-              }
-            });
+          if (paramKey === '__METRICS__') {
+            return;
           }
+
+          if (!paramPaths.hasOwnProperty(paramKey)) {
+            paramPaths[paramKey] = [];
+          }
+          Object.keys(series?.run.params[paramKey]).forEach((key) => {
+            if (!paramPaths[paramKey].includes(key)) {
+              paramPaths[paramKey].push(key);
+            }
+          });
         });
       });
     });

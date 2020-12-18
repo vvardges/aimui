@@ -34,19 +34,6 @@ function Button(props) {
   );
 }
 
-export function Buttons(props) {
-  return (
-    <div
-      className={classNames({
-        Buttons: true,
-        [props.className]: !!props.className,
-      })}
-    >
-      {props.children}
-    </div>
-  );
-}
-
 Button.defaultProps = {
   size: 'medium',
   type: 'primary',
@@ -69,5 +56,18 @@ Button.propTypes = {
   onClick: PropTypes.func,
   children: PropTypes.node,
 };
+
+export function Buttons(props) {
+  return (
+    <div
+      className={classNames({
+        Buttons: true,
+        [props.className]: !!props.className,
+      })}
+    >
+      {props.children}
+    </div>
+  );
+}
 
 export default React.memo(Button);

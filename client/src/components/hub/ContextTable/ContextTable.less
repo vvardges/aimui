@@ -1,0 +1,28 @@
+@import './vars';
+
+.ContextTable {
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--border-radius);
+  background: #fff;
+
+  &.ContextTable--displayBar {
+    display: grid;
+    grid-template-rows: @table-bar-height 1fr;
+
+    .ContextTable__table,
+    .ContextTable__table.Table__container {
+      border-radius: 0 0 var(--border-radius) var(--border-radius);
+    }
+  }
+}
+
+.ContextTable__table {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  border-radius: var(--border-radius);
+  border: 1px solid #CCC;
+}

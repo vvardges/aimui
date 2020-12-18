@@ -1,6 +1,8 @@
 import './Table.less';
 
 import React, { useRef, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+
 import { classNames } from '../../../utils';
 import UI from '../..';
 import { getItem, setItem } from '../../../services/storage';
@@ -9,8 +11,12 @@ import { TABLE_COLUMNS } from '../../../config';
 function Table(props) {
   let columnsOrder = JSON.parse(getItem(TABLE_COLUMNS))?.[props.name];
 
+  const columns = !!props.excludedFields && props.excludedFields.length
+    ? props.columns.filter(c => props.excludedFields.indexOf(c.key) === -1)
+    : props.columns;
+
   let [leftCols, setLeftCols] = useState(
-    props.columns
+    columns
       .filter((col) =>
         props.forcePinnedColumns?.hasOwnProperty(col.key)
           ? !!props.forcePinnedColumns?.[col.key]
@@ -19,7 +25,7 @@ function Table(props) {
       .map((col) => col.key),
   );
   let [rightCols, setRightCols] = useState(
-    props.columns
+    columns
       .filter(
         (col) => columnsOrder?.right?.includes(col.key) ?? col.pin === 'right',
       )
@@ -29,11 +35,11 @@ function Table(props) {
 
   let prevExpanded = useRef(props.expanded);
 
-  const leftPane = props.columns.filter((col) => leftCols.includes(col.key));
-  const middlePane = props.columns.filter(
+  const leftPane = columns.filter((col) => leftCols.includes(col.key));
+  const middlePane = columns.filter(
     (col) => !leftCols.includes(col.key) && !rightCols.includes(col.key),
   );
-  const rightPane = props.columns.filter((col) => rightCols.includes(col.key));
+  const rightPane = columns.filter((col) => rightCols.includes(col.key));
   const sortedColumns = [...leftPane, ...middlePane, ...rightPane];
 
   useEffect(() => {
@@ -50,7 +56,7 @@ function Table(props) {
       tableColumns[props.name].forcePinned = props.forcePinnedColumns;
     }
     setLeftCols(
-      props.columns
+      columns
         .filter((col) =>
           props.forcePinnedColumns?.hasOwnProperty(col.key)
             ? !!props.forcePinnedColumns?.[col.key]
@@ -288,6 +294,14 @@ function Table(props) {
     </div>
   );
 }
+
+Table.defaultProps = {
+  excludedFields: [],
+};
+
+Table.propTypes = {
+  excludedFields: PropTypes.array,
+};
 
 function Column({
   topHeader,

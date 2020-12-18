@@ -1,5 +1,6 @@
 # Changelog
 
+- Add ability to filter table columns (gorarakelyan)
 - Implement autocomplete for select dropdown of explore screen (gorarakelyan)
 
 ## 1.2.3 Dec 11 2020

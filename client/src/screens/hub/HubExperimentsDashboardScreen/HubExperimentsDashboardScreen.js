@@ -13,7 +13,11 @@ import * as classes from '../../../constants/classes';
 import * as screens from '../../../constants/screens';
 import UI from '../../../ui';
 import SearchBar from '../../../components/hub/SearchBar/SearchBar';
-
+import { HUB_PROJECT_EXPERIMENT, EXPLORE } from '../../../constants/screens';
+import { setItem } from '../../../services/storage';
+import { USER_LAST_SEARCH_QUERY } from '../../../config';
+import moment from 'moment';
+import ContextTable from '../../../components/hub/ContextTable/ContextTable';
 import {
   buildUrl,
   deepEqual,
@@ -23,10 +27,6 @@ import {
   roundValue,
   getObjectValueByPath,
 } from '../../../utils';
-import { HUB_PROJECT_EXPERIMENT, EXPLORE } from '../../../constants/screens';
-import { setItem } from '../../../services/storage';
-import { USER_LAST_SEARCH_QUERY } from '../../../config';
-import moment from 'moment';
 
 class HubExperimentsDashboardScreen extends React.Component {
   constructor(props) {
@@ -42,6 +42,9 @@ class HubExperimentsDashboardScreen extends React.Component {
       selectedExperiments: [],
       selectedRuns: [],
       coloredCols: {},
+      searchFields: {
+        params: {},
+      },
     };
 
     this.paramKeys = {};
@@ -71,6 +74,18 @@ class HubExperimentsDashboardScreen extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.location !== prevProps.location) {
       this.recoverStateFromURL(location.search);
+    }
+
+    const paramFields = this.props.project?.params ? {...this.props.project?.params} : {};
+    Object.keys(paramFields).forEach(paramKey => {
+      paramFields[paramKey] = Object.keys(paramFields[paramKey]);
+    });
+    if (!_.isEqual(paramFields, this.state.searchFields.params)) {
+      this.setState({
+        searchFields: {
+          params: paramFields,
+        },
+      });
     }
   }
 
@@ -400,6 +415,29 @@ class HubExperimentsDashboardScreen extends React.Component {
     }));
   };
 
+  getMetricValue = (run, metricName, metricContext) => {
+    const metric = run.params?.['__METRICS__']?.[metricName];
+
+    if (metric === undefined || metric === null) {
+      return metric;
+    }
+
+    let value = null;
+    metric.forEach((metricContextItem) => {
+      const contextDict = {};
+      if (metricContextItem.context !== null) {
+        metricContextItem.context.forEach((contextItem) => {
+          contextDict[contextItem[0]] = contextItem[1];
+        });
+      }
+      if (deepEqual(contextDict, metricContext)) {
+        value = metricContextItem.values.last;
+      }
+    });
+
+    return value;
+  };
+
   _renderExperiments = () => {
     if (!this.state.experiments || this.state.experiments.length === 0) {
       return null;
@@ -468,7 +506,7 @@ class HubExperimentsDashboardScreen extends React.Component {
       {
         key: 'run',
         content: !!this.state.selectedRuns?.length ? (
-          <UI.Buttons className="">
+          <UI.Buttons className="HubExperimentsDashboardScreen__runs__actions">
             <UI.Button
               type="positive"
               size="tiny"
@@ -613,7 +651,7 @@ class HubExperimentsDashboardScreen extends React.Component {
     Object.keys(this.paramKeys).forEach((paramKey) =>
       this.paramKeys[paramKey].forEach((key, index) => {
         columns.push({
-          key: `${paramKey}-${key}`,
+          key: `params.${paramKey}.${key}`,
           content: (
             <>
               <UI.Text small>{key}</UI.Text>
@@ -716,7 +754,7 @@ class HubExperimentsDashboardScreen extends React.Component {
           let color = this.state.coloredCols[
             JSON.stringify(['params', paramKey, key])
           ]?.[run.params?.[paramKey]?.[key]];
-          item[`${paramKey}-${key}`] = {
+          item[`params.${paramKey}.${key}`] = {
             content: formatValue(run.params?.[paramKey]?.[key]),
             style: {
               backgroundColor: color,
@@ -732,33 +770,16 @@ class HubExperimentsDashboardScreen extends React.Component {
     return (
       <div className="HubExperimentsDashboardScreen__runs__content">
         <div className="HubExperimentsDashboardScreen__runs__table__wrapper">
-          <UI.Table name="runs" topHeader columns={columns} data={data} />
+          <ContextTable
+            name="runs"
+            topHeader
+            columns={columns}
+            data={data}
+            searchFields={this.state.searchFields}
+          />
         </div>
       </div>
     );
-  };
-
-  getMetricValue = (run, metricName, metricContext) => {
-    const metric = run.params?.['__METRICS__']?.[metricName];
-
-    if (metric === undefined || metric === null) {
-      return metric;
-    }
-
-    let value = null;
-    metric.forEach((metricContextItem) => {
-      const contextDict = {};
-      if (metricContextItem.context !== null) {
-        metricContextItem.context.forEach((contextItem) => {
-          contextDict[contextItem[0]] = contextItem[1];
-        });
-      }
-      if (deepEqual(contextDict, metricContext)) {
-        value = metricContextItem.values.last;
-      }
-    });
-
-    return value;
   };
 
   _renderContent = () => {

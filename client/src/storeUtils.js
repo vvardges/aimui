@@ -161,6 +161,9 @@ export function getWithState(caseName, caseClass) {
       Object.assign(mapDispatch2Props, {
         getRunsByQuery: commitActions.getRunsByQuery,
       });
+      mapState2Props = (state) => ({
+        ...state.project,
+      });
       break;
     default:
       break;

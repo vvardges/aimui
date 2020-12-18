@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import * as _ from 'lodash';
 
 import UI from '../../../../../../../ui';
-import { classNames, flattenObject } from '../../../../../../../utils';
+import { classNames, flattenObject, searchNestedObject, removeObjectEmptyKeys } from '../../../../../../../utils';
 import HubMainScreenContext from '../../../../HubMainScreenContext/HubMainScreenContext';
 import * as storeUtils from '../../../../../../../storeUtils';
 import * as classes from '../../../../../../../constants/classes';
@@ -162,35 +162,6 @@ class SelectInput extends Component {
   };
 
   resetSuggestionsPrefix = () => this.setState({ suggestionsPrefix: null });
-
-  selectParamsByPath = (params, path, baseMatched = false) => {
-    Object.keys(params).forEach((i) => {
-      if (i === path[0] || (path.length === 1 && i.startsWith(path[0]))) {
-        if (path.length > 1) {
-          this.selectParamsByPath(params[i], path.slice(1), true);
-        }
-      } else if (!baseMatched && params[i] !== true) {
-        this.selectParamsByPath(params[i], path, false);
-      } else {
-        delete params[i];
-      }
-    });
-  };
-
-  deleteEmptyParams = (params) => {
-    if (params === true) {
-      return false;
-    } else if (Object.keys(params).length === 0) {
-      return true;
-    } else {
-      Object.keys(params).forEach((i) => {
-        if (this.deleteEmptyParams(params[i])) {
-          delete params[i];
-        }
-      });
-      return Object.keys(params).length === 0;
-    }
-  };
 
   _renderMetrics = (metrics, replaceOnClick = false, itemOnClickCB = null) => {
     const selectedAttrs = this.getSelectedAttrs();
@@ -382,8 +353,8 @@ class SelectInput extends Component {
     );
 
     const params = _.cloneDeep(this.props.project?.params) ?? {};
-    this.selectParamsByPath(params, suggestionsPrefix.split('.'));
-    this.deleteEmptyParams(params);
+    searchNestedObject(params, suggestionsPrefix.split('.'));
+    removeObjectEmptyKeys(params);
 
     return (
       <div className="SelectInput__dropdown__suggestions">
