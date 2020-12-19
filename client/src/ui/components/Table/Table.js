@@ -193,7 +193,10 @@ function Table(props) {
   }
 
   return (
-    <div className="Table__container">
+    <div className={classNames({
+      Table__container: true,
+      [`Table__container--${props.rowHeightMode}`]: true,
+    })}>
       <div
         className={classNames({
           Table: true,
@@ -297,10 +300,12 @@ function Table(props) {
 
 Table.defaultProps = {
   excludedFields: [],
+  rowHeightMode: 'medium',
 };
 
 Table.propTypes = {
   excludedFields: PropTypes.array,
+  rowHeightMode: PropTypes.string,
 };
 
 function Column({

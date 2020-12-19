@@ -1,5 +1,6 @@
 # Changelog
 
+- Add table control for selecting row height (gorarakelyan)
 - Add ability to filter table columns (gorarakelyan)
 - Implement autocomplete for select dropdown of explore screen (gorarakelyan)
 

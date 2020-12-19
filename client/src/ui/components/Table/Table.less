@@ -2,13 +2,24 @@
 
 @border-color-dark: #ccc;
 @header-cell-bg-color: #eee;
-@cell-height: 30px;
 
 .Table__container {
   height: 100%;
   width: 100%;
   box-sizing: border-box;
   background: #FFF;
+
+  &.Table__container--short {
+    --cell-height: 25px;
+  }
+
+  &.Table__container--medium {
+    --cell-height: 30px;
+  }
+
+  &.Table__container--tall {
+    --cell-height: 36px;
+  }
 }
 
 .Table {
@@ -65,14 +76,14 @@
   display: flex;
   align-items: center;
   background-color: var(--grey-bg);
-  height: @cell-height;
+  height: var(--cell-height);
   box-shadow: inset 0px -1px 0 0 @border-color-dark;
   box-sizing: border-box;
   z-index: 2;
 
   &.expanded {
     position: sticky;
-    top: calc(2 * @cell-height);
+    top: calc(2 * var(--cell-height));
   }
 }
 
@@ -147,7 +158,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  height: @cell-height;
+  height: var(--cell-height);
 
   &.Table__group__header__cell {
     position: relative;
@@ -158,7 +169,7 @@
 
     &.expanded {
       position: sticky;
-      top: calc(3 * @cell-height);
+      top: calc(3 * var(--cell-height));
     }
 
     &.expandable:hover {
@@ -175,7 +186,7 @@
 
 .Table__cell--header {
   position: sticky;
-  top: @cell-height;
+  top: var(--cell-height);
   flex: none;
   background-color: @header-cell-bg-color;
   padding: var(--space-xxs) var(--space-sm);
