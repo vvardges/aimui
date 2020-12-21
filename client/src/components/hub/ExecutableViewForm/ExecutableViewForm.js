@@ -164,12 +164,12 @@ class ExecutableViewForm extends Component {
       >
         {this.parseInputToTag(parameter.value)}
         <div
-          className="ExecutableViewForm__FormGroup__icon__wrapper"
+          className='ExecutableViewForm__FormGroup__icon__wrapper'
           onClick={() =>
             this.removeTag(parameter, 'parameter', 'parameterLists')
           }
         >
-          <UI.Icon i="delete" className="ExecutableViewForm__FormGroup__icon" />
+          <UI.Icon i='delete' className='ExecutableViewForm__FormGroup__icon' />
         </div>
       </UI.Label>
     ));
@@ -180,7 +180,7 @@ class ExecutableViewForm extends Component {
       >
         {ev.value}
         <div
-          className="ExecutableViewForm__FormGroup__icon__wrapper"
+          className='ExecutableViewForm__FormGroup__icon__wrapper'
           onClick={() =>
             this.removeTag(
               ev,
@@ -189,19 +189,19 @@ class ExecutableViewForm extends Component {
             )
           }
         >
-          <UI.Icon i="delete" className="ExecutableViewForm__FormGroup__icon" />
+          <UI.Icon i='delete' className='ExecutableViewForm__FormGroup__icon' />
         </div>
       </UI.Label>
     ));
     const parameterTags =
       this.state.parameterLists.length > 0 ? (
-        <div className="ExecutableViewForm__FormGroup__row">
+        <div className='ExecutableViewForm__FormGroup__row'>
           {parameterTagsContent}
         </div>
       ) : null;
     const evTags =
       this.state.environmentVariableLists.length > 0 ? (
-        <div className="ExecutableViewForm__FormGroup__row">
+        <div className='ExecutableViewForm__FormGroup__row'>
           {evTagsContent}
         </div>
       ) : null;
@@ -210,66 +210,66 @@ class ExecutableViewForm extends Component {
       <>
         {!this.props.processForm && (
           <>
-            <div className="ExecutableViewForm__FormGroup">
+            <div className='ExecutableViewForm__FormGroup'>
               <UI.Input
                 onChange={this.handleInputChange}
-                name="name"
+                name='name'
                 value={this.state.name}
-                label="Name"
+                label='Name'
                 placeholder={'Name'}
               />
             </div>
             <UI.Line />
           </>
         )}
-        <div className="ExecutableViewForm__FormGroup">
-          <UI.Text type="grey" spacing>
+        <div className='ExecutableViewForm__FormGroup'>
+          <UI.Text type='grey' spacing>
             Python Command
           </UI.Text>
           {!this.props.processForm && (
             <UI.Input
               onChange={this.handleInputChange}
-              name="scriptPath"
+              name='scriptPath'
               value={this.state.scriptPath}
-              label="Script path"
+              label='Script path'
               placeholder={'train.py'}
             />
           )}
           <div>
             <UI.Input
-              id="parameterInput"
+              id='parameterInput'
               reference={this.parameterInputRef}
               onChange={(e) => this.handleInputChange(e, this.appendParameters)}
-              name="parameter"
+              name='parameter'
               value={this.state.parameter}
-              label="Arguments"
+              label='Arguments'
               placeholder={'--batch_size 32 --dropout 0.5'}
             />
             {parameterTags}
           </div>
         </div>
         <UI.Line />
-        <div className="ExecutableViewForm__FormGroup">
-          <UI.Text type="grey" spacing>
+        <div className='ExecutableViewForm__FormGroup'>
+          <UI.Text type='grey' spacing>
             Environment
           </UI.Text>
           {!this.props.processForm && (
             <UI.Input
               onChange={this.handleInputChange}
-              name="interpreterPath"
+              name='interpreterPath'
               value={this.state.interpreterPath}
-              label="Python interpreter path"
+              label='Python interpreter path'
               placeholder={'/usr/local/bin/python3'}
             />
           )}
           <div>
             <UI.Input
-              id="evInput"
+              id='evInput'
               reference={this.evInputRef}
               onChange={(e) => this.handleInputChange(e, this.appendEV)}
-              name="environmentVariable"
+              name='environmentVariable'
               value={this.state.environmentVariable}
-              label="Environment variables"
+              label='Environment variables'
               placeholder={'CUDA_VISIBLE_DEVICES=0'}
             />
             {evTags}
@@ -277,23 +277,23 @@ class ExecutableViewForm extends Component {
           {!this.props.processForm && (
             <UI.Input
               onChange={this.handleInputChange}
-              name="workingDir"
+              name='workingDir'
               value={this.state.workingDir}
-              label="Working directory full path"
+              label='Working directory full path'
               placeholder={'/workspace'}
             />
           )}
         </div>
         <UI.Line />
-        <div className="ExecutableViewForm__FormGroup">
-          <UI.Text type="grey" spacing>
+        <div className='ExecutableViewForm__FormGroup'>
+          <UI.Text type='grey' spacing>
             Integrate with aim
           </UI.Text>
           <UI.Input
             onChange={this.handleInputChange}
-            name="aimExperiment"
+            name='aimExperiment'
             value={this.state.aimExperiment}
-            label="Experiment name"
+            label='Experiment name'
             placeholder={'default'}
           />
         </div>

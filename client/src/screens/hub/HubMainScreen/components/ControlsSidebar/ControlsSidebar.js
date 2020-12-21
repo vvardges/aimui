@@ -1,9 +1,8 @@
 import './ControlsSidebar.less';
 
-import React, { useContext } from 'react';
+import React from 'react';
 import ContentLoader from 'react-content-loader';
 
-import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
 import UI from '../../../../../ui';
 import ControlsSidebarToggleOutliers from './components/ControlsSidebarToggleOutliers/ControlsSidebarToggleOutliers';
 import GroupByColor from './components/GroupByColor/GroupByColor';
@@ -15,17 +14,23 @@ import ToggleParPlotIndicator from './components/ToggleParPlotIndicator/TogglePa
 import ControlsSidebarToggleInterpolation from './components/ControlsSidebarToggleInterpolation/ControlsSidebarToggleInterpolation';
 import ControlsSidebarExport from './components/ControlsSidebarExport/ControlsSidebarExport';
 import ControlsSidebarHighlightMode from './components/ControlsSidebarHighlightMode/ControlsSidebarHighlightMode';
+import { HubMainScreenModel } from '../../models/HubMainScreenModel';
 
 function ControlsSidebar() {
   let {
     runs,
     chart,
     contextFilter,
-    setContextFilter,
-    setChartSettingsState,
-    enableExploreMetricsMode,
-    enableExploreParamsMode,
-  } = useContext(HubMainScreenContext);
+  } = HubMainScreenModel.useHubMainScreenState([
+    HubMainScreenModel.events.SET_RUNS_STATE,
+    HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
+    HubMainScreenModel.events.SET_CONTEXT_FILTER,
+  ]);
+
+  let {
+    isExploreMetricsModeEnabled,
+    isExploreParamsModeEnabled,
+  } = HubMainScreenModel.helpers;
 
   const {
     groupByColor,
@@ -35,39 +40,29 @@ function ControlsSidebar() {
   } = contextFilter;
 
   return (
-    <div className="ControlsSidebar">
+    <div className='ControlsSidebar'>
       {runs.isLoading ? (
         <ContentLoader
           height={280}
           width={65}
-          backgroundColor="#F3F3F3"
-          foregroundColor="#ECEBEB"
+          backgroundColor='#F3F3F3'
+          foregroundColor='#ECEBEB'
         >
-          <rect x="10" y="10" rx="4" ry="4" width="45" height="45" />
-          <rect x="10" y="65" rx="4" ry="4" width="45" height="45" />
-          <rect x="10" y="120" rx="4" ry="4" width="45" height="45" />
-          <rect x="10" y="175" rx="4" ry="4" width="45" height="45" />
-          <rect x="10" y="230" rx="4" ry="4" width="45" height="45" />
+          <rect x='10' y='10' rx='4' ry='4' width='45' height='45' />
+          <rect x='10' y='65' rx='4' ry='4' width='45' height='45' />
+          <rect x='10' y='120' rx='4' ry='4' width='45' height='45' />
+          <rect x='10' y='175' rx='4' ry='4' width='45' height='45' />
+          <rect x='10' y='230' rx='4' ry='4' width='45' height='45' />
         </ContentLoader>
       ) : (
-        <div className="ControlsSidebar__items">
-          <GroupByColor
-            groupByColor={groupByColor}
-            setContextFilter={setContextFilter}
-          />
-          <GroupByStyle
-            groupByStyle={groupByStyle}
-            setContextFilter={setContextFilter}
-          />
-          <GroupByChart
-            groupByChart={groupByChart}
-            setContextFilter={setContextFilter}
-          />
-          {enableExploreMetricsMode() && (
+        <div className='ControlsSidebar__items'>
+          <GroupByColor groupByColor={groupByColor} />
+          <GroupByStyle groupByStyle={groupByStyle} />
+          <GroupByChart groupByChart={groupByChart} />
+          {isExploreMetricsModeEnabled() && (
             <>
               <Aggregate
                 aggregated={aggregated}
-                setContextFilter={setContextFilter}
                 disabled={
                   groupByColor.length === 0 &&
                   groupByStyle.length === 0 &&
@@ -78,39 +73,31 @@ function ControlsSidebar() {
               <ControlsSidebarToggleOutliers
                 disabled={runs.isLoading || runs.isEmpty}
                 settings={chart.settings}
-                setChartSettingsState={setChartSettingsState}
               />
               <ControlsSidebarToggleInterpolation
                 disabled={runs.isLoading || runs.isEmpty}
                 settings={chart.settings}
-                setChartSettingsState={setChartSettingsState}
               />
               <ControlsSidebarHighlightMode
                 disabled={contextFilter.aggregated === true}
                 settings={chart.settings}
-                setChartSettingsState={setChartSettingsState}
               />
               <UI.Line />
-              <ControlsSidebarZoom
-                settings={chart.settings}
-                setChartSettingsState={setChartSettingsState}
-              />
+              <ControlsSidebarZoom settings={chart.settings} />
             </>
           )}
-          {enableExploreParamsMode() && (
+          {isExploreParamsModeEnabled() && (
             <>
               <UI.Line />
               <ControlsSidebarToggleInterpolation
                 disabled={runs.isLoading || runs.isEmpty}
                 settings={chart.settings}
-                setChartSettingsState={setChartSettingsState}
               />
               <ToggleParPlotIndicator
                 disabled={
                   runs.params.length + Object.keys(runs.aggMetrics).length <= 1
                 }
                 settings={chart.settings}
-                setChartSettingsState={setChartSettingsState}
               />
             </>
           )}
@@ -126,4 +113,4 @@ function ControlsSidebar() {
 
 ControlsSidebar.propTypes = {};
 
-export default ControlsSidebar;
+export default React.memo(ControlsSidebar);

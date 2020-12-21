@@ -32,7 +32,7 @@ class Input extends React.Component {
 
     let InputLabel = null;
     if (this.props.label) {
-      InputLabel = <label className="Input__label">{this.props.label}:</label>;
+      InputLabel = <label className='Input__label'>{this.props.label}:</label>;
     }
 
     let params = {
@@ -86,7 +86,7 @@ class Input extends React.Component {
 
         {this.props.indicator && (
           <div
-            className="Input__indicator"
+            className='Input__indicator'
             ref={(ref) =>
               !this.state.indicatorWidth &&
               this.setState({ indicatorWidth: ref || 0 })
@@ -97,7 +97,7 @@ class Input extends React.Component {
         )}
 
         {this.props.errorLabel && (
-          <div className="Input__error_label">{this.props.errorLabel}</div>
+          <div className='Input__error_label'>{this.props.errorLabel}</div>
         )}
       </div>
     );

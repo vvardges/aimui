@@ -62,12 +62,12 @@ class SearchBar extends Component {
 
   render() {
     return (
-      <div className="SearchBar">
-        <div className="SearchBar__search">
-          <UI.Icon i="search" className="SearchBar__search__icon" />
+      <div className='SearchBar'>
+        <div className='SearchBar__search'>
+          <UI.Icon i='search' className='SearchBar__search__icon' />
           <UI.Input
-            className="SearchBar__search__input"
-            classNameWrapper="SearchBar__search__input__wrapper"
+            className='SearchBar__search__input'
+            classNameWrapper='SearchBar__search__input__wrapper'
             placeholder={this.props.placeholder}
             value={this.state.value}
             onChange={(evt) => this.onChange(evt.target.value)}
@@ -75,7 +75,7 @@ class SearchBar extends Component {
           />
           {!!this.state.value && (
             <div
-              className="SearchBar__search__icon clear clickable"
+              className='SearchBar__search__icon clear clickable'
               onClick={() => this.onClear()}
             />
           )}

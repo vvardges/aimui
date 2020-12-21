@@ -31,10 +31,10 @@ class RangeSlider extends React.Component {
     });
 
     return (
-      <div className="RangeSlider__wrapper">
+      <div className='RangeSlider__wrapper'>
         <input
           className={className}
-          type="range"
+          type='range'
           min={this.props.min}
           max={this.props.max}
           value={this.state.value}

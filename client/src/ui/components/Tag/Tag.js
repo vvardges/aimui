@@ -15,7 +15,7 @@ function Tag(props) {
       })}
     >
       {props.children}
-      <div className="Tag__Remove" onClick={props.onRemove}>
+      <div className='Tag__Remove' onClick={props.onRemove}>
         x
       </div>
     </UI.Label>

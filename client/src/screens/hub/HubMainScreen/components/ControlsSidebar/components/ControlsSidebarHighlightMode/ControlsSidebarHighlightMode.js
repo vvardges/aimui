@@ -3,15 +3,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 function ControlsSidebarHighlightMode(props) {
   let [opened, setOpened] = useState(false);
   let popupRef = useRef();
 
+  const { setChartSettingsState } = HubMainScreenModel.emitters;
   const { highlightMode } = props.settings;
 
   function selectHighlightMode(mode) {
-    props.setChartSettingsState({
+    setChartSettingsState({
       ...props.settings,
       highlightMode: mode,
     });
@@ -26,8 +28,8 @@ function ControlsSidebarHighlightMode(props) {
 
   return (
     <>
-      <div className="ControlsSidebar__item__wrapper">
-        <UI.Tooltip tooltip="Highlight modes">
+      <div className='ControlsSidebar__item__wrapper'>
+        <UI.Tooltip tooltip='Highlight modes'>
           <div
             className={classNames({
               ControlsSidebar__item: true,
@@ -36,12 +38,12 @@ function ControlsSidebarHighlightMode(props) {
             })}
             onClick={(evt) => setOpened(!opened)}
           >
-            <UI.Icon i="center_focus_weak" scale={1.7} />
+            <UI.Icon i='center_focus_weak' scale={1.7} />
           </div>
         </UI.Tooltip>
         {opened && (
           <div
-            className="ControlsSidebar__item__popup list"
+            className='ControlsSidebar__item__popup list'
             tabIndex={0}
             ref={popupRef}
             onBlur={(evt) => {
@@ -55,12 +57,12 @@ function ControlsSidebarHighlightMode(props) {
               }
             }}
           >
-            <div className="ControlsSidebar__item__popup__header">
+            <div className='ControlsSidebar__item__popup__header'>
               <UI.Text overline bold>
                 Highlight modes
               </UI.Text>
             </div>
-            <div className="ControlsSidebar__item__popup__list">
+            <div className='ControlsSidebar__item__popup__list'>
               <div
                 className={classNames({
                   ControlsSidebar__item__popup__list__item: true,
@@ -71,7 +73,7 @@ function ControlsSidebarHighlightMode(props) {
                 <UI.Text small>Highlight off</UI.Text>
               </div>
             </div>
-            <div className="ControlsSidebar__item__popup__list">
+            <div className='ControlsSidebar__item__popup__list'>
               <div
                 className={classNames({
                   ControlsSidebar__item__popup__list__item: true,
@@ -82,7 +84,7 @@ function ControlsSidebarHighlightMode(props) {
                 <UI.Text small>Highlight metric on hover</UI.Text>
               </div>
             </div>
-            <div className="ControlsSidebar__item__popup__list">
+            <div className='ControlsSidebar__item__popup__list'>
               <div
                 className={classNames({
                   ControlsSidebar__item__popup__list__item: true,
@@ -102,7 +104,6 @@ function ControlsSidebarHighlightMode(props) {
 
 ControlsSidebarHighlightMode.propTypes = {
   settings: PropTypes.object,
-  setChartSettingsState: PropTypes.func,
 };
 
 export default ControlsSidebarHighlightMode;

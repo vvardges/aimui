@@ -16,7 +16,7 @@ function List({ children, className, header, icon, iconColor, margin }) {
 
   return (
     <div>
-      {!!header && <div className="List__header">{header}</div>}
+      {!!header && <div className='List__header'>{header}</div>}
       <ul className={compClassName}>{children}</ul>
     </div>
   );

@@ -1,23 +1,26 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import UI from '../../../../../../../ui';
 import PropTypes from 'prop-types';
 import { classNames } from '../../../../../../../utils';
-import HubMainScreenContext from '../../../../HubMainScreenContext/HubMainScreenContext';
 import { getGroupingOptions } from '../../helpers';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 function GroupByColor(props) {
   let [opened, setOpened] = useState(false);
 
-  const { groupByColor, setContextFilter } = props;
+  const { groupByColor } = props;
 
   let popupRef = useRef();
   let dropdownRef = useRef();
+
+  let { setContextFilter } = HubMainScreenModel.emitters;
+
   let {
     getAllParamsPaths,
     getAllContextKeys,
-    enableExploreMetricsMode,
-    enableExploreParamsMode,
-  } = useContext(HubMainScreenContext);
+    isExploreMetricsModeEnabled,
+    isExploreParamsModeEnabled,
+  } = HubMainScreenModel.helpers;
 
   useEffect(() => {
     if (opened) {
@@ -29,12 +32,12 @@ function GroupByColor(props) {
   const options = getGroupingOptions(
     getAllParamsPaths(),
     getAllContextKeys(),
-    enableExploreMetricsMode(),
-    enableExploreParamsMode(),
+    isExploreMetricsModeEnabled(),
+    isExploreParamsModeEnabled(),
   );
 
   return (
-    <div className="ControlsSidebar__item__wrapper">
+    <div className='ControlsSidebar__item__wrapper'>
       <UI.Tooltip
         tooltip={
           groupByColor.length > 0
@@ -51,12 +54,12 @@ function GroupByColor(props) {
           })}
           onClick={(evt) => setOpened(!opened)}
         >
-          <UI.Icon i="palette" scale={1.7} />
+          <UI.Icon i='palette' scale={1.7} />
         </div>
       </UI.Tooltip>
       {opened && (
         <div
-          className="ControlsSidebar__item__popup"
+          className='ControlsSidebar__item__popup'
           tabIndex={0}
           ref={popupRef}
           onBlur={(evt) => {
@@ -70,14 +73,14 @@ function GroupByColor(props) {
             }
           }}
         >
-          <div className="ControlsSidebar__item__popup__header">
+          <div className='ControlsSidebar__item__popup__header'>
             <UI.Text overline bold>
               Select fields for grouping by color
             </UI.Text>
           </div>
-          <div className="ControlsSidebar__item__popup__body">
+          <div className='ControlsSidebar__item__popup__body'>
             <UI.Dropdown
-              className="ControlsSidebar__groupingDropdown"
+              className='ControlsSidebar__groupingDropdown'
               options={options}
               inline={false}
               formatGroupLabel={(data) => (
@@ -112,7 +115,6 @@ function GroupByColor(props) {
 
 GroupByColor.propTypes = {
   groupByColor: PropTypes.arrayOf(PropTypes.string),
-  setContextFilter: PropTypes.func,
 };
 
 export default GroupByColor;

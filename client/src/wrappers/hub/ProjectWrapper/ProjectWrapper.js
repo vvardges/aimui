@@ -56,7 +56,7 @@ class ProjectWrapper extends React.Component {
     }
 
     return (
-      <nav className="ProjectWrapper__navbar">
+      <nav className='ProjectWrapper__navbar'>
         {this.props.nav.map((i, iKey) => (
           <div
             className={classNames({
@@ -79,11 +79,11 @@ class ProjectWrapper extends React.Component {
 
     return (
       <UI.Container size={this.props.size}>
-        <div className="ProjectWrapper__header__cont">
-          <div className="ProjectWrapper__breadcrumb">
+        <div className='ProjectWrapper__header__cont'>
+          <div className='ProjectWrapper__breadcrumb'>
             <UI.Icon
-              className="ProjectWrapper__breadcrumb__icon"
-              i="link"
+              className='ProjectWrapper__breadcrumb__icon'
+              i='link'
               scale={1}
               spacingRight
             />
@@ -92,7 +92,7 @@ class ProjectWrapper extends React.Component {
             </Link>
           </div>
         </div>
-        <div className="ProjectWrapper__navbar__wrapper">
+        <div className='ProjectWrapper__navbar__wrapper'>
           {this._renderNav()}
         </div>
       </UI.Container>
@@ -114,20 +114,20 @@ class ProjectWrapper extends React.Component {
         })}
       >
         <div
-          className="ProjectWrapper__header"
+          className='ProjectWrapper__header'
           ref={this.projectWrapperHeaderRef}
         >
           {this._renderHeader()}
         </div>
-        <div className="ProjectWrapper__body">
+        <div className='ProjectWrapper__body'>
           {!!this.props.navigation && (
-            <div className="ProjectWrapper__navigation">
+            <div className='ProjectWrapper__navigation'>
               {React.cloneElement(this.props.navigation, {
                 contentWidth: this.props.contentWidth,
               })}
             </div>
           )}
-          <div className="ProjectWrapper__cont" ref={this.contentRef}>
+          <div className='ProjectWrapper__cont' ref={this.contentRef}>
             {this.props.children}
           </div>
         </div>

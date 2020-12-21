@@ -20,7 +20,7 @@ class SiteWrapper extends React.Component {
   render() {
     return (
       <BaseWrapper>
-        <div className="SiteWrapper">{this.props.children}</div>
+        <div className='SiteWrapper'>{this.props.children}</div>
       </BaseWrapper>
     );
   }

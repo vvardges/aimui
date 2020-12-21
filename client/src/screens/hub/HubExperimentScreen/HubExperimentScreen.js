@@ -415,7 +415,7 @@ class HubExperimentScreen extends React.Component {
       <>
         {metric.traces.map((trace, traceKey) => (
           <ExperimentCell
-            type="metric"
+            type='metric'
             footerTitle={metric.name}
             footerLabels={
               !!trace.context
@@ -429,7 +429,7 @@ class HubExperimentScreen extends React.Component {
             <UI.LineChart
               header={metric.name}
               data={trace.data}
-              xAxisFormat="step"
+              xAxisFormat='step'
               smooth={false}
             />
           </ExperimentCell>
@@ -451,27 +451,27 @@ class HubExperimentScreen extends React.Component {
     return (
       <div className={className} key={key * 10 + 2}>
         <div
-          className="ExperimentCheckpoint__area"
+          className='ExperimentCheckpoint__area'
           onClick={() => this.handleModelOpen(model)}
         >
-          <div className="ExperimentCheckpoint__header">
-            <UI.Text type="grey-darker" subtitle>
+          <div className='ExperimentCheckpoint__header'>
+            <UI.Text type='grey-darker' subtitle>
               {model.name}
             </UI.Text>
             <a
               href={`${SERVER_API_HOST}/projects/${experimentName}/${commitId}/models/${model.name}.aim`}
-              target="_blank"
-              rel="noopener noreferrer"
+              target='_blank'
+              rel='noopener noreferrer'
               download={`${model.name}`}
             >
               Download{' '}
-              <UI.Text type="grey-light" small inline>
+              <UI.Text type='grey-light' small inline>
                 (~{this._formatFileSize(model.size)})
               </UI.Text>
             </a>
           </div>
-          <div className="ExperimentCheckpoint__body">
-            <UI.Text type="grey-light" small subtitle>
+          <div className='ExperimentCheckpoint__body'>
+            <UI.Text type='grey-light' small subtitle>
               Epoch: {model.data.epoch}
             </UI.Text>
           </div>
@@ -484,33 +484,33 @@ class HubExperimentScreen extends React.Component {
     return (
       <>
         <ExperimentCell
-          type="dictionary"
+          type='dictionary'
           footerTitle={mapItem.name}
           key={mapKey * 10 + 9}
           width={1}
-          className="ExperimentParams"
+          className='ExperimentParams'
         >
-          <div className="ExperimentParams__item title" key={0}>
+          <div className='ExperimentParams__item title' key={0}>
             <div>
-              <UI.Text type="primary" right overline bold>
+              <UI.Text type='primary' right overline bold>
                 #
               </UI.Text>
             </div>
             <div>
-              <UI.Text type="primary" overline bold>
+              <UI.Text type='primary' overline bold>
                 Key
               </UI.Text>
             </div>
             <div>
-              <UI.Text type="primary" overline bold>
+              <UI.Text type='primary' overline bold>
                 Value
               </UI.Text>
             </div>
           </div>
           {Object.keys(mapItem.data).map((item, key) => (
-            <div className="ExperimentParams__item" key={key}>
-              <div className="ExperimentParams__item__idx__wrapper">
-                <div className="ExperimentParams__item__idx">{key + 1}</div>
+            <div className='ExperimentParams__item' key={key}>
+              <div className='ExperimentParams__item__idx__wrapper'>
+                <div className='ExperimentParams__item__idx'>{key + 1}</div>
               </div>
               <div>{item}</div>
               <div>{JSON.stringify(mapItem.data[item])}</div>
@@ -564,10 +564,10 @@ class HubExperimentScreen extends React.Component {
     return (
       <>
         {!!this.props.project.branches && !!this.props.project.branches.length && (
-          <div className="HubExperimentScreen__header">
-            <div className="HubExperimentScreen__header__top">
+          <div className='HubExperimentScreen__header'>
+            <div className='HubExperimentScreen__header__top'>
               <UI.Dropdown
-                className="HubExperimentScreen__branchSelect"
+                className='HubExperimentScreen__branchSelect'
                 width={200}
                 options={
                   this.props.project.branches &&
@@ -584,15 +584,15 @@ class HubExperimentScreen extends React.Component {
               />
               <div>
                 {!!this.state.commit && (
-                  <div className="HubExperimentScreen__header__content">
-                    <div className="HubExperimentScreen__header__content__process">
+                  <div className='HubExperimentScreen__header__content'>
+                    <div className='HubExperimentScreen__header__content__process'>
                       {this.state.commit?.process?.finish === false && (
                         <CurrentRunIndicator />
                       )}
                       {!!this.state.commit?.process && (
                         <div>
                           {!!this.state.commit.process.start_date && (
-                            <UI.Text type="grey" small>
+                            <UI.Text type='grey' small>
                               {!!this.state.commit.process.uuid ? (
                                 <Link
                                   to={buildUrl(
@@ -615,7 +615,7 @@ class HubExperimentScreen extends React.Component {
                             </UI.Text>
                           )}
                           {!!processDuration && (
-                            <UI.Text type="grey" small>
+                            <UI.Text type='grey' small>
                               Execution Time:
                               {` ${processDuration.hours}h ${processDuration.minutes}m ${processDuration.seconds}s`}
                             </UI.Text>
@@ -630,14 +630,14 @@ class HubExperimentScreen extends React.Component {
             {!!this.state.commit && (
               <>
                 <UI.Line />
-                <div className="HubExperimentScreen__header__bottom">
-                  <div className="HubExperimentScreen__header__tags">
+                <div className='HubExperimentScreen__header__bottom'>
+                  <div className='HubExperimentScreen__header__tags'>
                     {!this.state.tagsAreLoading && this.state.tags.length > 0 && (
                       <>
                         <UI.Text
-                          className="HubExperimentScreen__header__tags__title"
-                          key="tag"
-                          type="grey"
+                          className='HubExperimentScreen__header__tags__title'
+                          key='tag'
+                          type='grey'
                           small
                           inline
                         >
@@ -657,10 +657,10 @@ class HubExperimentScreen extends React.Component {
                       </>
                     )}
                   </div>
-                  <div className="HubExperimentScreen__header__actions">
+                  <div className='HubExperimentScreen__header__actions'>
                     <UI.Button
-                      size="tiny"
-                      type="secondary"
+                      size='tiny'
+                      type='secondary'
                       onClick={() => this.handleArchivationBtnClick()}
                       {...this.state.archivationBtn}
                     >
@@ -685,12 +685,12 @@ class HubExperimentScreen extends React.Component {
     return (
       <>
         {this._renderExperimentHeader()}
-        <div className="HubExperimentScreen__empty">
+        <div className='HubExperimentScreen__empty'>
           <ReactSVG
-            className="HubExperimentScreen__empty__illustration"
+            className='HubExperimentScreen__empty__illustration'
             src={require('../../../asset/illustrations/no_data.svg')}
           />
-          <UI.Text size={6} type="grey-light" center>
+          <UI.Text size={6} type='grey-light' center>
             {!exist
               ? `Experiment "${experimentName}" does not exist`
               : `Experiment "${experimentName}" is empty`}
@@ -704,12 +704,12 @@ class HubExperimentScreen extends React.Component {
     return (
       <>
         {this._renderExperimentHeader()}
-        <div className="HubExperimentScreen__empty">
+        <div className='HubExperimentScreen__empty'>
           <ReactSVG
-            className="HubExperimentScreen__empty__illustration"
+            className='HubExperimentScreen__empty__illustration'
             src={require('../../../asset/illustrations/no_data.svg')}
           />
-          <UI.Text size={6} type="grey-light" center>
+          <UI.Text size={6} type='grey-light' center>
             Nothing to show — empty run
           </UI.Text>
         </div>
@@ -761,8 +761,8 @@ class HubExperimentScreen extends React.Component {
     return (
       <>
         {this._renderExperimentHeader()}
-        <div className="HubExperimentScreen__grid">
-          <div className="HubExperimentScreen__grid__wrapper">
+        <div className='HubExperimentScreen__grid'>
+          <div className='HubExperimentScreen__grid__wrapper'>
             {this.state.experiment.maps.map((mapItem, mapKey) => (
               <>
                 {mapItem.nested
@@ -784,13 +784,13 @@ class HubExperimentScreen extends React.Component {
             )}
             {!!this.state.experiment.models.length && (
               <ExperimentCell
-                type="model"
+                type='model'
                 footerTitle={this.state.experiment.models[0].data.name}
-                height="auto"
+                height='auto'
                 width={2}
               >
-                <div className="ExperimentModel__body">
-                  <div className="ExperimentModel__list">
+                <div className='ExperimentModel__body'>
+                  <div className='ExperimentModel__list'>
                     {Object.keys(
                       this.state.experiment.models,
                     ).map((itemKey, key) =>
@@ -800,10 +800,10 @@ class HubExperimentScreen extends React.Component {
                       ),
                     )}
                   </div>
-                  <div className="ExperimentModel__detail">
+                  <div className='ExperimentModel__detail'>
                     {!selectedModel && (
-                      <div className="ExperimentModel__detail__default">
-                        <UI.Text type="grey-light" size={6}>
+                      <div className='ExperimentModel__detail__default'>
+                        <UI.Text type='grey-light' size={6}>
                           Select a model
                           <br />
                           from left menu
@@ -811,15 +811,15 @@ class HubExperimentScreen extends React.Component {
                       </div>
                     )}
                     {!!selectedModel && (
-                      <div className="ExperimentModel__detail__item">
-                        <UI.Text type="grey-dark" divided spacing>
+                      <div className='ExperimentModel__detail__item'>
+                        <UI.Text type='grey-dark' divided spacing>
                           {selectedModel.name}
                         </UI.Text>
                         {!!selectedModel.data.meta && (
                           <>
                             {Object.keys(selectedModel.data.meta).map(
                               (item, key) => (
-                                <UI.Text key={key} type="grey">
+                                <UI.Text key={key} type='grey'>
                                   {item}: {selectedModel.data.meta[item]}
                                 </UI.Text>
                               ),
@@ -868,10 +868,10 @@ class HubExperimentScreen extends React.Component {
         contentWidth={this.state.contentWidth}
       >
         <Helmet>
-          <meta title="" content="" />
+          <meta title='' content='' />
         </Helmet>
 
-        <UI.Container size="small" ref={this.contentRef}>
+        <UI.Container size='small' ref={this.contentRef}>
           {this._renderContent()}
         </UI.Container>
       </ProjectWrapper>

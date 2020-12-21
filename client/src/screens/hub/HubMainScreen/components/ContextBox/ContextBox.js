@@ -1,6 +1,6 @@
 import './ContextBox.less';
 
-import React, { Component, createRef, Fragment } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Color from 'color';
@@ -8,7 +8,6 @@ import moment from 'moment';
 import * as _ from 'lodash';
 import ContentLoader from 'react-content-loader';
 
-import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
 import {
   buildUrl,
   classNames,
@@ -23,78 +22,59 @@ import ColumnGroupPopup from './components/ColumnGroupPopup/ColumnGroupPopup';
 import GroupConfigPopup from './components/GroupConfigPopup/GroupConfigPopup';
 import { getItem } from '../../../../../services/storage';
 import { TABLE_COLUMNS } from '../../../../../config';
+import { HubMainScreenModel } from '../../models/HubMainScreenModel';
 
-class ContextBox extends Component {
-  paramKeys = {};
-  theadRef = createRef();
+function ContextBox(props) {
+  let [forcePinnedColumns, setForcePinnedColumns] = useState(
+    JSON.parse(getItem(TABLE_COLUMNS))?.context?.forcePinned,
+  );
+  let [searchFields, setSearchFields] = useState({
+    params: {},
+  });
+  let paramKeys = useRef();
 
-  constructor(props) {
-    super(props);
-    const tableColumns = JSON.parse(getItem(TABLE_COLUMNS))?.context;
-    this.state = {
-      forcePinnedColumns: tableColumns?.forcePinned,
-      searchFields: {
-        params: {},
-      },
-    };
-  }
+  let {
+    runs,
+    traceList,
+    chart,
+    contextFilter,
+  } = HubMainScreenModel.useHubMainScreenState([
+    HubMainScreenModel.events.SET_RUNS_STATE,
+    HubMainScreenModel.events.SET_TRACE_LIST,
+    HubMainScreenModel.events.SET_CONTEXT_FILTER,
+    HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
+  ]);
 
-  componentDidUpdate(prevProps, prevState) {
-    const groupingFields = this.context.traceList?.groupingFields;
-    const forcePinnedColumns = {
-      ...this.state.forcePinnedColumns,
-    };
-    for (let colKey in forcePinnedColumns) {
-      if (groupingFields && !groupingFields.includes(colKey)) {
-        forcePinnedColumns[colKey] =
-          forcePinnedColumns[colKey] === null ? undefined : false;
-      }
-    }
-    groupingFields?.forEach((field) => {
-      if (forcePinnedColumns?.[field] !== null) {
-        forcePinnedColumns[field] = true;
-      }
-    });
-    const newForcePinnedColumns = JSON.parse(
-      JSON.stringify(forcePinnedColumns),
-    );
-    if (!_.isEqual(newForcePinnedColumns, this.state.forcePinnedColumns)) {
-      this.setState({
-        forcePinnedColumns: newForcePinnedColumns,
-      });
-    }
+  let { setChartFocusedState, setContextFilter } = HubMainScreenModel.emitters;
 
-    const paramFields = this.context.getAllParamsPaths();
-    if (!_.isEqual(paramFields, this.state.searchFields.params)) {
-      this.setState({
-        searchFields: {
-          params: paramFields,
-        },
-      });
-    }
-  }
+  let {
+    getTraceData,
+    getMetricStepDataByStepIdx,
+    contextToHash,
+    getMetricColor,
+    isExploreParamsModeEnabled,
+    getAllParamsPaths,
+  } = HubMainScreenModel.helpers;
 
-  updateForcePinnedColumns = (columnKey, value) => {
-    this.setState((state) => {
+  function updateForcePinnedColumns(columnKey, value) {
+    setForcePinnedColumns((fpc) => {
       let newCols = {};
-      for (let key in state.forcePinnedColumns) {
+      for (let key in fpc) {
         if (key === columnKey) {
           if (value !== undefined) {
             newCols[key] = value;
           }
         } else {
-          newCols[key] = state.forcePinnedColumns[key];
+          newCols[key] = fpc[key];
         }
       }
-      return {
-        forcePinnedColumns: newCols,
-      };
+      return newCols;
     });
-  };
+  }
 
-  handleRowMove = (runHash, metricName, traceContext) => {
-    const focusedCircle = this.context.chart.focused.circle;
-    const focusedMetric = this.context.chart.focused.metric;
+  function handleRowMove(runHash, metricName, traceContext) {
+    const focusedCircle = chart.focused.circle;
+    const focusedMetric = chart.focused.metric;
 
     if (focusedCircle.active) {
       return;
@@ -108,25 +88,25 @@ class ContextBox extends Component {
       return;
     }
 
-    this.context.setChartFocusedState({
+    setChartFocusedState({
       metric: {
         runHash,
         metricName,
         traceContext,
       },
     });
-  };
+  }
 
-  handleRowClick = (runHash, metricName, traceContext) => {
-    const focusedCircle = this.context.chart.focused.circle;
-    let step = this.context.chart.focused.step;
+  function handleRowClick(runHash, metricName, traceContext) {
+    const focusedCircle = chart.focused.circle;
+    let step = chart.focused.step;
 
     if (
       focusedCircle.runHash === runHash &&
       focusedCircle.metricName === metricName &&
       focusedCircle.traceContext === traceContext
     ) {
-      this.context.setChartFocusedState({
+      setChartFocusedState({
         step: step || 0,
         circle: {
           active: false,
@@ -139,8 +119,8 @@ class ContextBox extends Component {
       return;
     }
 
-    if (this.context.runs?.meta?.params_selected) {
-      this.context.setChartFocusedState({
+    if (runs?.meta?.params_selected) {
+      setChartFocusedState({
         step: step,
         circle: {
           active: true,
@@ -155,19 +135,19 @@ class ContextBox extends Component {
         },
       });
     } else {
-      const line = this.context.getTraceData(runHash, metricName, traceContext);
+      const line = getTraceData(runHash, metricName, traceContext);
       if (line === null || line.data === null || !line.data.length) {
         return;
       }
 
-      const point = this.context.getMetricStepDataByStepIdx(line.data, step);
+      const point = getMetricStepDataByStepIdx(line.data, step);
 
       if (point === null) {
         // Select last point
         step = line.data[line.data.length - 1][1];
       }
 
-      this.context.setChartFocusedState({
+      setChartFocusedState({
         step: step,
         circle: {
           active: true,
@@ -183,9 +163,9 @@ class ContextBox extends Component {
         },
       });
     }
-  };
+  }
 
-  _renderContentLoader = () => {
+  function _renderContentLoader() {
     const cellHeight = 25,
       cellWidth = 35,
       marginX = 25,
@@ -196,12 +176,12 @@ class ContextBox extends Component {
     ];
 
     return (
-      <div className="ContextBox__loader__wrapper">
+      <div className='ContextBox__loader__wrapper'>
         <ContentLoader
           width={1200}
           height={250}
-          backgroundColor="#F3F3F3"
-          foregroundColor="#ECEBEB"
+          backgroundColor='#F3F3F3'
+          foregroundColor='#ECEBEB'
         >
           {[
             [-1, 0],
@@ -237,25 +217,25 @@ class ContextBox extends Component {
         </ContentLoader>
       </div>
     );
-  };
+  }
 
-  _renderContent = () => {
-    if (this.context.runs.isEmpty || !this.context.runs.data.length) {
-      return <div className="ContextBox__empty__wrapper" />;
+  function _renderContent() {
+    if (runs.isEmpty || !runs.data.length) {
+      return <div className='ContextBox__empty__wrapper' />;
     }
 
-    this.paramKeys = {};
+    paramKeys.current = {};
 
-    this.context.traceList?.traces.forEach((trace) => {
+    traceList?.traces.forEach((trace) => {
       trace.series.forEach((series) => {
         Object.keys(series?.run.params).forEach((paramKey) => {
           if (paramKey !== '__METRICS__') {
-            if (!this.paramKeys.hasOwnProperty(paramKey)) {
-              this.paramKeys[paramKey] = [];
+            if (!paramKeys.current.hasOwnProperty(paramKey)) {
+              paramKeys.current[paramKey] = [];
             }
             Object.keys(series?.run.params[paramKey]).forEach((key) => {
-              if (!this.paramKeys[paramKey].includes(key)) {
-                this.paramKeys[paramKey].push(key);
+              if (!paramKeys.current[paramKey].includes(key)) {
+                paramKeys.current[paramKey].push(key);
               }
             });
           }
@@ -263,7 +243,7 @@ class ContextBox extends Component {
       });
     });
 
-    this.paramKeys = sortOnKeys(this.paramKeys);
+    paramKeys.current = sortOnKeys(paramKeys.current);
 
     let columns = [
       {
@@ -272,9 +252,9 @@ class ContextBox extends Component {
           <>
             <UI.Text overline>Experiment</UI.Text>
             <ColumnGroupPopup
-              param="experiment"
-              contextFilter={this.context.contextFilter}
-              setContextFilter={this.context.setContextFilter}
+              param='experiment'
+              contextFilter={contextFilter}
+              setContextFilter={setContextFilter}
             />
           </>
         ),
@@ -287,9 +267,9 @@ class ContextBox extends Component {
           <>
             <UI.Text overline>Run</UI.Text>
             <ColumnGroupPopup
-              param="run.hash"
-              contextFilter={this.context.contextFilter}
-              setContextFilter={this.context.setContextFilter}
+              param='run.hash'
+              contextFilter={contextFilter}
+              setContextFilter={setContextFilter}
             />
           </>
         ),
@@ -298,7 +278,7 @@ class ContextBox extends Component {
       },
     ];
 
-    if (!this.context.runs?.meta?.params_selected) {
+    if (!runs?.meta?.params_selected) {
       columns = columns.concat([
         {
           key: 'metric',
@@ -306,9 +286,9 @@ class ContextBox extends Component {
             <>
               <UI.Text overline>Metric</UI.Text>
               <ColumnGroupPopup
-                param="metric"
-                contextFilter={this.context.contextFilter}
-                setContextFilter={this.context.setContextFilter}
+                param='metric'
+                contextFilter={contextFilter}
+                setContextFilter={setContextFilter}
               />
             </>
           ),
@@ -346,18 +326,18 @@ class ContextBox extends Component {
       ]);
     }
 
-    for (let metricKey in this.context.runs?.aggMetrics) {
-      this.context.runs?.aggMetrics[metricKey].forEach((metricContext) => {
+    for (let metricKey in runs?.aggMetrics) {
+      runs?.aggMetrics[metricKey].forEach((metricContext) => {
         columns.push({
           key: `${metricKey}-${JSON.stringify(metricContext)}`,
           content: (
-            <div className="ContextBox__table__agg-metrics__labels">
+            <div className='ContextBox__table__agg-metrics__labels'>
               {metricContext === null ||
               Object.keys(metricContext).length === 0 ? (
                   <UI.Label
                     key={0}
-                    size="small"
-                    className="ContextBox__table__agg-metrics__label"
+                    size='small'
+                    className='ContextBox__table__agg-metrics__label'
                   >
                   No context
                   </UI.Label>
@@ -365,8 +345,8 @@ class ContextBox extends Component {
                   Object.keys(metricContext).map((metricContextKey) => (
                     <UI.Label
                       key={metricContextKey}
-                      size="small"
-                      className="ContextBox__table__agg-metrics__label"
+                      size='small'
+                      className='ContextBox__table__agg-metrics__label'
                     >
                       {metricContextKey}:{' '}
                       {formatValue(metricContext[metricContextKey])}
@@ -380,8 +360,8 @@ class ContextBox extends Component {
       });
     }
 
-    Object.keys(this.paramKeys).forEach((paramKey) =>
-      this.paramKeys[paramKey].sort().forEach((key) => {
+    Object.keys(paramKeys.current).forEach((paramKey) =>
+      paramKeys.current[paramKey].sort().forEach((key) => {
         const param = `params.${paramKey}.${key}`;
         columns.push({
           key: param,
@@ -390,8 +370,8 @@ class ContextBox extends Component {
               <UI.Text small>{key}</UI.Text>
               <ColumnGroupPopup
                 param={param}
-                contextFilter={this.context.contextFilter}
-                setContextFilter={this.context.setContextFilter}
+                contextFilter={contextFilter}
+                setContextFilter={setContextFilter}
               />
             </>
           ),
@@ -400,44 +380,40 @@ class ContextBox extends Component {
       }),
     );
 
-    const data = this.context.traceList?.traces.length > 1 ? {} : [];
+    const data = traceList?.traces.length > 1 ? {} : [];
     const expanded = {};
-    const step = this.context.chart.focused.step;
-    const focusedCircle = this.context.chart.focused.circle;
-    const focusedMetric = this.context.chart.focused.metric;
+    const step = chart.focused.step;
+    const focusedCircle = chart.focused.circle;
+    const focusedMetric = chart.focused.metric;
 
-    this.context.traceList?.traces.forEach((traceModel) => {
-      (this.context.runs?.meta?.params_selected
+    traceList?.traces.forEach((traceModel) => {
+      (runs?.meta?.params_selected
         ? _.uniqBy(traceModel.series, 'run.run_hash')
         : traceModel.series
       ).forEach((series) => {
         const { run, metric, trace } = series;
-        const contextHash = this.context.contextToHash(trace?.context);
+        const contextHash = contextToHash(trace?.context);
 
-        const line = this.context.getTraceData(
-          run.run_hash,
-          metric?.name,
-          contextHash,
-        );
+        const line = getTraceData(run.run_hash, metric?.name, contextHash);
 
         let stepData = line
-          ? this.context.getMetricStepDataByStepIdx(line?.data, step)
+          ? getMetricStepDataByStepIdx(line?.data, step)
           : null;
 
         const color =
-          this.context.traceList?.grouping?.color?.length > 0
+          traceList?.grouping?.color?.length > 0
             ? traceModel.color
-            : this.context.getMetricColor(
+            : getMetricColor(
               run,
-              this.context.enableExploreParamsMode() ? null : line?.metric,
-              this.context.enableExploreParamsMode() ? null : line?.trace,
+              isExploreParamsModeEnabled() ? null : line?.metric,
+              isExploreParamsModeEnabled() ? null : line?.trace,
             );
         const colorObj = Color(color);
 
         let active = false;
 
         if (
-          (this.context.runs?.meta?.params_selected &&
+          (runs?.meta?.params_selected &&
             (focusedCircle.runHash === run.run_hash ||
               focusedMetric.runHash === run.run_hash)) ||
           (focusedCircle.runHash === run.run_hash &&
@@ -451,7 +427,7 @@ class ContextBox extends Component {
         }
 
         if (
-          (this.context.runs?.meta?.params_selected &&
+          (runs?.meta?.params_selected &&
             focusedCircle.runHash === run.run_hash) ||
           (focusedCircle.runHash === run.run_hash &&
             focusedCircle.metricName === metric?.name &&
@@ -472,15 +448,15 @@ class ContextBox extends Component {
           };
         }
 
-        const highlightColumn = (evt) => {
-          this.handleRowMove(run.run_hash, metric?.name, contextHash);
-          evt.currentTarget.parentNode.style.backgroundColor =
-            style.backgroundColor;
-        };
+        // const highlightColumn = (evt) => {
+        //   handleRowMove(run.run_hash, metric?.name, contextHash);
+        //   evt.currentTarget.parentNode.style.backgroundColor =
+        //     style.backgroundColor;
+        // };
 
-        function removeColumnHighlighting(evt) {
-          evt.currentTarget.parentNode.style.backgroundColor = '#FFF';
-        }
+        // function removeColumnHighlighting(evt) {
+        //   evt.currentTarget.parentNode.style.backgroundColor = '#FFF';
+        // }
 
         const row = {
           experiment: {
@@ -492,15 +468,15 @@ class ContextBox extends Component {
             className: className,
             props: {
               onClick: () =>
-                this.handleRowClick(run.run_hash, metric?.name, contextHash),
+                handleRowClick(run.run_hash, metric?.name, contextHash),
               onMouseMove: () =>
-                this.handleRowMove(run.run_hash, metric?.name, contextHash),
+                handleRowMove(run.run_hash, metric?.name, contextHash),
             },
           },
           run: {
             content: (
               <Link
-                className="ContextBox__table__item__name"
+                className='ContextBox__table__item__name'
                 to={buildUrl(HUB_PROJECT_EXPERIMENT, {
                   experiment_name: run.experiment_name,
                   commit_id: run.run_hash,
@@ -515,9 +491,9 @@ class ContextBox extends Component {
             },
             props: {
               onClick: () =>
-                this.handleRowClick(run.run_hash, metric?.name, contextHash),
+                handleRowClick(run.run_hash, metric?.name, contextHash),
               onMouseMove: () =>
-                this.handleRowMove(run.run_hash, metric?.name, contextHash),
+                handleRowMove(run.run_hash, metric?.name, contextHash),
             },
           },
           metric: {
@@ -528,23 +504,23 @@ class ContextBox extends Component {
             },
             props: {
               onClick: () =>
-                this.handleRowClick(run.run_hash, metric?.name, contextHash),
+                handleRowClick(run.run_hash, metric?.name, contextHash),
               onMouseMove: () =>
-                this.handleRowMove(run.run_hash, metric?.name, contextHash),
+                handleRowMove(run.run_hash, metric?.name, contextHash),
             },
           },
           context: {
             content: !!trace?.context ? (
-              <div className="ContextBox__table__item-context__wrapper">
+              <div className='ContextBox__table__item-context__wrapper'>
                 {Object.keys(trace.context).map((contextCat, contextCatKey) => (
                   <ColumnGroupPopup
                     key={contextCatKey}
                     param={`context.${contextCat}`}
                     triggerer={
                       <UI.Button
-                        className="ContextBox__table__item-context__item"
-                        size="small"
-                        type="primary"
+                        className='ContextBox__table__item-context__item'
+                        size='small'
+                        type='primary'
                         ghost={true}
                       >
                         <UI.Text inline>
@@ -553,8 +529,8 @@ class ContextBox extends Component {
                         </UI.Text>
                       </UI.Button>
                     }
-                    contextFilter={this.context.contextFilter}
-                    setContextFilter={this.context.setContextFilter}
+                    contextFilter={contextFilter}
+                    setContextFilter={setContextFilter}
                   />
                 ))}
               </div>
@@ -566,9 +542,9 @@ class ContextBox extends Component {
             },
             props: {
               onClick: () =>
-                this.handleRowClick(run.run_hash, metric?.name, contextHash),
+                handleRowClick(run.run_hash, metric?.name, contextHash),
               onMouseMove: () =>
-                this.handleRowMove(run.run_hash, metric?.name, contextHash),
+                handleRowMove(run.run_hash, metric?.name, contextHash),
             },
           },
           value: {
@@ -579,9 +555,9 @@ class ContextBox extends Component {
             style: style,
             props: {
               onClick: () =>
-                this.handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: highlightColumn,
-              onMouseLeave: removeColumnHighlighting,
+                handleRowClick(run.run_hash, metric?.name, contextHash),
+              onMouseMove: () =>
+                handleRowMove(run.run_hash, metric?.name, contextHash),
             },
           },
           step: {
@@ -590,9 +566,9 @@ class ContextBox extends Component {
             style: style,
             props: {
               onClick: () =>
-                this.handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: highlightColumn,
-              onMouseLeave: removeColumnHighlighting,
+                handleRowClick(run.run_hash, metric?.name, contextHash),
+              onMouseMove: () =>
+                handleRowMove(run.run_hash, metric?.name, contextHash),
             },
           },
           epoch: {
@@ -601,9 +577,9 @@ class ContextBox extends Component {
             style: style,
             props: {
               onClick: () =>
-                this.handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: highlightColumn,
-              onMouseLeave: removeColumnHighlighting,
+                handleRowClick(run.run_hash, metric?.name, contextHash),
+              onMouseMove: () =>
+                handleRowMove(run.run_hash, metric?.name, contextHash),
             },
           },
           time: {
@@ -614,15 +590,15 @@ class ContextBox extends Component {
             style: style,
             props: {
               onClick: () =>
-                this.handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: highlightColumn,
-              onMouseLeave: removeColumnHighlighting,
+                handleRowClick(run.run_hash, metric?.name, contextHash),
+              onMouseMove: () =>
+                handleRowMove(run.run_hash, metric?.name, contextHash),
             },
           },
         };
 
-        for (let metricKey in this.context.runs?.aggMetrics) {
-          this.context.runs?.aggMetrics[metricKey].forEach((metricContext) => {
+        for (let metricKey in runs?.aggMetrics) {
+          runs?.aggMetrics[metricKey].forEach((metricContext) => {
             row[`${metricKey}-${JSON.stringify(metricContext)}`] = {
               content: formatValue(
                 series.getAggregatedMetricValue(metricKey, metricContext),
@@ -631,44 +607,44 @@ class ContextBox extends Component {
               style: style,
               props: {
                 onClick: () =>
-                  this.handleRowClick(run.run_hash, metric?.name, contextHash),
-                onMouseMove: highlightColumn,
-                onMouseLeave: removeColumnHighlighting,
+                  handleRowClick(run.run_hash, metric?.name, contextHash),
+                onMouseMove: () =>
+                  handleRowMove(run.run_hash, metric?.name, contextHash),
               },
             };
           });
         }
 
-        Object.keys(this.paramKeys).forEach((paramKey) =>
-          this.paramKeys[paramKey].forEach((key) => {
+        Object.keys(paramKeys.current).forEach((paramKey) =>
+          paramKeys.current[paramKey].forEach((key) => {
             row[`params.${paramKey}.${key}`] = {
               content: formatValue(run.params?.[paramKey]?.[key]),
               style: style,
               props: {
                 onClick: () =>
-                  this.handleRowClick(run.run_hash, metric?.name, contextHash),
-                onMouseMove: highlightColumn,
-                onMouseLeave: removeColumnHighlighting,
+                  handleRowClick(run.run_hash, metric?.name, contextHash),
+                onMouseMove: () =>
+                  handleRowMove(run.run_hash, metric?.name, contextHash),
               },
             };
           }),
         );
 
-        if (this.context.traceList?.traces.length > 1) {
+        if (traceList?.traces.length > 1) {
           if (!data[JSON.stringify(traceModel.config)]) {
-            const min = this.context.getMetricStepDataByStepIdx(
+            const min = getMetricStepDataByStepIdx(
               traceModel.aggregation.min.trace.data,
               step,
             )?.[0];
-            const avg = this.context.getMetricStepDataByStepIdx(
+            const avg = getMetricStepDataByStepIdx(
               traceModel.aggregation.avg.trace.data,
               step,
             )?.[0];
-            const max = this.context.getMetricStepDataByStepIdx(
+            const max = getMetricStepDataByStepIdx(
               traceModel.aggregation.max.trace.data,
               step,
             )?.[0];
-            const runsCount = (this.context.runs?.meta?.params_selected
+            const runsCount = (runs?.meta?.params_selected
               ? _.uniqBy(traceModel.series, 'run.run_hash')
               : traceModel.series
             ).length;
@@ -678,9 +654,9 @@ class ContextBox extends Component {
                 experiment: {
                   content: (
                     <UI.Label
-                      className="ContextBox__table__item-aggregated_label"
+                      className='ContextBox__table__item-aggregated_label'
                       color={
-                        this.context.traceList?.grouping?.color?.length > 0
+                        traceList?.grouping?.color?.length > 0
                           ? color
                           : '#3b5896'
                       }
@@ -699,9 +675,9 @@ class ContextBox extends Component {
                 run: {
                   content: (
                     <UI.Label
-                      className="ContextBox__table__item-aggregated_label"
+                      className='ContextBox__table__item-aggregated_label'
                       color={
-                        this.context.traceList?.grouping?.color?.length > 0
+                        traceList?.grouping?.color?.length > 0
                           ? color
                           : '#3b5896'
                       }
@@ -714,9 +690,9 @@ class ContextBox extends Component {
                 metric: {
                   content: (
                     <UI.Label
-                      className="ContextBox__table__item-aggregated_label"
+                      className='ContextBox__table__item-aggregated_label'
                       color={
-                        this.context.traceList?.grouping?.color?.length > 0
+                        traceList?.grouping?.color?.length > 0
                           ? color
                           : '#3b5896'
                       }
@@ -734,12 +710,12 @@ class ContextBox extends Component {
                 },
                 context: {
                   content: (
-                    <div className="ContextBox__table__item-aggregated_labels">
+                    <div className='ContextBox__table__item-aggregated_labels'>
                       {!!traceModel.contexts?.length ? (
                         <UI.Label
-                          className="ContextBox__table__item-aggregated_label"
+                          className='ContextBox__table__item-aggregated_label'
                           color={
-                            this.context.traceList?.grouping?.color?.length > 0
+                            traceList?.grouping?.color?.length > 0
                               ? color
                               : '#3b5896'
                           }
@@ -751,9 +727,9 @@ class ContextBox extends Component {
                       )}
                       {traceModel.contexts?.length > 1 && (
                         <UI.Label
-                          className="ContextBox__table__item-aggregated_label"
+                          className='ContextBox__table__item-aggregated_label'
                           color={
-                            this.context.traceList?.grouping?.color?.length > 0
+                            traceList?.grouping?.color?.length > 0
                               ? color
                               : '#3b5896'
                           }
@@ -772,14 +748,14 @@ class ContextBox extends Component {
                 },
                 value: {
                   content: (
-                    <div className="ContextBox__table__item-aggregated_labels">
+                    <div className='ContextBox__table__item-aggregated_labels'>
                       <UI.Label
-                        className="ContextBox__table__item-aggregated_label"
+                        className='ContextBox__table__item-aggregated_label'
                         iconLeft={
                           <UI.Tooltip tooltip={'Minimum value'}>
                             <UI.Icon
-                              i="vertical_align_bottom"
-                              className="ContextBox__table__item-aggregated_icon"
+                              i='vertical_align_bottom'
+                              className='ContextBox__table__item-aggregated_icon'
                               scale={1.2}
                             />
                           </UI.Tooltip>
@@ -792,12 +768,12 @@ class ContextBox extends Component {
                           : '-'}
                       </UI.Label>
                       <UI.Label
-                        className="ContextBox__table__item-aggregated_label"
+                        className='ContextBox__table__item-aggregated_label'
                         iconLeft={
                           <UI.Tooltip tooltip={'Average value'}>
                             <UI.Icon
-                              i="vertical_align_center"
-                              className="ContextBox__table__item-aggregated_icon"
+                              i='vertical_align_center'
+                              className='ContextBox__table__item-aggregated_icon'
                               scale={1.2}
                             />
                           </UI.Tooltip>
@@ -810,12 +786,12 @@ class ContextBox extends Component {
                           : '-'}
                       </UI.Label>
                       <UI.Label
-                        className="ContextBox__table__item-aggregated_label"
+                        className='ContextBox__table__item-aggregated_label'
                         iconLeft={
                           <UI.Tooltip tooltip={'Maximum value'}>
                             <UI.Icon
-                              i="vertical_align_top"
-                              className="ContextBox__table__item-aggregated_icon"
+                              i='vertical_align_top'
+                              className='ContextBox__table__item-aggregated_icon'
                               scale={1.2}
                             />
                           </UI.Tooltip>
@@ -840,17 +816,17 @@ class ContextBox extends Component {
               config: (
                 <>
                   <GroupConfigPopup config={traceModel.config} />
-                  {this.context.traceList?.grouping?.chart?.length > 0 && (
-                    <UI.Tooltip tooltip="Group Chart ID">
-                      <div className="ContextBox__table__group-indicator__chart">
+                  {traceList?.grouping?.chart?.length > 0 && (
+                    <UI.Tooltip tooltip='Group Chart ID'>
+                      <div className='ContextBox__table__group-indicator__chart'>
                         {traceModel.chart + 1}
                       </div>
                     </UI.Tooltip>
                   )}
-                  {this.context.traceList?.grouping?.color?.length > 0 && (
-                    <UI.Tooltip tooltip="Group Color">
+                  {traceList?.grouping?.color?.length > 0 && (
+                    <UI.Tooltip tooltip='Group Color'>
                       <div
-                        className="ContextBox__table__group-indicator__color"
+                        className='ContextBox__table__group-indicator__color'
                         style={{
                           backgroundColor: traceModel.color,
                           borderColor: traceModel.color,
@@ -858,22 +834,22 @@ class ContextBox extends Component {
                       />
                     </UI.Tooltip>
                   )}
-                  {this.context.traceList?.grouping?.stroke?.length > 0 && (
-                    <UI.Tooltip tooltip="Group Stroke Style">
+                  {traceList?.grouping?.stroke?.length > 0 && (
+                    <UI.Tooltip tooltip='Group Stroke Style'>
                       <svg
-                        className="ContextBox__table__group-indicator__stroke"
+                        className='ContextBox__table__group-indicator__stroke'
                         style={{
                           borderColor:
-                            this.context.traceList?.grouping?.color?.length > 0
+                            traceList?.grouping?.color?.length > 0
                               ? traceModel.color
                               : '#3b5896',
                         }}
                       >
                         <line
-                          x1="0"
-                          y1="50%"
-                          x2="100%"
-                          y2="50%"
+                          x1='0'
+                          y1='50%'
+                          x2='100%'
+                          y2='50%'
                           style={{
                             strokeDasharray: traceModel.stroke
                               .split(' ')
@@ -888,85 +864,79 @@ class ContextBox extends Component {
               ),
             };
 
-            for (let metricKey in this.context.runs?.aggMetrics) {
-              this.context.runs?.aggMetrics[metricKey].forEach(
-                (metricContext) => {
-                  const {
-                    min,
-                    avg,
-                    max,
-                  } = traceModel.getAggregatedMetricMinMax(
-                    metricKey,
-                    metricContext,
-                  );
-                  data[JSON.stringify(traceModel.config)].data[
-                    `${metricKey}-${JSON.stringify(metricContext)}`
-                  ] = {
-                    content: (
-                      <div className="ContextBox__table__item-aggregated_labels">
-                        <UI.Label
-                          className="ContextBox__table__item-aggregated_label"
-                          iconLeft={
-                            <UI.Tooltip tooltip={'Minimum value'}>
-                              <UI.Icon
-                                i="vertical_align_bottom"
-                                className="ContextBox__table__item-aggregated_icon"
-                                scale={1.2}
-                              />
-                            </UI.Tooltip>
-                          }
-                          rounded
-                          outline
-                        >
-                          {min !== null && min !== undefined
-                            ? roundValue(min)
-                            : '-'}
-                        </UI.Label>
-                        <UI.Label
-                          className="ContextBox__table__item-aggregated_label"
-                          iconLeft={
-                            <UI.Tooltip tooltip={'Average value'}>
-                              <UI.Icon
-                                i="vertical_align_center"
-                                className="ContextBox__table__item-aggregated_icon"
-                                scale={1.2}
-                              />
-                            </UI.Tooltip>
-                          }
-                          rounded
-                          outline
-                        >
-                          {avg !== null && avg !== undefined
-                            ? roundValue(avg)
-                            : '-'}
-                        </UI.Label>
-                        <UI.Label
-                          className="ContextBox__table__item-aggregated_label"
-                          iconLeft={
-                            <UI.Tooltip tooltip={'Maximum value'}>
-                              <UI.Icon
-                                i="vertical_align_top"
-                                className="ContextBox__table__item-aggregated_icon"
-                                scale={1.2}
-                              />
-                            </UI.Tooltip>
-                          }
-                          outline
-                          rounded
-                        >
-                          {max !== null && max !== undefined
-                            ? roundValue(max)
-                            : '-'}
-                        </UI.Label>
-                      </div>
-                    ),
-                  };
-                },
-              );
+            for (let metricKey in runs?.aggMetrics) {
+              runs?.aggMetrics[metricKey].forEach((metricContext) => {
+                const { min, avg, max } = traceModel.getAggregatedMetricMinMax(
+                  metricKey,
+                  metricContext,
+                );
+                data[JSON.stringify(traceModel.config)].data[
+                  `${metricKey}-${JSON.stringify(metricContext)}`
+                ] = {
+                  content: (
+                    <div className='ContextBox__table__item-aggregated_labels'>
+                      <UI.Label
+                        className='ContextBox__table__item-aggregated_label'
+                        iconLeft={
+                          <UI.Tooltip tooltip={'Minimum value'}>
+                            <UI.Icon
+                              i='vertical_align_bottom'
+                              className='ContextBox__table__item-aggregated_icon'
+                              scale={1.2}
+                            />
+                          </UI.Tooltip>
+                        }
+                        rounded
+                        outline
+                      >
+                        {min !== null && min !== undefined
+                          ? roundValue(min)
+                          : '-'}
+                      </UI.Label>
+                      <UI.Label
+                        className='ContextBox__table__item-aggregated_label'
+                        iconLeft={
+                          <UI.Tooltip tooltip={'Average value'}>
+                            <UI.Icon
+                              i='vertical_align_center'
+                              className='ContextBox__table__item-aggregated_icon'
+                              scale={1.2}
+                            />
+                          </UI.Tooltip>
+                        }
+                        rounded
+                        outline
+                      >
+                        {avg !== null && avg !== undefined
+                          ? roundValue(avg)
+                          : '-'}
+                      </UI.Label>
+                      <UI.Label
+                        className='ContextBox__table__item-aggregated_label'
+                        iconLeft={
+                          <UI.Tooltip tooltip={'Maximum value'}>
+                            <UI.Icon
+                              i='vertical_align_top'
+                              className='ContextBox__table__item-aggregated_icon'
+                              scale={1.2}
+                            />
+                          </UI.Tooltip>
+                        }
+                        outline
+                        rounded
+                      >
+                        {max !== null && max !== undefined
+                          ? roundValue(max)
+                          : '-'}
+                      </UI.Label>
+                    </div>
+                  ),
+                };
+              });
             }
 
-            Object.keys(this.paramKeys).forEach((paramKey) =>
-              this.paramKeys[paramKey].forEach((key) => {
+            Object.keys(paramKeys.current).forEach((paramKey) =>
+              paramKeys.current[paramKey].forEach((key) => {
                 const param = `params.${paramKey}.${key}`;
                 if (traceModel.config.hasOwnProperty(param)) {
                   data[JSON.stringify(traceModel.config)].data[
@@ -1003,44 +973,69 @@ class ContextBox extends Component {
       <div
         className={classNames({
           ContextBox__content: true,
-          resizing: this.props.resizing,
+          resizing: props.resizing,
         })}
       >
-        <div className="ContextBox__table__wrapper">
+        <div className='ContextBox__table__wrapper'>
           <ContextTable
-            name="context"
+            name='context'
             topHeader
             columns={columns}
             data={data}
-            groups={this.context.traceList?.traces.length > 1}
+            groups={traceList?.traces.length > 1}
             expanded={expanded}
-            forcePinnedColumns={this.state.forcePinnedColumns}
-            updateForcePinnedColumns={this.updateForcePinnedColumns}
-            searchFields={this.state.searchFields}
+            forcePinnedColumns={forcePinnedColumns}
+            updateForcePinnedColumns={updateForcePinnedColumns}
+            searchFields={searchFields}
           />
         </div>
       </div>
     );
-  };
-
-  render() {
-    return (
-      <div
-        className="ContextBox"
-        style={{
-          width: `${this.props.width}px`,
-        }}
-      >
-        {this.context.runs.isLoading
-          ? this._renderContentLoader()
-          : this._renderContent()}
-      </div>
-    );
   }
+
+  useEffect(() => {
+    const groupingFields = traceList?.groupingFields;
+    const forcePinnedColumnsClone = {
+      ...forcePinnedColumns,
+    };
+    for (let colKey in forcePinnedColumnsClone) {
+      if (groupingFields && !groupingFields.includes(colKey)) {
+        forcePinnedColumnsClone[colKey] =
+          forcePinnedColumnsClone[colKey] === null ? undefined : false;
+      }
+    }
+    groupingFields?.forEach((field) => {
+      if (forcePinnedColumnsClone?.[field] !== null) {
+        forcePinnedColumnsClone[field] = true;
+      }
+    });
+    const newForcePinnedColumns = JSON.parse(
+      JSON.stringify(forcePinnedColumnsClone),
+    );
+    if (!_.isEqual(newForcePinnedColumns, forcePinnedColumns)) {
+      setForcePinnedColumns(newForcePinnedColumns);
+    }
+
+    const paramFields = getAllParamsPaths();
+    if (!_.isEqual(paramFields, searchFields.params)) {
+      setSearchFields({
+        params: paramFields,
+      });
+    }
+  });
+
+  return (
+    <div
+      className='ContextBox'
+      style={{
+        width: `${props.width}px`,
+      }}
+    >
+      {runs.isLoading ? _renderContentLoader() : _renderContent()}
+    </div>
+  );
 }
 
 ContextBox.propTypes = {};
 
-ContextBox.contextType = HubMainScreenContext;
-
-export default ContextBox;
+export default React.memo(ContextBox);

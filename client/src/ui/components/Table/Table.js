@@ -11,9 +11,10 @@ import { TABLE_COLUMNS } from '../../../config';
 function Table(props) {
   let columnsOrder = JSON.parse(getItem(TABLE_COLUMNS))?.[props.name];
 
-  const columns = !!props.excludedFields && props.excludedFields.length
-    ? props.columns.filter(c => props.excludedFields.indexOf(c.key) === -1)
-    : props.columns;
+  const columns =
+    !!props.excludedFields && props.excludedFields.length
+      ? props.columns.filter((c) => props.excludedFields.indexOf(c.key) === -1)
+      : props.columns;
 
   let [leftCols, setLeftCols] = useState(
     columns
@@ -193,10 +194,12 @@ function Table(props) {
   }
 
   return (
-    <div className={classNames({
-      Table__container: true,
-      [`Table__container--${props.rowHeightMode}`]: true,
-    })}>
+    <div
+      className={classNames({
+        Table__container: true,
+        [`Table__container--${props.rowHeightMode}`]: true,
+      })}
+    >
       <div
         className={classNames({
           Table: true,
@@ -204,7 +207,7 @@ function Table(props) {
         })}
       >
         {leftPane.length > 0 && (
-          <div className="Table__pane Table__pane--left">
+          <div className='Table__pane Table__pane--left'>
             {leftPane.map((col, index) => (
               <Column
                 key={col.key}
@@ -224,12 +227,12 @@ function Table(props) {
                 expand={expand}
                 showGroupConfig={index === 0}
                 togglePin={togglePin}
-                pinnedTo="left"
+                pinnedTo='left'
               />
             ))}
           </div>
         )}
-        <div className="Table__pane Table__pane--middle">
+        <div className='Table__pane Table__pane--middle'>
           {middlePane.map((col, index) => (
             <Column
               key={col.key}
@@ -256,7 +259,7 @@ function Table(props) {
           ))}
         </div>
         {rightPane.length > 0 && (
-          <div className="Table__pane Table__pane--right">
+          <div className='Table__pane Table__pane--right'>
             {rightPane.map((col, index) => (
               <Column
                 key={col.key}
@@ -288,7 +291,7 @@ function Table(props) {
                   index === 0 && rightPane.length === props.columns.length
                 }
                 togglePin={togglePin}
-                pinnedTo="right"
+                pinnedTo='right'
               />
             ))}
           </div>
@@ -322,10 +325,10 @@ function Column({
   pinnedTo,
 }) {
   return (
-    <div className="Table__column">
+    <div className='Table__column'>
       {topHeader && (
         <div
-          className="Table__cell Table__cell--header Table__cell--topHeader"
+          className='Table__cell Table__cell--header Table__cell--topHeader'
           style={{
             minWidth: col.minWidth,
             borderRight: showTopHeaderBorder ? '' : 'none',
@@ -337,21 +340,21 @@ function Column({
         </div>
       )}
       <div
-        className="Table__cell Table__cell--header"
+        className='Table__cell Table__cell--header'
         style={{
           minWidth: col.minWidth,
         }}
       >
         {col.content}
         <UI.Popover
-          target={<UI.Icon i="more_vert" scale={1} />}
-          targetClassName="Table__action"
-          tooltip="Column actions"
+          target={<UI.Icon i='more_vert' scale={1} />}
+          targetClassName='Table__action'
+          tooltip='Column actions'
           content={(opened, setOpened) => (
-            <div className="Table__action__popup__body">
+            <div className='Table__action__popup__body'>
               {(pinnedTo === 'left' || pinnedTo === 'right') && (
                 <div
-                  className="Table__action__popup__item"
+                  className='Table__action__popup__item'
                   onClick={(evt) => {
                     togglePin(col.key, null);
                     setOpened(false);
@@ -362,7 +365,7 @@ function Column({
               )}
               {pinnedTo !== 'left' && (
                 <div
-                  className="Table__action__popup__item"
+                  className='Table__action__popup__item'
                   onClick={(evt) => {
                     togglePin(col.key, 'left');
                     setOpened(false);
@@ -373,7 +376,7 @@ function Column({
               )}
               {pinnedTo !== 'right' && (
                 <div
-                  className="Table__action__popup__item"
+                  className='Table__action__popup__item'
                   onClick={(evt) => {
                     togglePin(col.key, 'right');
                     setOpened(false);
@@ -384,12 +387,12 @@ function Column({
               )}
             </div>
           )}
-          popupClassName="Table__action__popup"
+          popupClassName='Table__action__popup'
         />
       </div>
       {groups
         ? Object.keys(data).map((groupKey) => (
-          <div key={groupKey} className="Table__group">
+          <div key={groupKey} className='Table__group'>
             <div
               className={classNames({
                 Table__group__config__cell: true,
@@ -474,7 +477,7 @@ function GroupConfig({ config, expand, expanded, groupKeys, groupKey }) {
       <UI.Tooltip
         tooltip={expanded[groupKey] ? 'Collapse group' : 'Expand group'}
       >
-        <div className="Table__action" onClick={(evt) => expand(groupKey)}>
+        <div className='Table__action' onClick={(evt) => expand(groupKey)}>
           <UI.Icon
             i={expanded[groupKey] ? 'unfold_less' : 'unfold_more'}
             scale={1}
@@ -483,13 +486,13 @@ function GroupConfig({ config, expand, expanded, groupKeys, groupKey }) {
       </UI.Tooltip>
       {config}
       <UI.Popover
-        target={<UI.Icon i="more_horiz" scale={1} />}
-        targetClassName="Table__action"
-        tooltip="More actions"
+        target={<UI.Icon i='more_horiz' scale={1} />}
+        targetClassName='Table__action'
+        tooltip='More actions'
         content={(opened, setOpened) => (
-          <div className="Table__action__popup__body">
+          <div className='Table__action__popup__body'>
             <div
-              className="Table__action__popup__item"
+              className='Table__action__popup__item'
               onClick={(evt) => {
                 expand(groupKey);
                 setOpened(false);
@@ -502,7 +505,7 @@ function GroupConfig({ config, expand, expanded, groupKeys, groupKey }) {
             {(expanded[groupKey] ||
               groupKeys.some((key) => !!expanded[key])) && (
               <div
-                className="Table__action__popup__item"
+                className='Table__action__popup__item'
                 onClick={(evt) => {
                   expand('collapse_all');
                   setOpened(false);
@@ -514,7 +517,7 @@ function GroupConfig({ config, expand, expanded, groupKeys, groupKey }) {
             {(!expanded[groupKey] ||
               groupKeys.some((key) => !expanded[key])) && (
               <div
-                className="Table__action__popup__item"
+                className='Table__action__popup__item'
                 onClick={(evt) => {
                   expand('expand_all');
                   setOpened(false);
@@ -525,7 +528,7 @@ function GroupConfig({ config, expand, expanded, groupKeys, groupKey }) {
             )}
           </div>
         )}
-        popupClassName="Table__action__popup"
+        popupClassName='Table__action__popup'
       />
     </>
   );

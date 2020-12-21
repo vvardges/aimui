@@ -1,117 +1,138 @@
 import './SelectInput.less';
 
-import React, { Component } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import * as _ from 'lodash';
 
 import UI from '../../../../../../../ui';
-import { classNames, flattenObject, searchNestedObject, removeObjectEmptyKeys } from '../../../../../../../utils';
-import HubMainScreenContext from '../../../../HubMainScreenContext/HubMainScreenContext';
+import {
+  classNames,
+  flattenObject,
+  searchNestedObject,
+  removeObjectEmptyKeys,
+} from '../../../../../../../utils';
 import * as storeUtils from '../../../../../../../storeUtils';
 import * as classes from '../../../../../../../constants/classes';
 import ContentLoader from 'react-content-loader';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
-class SelectInput extends Component {
-  constructor(props) {
-    super(props);
+function SelectInput(props) {
+  let [state, setState] = useState({
+    offsetStep: 25,
+    dropdownIsOpen: false,
+    progress: null,
+    suggestionsPrefix: null,
+  });
 
-    this.state = {
-      offsetStep: 25,
-      dropdownIsOpen: false,
-      progress: null,
-      suggestionsPrefix: null,
+  let { searchInput } = HubMainScreenModel.getState();
+  let { setSearchInputState } = HubMainScreenModel.emitters;
+
+  let dropdownRef = useRef();
+  let selectInputRef = useRef();
+  let timerRef = useRef();
+
+  useEffect(() => {
+    document.addEventListener('keydown', escapePressHandler);
+    return () => {
+      clearTimeout(timerRef.current);
+      document.removeEventListener('keydown', escapePressHandler);
     };
+  }, []);
 
-    this.dropdownRef = React.createRef();
-    this.selectInputRef = React.createRef();
-    this.timerId;
-    this.availableFlatFields = [];
-  }
-
-  componentDidMount() {
-    document.addEventListener('keydown', this.escapePressHandler);
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.dropdownIsOpen && !prevState.dropdownIsOpen) {
-      this.incProgress();
-      this.props.getProjectParams().then((data) => {
-        this.completeProgress();
+  useEffect(() => {
+    if (state.dropdownIsOpen) {
+      incProgress();
+      props.getProjectParams().then((data) => {
+        completeProgress();
       });
     }
-  }
+  }, [state.dropdownIsOpen]);
 
-  componentWillUnmount() {
-    clearTimeout(this.timerId);
-    document.removeEventListener('keydown', this.escapePressHandler);
-  }
-
-  escapePressHandler = (evt) => {
+  function escapePressHandler(evt) {
     if (evt.key === 'Escape') {
       const isNotCombinedKey = !(evt.ctrlKey || evt.altKey || evt.shiftKey);
       if (isNotCombinedKey) {
-        if (this.state.dropdownIsOpen) {
-          this.blurSelectInput();
+        if (state.dropdownIsOpen) {
+          blurSelectInput();
         }
       }
     }
-  };
+  }
 
-  incProgress = () => {
-    clearTimeout(this.timerId);
-    this.setState((state) =>
-      state.progress > 90
-        ? null
+  function incProgress() {
+    clearTimeout(timerRef.current);
+    setState((s) =>
+      s.progress > 90
+        ? s
         : {
+          ...s,
           progress:
-              state.progress === null
+              s.progress === null
                 ? 0
-                : state.progress + Math.round(Math.random() * 10),
+                : s.progress + Math.round(Math.random() * 10),
         },
     );
-    this.timerId = setTimeout(this.incProgress, 100);
-  };
+    timerRef.current = setTimeout(incProgress, 100);
+  }
 
-  completeProgress = () => {
-    clearTimeout(this.timerId);
-    this.setState({
+  function completeProgress() {
+    clearTimeout(timerRef.current);
+    setState((s) => ({
+      ...s,
       progress: 100,
-    });
-    this.timerId = setTimeout(() => {
-      this.setState({
+    }));
+    timerRef.current = setTimeout(() => {
+      setState((s) => ({
+        ...s,
         progress: null,
-      });
+      }));
     }, 200);
-  };
+  }
 
-  handleInputFocus = (evt) => {
-    this.setState({ dropdownIsOpen: true });
-  };
+  function handleInputChange(value) {
+    setSearchInputState(
+      {
+        selectInput: value,
+      },
+      () => setTimeout(updateSuggestionsPrefix, 200),
+    );
+  }
 
-  handleInputBlur = (evt) => {
-    if (evt.relatedTarget !== this.dropdownRef?.current) {
-      this.setState({ dropdownIsOpen: false });
+  function handleInputFocus(evt) {
+    setState((s) => ({
+      ...s,
+      dropdownIsOpen: true,
+    }));
+  }
+
+  function handleInputBlur(evt) {
+    if (evt.relatedTarget !== dropdownRef?.current) {
+      setState((s) => ({
+        ...s,
+        dropdownIsOpen: false,
+      }));
     }
-  };
+  }
 
-  blurSelectInput = () => {
-    this.selectInputRef.current?.inputRef?.current?.blur();
-  };
+  function blurSelectInput() {
+    selectInputRef.current?.inputRef?.current?.blur();
+  }
 
-  getSelectedAttrs = () => {
-    const selectVal = this.context.searchInput.selectInput.trim();
+  function getSelectedAttrs() {
+    const selectVal = searchInput.selectInput.trim();
     if (!selectVal.length) {
       return [];
     }
 
     const selectAttrs = selectVal.split(',').map((i) => i.trim());
     return selectAttrs;
-  };
+  }
 
-  selectAttribute = (attrName, replace = false, cb = null) => {
-    replace =
-      replace && !this.context.searchInput.selectInput.trim().endsWith(',');
-    let selectedAttrs = this.getSelectedAttrs();
+  function selectAttribute(attrName, replace = false, cb = null) {
+    replace = replace && !searchInput.selectInput.trim().endsWith(',');
+
+    let selectedAttrs = getSelectedAttrs();
+
     if (selectedAttrs.indexOf(attrName) !== -1) {
       selectedAttrs = selectedAttrs.filter((i) => i !== attrName);
     } else {
@@ -123,66 +144,70 @@ class SelectInput extends Component {
     selectedAttrs = _.uniq(selectedAttrs.filter((i) => !!i));
 
     const value = selectedAttrs.join(', ');
-    this.context.setSearchInputState(
+    setSearchInputState(
       {
         selectInput: value,
       },
       () => {
-        // this.handleInputChange(value);
-        this.resetSuggestionsPrefix();
+        resetSuggestionsPrefix();
       },
     );
 
-    if (this.selectInputRef?.current) {
-      this.selectInputRef.current.inputRef?.current?.focus();
+    if (selectInputRef?.current) {
+      selectInputRef.current.inputRef?.current?.focus();
     }
 
     if (cb !== null) {
       cb();
     }
-  };
+  }
 
-  updateSuggestionsPrefix = () => {
-    if (!!this.context.searchInput.selectInput) {
-      const lastItem = this.context.searchInput?.selectInput
-        ?.split(',')
-        .pop()
-        ?.trim();
-      if (lastItem === this.state.suggestionsPrefix) {
+  function updateSuggestionsPrefix() {
+    if (!!searchInput.selectInput) {
+      const lastItem = searchInput?.selectInput?.split(',').pop()?.trim();
+      if (lastItem === state.suggestionsPrefix) {
         return;
       }
-      this.setState({
+      setState((s) => ({
+        ...s,
         suggestionsPrefix: !!lastItem ? lastItem : null,
-      });
+      }));
     } else {
-      this.setState({
-        suggestionsPrefix: null,
-      });
+      resetSuggestionsPrefix();
     }
-  };
+  }
 
-  resetSuggestionsPrefix = () => this.setState({ suggestionsPrefix: null });
+  function resetSuggestionsPrefix() {
+    setState((s) => ({
+      ...s,
+      suggestionsPrefix: null,
+    }));
+  }
 
-  _renderMetrics = (metrics, replaceOnClick = false, itemOnClickCB = null) => {
-    const selectedAttrs = this.getSelectedAttrs();
+  function _renderMetrics(
+    metrics,
+    replaceOnClick = false,
+    itemOnClickCB = null,
+  ) {
+    const selectedAttrs = getSelectedAttrs();
 
     return (
-      <div className="SelectInput__dropdown__group">
-        <div className="SelectInput__dropdown__group__item__row group">
+      <div className='SelectInput__dropdown__group'>
+        <div className='SelectInput__dropdown__group__item__row group'>
           <div
-            className="SelectInput__dropdown__group__item__placeholder"
+            className='SelectInput__dropdown__group__item__placeholder'
             style={{
-              flexBasis: `${this.state.offsetStep}px`,
+              flexBasis: `${state.offsetStep}px`,
             }}
           />
-          <div className="SelectInput__dropdown__group__title">
-            <div className="SelectInput__dropdown__group__title__placeholder" />
-            <div className="SelectInput__dropdown__group__title__label">
+          <div className='SelectInput__dropdown__group__title'>
+            <div className='SelectInput__dropdown__group__title__placeholder' />
+            <div className='SelectInput__dropdown__group__title__label'>
               metrics
             </div>
           </div>
         </div>
-        <div className="SelectInput__dropdown__group__body">
+        <div className='SelectInput__dropdown__group__body'>
           {!!metrics &&
             metrics.map((metric) => (
               <div
@@ -192,14 +217,14 @@ class SelectInput extends Component {
                 })}
                 key={`${metric}`}
                 onClick={(evt) =>
-                  this.selectAttribute(metric, replaceOnClick, itemOnClickCB)
+                  selectAttribute(metric, replaceOnClick, itemOnClickCB)
                 }
               >
-                <div className="SelectInput__dropdown__group__item__icon__wrapper metric">
+                <div className='SelectInput__dropdown__group__item__icon__wrapper metric'>
                   {selectedAttrs.indexOf(metric) !== -1 ? (
-                    <UI.Icon i="done" />
+                    <UI.Icon i='done' />
                   ) : (
-                    <div className="SelectInput__dropdown__group__item__icon__letter">
+                    <div className='SelectInput__dropdown__group__item__icon__letter'>
                       M
                     </div>
                   )}
@@ -212,13 +237,13 @@ class SelectInput extends Component {
                   })}
                 >
                   <div
-                    className="SelectInput__dropdown__group__item__placeholder"
+                    className='SelectInput__dropdown__group__item__placeholder'
                     style={{
-                      flexBasis: `${this.state.offsetStep}px`,
+                      flexBasis: `${state.offsetStep}px`,
                     }}
                   />
-                  <div className="SelectInput__dropdown__group__item__name">
-                    <span className="SelectInput__dropdown__group__item__name__short">
+                  <div className='SelectInput__dropdown__group__item__name'>
+                    <span className='SelectInput__dropdown__group__item__name__short'>
                       {metric}
                     </span>
                   </div>
@@ -228,15 +253,15 @@ class SelectInput extends Component {
         </div>
       </div>
     );
-  };
+  }
 
-  _renderParamItem = (
+  function _renderParamItem(
     paramKey,
     parentPath,
     selectedAttrs,
     replaceOnClick,
     itemOnClickCB,
-  ) => {
+  ) {
     const param = `${parentPath.join('.')}.${paramKey}`;
 
     return (
@@ -246,56 +271,54 @@ class SelectInput extends Component {
           selected: selectedAttrs.indexOf(param) !== -1,
         })}
         key={param}
-        onClick={(evt) =>
-          this.selectAttribute(param, replaceOnClick, itemOnClickCB)
-        }
+        onClick={(evt) => selectAttribute(param, replaceOnClick, itemOnClickCB)}
       >
-        <div className="SelectInput__dropdown__group__item__icon__wrapper param">
+        <div className='SelectInput__dropdown__group__item__icon__wrapper param'>
           {selectedAttrs.indexOf(param) !== -1 ? (
-            <UI.Icon i="done" />
+            <UI.Icon i='done' />
           ) : (
-            <div className="SelectInput__dropdown__group__item__icon__letter">
+            <div className='SelectInput__dropdown__group__item__icon__letter'>
               P
             </div>
           )}
         </div>
-        <div className="SelectInput__dropdown__group__item__row name">
+        <div className='SelectInput__dropdown__group__item__row name'>
           {[...Array(parentPath.length)].map((_, i) => (
             <div
-              className="SelectInput__dropdown__group__item__placeholder"
+              className='SelectInput__dropdown__group__item__placeholder'
               key={i}
               style={{
-                flexBasis: `${this.state.offsetStep}px`,
+                flexBasis: `${state.offsetStep}px`,
               }}
             />
           ))}
-          <div className="SelectInput__dropdown__group__item__name">
-            <span className="SelectInput__dropdown__group__item__name__short">
+          <div className='SelectInput__dropdown__group__item__name'>
+            <span className='SelectInput__dropdown__group__item__name__short'>
               {paramKey}
             </span>
-            <span className="SelectInput__dropdown__group__item__name__full">
+            <span className='SelectInput__dropdown__group__item__name__full'>
               {param}
             </span>
           </div>
         </div>
       </div>
     );
-  };
+  }
 
-  _renderParams = (
+  function _renderParams(
     params,
     parentPath = [],
     replaceOnClick = false,
     itemOnClickCB = null,
-  ) => {
-    const selectedAttrs = this.getSelectedAttrs();
+  ) {
+    const selectedAttrs = getSelectedAttrs();
 
     return (
       !!params &&
       Object.keys(params).map((paramKey) => (
-        <>
+        <Fragment key={paramKey}>
           {typeof params[paramKey] === 'boolean' &&
-            this._renderParamItem(
+            _renderParamItem(
               paramKey,
               parentPath,
               selectedAttrs,
@@ -305,28 +328,28 @@ class SelectInput extends Component {
 
           {typeof params[paramKey] === 'object' && (
             <div
-              className="SelectInput__dropdown__group"
+              className='SelectInput__dropdown__group'
               key={`${parentPath.join('.')}.${paramKey}`}
             >
-              <div className="SelectInput__dropdown__group__item__row group">
+              <div className='SelectInput__dropdown__group__item__row group'>
                 {[...Array(parentPath.length + 1)].map((_, i) => (
                   <div
-                    className="SelectInput__dropdown__group__item__placeholder"
+                    className='SelectInput__dropdown__group__item__placeholder'
                     key={i}
                     style={{
-                      flexBasis: `${this.state.offsetStep}px`,
+                      flexBasis: `${state.offsetStep}px`,
                     }}
                   />
                 ))}
-                <div className="SelectInput__dropdown__group__title">
-                  <div className="SelectInput__dropdown__group__title__placeholder" />
-                  <div className="SelectInput__dropdown__group__title__label">
+                <div className='SelectInput__dropdown__group__title'>
+                  <div className='SelectInput__dropdown__group__title__placeholder' />
+                  <div className='SelectInput__dropdown__group__title__label'>
                     {paramKey}
                   </div>
                 </div>
               </div>
-              <div className="SelectInput__dropdown__group__body">
-                {this._renderParams(
+              <div className='SelectInput__dropdown__group__body'>
+                {_renderParams(
                   params[paramKey],
                   [...parentPath, paramKey],
                   replaceOnClick,
@@ -335,20 +358,20 @@ class SelectInput extends Component {
               </div>
             </div>
           )}
-        </>
+        </Fragment>
       ))
     );
-  };
+  }
 
-  _renderSuggestions = () => {
-    if (!this.state.suggestionsPrefix?.trim()) {
+  function _renderSuggestions() {
+    if (!state.suggestionsPrefix?.trim()) {
       return null;
     }
 
-    const suggestionsPrefix = this.state.suggestionsPrefix.trim();
+    const suggestionsPrefix = state.suggestionsPrefix.trim();
 
     const metrics = [];
-    this.props.project?.metrics?.map(
+    props.project?.metrics?.map(
       (m) => m.startsWith(suggestionsPrefix) && metrics.push(m),
     );
 
@@ -357,40 +380,39 @@ class SelectInput extends Component {
     removeObjectEmptyKeys(params);
 
     return (
-      <div className="SelectInput__dropdown__suggestions">
+      <div className='SelectInput__dropdown__suggestions'>
         <UI.Text
-          className="SelectInput__dropdown__title"
-          type="primary"
+          className='SelectInput__dropdown__title'
+          type='primary'
           overline
           bold
         >
           Search
         </UI.Text>
         {!!metrics?.length &&
-          this._renderMetrics(metrics, true, this.resetSuggestionsPrefix)}
+          _renderMetrics(metrics, true, resetSuggestionsPrefix)}
         {!!metrics?.length && !!params && Object.keys(params).length > 0 && (
-          <div className="SelectInput__dropdown__divider" />
+          <div className='SelectInput__dropdown__divider' />
         )}
-        {!!params &&
-          this._renderParams(params, [], true, this.resetSuggestionsPrefix)}
+        {!!params && _renderParams(params, [], true, resetSuggestionsPrefix)}
         {metrics?.length === 0 && Object.keys(params).length === 0 && (
-          <UI.Text type="grey" spacing spacingTop center>
+          <UI.Text type='grey' spacing spacingTop center>
             No options
           </UI.Text>
         )}
       </div>
     );
-  };
+  }
 
-  _renderSelectedFields = () => {
+  function _renderSelectedFields() {
     const availableFields = [
-      ...(this.props.project?.metrics ?? []),
-      ...(this.props.project?.params
-        ? Object.keys(flattenObject(this.props.project?.params))
+      ...(props.project?.metrics ?? []),
+      ...(props.project?.params
+        ? Object.keys(flattenObject(props.project?.params))
         : []),
     ];
 
-    const selectedFields = this.getSelectedAttrs()?.filter(
+    const selectedFields = getSelectedAttrs()?.filter(
       (v, i, self) => !!v.length && self.indexOf(v) === i,
     );
 
@@ -399,24 +421,24 @@ class SelectInput extends Component {
     }
 
     return (
-      <div className="SelectInput__dropdown__selected">
+      <div className='SelectInput__dropdown__selected'>
         <UI.Text
-          className="SelectInput__dropdown__title"
-          type="primary"
+          className='SelectInput__dropdown__title'
+          type='primary'
           overline
           bold
         >
           Selected fields
         </UI.Text>
-        <div className="SelectInput__dropdown__selected__items">
+        <div className='SelectInput__dropdown__selected__items'>
           {selectedFields.map(
             (f, i) =>
               availableFields.indexOf(f) !== -1 && (
                 <UI.Label
-                  className="SelectInput__dropdown__selected__item"
+                  className='SelectInput__dropdown__selected__item'
                   key={i}
-                  iconRight={<UI.Icon i="close" />}
-                  iconOnClick={() => this.selectAttribute(f)}
+                  iconRight={<UI.Icon i='close' />}
+                  iconOnClick={() => selectAttribute(f)}
                   iconIsClickable
                   outline
                 >
@@ -427,9 +449,9 @@ class SelectInput extends Component {
         </div>
       </div>
     );
-  };
+  }
 
-  _renderContentLoader = () => {
+  function _renderContentLoader() {
     const cellHeight = 15,
       cellWidth = 25,
       marginX = 10,
@@ -445,8 +467,8 @@ class SelectInput extends Component {
       <ContentLoader
         width={600}
         height={300}
-        backgroundColor="#F3F3F3"
-        foregroundColor="#ECEBEB"
+        backgroundColor='#F3F3F3'
+        foregroundColor='#ECEBEB'
       >
         {[
           [-1, 0],
@@ -486,107 +508,90 @@ class SelectInput extends Component {
         ))}
       </ContentLoader>
     );
-  };
-
-  handleInputChange = (value) => {
-    this.context.setSearchInputState(
-      {
-        selectInput: value,
-      },
-      () => setTimeout(this.updateSuggestionsPrefix, 200),
-    );
-  };
-
-  render() {
-    return (
-      <div className="SelectInput">
-        <UI.Input
-          className={classNames({
-            SelectForm__form__row__input: true,
-            SelectInput__input: true,
-            active: this.state.dropdownIsOpen,
-          })}
-          classNameWrapper="SelectForm__form__row__input__wrapper"
-          placeholder="What to select.. e.g. `loss, acc, hparams.lr"
-          onFocus={this.handleInputFocus}
-          onBlur={this.handleInputBlur}
-          onKeyPress={(evt) => {
-            if (evt.charCode === 13) {
-              this.props.search();
-              this.blurSelectInput();
-            }
-          }}
-          onChange={(evt) => this.handleInputChange(evt.target?.value)}
-          value={this.context.searchInput.selectInput}
-          ref={this.selectInputRef}
-          tabIndex={1}
-        />
-        {this.state.dropdownIsOpen && (
-          <div
-            className={classNames({
-              SelectInput__dropdown: true,
-              open: true,
-            })}
-            tabIndex={0}
-            ref={this.dropdownRef}
-          >
-            <div
-              className="SelectInput__dropdown__body"
-              onClick={() =>
-                this.selectInputRef.current.inputRef?.current?.focus()
-              }
-            >
-              {this.state.progress !== null && (
-                <div
-                  className="SelectInput__dropdown__body__loader"
-                  style={{
-                    width: `${this.state.progress}%`,
-                  }}
-                />
-              )}
-              {this.props.project.params === null ||
-              this.props.project.metrics === null ? (
-                  this._renderContentLoader()
-                ) : (
-                <>
-                  {this._renderSuggestions()}
-                  {this._renderSelectedFields()}
-                  <UI.Text
-                    className="SelectInput__dropdown__title"
-                    type="primary"
-                    overline
-                    bold
-                  >
-                    Available fields
-                  </UI.Text>
-                  {!!this.props.project?.metrics?.length &&
-                    this._renderMetrics(this.props.project.metrics)}
-                  {!!this.props.project?.metrics?.length &&
-                    !!this.props.project?.params &&
-                    Object.keys(this.props.project?.params).length > 0 && (
-                    <div className="SelectInput__dropdown__divider" />
-                  )}
-                  {!!this.props.project?.params &&
-                    this._renderParams(this.props.project.params)}
-                  {this.props.project?.metrics?.length === 0 &&
-                    Object.keys(this.props.project?.params).length === 0 && (
-                      <UI.Text type="grey" spacing spacingTop center>
-                        Empty
-                      </UI.Text>
-                    )}
-                </>
-                )}
-            </div>
-          </div>
-        )}
-      </div>
-    );
   }
+
+  return (
+    <div className='SelectInput'>
+      <UI.Input
+        className={classNames({
+          SelectForm__form__row__input: true,
+          SelectInput__input: true,
+          active: state.dropdownIsOpen,
+        })}
+        classNameWrapper='SelectForm__form__row__input__wrapper'
+        placeholder='What to select.. e.g. `loss, acc, hparams.lr'
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        onKeyPress={(evt) => {
+          if (evt.charCode === 13) {
+            props.search();
+            blurSelectInput();
+          }
+        }}
+        onChange={(evt) => handleInputChange(evt.target?.value)}
+        value={searchInput.selectInput}
+        ref={selectInputRef}
+        tabIndex={1}
+      />
+      {state.dropdownIsOpen && (
+        <div
+          className={classNames({
+            SelectInput__dropdown: true,
+            open: true,
+          })}
+          tabIndex={0}
+          ref={dropdownRef}
+        >
+          <div
+            className='SelectInput__dropdown__body'
+            onClick={() => selectInputRef.current.inputRef?.current?.focus()}
+          >
+            {state.progress !== null && (
+              <div
+                className='SelectInput__dropdown__body__loader'
+                style={{
+                  width: `${state.progress}%`,
+                }}
+              />
+            )}
+            {props.project.params === null || props.project.metrics === null ? (
+              _renderContentLoader()
+            ) : (
+              <>
+                {_renderSuggestions()}
+                {_renderSelectedFields()}
+                <UI.Text
+                  className='SelectInput__dropdown__title'
+                  type='primary'
+                  overline
+                  bold
+                >
+                  Available fields
+                </UI.Text>
+                {!!props.project?.metrics?.length &&
+                  _renderMetrics(props.project.metrics)}
+                {!!props.project?.metrics?.length &&
+                  !!props.project?.params &&
+                  Object.keys(props.project?.params).length > 0 && (
+                  <div className='SelectInput__dropdown__divider' />
+                )}
+                {!!props.project?.params && _renderParams(props.project.params)}
+                {props.project?.metrics?.length === 0 &&
+                  Object.keys(props.project?.params).length === 0 && (
+                    <UI.Text type='grey' spacing spacingTop center>
+                      Empty
+                    </UI.Text>
+                  )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 SelectInput.propTypes = {};
-
-SelectInput.contextType = HubMainScreenContext;
 
 export default storeUtils.getWithState(
   classes.EXPLORE_PARAMS_SELECT_INPUT,

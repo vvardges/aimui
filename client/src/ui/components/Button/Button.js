@@ -24,11 +24,11 @@ function Button(props) {
       style={props.style}
     >
       {!!props.iconLeft && (
-        <div className="Button__icon left">{props.iconLeft}</div>
+        <div className='Button__icon left'>{props.iconLeft}</div>
       )}
-      <div className="Button__content">{props.children}</div>
+      <div className='Button__content'>{props.children}</div>
       {!!props.iconRight && (
-        <div className="Button__icon right">{props.iconRight}</div>
+        <div className='Button__icon right'>{props.iconRight}</div>
       )}
     </button>
   );

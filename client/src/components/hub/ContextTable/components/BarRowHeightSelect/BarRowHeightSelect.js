@@ -5,10 +5,7 @@ import PropTypes from 'prop-types';
 import UI from '../../../../../ui';
 import { classNames } from '../../../../../utils';
 
-function BarRowHeightSelect({
-  rowHeightMode,
-  setRowHeightMode,
-}) {
+function BarRowHeightSelect({ rowHeightMode, setRowHeightMode }) {
   let [opened, setOpened] = useState(false);
 
   let popupRef = useRef();
@@ -20,10 +17,10 @@ function BarRowHeightSelect({
   }, [opened]);
 
   return (
-    <div className="ContextTableBar__item__wrapper">
-      {opened &&
+    <div className='ContextTableBar__item__wrapper'>
+      {opened && (
         <div
-          className="ContextTableBar__item__popup BarRowHeightSelect"
+          className='ContextTableBar__item__popup BarRowHeightSelect'
           tabIndex={0}
           ref={popupRef}
           onBlur={(evt) => {
@@ -37,12 +34,12 @@ function BarRowHeightSelect({
             }
           }}
         >
-          <div className="BarRowHeightSelect__header">
+          <div className='BarRowHeightSelect__header'>
             <UI.Text overline bold>
               Select table row height
             </UI.Text>
           </div>
-          <div className="BarRowHeightSelect__body">
+          <div className='BarRowHeightSelect__body'>
             <div
               className={classNames({
                 BarRowHeightSelect__item: true,
@@ -72,7 +69,7 @@ function BarRowHeightSelect({
             </div>
           </div>
         </div>
-      }
+      )}
       <div
         className={classNames({
           ContextTableBar__item__label: true,
@@ -80,10 +77,8 @@ function BarRowHeightSelect({
         })}
         onClick={() => setOpened(!opened)}
       >
-        <UI.Icon i="format_line_spacing" scale={1.2} />
-        <span className="ContextTableBar__item__label__text">
-          Row Height
-        </span>
+        <UI.Icon i='format_line_spacing' scale={1.2} />
+        <span className='ContextTableBar__item__label__text'>Row Height</span>
       </div>
     </div>
   );

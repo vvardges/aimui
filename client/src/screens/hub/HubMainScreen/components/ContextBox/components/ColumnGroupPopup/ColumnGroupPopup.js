@@ -31,7 +31,7 @@ function ColumnGroupPopup(props) {
       target={
         triggerer ?? (
           <UI.Icon
-            i="layers"
+            i='layers'
             className={classNames({
               Table__header__action__icon: true,
             })}
@@ -48,22 +48,22 @@ function ColumnGroupPopup(props) {
             filterIncludesParam(groupByChart),
         })
       }
-      tooltip="Apply grouping"
+      tooltip='Apply grouping'
       content={
         <>
-          <div className="ContextBox__table__group__popup__header">
+          <div className='ContextBox__table__group__popup__header'>
             <UI.Text overline bold>
               Apply grouping
             </UI.Text>
           </div>
-          <div className="ContextBox__table__group__popup__body">
-            <div className="ContextBox__table__group__popup__body__row">
+          <div className='ContextBox__table__group__popup__body'>
+            <div className='ContextBox__table__group__popup__body__row'>
               <UI.Text overline small>
                 Group by color
               </UI.Text>
               <UI.Button
-                size="tiny"
-                type="primary"
+                size='tiny'
+                type='primary'
                 ghost={!filterIncludesParam(groupByColor)}
                 onClick={(evt) => toggleGrouping('groupByColor', groupByColor)}
               >
@@ -71,13 +71,13 @@ function ColumnGroupPopup(props) {
               </UI.Button>
             </div>
             <UI.Line />
-            <div className="ContextBox__table__group__popup__body__row">
+            <div className='ContextBox__table__group__popup__body__row'>
               <UI.Text overline small>
                 Group by style
               </UI.Text>
               <UI.Button
-                size="tiny"
-                type="primary"
+                size='tiny'
+                type='primary'
                 ghost={!filterIncludesParam(groupByStyle)}
                 onClick={(evt) => toggleGrouping('groupByStyle', groupByStyle)}
               >
@@ -85,13 +85,13 @@ function ColumnGroupPopup(props) {
               </UI.Button>
             </div>
             <UI.Line />
-            <div className="ContextBox__table__group__popup__body__row">
+            <div className='ContextBox__table__group__popup__body__row'>
               <UI.Text overline small>
                 Divide into charts
               </UI.Text>
               <UI.Button
-                size="tiny"
-                type="primary"
+                size='tiny'
+                type='primary'
                 ghost={!filterIncludesParam(groupByChart)}
                 onClick={(evt) => toggleGrouping('groupByChart', groupByChart)}
               >
@@ -101,7 +101,7 @@ function ColumnGroupPopup(props) {
           </div>
         </>
       }
-      popupClassName="ContextBox__table__group__popup"
+      popupClassName='ContextBox__table__group__popup'
     />
   );
 }

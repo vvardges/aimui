@@ -41,18 +41,18 @@ class AnalyticsPermission extends Component {
     }
 
     return (
-      <div className="AnalyticsPermission">
-        <div className="AnalyticsPermission__body">
+      <div className='AnalyticsPermission'>
+        <div className='AnalyticsPermission__body'>
           <UI.Text>
             Enable AimDE to collect your usage stats to build better and
             superior tool.
           </UI.Text>
-          <UI.Buttons className="AnalyticsPermission__actions">
-            <UI.Button type="primary" onClick={() => this.handleAcceptClick()}>
+          <UI.Buttons className='AnalyticsPermission__actions'>
+            <UI.Button type='primary' onClick={() => this.handleAcceptClick()}>
               Enable
             </UI.Button>
             <UI.Button
-              type="negative"
+              type='negative'
               onClick={() => this.handleDeclineClick()}
             >
               Disable

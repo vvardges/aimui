@@ -58,7 +58,7 @@ class Dropdown extends React.Component {
         className={className}
         onInputChange={this.props.onInputChange}
         onChange={this.props.onChange}
-        classNamePrefix="Dropdown"
+        classNamePrefix='Dropdown'
         ref={this.selectRef}
         {...props}
       />
@@ -78,7 +78,7 @@ Dropdown.propTypes = {
   isOpen: PropTypes.bool,
   multi: PropTypes.bool,
   options: PropTypes.array,
-  defaultValue: PropTypes.object,
+  defaultValue: PropTypes.any,
   inline: PropTypes.bool,
   right: PropTypes.bool,
   width: PropTypes.number,

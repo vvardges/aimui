@@ -14,7 +14,7 @@ function ListItem({ children, className, description }) {
   return (
     <li className={compClassName}>
       {children}
-      {!!description && <div className="ListItem__desc">{description}</div>}
+      {!!description && <div className='ListItem__desc'>{description}</div>}
     </li>
   );
 }

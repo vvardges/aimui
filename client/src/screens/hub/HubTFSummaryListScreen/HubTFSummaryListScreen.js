@@ -290,31 +290,31 @@ class HubTFSummaryListScreen extends Component {
 
   _renderParamsForm = (node) => {
     return (
-      <div className="HubTFSummaryListScreen__node__params">
-        <UI.Text type="grey-dark" spacing>
+      <div className='HubTFSummaryListScreen__node__params'>
+        <UI.Text type='grey-dark' spacing>
           Set parameters to search and compare run
-          <UI.Text type="grey-darker" inline>
+          <UI.Text type='grey-darker' inline>
             {' '}
             `{this.formatPath(node.fullPath)}`{' '}
           </UI.Text>
         </UI.Text>
-        <div className="HubTFSummaryListScreen__node__params__form">
-          <UI.Text type="grey" small>
+        <div className='HubTFSummaryListScreen__node__params__form'>
+          <UI.Text type='grey' small>
             Parameters:
           </UI.Text>
-          <UI.Text type="grey" small>
+          <UI.Text type='grey' small>
             Parsed result:
           </UI.Text>
-          <div className="HubTFSummaryListScreen__node__params__input">
+          <div className='HubTFSummaryListScreen__node__params__input'>
             <UI.Input
-              name="params"
+              name='params'
               multiLine={true}
               onChange={this.handleInputChange}
               value={this.state.formParams.params}
               placeholder={'lr 0.01\n' + 'hidden_dim 256\n' + 'conv 1'}
             />
           </div>
-          <div className="HubTFSummaryListScreen__node__params__summary">
+          <div className='HubTFSummaryListScreen__node__params__summary'>
             {this.state.formSummary !== null &&
               this.state.formSummary.length > 0 &&
               this.state.formSummary.map(
@@ -327,9 +327,9 @@ class HubTFSummaryListScreen extends Component {
               )}
           </div>
         </div>
-        <UI.Buttons className="HubTFSummaryListScreen__node__params__buttons">
+        <UI.Buttons className='HubTFSummaryListScreen__node__params__buttons'>
           <UI.Button
-            type="secondary"
+            type='secondary'
             onClick={() => this.handleCancelBtnClick()}
           >
             Cancel
@@ -337,7 +337,7 @@ class HubTFSummaryListScreen extends Component {
           {(this.state.formSummary !== null ||
             !this.state.formParams.params) && (
             <UI.Button
-              type="primary"
+              type='primary'
               onClick={() => this.handleSaveBtnClick()}
               {...this.state.formSaveBtn}
             >
@@ -355,19 +355,19 @@ class HubTFSummaryListScreen extends Component {
     }
 
     return tree.map((node, nodeKey) => (
-      <div key={nodeKey} className="HubTFSummaryListScreen__node">
-        <div className="HubTFSummaryListScreen__node__title">
-          <UI.Text type="grey-dark">{node.path}</UI.Text>
+      <div key={nodeKey} className='HubTFSummaryListScreen__node'>
+        <div className='HubTFSummaryListScreen__node__title'>
+          <UI.Text type='grey-dark'>{node.path}</UI.Text>
         </div>
         {node.children.length > 0 ? (
           this._renderTree(node.children)
         ) : (
-          <div className="HubTFSummaryListScreen__node__body">
+          <div className='HubTFSummaryListScreen__node__body'>
             {node.showActions && (
               <UI.Buttons>
                 <UI.Button
-                  size="tiny"
-                  type="positive"
+                  size='tiny'
+                  type='positive'
                   onClick={() => this.handleParamBtnClick(node.fullPath)}
                 >
                   Edit params
@@ -375,7 +375,7 @@ class HubTFSummaryListScreen extends Component {
               </UI.Buttons>
             )}
             {node.isLoading && (
-              <UI.Text type="grey" small>
+              <UI.Text type='grey' small>
                 Loading..
               </UI.Text>
             )}
@@ -389,7 +389,7 @@ class HubTFSummaryListScreen extends Component {
   _renderContent = () => {
     if (!this.props.project.tf_enabled) {
       return (
-        <UI.Text type="grey" center>
+        <UI.Text type='grey' center>
           Can't find TF summary logs directory
         </UI.Text>
       );
@@ -397,21 +397,21 @@ class HubTFSummaryListScreen extends Component {
 
     if (this.state.isLoading) {
       return (
-        <UI.Text type="grey" center>
+        <UI.Text type='grey' center>
           Loading..
         </UI.Text>
       );
     }
 
     return (
-      <div className="HubTFSummaryListScreen__content">
+      <div className='HubTFSummaryListScreen__content'>
         <UI.Text size={6} header divided>
           TF Summary Logs
         </UI.Text>
-        <UI.Text className="HubTFSummaryListScreen__desc" type="grey">
+        <UI.Text className='HubTFSummaryListScreen__desc' type='grey'>
           Configure your TensorFlow logs for fast and easy search or comparison
         </UI.Text>
-        <div className="HubTFSummaryListScreen__tree">
+        <div className='HubTFSummaryListScreen__tree'>
           {this._renderTree(this.state.tree)}
         </div>
       </div>
@@ -422,10 +422,10 @@ class HubTFSummaryListScreen extends Component {
     return (
       <ProjectWrapper>
         <Helmet>
-          <meta title="" content="" />
+          <meta title='' content='' />
         </Helmet>
 
-        <UI.Container size="small">{this._renderContent()}</UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }

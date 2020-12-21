@@ -91,35 +91,35 @@ class HubExecutablesScreen extends React.Component {
 
   _renderContent = () => {
     return (
-      <div className="HubExecutablesScreen">
+      <div className='HubExecutablesScreen'>
         <div>
           <UI.Segment
-            className="HubExecutablesScreen__processes"
-            type="secondary"
+            className='HubExecutablesScreen__processes'
+            type='secondary'
           >
             <UI.Text divided>
               Running processes
               <UI.Icon
-                className="HubExecutablesScreen__processes__update"
+                className='HubExecutablesScreen__processes__update'
                 onClick={() => this.updateProcesses()}
-                i="get_app"
+                i='get_app'
               />
             </UI.Text>
             <RunningExecutablesList ref={this.runningExecsRef} />
           </UI.Segment>
-          <div className="HubExecutablesScreen__templates">
-            <div className="HubExecutablesScreen__templates__header">
+          <div className='HubExecutablesScreen__templates'>
+            <div className='HubExecutablesScreen__templates__header'>
               <UI.Text size={6}>Process templates</UI.Text>
               <Link to={HUB_PROJECT_CREATE_EXECUTABLE}>
-                <UI.Button type="positive">Create New Template</UI.Button>
+                <UI.Button type='positive'>Create New Template</UI.Button>
               </Link>
             </div>
             {this.state.isLoading ? (
-              <UI.Text type="grey" spacingTop center>
+              <UI.Text type='grey' spacingTop center>
                 Loading..
               </UI.Text>
             ) : !this.state.executables.length ? (
-              <UI.Text type="grey" spacingTop center>
+              <UI.Text type='grey' spacingTop center>
                 Empty
               </UI.Text>
             ) : (
@@ -127,7 +127,7 @@ class HubExecutablesScreen extends React.Component {
                 {this.state.executables.map((e, eKey) => (
                   <UI.ListItem
                     key={eKey}
-                    className="HubExecutablesScreen__item"
+                    className='HubExecutablesScreen__item'
                   >
                     <Link
                       to={buildUrl(screens.HUB_PROJECT_EXECUTABLE_DETAIL, {
@@ -136,25 +136,25 @@ class HubExecutablesScreen extends React.Component {
                     >
                       {e.name}
                     </Link>
-                    <div className="HubExecutablesScreen__item__cmd">
+                    <div className='HubExecutablesScreen__item__cmd'>
                       <UI.Button
-                        className="HubExecutablesScreen__item__cmd__btn"
-                        type="secondary"
-                        size="tiny"
+                        className='HubExecutablesScreen__item__cmd__btn'
+                        type='secondary'
+                        size='tiny'
                         onClick={() => this.handleExecuteBtnClick(eKey, e.id)}
                         {...this.state.execButtons[eKey]}
                       >
                         Execute with default params
                       </UI.Button>
-                      <UI.Text inline type="grey-dark">
+                      <UI.Text inline type='grey-dark'>
                         > {e.script_path}
                       </UI.Text>
                     </div>
-                    <UI.Text small type="grey">
+                    <UI.Text small type='grey'>
                       Interpreter:{' '}
                       {e.interpreter_path ? e.interpreter_path : 'python'}
                     </UI.Text>
-                    <UI.Text small type="grey">
+                    <UI.Text small type='grey'>
                       Workspace: {e.working_dir}
                     </UI.Text>
                   </UI.ListItem>
@@ -171,10 +171,10 @@ class HubExecutablesScreen extends React.Component {
     return (
       <ProjectWrapper>
         <Helmet>
-          <meta title="" content="" />
+          <meta title='' content='' />
         </Helmet>
 
-        <UI.Container size="small">{this._renderContent()}</UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }

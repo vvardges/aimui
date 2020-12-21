@@ -26,13 +26,13 @@ function ContextTable(props) {
       })}
       ref={contextTableRef}
     >
-      {props.displayBar &&
+      {props.displayBar && (
         <div
           className={classNames({
             ContextTableBar: true,
           })}
         >
-          <div className="ContextTableBar__items ContextTableBar__items--left">
+          <div className='ContextTableBar__items ContextTableBar__items--left'>
             <BarFilter
               excludedFields={excludedFields}
               setExcludedFields={setExcludedFields}
@@ -44,10 +44,10 @@ function ContextTable(props) {
               setRowHeightMode={setRowHeightMode}
             />
           </div>
-          <div className="ContextTableBar__items ContextTableBar__items--right" />
+          <div className='ContextTableBar__items ContextTableBar__items--right' />
         </div>
-      }
-      <div className="ContextTable__table">
+      )}
+      <div className='ContextTable__table'>
         <UI.Table
           excludedFields={excludedFields}
           rowHeightMode={rowHeightMode}

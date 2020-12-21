@@ -3,8 +3,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 function ControlsSidebarToggleOutliers(props) {
+  const { setChartSettingsState } = HubMainScreenModel.emitters;
   return (
     <UI.Tooltip
       tooltip={
@@ -23,7 +25,7 @@ function ControlsSidebarToggleOutliers(props) {
         })}
         onClick={() =>
           !props.disabled &&
-          props.setChartSettingsState({
+          setChartSettingsState({
             ...props.settings,
             persistent: {
               ...props.settings.persistent,
@@ -33,9 +35,9 @@ function ControlsSidebarToggleOutliers(props) {
         }
       >
         {props.settings.persistent.displayOutliers ? (
-          <UI.Icon i="blur_on" scale={1.9} />
+          <UI.Icon i='blur_on' scale={1.9} />
         ) : (
-          <UI.Icon i="blur_circular" scale={1.9} />
+          <UI.Icon i='blur_circular' scale={1.9} />
         )}
       </div>
     </UI.Tooltip>
@@ -45,7 +47,6 @@ function ControlsSidebarToggleOutliers(props) {
 ControlsSidebarToggleOutliers.propTypes = {
   settings: PropTypes.object,
   disabled: PropTypes.bool,
-  setChartSettingsState: PropTypes.func,
 };
 
 export default ControlsSidebarToggleOutliers;

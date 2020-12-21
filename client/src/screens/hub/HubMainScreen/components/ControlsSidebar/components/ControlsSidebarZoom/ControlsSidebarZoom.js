@@ -4,10 +4,13 @@ import PropTypes from 'prop-types';
 import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
 import * as _ from 'lodash';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 function ControlsSidebarZoom(props) {
   let [opened, setOpened] = useState(false);
   let popupRef = useRef();
+
+  const { setChartSettingsState } = HubMainScreenModel.emitters;
 
   const {
     persistent: { zoom },
@@ -34,24 +37,24 @@ function ControlsSidebarZoom(props) {
 
   return (
     <>
-      <UI.Tooltip tooltip="Zoom in">
+      <UI.Tooltip tooltip='Zoom in'>
         <div
           className={classNames({
             ControlsSidebar__item: true,
             active: zoomMode,
           })}
           onClick={(evt) =>
-            props.setChartSettingsState({
+            setChartSettingsState({
               ...props.settings,
               zoomMode: !zoomMode,
             })
           }
         >
-          <UI.Icon i="zoom_in" scale={1.7} />
+          <UI.Icon i='zoom_in' scale={1.7} />
         </div>
       </UI.Tooltip>
-      <div className="ControlsSidebar__item__wrapper">
-        <UI.Tooltip tooltip="Zoom out">
+      <div className='ControlsSidebar__item__wrapper'>
+        <UI.Tooltip tooltip='Zoom out'>
           <div
             className={classNames({
               ControlsSidebar__item: true,
@@ -59,7 +62,7 @@ function ControlsSidebarZoom(props) {
             })}
             onClick={(evt) => {
               if (zoom !== null) {
-                props.setChartSettingsState({
+                setChartSettingsState({
                   ...props.settings,
                   zoomMode: false,
                   zoomHistory: zoomHistory.slice(1),
@@ -78,7 +81,7 @@ function ControlsSidebarZoom(props) {
               }
             }}
           >
-            <UI.Icon i="zoom_out" scale={1.7} />
+            <UI.Icon i='zoom_out' scale={1.7} />
           </div>
         </UI.Tooltip>
         {zoomHistory.length > 0 && (
@@ -89,12 +92,12 @@ function ControlsSidebarZoom(props) {
             })}
             onClick={(evt) => setOpened(!opened)}
           >
-            <UI.Icon i="chevron_left" />
+            <UI.Icon i='chevron_left' />
           </div>
         )}
         {opened && (
           <div
-            className="ControlsSidebar__item__popup list"
+            className='ControlsSidebar__item__popup list'
             tabIndex={0}
             ref={popupRef}
             onBlur={(evt) => {
@@ -108,22 +111,22 @@ function ControlsSidebarZoom(props) {
               }
             }}
           >
-            <div className="ControlsSidebar__item__popup__header">
+            <div className='ControlsSidebar__item__popup__header'>
               <UI.Text overline bold>
                 Select option to zoom out
               </UI.Text>
             </div>
-            <div className="ControlsSidebar__item__popup__list">
+            <div className='ControlsSidebar__item__popup__list'>
               {zoomedChartIndices.map((chartIndex) => (
                 <div
                   key={chartIndex}
-                  className="ControlsSidebar__item__popup__list__item"
+                  className='ControlsSidebar__item__popup__list__item'
                   onClick={(evt) => {
                     let historyIndex = _.findIndex(
                       zoomHistory,
                       (item) => item[0] === +chartIndex,
                     );
-                    props.setChartSettingsState({
+                    setChartSettingsState({
                       ...props.settings,
                       zoomMode: false,
                       zoomHistory: zoomHistory.filter(
@@ -140,15 +143,15 @@ function ControlsSidebarZoom(props) {
                   }}
                 >
                   <UI.Text small>Zoom out chart</UI.Text>
-                  <div className="ContextBox__table__group-indicator__chart">
+                  <div className='ContextBox__table__group-indicator__chart'>
                     <UI.Text>{+chartIndex + 1}</UI.Text>
                   </div>
                 </div>
               ))}
               <div
-                className="ControlsSidebar__item__popup__list__item"
+                className='ControlsSidebar__item__popup__list__item'
                 onClick={(evt) => {
-                  props.setChartSettingsState({
+                  setChartSettingsState({
                     ...props.settings,
                     zoomMode: false,
                     zoomHistory: [],
@@ -172,7 +175,6 @@ function ControlsSidebarZoom(props) {
 
 ControlsSidebarZoom.propTypes = {
   settings: PropTypes.object,
-  setChartSettingsState: PropTypes.func,
 };
 
 export default ControlsSidebarZoom;

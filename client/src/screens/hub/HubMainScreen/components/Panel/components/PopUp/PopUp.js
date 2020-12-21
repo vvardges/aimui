@@ -30,7 +30,7 @@ class PopUp extends Component {
           />
         )}
         <div
-          className="PopUp__body"
+          className='PopUp__body'
           style={{
             maxHeight: this.props.height,
           }}

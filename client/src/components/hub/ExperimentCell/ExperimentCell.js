@@ -24,16 +24,16 @@ function ExperimentCell({
 
   return (
     <div className={compClassName}>
-      <div className="ExperimentCell__body">{children}</div>
-      <div className="ExperimentCell__footer">
-        <UI.Text overline bold type="primary">
+      <div className='ExperimentCell__body'>{children}</div>
+      <div className='ExperimentCell__footer'>
+        <UI.Text overline bold type='primary'>
           {type}
         </UI.Text>
-        <div className="ExperimentCell__footer__labels">
+        <div className='ExperimentCell__footer__labels'>
           {!!footerLabels &&
             footerLabels.map((label, labelKey) => (
               <UI.Label
-                className="ExperimentCell__footer__label"
+                className='ExperimentCell__footer__label'
                 key={labelKey}
               >
                 {label}
@@ -41,8 +41,8 @@ function ExperimentCell({
             ))}
         </div>
         <UI.Text
-          className="ExperimentCell__footer__title"
-          type="grey-dark"
+          className='ExperimentCell__footer__title'
+          type='grey-dark'
           caption
           inline
         >

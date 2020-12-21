@@ -392,10 +392,10 @@ export function flattenObject(ob, prefix = false, result = null) {
 
 export function transformNestedArrToObj(item) {
   // Transform {foo: ['bar', 'baz']} to {foo: {bar: true, baz: true}}
-  Object.keys(item).forEach(i => {
+  Object.keys(item).forEach((i) => {
     if (Array.isArray(item[i])) {
       const d = {};
-      item[i].forEach(v => d[v] = true);
+      item[i].forEach((v) => (d[v] = true));
       item[i] = d;
     } else if (typeof item[i] === 'object') {
       transformNestedArrToObj(item[i]);

@@ -37,15 +37,16 @@ export default class Trace {
     return traceClone;
   };
 
-  addSeries = (series) => {
+  addSeries = (series, aggregate = false) => {
     this.series.push(series);
 
     this.setExperiments(series.run.experiment_name);
     if (series.metric !== null) this.setMetrics(series.metric.name);
     if (series.trace !== null) this.setContexts(series.trace.context);
 
-    // TODO: Implement 'lazy' aggregation
-    this.aggregate();
+    if (aggregate) {
+      this.aggregate();
+    }
   };
 
   removeSeries = (index) => {

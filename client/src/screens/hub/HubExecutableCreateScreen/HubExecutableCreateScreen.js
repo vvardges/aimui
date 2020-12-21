@@ -114,7 +114,7 @@ class HubExecutableCreateScreen extends React.Component {
 
   _renderContent = () => {
     return (
-      <div className="HubExecutableCreateScreen__FormGroup__wrapper">
+      <div className='HubExecutableCreateScreen__FormGroup__wrapper'>
         <UI.Text size={6} header divided>
           {' '}
           Create Process Template{' '}
@@ -123,7 +123,7 @@ class HubExecutableCreateScreen extends React.Component {
         <UI.Buttons>
           <UI.Button
             onClick={() => this.handleCreateBtnClick()}
-            type="positive"
+            type='positive'
             {...this.state.createBtn}
           >
             Save as template
@@ -136,7 +136,7 @@ class HubExecutableCreateScreen extends React.Component {
           {/*  Execute now*/}
           {/*</UI.Button>*/}
           <Link to={screens.HUB_PROJECT_EXECUTABLES}>
-            <UI.Button type="secondary"> Cancel </UI.Button>
+            <UI.Button type='secondary'> Cancel </UI.Button>
           </Link>
         </UI.Buttons>
       </div>
@@ -150,7 +150,7 @@ class HubExecutableCreateScreen extends React.Component {
 
     return (
       <ProjectWrapper>
-        <UI.Container size="small">{this._renderContent()}</UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }

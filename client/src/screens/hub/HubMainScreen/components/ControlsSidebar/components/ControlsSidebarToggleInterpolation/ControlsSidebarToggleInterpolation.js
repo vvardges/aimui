@@ -3,8 +3,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 function ControlsSidebarToggleInterpolation(props) {
+  const { setChartSettingsState } = HubMainScreenModel.emitters;
   return (
     <UI.Tooltip
       tooltip={
@@ -23,7 +25,7 @@ function ControlsSidebarToggleInterpolation(props) {
         })}
         onClick={(evt) =>
           !props.disabled &&
-          props.setChartSettingsState({
+          setChartSettingsState({
             ...props.settings,
             persistent: {
               ...props.settings.persistent,
@@ -32,7 +34,7 @@ function ControlsSidebarToggleInterpolation(props) {
           })
         }
       >
-        <UI.Icon i="multiline_chart" scale={1.7} />
+        <UI.Icon i='multiline_chart' scale={1.7} />
       </div>
     </UI.Tooltip>
   );
@@ -41,7 +43,6 @@ function ControlsSidebarToggleInterpolation(props) {
 ControlsSidebarToggleInterpolation.propTypes = {
   settings: PropTypes.object,
   disabled: PropTypes.bool,
-  setChartSettingsState: PropTypes.func,
 };
 
 export default ControlsSidebarToggleInterpolation;

@@ -61,35 +61,35 @@ class RunningExecutablesList extends Component {
       <div>
         {this.state.isLoading ? (
           <UI.Text
-            className="RunningExecutablesList__status"
-            type="grey"
+            className='RunningExecutablesList__status'
+            type='grey'
             center
           >
             Loading..
           </UI.Text>
         ) : !this.state.executables.length ? (
           <UI.Text
-            className="RunningExecutablesList__status"
-            type="grey"
+            className='RunningExecutablesList__status'
+            type='grey'
             center
           >
             Empty
           </UI.Text>
         ) : (
-          <div className="RunningExecutablesList__items">
+          <div className='RunningExecutablesList__items'>
             {this.state.executables.map((e, eKey) => (
-              <div className="RunningExecutablesList__item" key={eKey}>
+              <div className='RunningExecutablesList__item' key={eKey}>
                 <UI.Button
                   onClick={() => this.handleProcessKill(eKey, e.pid)}
-                  type="negative"
-                  size="small"
+                  type='negative'
+                  size='small'
                   inline
                   {...this.state.killButtons[eKey]}
                 >
                   Kill
                 </UI.Button>
                 <UI.Label>{e.pid}</UI.Label>
-                <div className="RunningExecutablesList__item__name">
+                <div className='RunningExecutablesList__item__name'>
                   {!!e.name && <UI.Text inline>{e.name}:</UI.Text>}
                   <UI.Text small inline>
                     {' '}

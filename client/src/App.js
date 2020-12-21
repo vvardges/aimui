@@ -48,12 +48,12 @@ class App extends React.Component {
   render() {
     return (
       <BrowserRouter>
-        <div className="LoadingBar__wrapper">
+        <div className='LoadingBar__wrapper'>
           <LoadingBar
             height={3}
-            color="#3B5896"
+            color='#3B5896'
             progress={this.props.loadProgress}
-            className="LoadingBar"
+            className='LoadingBar'
           />
         </div>
         <Header />

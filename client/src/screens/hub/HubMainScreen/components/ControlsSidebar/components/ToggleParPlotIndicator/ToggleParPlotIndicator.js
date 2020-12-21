@@ -3,8 +3,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 function ToggleParPlotIndicator(props) {
+  const { setChartSettingsState } = HubMainScreenModel.emitters;
   return (
     <UI.Tooltip
       tooltip={
@@ -23,7 +25,7 @@ function ToggleParPlotIndicator(props) {
         })}
         onClick={(evt) =>
           !props.disabled &&
-          props.setChartSettingsState({
+          setChartSettingsState({
             ...props.settings,
             persistent: {
               ...props.settings.persistent,
@@ -32,7 +34,7 @@ function ToggleParPlotIndicator(props) {
           })
         }
       >
-        <UI.Icon i="straighten" scale={1.7} rotate={90} />
+        <UI.Icon i='straighten' scale={1.7} rotate={90} />
       </div>
     </UI.Tooltip>
   );
@@ -41,7 +43,6 @@ function ToggleParPlotIndicator(props) {
 ToggleParPlotIndicator.propTypes = {
   settings: PropTypes.object,
   disabled: PropTypes.bool,
-  setChartSettingsState: PropTypes.func,
 };
 
 export default ToggleParPlotIndicator;

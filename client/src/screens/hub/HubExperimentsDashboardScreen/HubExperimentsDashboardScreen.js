@@ -76,8 +76,10 @@ class HubExperimentsDashboardScreen extends React.Component {
       this.recoverStateFromURL(location.search);
     }
 
-    const paramFields = this.props.project?.params ? {...this.props.project?.params} : {};
-    Object.keys(paramFields).forEach(paramKey => {
+    const paramFields = this.props.project?.params
+      ? { ...this.props.project?.params }
+      : {};
+    Object.keys(paramFields).forEach((paramKey) => {
       paramFields[paramKey] = Object.keys(paramFields[paramKey]);
     });
     if (!_.isEqual(paramFields, this.state.searchFields.params)) {
@@ -444,34 +446,34 @@ class HubExperimentsDashboardScreen extends React.Component {
     }
 
     return (
-      <div className="HubExperimentsDashboardScreen__experiments__items">
+      <div className='HubExperimentsDashboardScreen__experiments__items'>
         <UI.Menu
           bordered
           outline
           headerElem={
-            <div className="HubExperimentsDashboardScreen__experiments__header">
+            <div className='HubExperimentsDashboardScreen__experiments__header'>
               Experiments
               {!!this.state.selectedExperiments?.length && (
-                <UI.Buttons className="HubExperimentsDashboardScreen__experiments__actions">
+                <UI.Buttons className='HubExperimentsDashboardScreen__experiments__actions'>
                   <UI.Button
-                    type="primary"
-                    size="small"
+                    type='primary'
+                    size='small'
                     onClick={() => this.searchExperiments()}
-                    iconLeft={<UI.Icon i="search" />}
+                    iconLeft={<UI.Icon i='search' />}
                   >
                     Search
                   </UI.Button>
                   <UI.Button
-                    type="positive"
-                    size="small"
+                    type='positive'
+                    size='small'
                     onClick={() => this.exploreExperiments()}
-                    iconLeft={<UI.Icon i="timeline" />}
+                    iconLeft={<UI.Icon i='timeline' />}
                   >
                     Explore
                   </UI.Button>
                   <UI.Button
-                    type="secondary"
-                    size="small"
+                    type='secondary'
+                    size='small'
                     onClick={() => this.resetExperiments()}
                   >
                     Reset
@@ -483,11 +485,11 @@ class HubExperimentsDashboardScreen extends React.Component {
         >
           {this.state.experiments.map((exp, i) => (
             <UI.MenuItem
-              className="HubExperimentsDashboardScreen__experiments__item"
+              className='HubExperimentsDashboardScreen__experiments__item'
               key={i}
               onClick={() => this.toggleExperiment(exp)}
               active={this.state.selectedExperiments.indexOf(exp) !== -1}
-              activeClass="activeCheck"
+              activeClass='activeCheck'
             >
               {exp}
             </UI.MenuItem>
@@ -506,18 +508,18 @@ class HubExperimentsDashboardScreen extends React.Component {
       {
         key: 'run',
         content: !!this.state.selectedRuns?.length ? (
-          <UI.Buttons className="HubExperimentsDashboardScreen__runs__actions">
+          <UI.Buttons className='HubExperimentsDashboardScreen__runs__actions'>
             <UI.Button
-              type="positive"
-              size="tiny"
+              type='positive'
+              size='tiny'
               onClick={this.exploreRuns}
-              iconLeft={<UI.Icon i="timeline" />}
+              iconLeft={<UI.Icon i='timeline' />}
             >
               Explore
             </UI.Button>
             <UI.Button
-              type="secondary"
-              size="tiny"
+              type='secondary'
+              size='tiny'
               onClick={() => this.resetRuns()}
             >
               Reset
@@ -537,13 +539,13 @@ class HubExperimentsDashboardScreen extends React.Component {
           key: `${metricKey}-${contextKey}`,
           content: (
             <>
-              <div className="HubExperimentsDashboardScreen__runs__context__cell">
+              <div className='HubExperimentsDashboardScreen__runs__context__cell'>
                 {!!metricContext &&
                   Object.keys(metricContext).map((metricContextKey) => (
                     <UI.Label
                       key={metricContextKey}
-                      size="small"
-                      className="HubExperimentsDashboardScreen__runs__context__item"
+                      size='small'
+                      className='HubExperimentsDashboardScreen__runs__context__item'
                     >
                       {metricContextKey}:{' '}
                       {formatValue(metricContext[metricContextKey])}
@@ -553,25 +555,25 @@ class HubExperimentsDashboardScreen extends React.Component {
                   Object.keys(metricContext).length === 0) && (
                   <UI.Label
                     key={0}
-                    size="small"
-                    className="HubExperimentsDashboardScreen__runs__context__item"
+                    size='small'
+                    className='HubExperimentsDashboardScreen__runs__context__item'
                   >
                     No context
                   </UI.Label>
                 )}
               </div>
-              <div className="Table__header__action__container">
-                <UI.Tooltip tooltip="Explore metric">
+              <div className='Table__header__action__container'>
+                <UI.Tooltip tooltip='Explore metric'>
                   <div
-                    className="Table__header__action"
+                    className='Table__header__action'
                     onClick={() =>
                       this.exploreMetric(metricName, metricContext)
                     }
                   >
                     <UI.Icon
-                      i="timeline"
+                      i='timeline'
                       scale={1.2}
-                      className="HubExperimentsDashboardScreen__runs__context__icon"
+                      className='HubExperimentsDashboardScreen__runs__context__icon'
                     />
                   </div>
                 </UI.Tooltip>
@@ -634,8 +636,8 @@ class HubExperimentsDashboardScreen extends React.Component {
                     }
                   >
                     <UI.Icon
-                      i="filter_list"
-                      className="Table__header__action__icon"
+                      i='filter_list'
+                      className='Table__header__action__icon'
                     />
                   </div>
                 </UI.Tooltip>
@@ -683,8 +685,8 @@ class HubExperimentsDashboardScreen extends React.Component {
                   }
                 >
                   <UI.Icon
-                    i="filter_list"
-                    className="Table__header__action__icon"
+                    i='filter_list'
+                    className='Table__header__action__icon'
                   />
                 </div>
               </UI.Tooltip>
@@ -706,7 +708,7 @@ class HubExperimentsDashboardScreen extends React.Component {
                 commit_id: run.run_hash,
               })}
             >
-              <UI.Text className="HubExperimentsDashboardScreen__runs__item__name">
+              <UI.Text className='HubExperimentsDashboardScreen__runs__item__name'>
                 {run.experiment_name} |{' '}
                 {moment(run.date * 1000).format('HH:mm · D MMM, YY')}
               </UI.Text>
@@ -768,10 +770,10 @@ class HubExperimentsDashboardScreen extends React.Component {
     });
 
     return (
-      <div className="HubExperimentsDashboardScreen__runs__content">
-        <div className="HubExperimentsDashboardScreen__runs__table__wrapper">
+      <div className='HubExperimentsDashboardScreen__runs__content'>
+        <div className='HubExperimentsDashboardScreen__runs__table__wrapper'>
           <ContextTable
-            name="runs"
+            name='runs'
             topHeader
             columns={columns}
             data={data}
@@ -785,10 +787,10 @@ class HubExperimentsDashboardScreen extends React.Component {
   _renderContent = () => {
     return (
       <div
-        className="HubExperimentsDashboardScreen"
+        className='HubExperimentsDashboardScreen'
         style={{ height: this.state.height }}
       >
-        <div className="HubExperimentsDashboardScreen__nav">
+        <div className='HubExperimentsDashboardScreen__nav'>
           <SearchBar
             ref={this.searchBarRef}
             initValue={this.initSearchQuery}
@@ -800,36 +802,36 @@ class HubExperimentsDashboardScreen extends React.Component {
           />
         </div>
         {this.state.isLoading ? (
-          <UI.Text className="" type="grey" center spacingTop>
+          <UI.Text className='' type='grey' center spacingTop>
             Loading..
           </UI.Text>
         ) : this.state.runs.length ? (
-          <div className="HubExperimentsDashboardScreen__content">
-            <div className="HubExperimentsDashboardScreen__experiments">
+          <div className='HubExperimentsDashboardScreen__content'>
+            <div className='HubExperimentsDashboardScreen__experiments'>
               {this._renderExperiments()}
             </div>
-            <div className="HubExperimentsDashboardScreen__runs">
+            <div className='HubExperimentsDashboardScreen__runs'>
               {this._renderRuns()}
             </div>
           </div>
         ) : (
           <div>
             {!!this.searchBarRef?.current?.getValue() ? (
-              <UI.Text type="grey" center spacingTop>
+              <UI.Text type='grey' center spacingTop>
                 You haven't recorded experiments matching this query.
               </UI.Text>
             ) : (
-              <UI.Text type="grey" center spacingTop>
+              <UI.Text type='grey' center spacingTop>
                 It's super easy to search Aim experiments.
               </UI.Text>
             )}
-            <UI.Text type="grey" center>
+            <UI.Text type='grey' center>
               Lookup{' '}
               <a
-                className="link"
-                href="https://github.com/aimhubio/aim#searching-experiments"
-                target="_blank"
-                rel="noopener noreferrer"
+                className='link'
+                href='https://github.com/aimhubio/aim#searching-experiments'
+                target='_blank'
+                rel='noopener noreferrer'
               >
                 search docs
               </a>{' '}
@@ -847,9 +849,9 @@ class HubExperimentsDashboardScreen extends React.Component {
     }
 
     return (
-      <ProjectWrapper size="fluid" gap={false} ref={this.projectWrapperRef}>
+      <ProjectWrapper size='fluid' gap={false} ref={this.projectWrapperRef}>
         <Helmet>
-          <meta title="" content="" />
+          <meta title='' content='' />
         </Helmet>
 
         <>{this._renderContent()}</>

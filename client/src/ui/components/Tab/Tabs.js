@@ -16,11 +16,11 @@ function Tabs(props) {
 
   return (
     <div className={className}>
-      <div className="Tabs__left">
+      <div className='Tabs__left'>
         {props.leftItems}
         {props.children}
       </div>
-      <div className="Tabs__right">{props.rightItems}</div>
+      <div className='Tabs__right'>{props.rightItems}</div>
     </div>
   );
 }

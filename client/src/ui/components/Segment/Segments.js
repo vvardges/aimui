@@ -12,7 +12,7 @@ function Segments(props) {
 
   return (
     <div className={className}>
-      <div className="Segments__cont">{props.children}</div>
+      <div className='Segments__cont'>{props.children}</div>
     </div>
   );
 }

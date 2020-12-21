@@ -58,7 +58,7 @@ class HubTagCreateScreen extends React.Component {
 
   _renderContent = () => {
     return (
-      <div className="HubTagCreateScreen__FormGroup__wrapper">
+      <div className='HubTagCreateScreen__FormGroup__wrapper'>
         <UI.Text size={6} header divided>
           Create New Tag
         </UI.Text>
@@ -67,13 +67,13 @@ class HubTagCreateScreen extends React.Component {
         <UI.Buttons>
           <UI.Button
             onClick={() => this.handleCreateClick()}
-            type="positive"
+            type='positive'
             {...this.state.buttonStatus}
           >
             Create
           </UI.Button>
           <Link to={screens.HUB_PROJECT_TAGS}>
-            <UI.Button type="secondary"> Cancel </UI.Button>
+            <UI.Button type='secondary'> Cancel </UI.Button>
           </Link>
         </UI.Buttons>
       </div>
@@ -87,7 +87,7 @@ class HubTagCreateScreen extends React.Component {
 
     return (
       <ProjectWrapper>
-        <UI.Container size="small">{this._renderContent()}</UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }

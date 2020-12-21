@@ -143,7 +143,7 @@ export default class TraceList {
     }
   };
 
-  addSeries = (run, metric = null, trace = null) => {
+  addSeries = (run, metric = null, trace = null, aggregate = false) => {
     let subGroup = this.groups;
     this.groupingFields.forEach((g) => {
       const groupVal = this.getRunParam(g, run, metric, trace);
@@ -282,7 +282,7 @@ export default class TraceList {
 
     // Add series to trace
     const seriesModel = new Series(run, metric, trace);
-    traceModel.addSeries(seriesModel);
+    traceModel.addSeries(seriesModel, aggregate);
   };
 
   getChartsNumber = () => {

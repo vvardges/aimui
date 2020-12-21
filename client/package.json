@@ -102,7 +102,7 @@
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "eslint": "eslint . --ext .js",
     "eslint:fix": "eslint . --ext .js --fix",
-    "format": "prettier --write './**/*.{js,jsx,less,json}' --config ./.prettierrc",
+    "format": "prettier --write './**/*.{js,jsx,less,json}' --config ./.prettierrc && npm run eslint:fix",
     "test": "node scripts/test.js"
   },
   "browserslist": {
@@ -174,8 +174,7 @@
   },
   "lint-staged": {
     "*.js": [
-      "npm run format",
-      "npm run eslint:fix"
+      "npm run format"
     ]
   }
 }

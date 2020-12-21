@@ -180,9 +180,9 @@ class HubTagDetailScreen extends React.Component {
   _renderOverview = () => {
     return (
       <div>
-        <div className="HubTagDetailScreen__items">
+        <div className='HubTagDetailScreen__items'>
           {this.state.relatedRuns.map((run) => (
-            <div className="HubTagDetailScreen__item" key={run.hash}>
+            <div className='HubTagDetailScreen__item' key={run.hash}>
               <Link
                 to={buildUrl(screens.HUB_PROJECT_EXPERIMENT, {
                   experiment_name: run.experiment_name,
@@ -193,13 +193,13 @@ class HubTagDetailScreen extends React.Component {
                   {run.experiment_name} / {run.hash}
                 </UI.Text>
               </Link>
-              <UI.Text type="grey" small>
+              <UI.Text type='grey' small>
                 Created at {moment(run.created_at).format('HH:mm · D MMM, YY')}
               </UI.Text>
             </div>
           ))}
           {!this.state.relatedRuns.length && (
-            <UI.Text type="grey" spacingTop center>
+            <UI.Text type='grey' spacingTop center>
               Empty
             </UI.Text>
           )}
@@ -210,8 +210,8 @@ class HubTagDetailScreen extends React.Component {
 
   _renderSettings = () => {
     return (
-      <div className="HubTagDetailScreen__settings">
-        <UI.Text className="HubTagDetailScreen__form__title" size={6}>
+      <div className='HubTagDetailScreen__settings'>
+        <UI.Text className='HubTagDetailScreen__form__title' size={6}>
           Edit
         </UI.Text>
         <UI.Segment>
@@ -226,14 +226,14 @@ class HubTagDetailScreen extends React.Component {
           <UI.Buttons>
             <UI.Button
               onClick={() => this.handleSaveButtonClick()}
-              type="primary"
+              type='primary'
               {...this.state.saveButtonStatus}
             >
               Save
             </UI.Button>
             <UI.Button
               onClick={() => this.handleCancelButtonClick()}
-              type="secondary"
+              type='secondary'
               {...this.state.cancelButtonStatus}
             >
               Cancel
@@ -241,14 +241,14 @@ class HubTagDetailScreen extends React.Component {
           </UI.Buttons>
         </UI.Segment>
         <UI.Text
-          className="HubTagDetailScreen__form__title"
-          type="negative"
+          className='HubTagDetailScreen__form__title'
+          type='negative'
           size={6}
         >
           Danger Zone
         </UI.Text>
         <DangerZone
-          message="Hide this tag from the main page"
+          message='Hide this tag from the main page'
           name={this.state.tag.name}
           is_hidden={this.state.tag.is_hidden}
           onDelete={() =>
@@ -265,7 +265,7 @@ class HubTagDetailScreen extends React.Component {
   _renderContent = () => {
     if (this.state.isLoading) {
       return (
-        <UI.Text type="grey" center>
+        <UI.Text type='grey' center>
           Loading..
         </UI.Text>
       );
@@ -275,7 +275,7 @@ class HubTagDetailScreen extends React.Component {
       <>
         <UI.Text size={6} header spacing>
           <Link to={screens.HUB_PROJECT_TAGS}> Tags </Link>
-          <UI.Text type="grey" inline>
+          <UI.Text type='grey' inline>
             {' '}
             /{' '}
           </UI.Text>
@@ -287,14 +287,14 @@ class HubTagDetailScreen extends React.Component {
           leftItems={
             <>
               <UI.Tab
-                className=""
+                className=''
                 active={this.state.activeTab === 'overview'}
                 onClick={() => this.setState({ activeTab: 'overview' })}
               >
                 Related runs
               </UI.Tab>
               <UI.Tab
-                className=""
+                className=''
                 active={this.state.activeTab === 'settings'}
                 onClick={() => this.setState({ activeTab: 'settings' })}
               >
@@ -315,10 +315,10 @@ class HubTagDetailScreen extends React.Component {
     return (
       <ProjectWrapper>
         <Helmet>
-          <meta title="" content="" />
+          <meta title='' content='' />
         </Helmet>
 
-        <UI.Container size="small">{this._renderContent()}</UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }

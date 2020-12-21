@@ -88,7 +88,7 @@ function Tooltip(props) {
 
   return (
     <div
-      className="Tooltip__container"
+      className='Tooltip__container'
       onMouseOver={(evt) => toggleVisibility(true)}
       onMouseLeave={(evt) => toggleVisibility(false)}
       onClick={(evt) => {
@@ -101,7 +101,7 @@ function Tooltip(props) {
       {visible &&
         props.tooltip &&
         ReactDOM.createPortal(
-          <div className="Tooltip" ref={tooltipRef} style={position}>
+          <div className='Tooltip' ref={tooltipRef} style={position}>
             <UI.Text small>{props.tooltip}</UI.Text>
           </div>,
           portalRef.current,

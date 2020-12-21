@@ -171,14 +171,14 @@ class HubExecutableDetailScreen extends React.Component {
     return (
       <div>
         <UI.Text
-          className="HubExecutableDetailScreen__settings__title"
-          type="negative"
+          className='HubExecutableDetailScreen__settings__title'
+          type='negative'
           size={6}
         >
           Danger Zone
         </UI.Text>
         <DangerZone
-          message="Hide this process template from the main page"
+          message='Hide this process template from the main page'
           name={this.state.executableParams.name}
           is_hidden={this.state.executableParams.is_hidden}
           onDelete={() =>
@@ -199,7 +199,7 @@ class HubExecutableDetailScreen extends React.Component {
         <UI.Buttons>
           <UI.Button
             onClick={() => this.handleSaveBtnClick()}
-            type="primary"
+            type='primary'
             {...this.state.saveBtn}
           >
             Save
@@ -215,7 +215,7 @@ class HubExecutableDetailScreen extends React.Component {
         <UI.Text left spacingTop>
           <UI.Button
             onClick={() => this.handleExecuteBtnClick()}
-            type="positive"
+            type='positive'
             inline
             {...this.state.executeBtn}
           >
@@ -234,13 +234,13 @@ class HubExecutableDetailScreen extends React.Component {
 
   _renderProcesses = () => {
     return (
-      <div className="HubExecutableDetailScreen__processes">
+      <div className='HubExecutableDetailScreen__processes'>
         {!!this.state.processes && (
           <UI.List>
             {this.state.processes.map((p, pKey) => (
               <UI.ListItem
                 key={pKey}
-                className="HubExecutableDetailScreen__processes__item"
+                className='HubExecutableDetailScreen__processes__item'
               >
                 <Link
                   to={buildUrl(screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL, {
@@ -250,12 +250,12 @@ class HubExecutableDetailScreen extends React.Component {
                   PID: {p.pid}
                 </Link>
                 {!!p.arguments && (
-                  <UI.Text type="grey" small>
+                  <UI.Text type='grey' small>
                     Arguments: {p.arguments}
                   </UI.Text>
                 )}
                 {!!p.env_vars && (
-                  <UI.Text type="grey" small>
+                  <UI.Text type='grey' small>
                     Environment variables: {p.env_vars}
                   </UI.Text>
                 )}
@@ -264,7 +264,7 @@ class HubExecutableDetailScreen extends React.Component {
           </UI.List>
         )}
         {(!this.state.processes || this.state.processes.length === 0) && (
-          <UI.Text type="grey" center>
+          <UI.Text type='grey' center>
             Empty
           </UI.Text>
         )}
@@ -275,16 +275,16 @@ class HubExecutableDetailScreen extends React.Component {
   _renderContent = () => {
     if (this.state.isLoading) {
       return (
-        <UI.Text type="grey" center>
+        <UI.Text type='grey' center>
           Loading..
         </UI.Text>
       );
     }
 
     return (
-      <div className="HubExecutableDetailScreen__FormGroup__wrapper">
+      <div className='HubExecutableDetailScreen__FormGroup__wrapper'>
         <UI.Text
-          className="HubExecutableDetailScreen__name"
+          className='HubExecutableDetailScreen__name'
           size={6}
           header
           spacing
@@ -292,7 +292,7 @@ class HubExecutableDetailScreen extends React.Component {
           <Link to={buildUrl(screens.HUB_PROJECT_EXECUTABLES, {})}>
             Processes
           </Link>
-          <UI.Text type="grey" inline>
+          <UI.Text type='grey' inline>
             {' '}
             / {this.state.executableParams.name}
           </UI.Text>
@@ -301,28 +301,28 @@ class HubExecutableDetailScreen extends React.Component {
           leftItems={
             <>
               <UI.Tab
-                className=""
+                className=''
                 active={this.state.activeTab === 'processes'}
                 onClick={() => this.setState({ activeTab: 'processes' })}
               >
                 History
               </UI.Tab>
               <UI.Tab
-                className=""
+                className=''
                 active={this.state.activeTab === 'new_process'}
                 onClick={() => this.setState({ activeTab: 'new_process' })}
               >
                 Execute
               </UI.Tab>
               <UI.Tab
-                className=""
+                className=''
                 active={this.state.activeTab === 'template'}
                 onClick={() => this.setState({ activeTab: 'template' })}
               >
                 Template
               </UI.Tab>
               <UI.Tab
-                className=""
+                className=''
                 active={this.state.activeTab === 'settings'}
                 onClick={() => this.setState({ activeTab: 'settings' })}
               >
@@ -344,7 +344,7 @@ class HubExecutableDetailScreen extends React.Component {
   render() {
     return (
       <ProjectWrapper>
-        <UI.Container size="small">{this._renderContent()}</UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }

@@ -11,16 +11,16 @@ export default class SiteNotFoundScreen extends React.Component {
     return (
       <SiteWrapper>
         <Helmet>
-          <meta title="" content="" />
+          <meta title='' content='' />
         </Helmet>
 
-        <div className="SiteNotFoundScreen">
+        <div className='SiteNotFoundScreen'>
           <UI.Container>
-            <div className="SiteNotFoundScreen__heading">
-              <UI.Text size={1} type="primary" spacingTop center>
+            <div className='SiteNotFoundScreen__heading'>
+              <UI.Text size={1} type='primary' spacingTop center>
                 404
               </UI.Text>
-              <UI.Text size={4} type="grey-light" center>
+              <UI.Text size={4} type='grey-light' center>
                 Error. Not Found
               </UI.Text>
             </div>

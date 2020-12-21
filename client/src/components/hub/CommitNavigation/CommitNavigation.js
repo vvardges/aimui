@@ -168,17 +168,17 @@ class CommitNavigation extends Component {
             commit_id: commit.hash,
           })}
         >
-          <div className="CommitNavigation__item__short">
+          <div className='CommitNavigation__item__short'>
             {!!commit.process && commit.process.finish === false && (
-              <div className="CommitNavigation__item__indicator" />
+              <div className='CommitNavigation__item__indicator' />
             )}
             <Truncate lines={1}>
               <UI.Text small>{this.formatCommitMsg(commit.message)}</UI.Text>
             </Truncate>
           </div>
-          <div className="CommitNavigation__item__full">
+          <div className='CommitNavigation__item__full'>
             {!!commit.process && commit.process.finish === false && (
-              <div className="CommitNavigation__item__indicator" />
+              <div className='CommitNavigation__item__indicator' />
             )}
             <Truncate lines={4}>
               <UI.Text small>{this.formatCommitMsg(commit.message)}</UI.Text>
@@ -200,7 +200,7 @@ class CommitNavigation extends Component {
       <>
         {commits.slice(0, maxAmount).map((commit, key) => (
           <UI.MenuItem
-            className="CommitNavigation__item"
+            className='CommitNavigation__item'
             key={key}
             active={this.props.active === commit.hash}
           >
@@ -222,8 +222,8 @@ class CommitNavigation extends Component {
         {commits.length > maxAmount && this.state.overflowHide && (
           <UI.Text center spacingTop>
             <UI.Button
-              size="tiny"
-              type="primary"
+              size='tiny'
+              type='primary'
               ghost
               onClick={() => this.handleShowMoreClick()}
             >
@@ -238,7 +238,7 @@ class CommitNavigation extends Component {
   _renderIndex = () => {
     return (
       <div
-        key="current"
+        key='current'
         className={classNames({
           CommitNavigation__current: true,
           active: this.props.active === 'index',
@@ -250,7 +250,7 @@ class CommitNavigation extends Component {
             commit_id: 'index',
           })}
         >
-          <UI.Text className="CommitNavigation__current__title" small>
+          <UI.Text className='CommitNavigation__current__title' small>
             Index
           </UI.Text>
         </Link>
@@ -267,9 +267,9 @@ class CommitNavigation extends Component {
       <div className={className} ref={this.navbarRef}>
         {this.props.commits.filter((c) => !c.archived).length > 0 && (
           <UI.Menu
-            className="CommitNavigation__nav"
+            className='CommitNavigation__nav'
             outline={false}
-            header="Runs:"
+            header='Runs:'
           >
             {this._renderCommits()}
           </UI.Menu>

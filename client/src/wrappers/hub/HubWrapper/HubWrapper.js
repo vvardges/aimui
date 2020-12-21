@@ -23,7 +23,7 @@ class HubWrapper extends React.Component {
         </Helmet>
 
         <div className={hubClassName}>
-          <div className="HubWrapper__cont">{this.props.children}</div>
+          <div className='HubWrapper__cont'>{this.props.children}</div>
         </div>
       </BaseWrapper>
     );

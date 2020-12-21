@@ -13,12 +13,7 @@ import {
 import UI from '../../../../../ui';
 import * as _ from 'lodash';
 
-function BarFilter({
-  excludedFields,
-  setExcludedFields,
-  maxHeight,
-  fields,
-}) {
+function BarFilter({ excludedFields, setExcludedFields, maxHeight, fields }) {
   let [opened, setOpened] = useState(false);
   let [searchInput, setSearchInput] = useState('');
 
@@ -36,13 +31,13 @@ function BarFilter({
 
   // Parameters
   // TODO: add metrics as well
-  const paramFields = {...fields.params};
+  const paramFields = { ...fields.params };
   const paramFieldsPaths = [];
   Object.keys(flattenObject(paramFields)).forEach((paramPrefix) => {
     !!paramFields[paramPrefix] &&
-    paramFields[paramPrefix].forEach((paramName) => {
-      paramFieldsPaths.push(`params.${paramPrefix}.${paramName}`);
-    });
+      paramFields[paramPrefix].forEach((paramName) => {
+        paramFieldsPaths.push(`params.${paramPrefix}.${paramName}`);
+      });
   });
   transformNestedArrToObj(paramFields);
   searchNestedObject(paramFields, searchInput.split('.'));
@@ -60,59 +55,61 @@ function BarFilter({
   }
 
   const styles = {};
-  if (!!maxHeight && maxHeight < 300 ) {
+  if (!!maxHeight && maxHeight < 300) {
     styles.maxHeight = `${maxHeight}px`;
   }
 
   return (
-    <div className="ContextTableBar__item__wrapper">
-      {opened &&
-      <div
-        className="ContextTableBar__item__popup BarFilter"
-        tabIndex={0}
-        ref={popupRef}
-        style={styles}
-        onBlur={(evt) => {
-          const currentTarget = evt.currentTarget;
-          if (opened) {
-            window.setTimeout(() => {
-              if (!currentTarget.contains(document.activeElement)) {
-                setOpened(false);
-              }
-            }, 100);
-          }
-        }}
-      >
-        {paramFieldsPaths.length
-          ? (
-            <div className="BarFilter__content">
-              <div className="BarFilter__body">
-                <div className="BarFilter__form__wrapper">
+    <div className='ContextTableBar__item__wrapper'>
+      {opened && (
+        <div
+          className='ContextTableBar__item__popup BarFilter'
+          tabIndex={0}
+          ref={popupRef}
+          style={styles}
+          onBlur={(evt) => {
+            const currentTarget = evt.currentTarget;
+            if (opened) {
+              window.setTimeout(() => {
+                if (!currentTarget.contains(document.activeElement)) {
+                  setOpened(false);
+                }
+              }, 100);
+            }
+          }}
+        >
+          {paramFieldsPaths.length ? (
+            <div className='BarFilter__content'>
+              <div className='BarFilter__body'>
+                <div className='BarFilter__form__wrapper'>
                   <UI.Input
-                    className="BarFilter__input"
+                    className='BarFilter__input'
                     value={searchInput}
-                    onChange={evt => setSearchInput(evt.target.value)}
-                    placeholder="Search fields..."
+                    onChange={(evt) => setSearchInput(evt.target.value)}
+                    placeholder='Search fields...'
                     size='small'
                     ref={searchRef}
                   />
                 </div>
-                <div className="BarFilter__parameters__box">
-                  {!!paramFields && Object.keys(paramFields).length
-                    ? <Parameters
+                <div className='BarFilter__parameters__box'>
+                  {!!paramFields && Object.keys(paramFields).length ? (
+                    <Parameters
                       params={paramFields}
                       parentPath={[]}
                       excludedFields={excludedFields}
                       toggleField={handleFieldToggle}
                     />
-                    : <UI.Text type="grey" spacingTop spacing center small>No options</UI.Text>
-                  }
+                  ) : (
+                    <UI.Text type='grey' spacingTop spacing center small>
+                      No options
+                    </UI.Text>
+                  )}
                 </div>
               </div>
-              <div className="BarFilter__footer">
-                <div className="BarFilter__actions">
+              <div className='BarFilter__footer'>
+                <div className='BarFilter__actions'>
                   <UI.Button
-                    className="BarFilter__action"
+                    className='BarFilter__action'
                     type='positive'
                     size='tiny'
                     disabled={excludedFields.length === 0}
@@ -121,7 +118,7 @@ function BarFilter({
                     Show all
                   </UI.Button>
                   <UI.Button
-                    className="BarFilter__action"
+                    className='BarFilter__action'
                     type='negative'
                     size='tiny'
                     disabled={excludedFields.length === paramFieldsPaths.length}
@@ -132,11 +129,13 @@ function BarFilter({
                 </div>
               </div>
             </div>
-          )
-          : <UI.Text type="grey" spacingTop center small>No options</UI.Text>
-        }
-      </div>
-      }
+          ) : (
+            <UI.Text type='grey' spacingTop center small>
+              No options
+            </UI.Text>
+          )}
+        </div>
+      )}
       <div
         className={classNames({
           ContextTableBar__item__label: true,
@@ -144,12 +143,13 @@ function BarFilter({
         })}
         onClick={() => setOpened(!opened)}
       >
-        <UI.Icon i="filter_alt" scale={1.2} />
-        <span className="ContextTableBar__item__label__text">
+        <UI.Icon i='filter_alt' scale={1.2} />
+        <span className='ContextTableBar__item__label__text'>
           {!!excludedFields && excludedFields.length
-            ? (`${excludedFields.length} Hidden Field${excludedFields.length > 1 ? 's' : ''}`)
-            : 'Hide Fields'
-          }
+            ? `${excludedFields.length} Hidden Field${
+                excludedFields.length > 1 ? 's' : ''
+              }`
+            : 'Hide Fields'}
         </span>
       </div>
     </div>
@@ -161,8 +161,8 @@ BarFilter.defaultProps = {
   setExcludedFields: null,
   maxHeight: null,
   fields: {
-    'params': {},
-    'metrics': [],
+    params: {},
+    metrics: [],
   },
 };
 
@@ -173,12 +173,7 @@ BarFilter.propTypes = {
   fields: PropTypes.object,
 };
 
-function Parameter({
-  paramKey,
-  parentPath,
-  excludedFields,
-  toggleField,
-}) {
+function Parameter({ paramKey, parentPath, excludedFields, toggleField }) {
   const path = `params.${parentPath.join('.')}.${paramKey}`;
   const on = excludedFields.indexOf(path) === -1;
 
@@ -191,17 +186,14 @@ function Parameter({
       key={path}
       onClick={() => toggleField(path)}
     >
-      <div className="BarFilter__group__item__radio__wrapper">
-        {on
-          ? <UI.Icon i="toggle_on" />
-          : <UI.Icon i="toggle_off" />
-        }
+      <div className='BarFilter__group__item__radio__wrapper'>
+        {on ? <UI.Icon i='toggle_on' /> : <UI.Icon i='toggle_off' />}
       </div>
-      <div className="BarFilter__group__item__row name">
+      <div className='BarFilter__group__item__row name'>
         {[...Array(parentPath.length)].map((_, i) => (
-          <div className="BarFilter__group__item__placeholder" key={i} />
+          <div className='BarFilter__group__item__placeholder' key={i} />
         ))}
-        <div className="BarFilter__group__item__name" title={path}>
+        <div className='BarFilter__group__item__name' title={path}>
           {paramKey}
         </div>
       </div>
@@ -209,48 +201,38 @@ function Parameter({
   );
 }
 
-function Parameters({
-  params,
-  parentPath,
-  excludedFields,
-  toggleField,
-}) {
+function Parameters({ params, parentPath, excludedFields, toggleField }) {
   return (
     !!params &&
     Object.keys(params).map((paramKey) => (
       <>
-        {typeof params[paramKey] === 'boolean' &&
+        {typeof params[paramKey] === 'boolean' && (
           <Parameter
             paramKey={paramKey}
             parentPath={parentPath}
             excludedFields={excludedFields}
             toggleField={toggleField}
           />
-        }
+        )}
 
         {typeof params[paramKey] === 'object' && (
           <div
-            className="BarFilter__group"
+            className='BarFilter__group'
             key={`${parentPath.join('.')}.${paramKey}`}
           >
-            <div className="BarFilter__group__item__row group">
+            <div className='BarFilter__group__item__row group'>
               {[...Array(parentPath.length + 1)].map((_, i) => (
-                <div className="BarFilter__group__item__placeholder" key={i} />
+                <div className='BarFilter__group__item__placeholder' key={i} />
               ))}
-              <div className="BarFilter__group__title">
-                <div className="BarFilter__group__title__placeholder" />
-                <div className="BarFilter__group__title__label">
-                  {paramKey}
-                </div>
+              <div className='BarFilter__group__title'>
+                <div className='BarFilter__group__title__placeholder' />
+                <div className='BarFilter__group__title__label'>{paramKey}</div>
               </div>
             </div>
-            <div className="BarFilter__group__body">
+            <div className='BarFilter__group__body'>
               <Parameters
                 params={params[paramKey]}
-                parentPath={[
-                  ...parentPath,
-                  paramKey,
-                ]}
+                parentPath={[...parentPath, paramKey]}
                 excludedFields={excludedFields}
                 toggleField={toggleField}
               />

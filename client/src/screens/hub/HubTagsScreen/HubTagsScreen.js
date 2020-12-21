@@ -62,36 +62,36 @@ class HubTagsScreen extends React.Component {
   _renderContent = () => {
     if (this.state.isLoading) {
       return (
-        <UI.Text type="grey" center>
+        <UI.Text type='grey' center>
           Loading..
         </UI.Text>
       );
     }
 
     return (
-      <div className="HubTagsScreen">
-        <div className="HubTagsScreen__header">
+      <div className='HubTagsScreen'>
+        <div className='HubTagsScreen__header'>
           <UI.Text size={6}>Tags list</UI.Text>
           <Link to={screens.HUB_PROJECT_CREATE_TAG}>
-            <UI.Button type="positive">New Tag</UI.Button>
+            <UI.Button type='positive'>New Tag</UI.Button>
           </Link>
         </div>
         {!!this.state.tags && (
           <UI.List>
             {this.state.tags.map((tag, tagKey) => (
-              <UI.ListItem key={tagKey} className="HubTagsScreen__tags__item">
+              <UI.ListItem key={tagKey} className='HubTagsScreen__tags__item'>
                 <Link
                   to={buildUrl(screens.HUB_PROJECT_EDIT_TAG, {
                     tag_id: tag.id,
                   })}
                 >
-                  <div className="HubTagsScreen__tags__item__body">
+                  <div className='HubTagsScreen__tags__item__body'>
                     <UI.Label color={tag.color}>{tag.name}</UI.Label>
                     <UI.Text
-                      className="HubTagsScreen__tags__item__commits"
+                      className='HubTagsScreen__tags__item__commits'
                       small
                       inline
-                      type="grey"
+                      type='grey'
                     >
                       Runs: {tag.num_commits}
                     </UI.Text>
@@ -102,7 +102,7 @@ class HubTagsScreen extends React.Component {
           </UI.List>
         )}
         {(!this.state.tags || this.state.tags.length === 0) && (
-          <UI.Text type="grey" center>
+          <UI.Text type='grey' center>
             Empty
           </UI.Text>
         )}
@@ -114,10 +114,10 @@ class HubTagsScreen extends React.Component {
     return (
       <ProjectWrapper>
         <Helmet>
-          <meta title="" content="" />
+          <meta title='' content='' />
         </Helmet>
 
-        <UI.Container size="small">{this._renderContent()}</UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }

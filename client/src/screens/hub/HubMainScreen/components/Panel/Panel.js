@@ -1,259 +1,264 @@
 import './Panel.less';
 
-import React, { Component } from 'react';
+import React, { useState, useEffect, useRef, Component } from 'react';
 import PropTypes from 'prop-types';
 
-import HubMainScreenContext from '../../HubMainScreenContext/HubMainScreenContext';
 import PanelChart from './components/PanelChart/PanelChart';
 import ParallelCoordinatesChart from './components/ParallelCoordinatesChart/ParallelCoordinatesChart';
 import UI from '../../../../../ui';
+import { HubMainScreenModel } from '../../models/HubMainScreenModel';
 
-class Panel extends Component {
-  constructor(props) {
-    super(props);
+const gridSize = 12;
+const templateGridCellsMaxCount = 9;
+const templates = {
+  // Grid size: 12x12; Cell props: [w, h]
+  0: [],
+  1: [[12, 12]],
+  2: [
+    [6, 12],
+    [6, 12],
+  ],
+  3: [
+    [6, 6],
+    [6, 6],
+    [12, 6],
+  ],
+  4: [
+    [6, 6],
+    [6, 6],
+    [6, 6],
+    [6, 6],
+  ],
+  5: [
+    [4, 6],
+    [4, 6],
+    [4, 6],
+    [6, 6],
+    [6, 6],
+  ],
+  6: [
+    [4, 6],
+    [4, 6],
+    [4, 6],
+    [4, 6],
+    [4, 6],
+    [4, 6],
+  ],
+  7: [
+    [4, 6],
+    [4, 6],
+    [4, 6],
+    [3, 6],
+    [3, 6],
+    [3, 6],
+    [3, 6],
+  ],
+  8: [
+    [4, 4],
+    [4, 4],
+    [4, 4],
+    [4, 4],
+    [4, 4],
+    [4, 4],
+    [6, 4],
+    [6, 4],
+  ],
+  9: [
+    [4, 4],
+    [4, 4],
+    [4, 4],
+    [4, 4],
+    [4, 4],
+    [4, 4],
+    [4, 4],
+    [4, 4],
+    [4, 4],
+  ],
+};
 
-    this.state = {
-      width: null,
-      height: null,
-    };
+function Panel(props) {
+  let panelRef = useRef();
 
-    this.panelRef = React.createRef();
+  let [state, setState] = useState({
+    width: null,
+    height: null,
+  });
 
-    this.gridSize = 12;
-    this.templateGridCellsMaxCount = 9;
-    this.templates = {
-      // Grid size: 12x12; Cell props: [w, h]
-      0: [],
-      1: [[12, 12]],
-      2: [
-        [6, 12],
-        [6, 12],
-      ],
-      3: [
-        [6, 6],
-        [6, 6],
-        [12, 6],
-      ],
-      4: [
-        [6, 6],
-        [6, 6],
-        [6, 6],
-        [6, 6],
-      ],
-      5: [
-        [4, 6],
-        [4, 6],
-        [4, 6],
-        [6, 6],
-        [6, 6],
-      ],
-      6: [
-        [4, 6],
-        [4, 6],
-        [4, 6],
-        [4, 6],
-        [4, 6],
-        [4, 6],
-      ],
-      7: [
-        [4, 6],
-        [4, 6],
-        [4, 6],
-        [3, 6],
-        [3, 6],
-        [3, 6],
-        [3, 6],
-      ],
-      8: [
-        [4, 4],
-        [4, 4],
-        [4, 4],
-        [4, 4],
-        [4, 4],
-        [4, 4],
-        [6, 4],
-        [6, 4],
-      ],
-      9: [
-        [4, 4],
-        [4, 4],
-        [4, 4],
-        [4, 4],
-        [4, 4],
-        [4, 4],
-        [4, 4],
-        [4, 4],
-        [4, 4],
-      ],
-    };
-  }
+  let { runs, search } = HubMainScreenModel.useHubMainScreenState([
+    HubMainScreenModel.events.SET_RUNS_STATE,
+  ]);
 
-  componentDidMount() {
-    this.setSize();
-  }
+  let {
+    isExploreParamsModeEnabled,
+    getCountOfSelectedParams,
+  } = HubMainScreenModel.helpers;
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (
-      Math.abs(this.panelRef.current.clientHeight - this.state.height) > 4 ||
-      Math.abs(prevProps.parentHeight - this.props.parentHeight) > 4 ||
-      Math.abs(prevProps.parentWidth - this.props.parentWidth) > 4
-    ) {
-      this.handleResize();
+  useEffect(() => {
+    if (props.resizing === false) {
+      setSize();
     }
-  }
+  }, [state.height, props.resizing, props.parentHeight, props.parentWidth]);
 
-  handleResize = () => {
-    this.setSize();
-  };
+  function setSize() {
+    const height = panelRef.current.clientHeight;
+    const width = panelRef.current.clientWidth;
 
-  setSize = () => {
-    const height = this.panelRef.current.clientHeight;
-    const width = this.panelRef.current.clientWidth;
-
-    this.setState({
+    setState({
       height,
       width,
     });
-  };
+  }
 
-  _renderPanelMsg = (Elem) => {
-    return <div className="Panel__msg__wrapper">{Elem}</div>;
-  };
+  function _renderPanelMsg(Elem) {
+    return <div className='Panel__msg__wrapper'>{Elem}</div>;
+  }
 
-  _renderCharts = () => {
-    if (this.props.indices === null || this.props.indices.length === 0) {
+  function _renderCharts() {
+    if (props.indices === null || props.indices.length === 0) {
       return null;
     }
 
-    if (
-      !this.props.parentHeight ||
-      this.state.height === null ||
-      this.state.width === null
-    ) {
+    if (!props.parentHeight || state.height === null || state.width === null) {
       return null;
     }
 
-    const widthFr = (this.state.width - 1) / this.gridSize;
-    const heightFr = (this.state.height - 1) / this.gridSize;
+    const widthFr = (state.width - 1) / gridSize;
+    const heightFr = (state.height - 1) / gridSize;
 
-    const indices = this.props.indices;
+    const indices = props.indices;
 
     return (
       <>
         {indices?.map((i) => (
           <div
-            className="Panel__chart-wrapper"
+            className='Panel__chart-wrapper'
             key={i}
             style={{
               width:
-                (indices.length >= this.templateGridCellsMaxCount
+                (indices.length >= templateGridCellsMaxCount
                   ? 4
-                  : this.templates[indices.length][i][0]) * widthFr,
+                  : templates[indices.length][i][0]) * widthFr,
               height:
-                (indices.length >= this.templateGridCellsMaxCount
+                (indices.length >= templateGridCellsMaxCount
                   ? 4
-                  : this.templates[indices.length][i][1]) * heightFr,
+                  : templates[indices.length][i][1]) * heightFr,
             }}
           >
-            {this.context.runs?.meta?.params_selected ? (
+            {runs?.meta?.params_selected ? (
               <ParallelCoordinatesChart
-                contextKey={this.context.key}
                 index={i}
+                width={
+                  (indices.length >= templateGridCellsMaxCount
+                    ? 4
+                    : templates[indices.length][i][0]) * widthFr
+                }
+                height={
+                  (indices.length >= templateGridCellsMaxCount
+                    ? 4
+                    : templates[indices.length][i][1]) * heightFr
+                }
               />
             ) : (
-              <PanelChart key={this.context.key} index={i} />
+              <PanelChart
+                index={i}
+                width={
+                  (indices.length >= templateGridCellsMaxCount
+                    ? 4
+                    : templates[indices.length][i][0]) * widthFr
+                }
+                height={
+                  (indices.length >= templateGridCellsMaxCount
+                    ? 4
+                    : templates[indices.length][i][1]) * heightFr
+                }
+              />
             )}
           </div>
         ))}
       </>
     );
-  };
+  }
 
-  render() {
-    return (
-      <div className="Panel" ref={this.panelRef}>
-        {this.props.resizing ? (
-          <div className="Panel__resizing">
-            <UI.Text type="primary" center>
-              Release to resize
-            </UI.Text>
-          </div>
-        ) : this.context.runs.isLoading ? (
-          this.context.search.query.indexOf('tf:') === -1 ? (
-            this._renderPanelMsg(
-              <UI.Text type="grey" center>
-                Loading..
-              </UI.Text>,
-            )
-          ) : (
-            this._renderPanelMsg(
-              <UI.Text type="grey" center>
-                Loading tf.summary logs can take some time..
-              </UI.Text>,
-            )
+  return (
+    <div className='Panel' ref={panelRef}>
+      {props.resizing ? (
+        <div className='Panel__resizing'>
+          <UI.Text type='primary' center>
+            Release to resize
+          </UI.Text>
+        </div>
+      ) : runs.isLoading ? (
+        search.query.indexOf('tf:') === -1 ? (
+          _renderPanelMsg(
+            <UI.Text type='grey' center>
+              Loading..
+            </UI.Text>,
           )
         ) : (
-          <>
-            {this.context.runs.isEmpty ? (
-              this._renderPanelMsg(
-                <>
-                  {!!this.context.search.query ? (
-                    <UI.Text type="grey" center>
-                      You haven't recorded experiments matching this query.
-                    </UI.Text>
-                  ) : (
-                    <UI.Text type="grey" center>
-                      It's super easy to search Aim experiments.
-                    </UI.Text>
-                  )}
-                  <UI.Text type="grey" center>
-                    Lookup{' '}
-                    <a
-                      className="link"
-                      href="https://github.com/aimhubio/aim#searching-experiments"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      search docs
-                    </a>{' '}
-                    to learn more.
+          _renderPanelMsg(
+            <UI.Text type='grey' center>
+              Loading tf.summary logs can take some time..
+            </UI.Text>,
+          )
+        )
+      ) : (
+        <>
+          {runs.isEmpty ? (
+            _renderPanelMsg(
+              <>
+                {!!search.query ? (
+                  <UI.Text type='grey' center>
+                    You haven't recorded experiments matching this query.
                   </UI.Text>
-                </>,
-              )
-            ) : (
-              <div className="Panel__chart-container">
-                {this.context.enableExploreParamsMode() &&
-                this.context.getCountOfSelectedParams() === 1
-                  ? this._renderPanelMsg(
-                    <UI.Text type="grey" center>
-                        Please select at least two params to see parallel
-                        coordinates plot displayed.
-                    </UI.Text>,
-                  )
-                  : this._renderCharts()}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    );
-  }
+                ) : (
+                  <UI.Text type='grey' center>
+                    It's super easy to search Aim experiments.
+                  </UI.Text>
+                )}
+                <UI.Text type='grey' center>
+                  Lookup{' '}
+                  <a
+                    className='link'
+                    href='https://github.com/aimhubio/aim#searching-experiments'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                  >
+                    search docs
+                  </a>{' '}
+                  to learn more.
+                </UI.Text>
+              </>,
+            )
+          ) : (
+            <div className='Panel__chart-container'>
+              {isExploreParamsModeEnabled() && getCountOfSelectedParams() === 1
+                ? _renderPanelMsg(
+                  <UI.Text type='grey' center>
+                      Please select at least two params to see parallel
+                      coordinates plot displayed.
+                  </UI.Text>,
+                )
+                : _renderCharts()}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 Panel.defautlProps = {
   parentHeight: null,
   parentWidth: null,
-  resized: false,
+  resizing: false,
   indices: null,
 };
 
 Panel.propTypes = {
   parentHeight: PropTypes.number,
   parentWidth: PropTypes.number,
-  resized: PropTypes.bool,
+  resizing: PropTypes.bool,
   indices: PropTypes.array,
 };
 
-Panel.contextType = HubMainScreenContext;
-
-export default Panel;
+export default React.memo(Panel);

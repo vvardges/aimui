@@ -37,7 +37,7 @@ function Label({
 
   return (
     <div className={elemClassName} style={styles} onClick={onClick || null}>
-      {!!iconLeft &&
+      {!!iconLeft && (
         <div
           className={classNames({
             Label__icon: true,
@@ -48,9 +48,9 @@ function Label({
         >
           {iconLeft}
         </div>
-      }
-      <div className="Label__content">{children}</div>
-      {!!iconRight &&
+      )}
+      <div className='Label__content'>{children}</div>
+      {!!iconRight && (
         <div
           className={classNames({
             Label__icon: true,
@@ -61,7 +61,7 @@ function Label({
         >
           {iconRight}
         </div>
-      }
+      )}
     </div>
   );
 }

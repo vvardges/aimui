@@ -40,7 +40,7 @@ function ControlsSidebarYScale(props) {
   };
 
   return (
-    <div className="ControlsSidebar__item__wrapper">
+    <div className='ControlsSidebar__item__wrapper'>
       <div
         className={classNames({
           ControlsSidebar__item: true,
@@ -48,7 +48,7 @@ function ControlsSidebarYScale(props) {
         })}
         onClick={(e) => handleControlClick(e, 'yScale')}
       >
-        <UI.Icon i="settings" scale={1.4} />
+        <UI.Icon i='settings' scale={1.4} />
       </div>
       <div
         className={classNames({
@@ -57,21 +57,21 @@ function ControlsSidebarYScale(props) {
         })}
         onClick={(e) => handleMenuClick(e)}
       >
-        <div className="ControlsSidebar__menu__list">
-          <div className="ControlsSidebar__menu__list__header">
+        <div className='ControlsSidebar__menu__list'>
+          <div className='ControlsSidebar__menu__list__header'>
             <UI.Text overline bold>
               Scale Y axis
             </UI.Text>
           </div>
-          <div className="ControlsSidebar__menu__list__items">
+          <div className='ControlsSidebar__menu__list__items'>
             <div
-              className="ControlsSidebar__menu__item"
+              className='ControlsSidebar__menu__item'
               onClick={() => handleYScaleChange(0)}
             >
               Linear
             </div>
             <div
-              className="ControlsSidebar__menu__item"
+              className='ControlsSidebar__menu__item'
               onClick={() => handleYScaleChange(1)}
             >
               Log

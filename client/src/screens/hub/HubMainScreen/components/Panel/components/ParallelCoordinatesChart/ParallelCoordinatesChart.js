@@ -1,164 +1,143 @@
 import './ParallelCoordinatesChart.less';
 
-import React, { Component } from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import * as _ from 'lodash';
 
-import HubMainScreenContext from '../../../../HubMainScreenContext/HubMainScreenContext';
 import {
   classNames,
   formatValue,
   getObjectValueByPath,
 } from '../../../../../../../utils';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 const d3 = require('d3');
 
 const circleRadius = 4;
 const circleActiveRadius = 7;
+const gradientStartColor = '#2980B9';
+const gradientEndColor = '#E74C3C';
 
-class ParallelCoordinatesChart extends Component {
-  constructor(props) {
-    super(props);
+const curveOptions = [
+  'curveLinear',
+  'curveBasis',
+  'curveBundle',
+  'curveCardinal',
+  'curveCatmullRom',
+  'curveMonotoneX',
+  'curveMonotoneY',
+  'curveNatural',
+  'curveStep',
+  'curveStepAfter',
+  'curveStepBefore',
+  'curveBasisClosed',
+];
 
-    this.state = {
-      traces: [],
-      dimensions: [],
+function ParallelCoordinatesChart(props) {
+  let traces = useRef([]);
+  let dimensions = useRef([]);
+  let closestAxis = useRef(null);
+  let closestValue = useRef(null);
 
-      visBox: {
-        margin: {
-          top: 60,
-          right: 45,
-          bottom: 25,
-          left: 60,
-        },
-        height: null,
-        width: null,
-      },
-      plotBox: {
-        height: null,
-        width: null,
-      },
+  let visBox = useRef({
+    margin: {
+      top: 60,
+      right: 45,
+      bottom: 25,
+      left: 60,
+    },
+    height: null,
+    width: null,
+  });
+  let plotBox = useRef({
+    height: null,
+    width: null,
+  });
+  let chartOptions = useRef({
+    xScale: null,
+  });
 
-      chart: {
-        xScale: null,
-      },
+  const parentRef = useRef();
+  const visRef = useRef();
+  const svg = useRef(null);
+  const bgRect = useRef(null);
+  const plot = useRef(null);
+  const paths = useRef(null);
+  const circles = useRef(null);
+  const brushSelection = useRef(null);
 
-      closestAxis: null,
-      closestValue: null,
-    };
+  let { runs, traceList, chart } = HubMainScreenModel.useHubMainScreenState([
+    HubMainScreenModel.events.SET_TRACE_LIST,
+    HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
+    HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
+  ]);
 
-    this.parentRef = React.createRef();
-    this.visRef = React.createRef();
-    this.bgRect = null;
-    this.plot = null;
-    this.lines = null;
-    this.circles = null;
-    this.brushSelection = null;
+  let { setChartFocusedState } = HubMainScreenModel.emitters;
 
-    this.gradientStartColor = '#2980B9';
-    this.gradientEndColor = '#E74C3C';
+  let { getMetricColor, traceToHash } = HubMainScreenModel.helpers;
 
-    this.curves = [
-      'curveLinear',
-      'curveBasis',
-      'curveBundle',
-      'curveCardinal',
-      'curveCatmullRom',
-      'curveMonotoneX',
-      'curveMonotoneY',
-      'curveNatural',
-      'curveStep',
-      'curveStepAfter',
-      'curveStepBefore',
-      'curveBasisClosed',
-    ];
-  }
-
-  componentDidMount() {
-    this.initD3();
-    this.renderChart();
-    window.addEventListener('resize', () => this.resize());
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.contextKey !== this.props.contextKey) {
-      this.renderChart();
-    }
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', () => this.resize());
-  }
-
-  initD3 = () => {
+  function initD3() {
     d3.selection.prototype.moveToFront = function () {
       return this.each(function () {
         this.parentNode.appendChild(this);
       });
     };
-  };
+  }
 
-  resize = () => {
-    this.renderChart();
-  };
+  function renderChart() {
+    clear();
+    draw(!!brushSelection.current);
+  }
 
-  renderChart = () => {
-    this.clear();
+  function renderData() {
+    clearLines();
+    clearCircles();
 
-    if (this.context.runs.isLoading || this.context.runs.isEmpty) {
+    drawData();
+  }
+
+  function clear() {
+    if (!visRef.current) {
       return;
     }
 
-    this.draw(!!this.brushSelection);
-  };
-
-  clear = () => {
-    if (!this.visRef.current) {
-      return;
-    }
-
-    const visArea = d3.select(this.visRef.current);
+    const visArea = d3.select(visRef.current);
     visArea.selectAll('*').remove();
     visArea.attr('style', null);
-  };
+  }
 
-  draw = (recoverBrushSelection = false) => {
-    if (!this.visRef.current) {
+  function draw(recoverBrushSelection = false) {
+    if (!visRef.current) {
       return;
     }
 
-    const traces = [];
-    this.context.traceList?.traces.forEach((traceModel) => {
-      if (traceModel.chart !== this.props.index) {
-        return;
-      }
-      traces.push(traceModel.clone());
-    });
+    if (!recoverBrushSelection) {
+      traces.current = [];
+      traceList?.traces.forEach((traceModel) => {
+        if (traceModel.chart !== props.index) {
+          return;
+        }
+        traces.current.push(traceModel.clone());
+      });
+      dimensions.current = getDimensions(traces.current);
+    }
 
-    this.setState(
-      {
-        traces,
-        dimensions: this.getDimensions(traces),
-      },
-      () => {
-        this.drawArea(recoverBrushSelection);
-      },
-    );
-  };
+    drawArea(recoverBrushSelection);
+  }
 
-  handleAreaMouseMove = (mouse) => {
-    if (!this.context.chart.focused.circle.active) {
-      const x = mouse[0] - this.state.visBox.margin.left;
-      const y = mouse[1] - this.state.visBox.margin.top;
+  function handleAreaMouseMove(mouse) {
+    if (!chart.focused.circle.active) {
+      const x = mouse[0] - visBox.current.margin.left;
+      const y = mouse[1] - visBox.current.margin.top;
       let diffX;
       let diffY;
       let axis;
       let currAxis = null;
       let currValue = null;
       let currIndex;
-      const prevAxis = this.state.closestAxis;
-      this.state.dimensions.forEach((dim, index) => {
-        axis = this.state.chart.xScale(index);
+      const prevAxis = closestAxis.current;
+      dimensions.current.forEach((dim, index) => {
+        axis = chartOptions.current.xScale(index);
         if (index === 0) {
           diffX = Math.abs(x - axis);
           currAxis = axis;
@@ -169,22 +148,16 @@ class ParallelCoordinatesChart extends Component {
           currIndex = index;
         }
       });
-      if (currAxis !== this.state.closestAxis) {
-        this.clearLines();
-        this.clearCircles();
-        this.setState(
-          {
-            closestAxis: currAxis,
-          },
-          this.drawData,
-        );
+      if (currAxis !== closestAxis.current) {
+        closestAxis.current = currAxis;
+        window.requestAnimationFrame(renderData);
       }
       let runHash;
-      this.state.traces.forEach((traceModel) =>
+      traces.current.forEach((traceModel) =>
         traceModel.series.forEach((series, index) => {
           const params = series.getParamsFlatDict();
           const { run } = series;
-          let dim = this.state.dimensions[currIndex];
+          let dim = dimensions.current[currIndex];
           let val;
 
           if (dim.contentType === 'param') {
@@ -211,55 +184,47 @@ class ParallelCoordinatesChart extends Component {
       );
       if (
         currValue !== null &&
-        (currValue !== this.state.closestValue || prevAxis !== currAxis)
+        (currValue !== closestValue.current || prevAxis !== currAxis)
       ) {
-        this.setState(
-          {
-            closestValue: currValue,
+        closestValue.current = currValue;
+        setChartFocusedState({
+          metric: {
+            runHash: runHash,
+            metricName: null,
+            traceContext: null,
           },
-          () => {
-            this.context.setChartFocusedState({
-              metric: {
-                runHash: runHash,
-                metricName: null,
-                traceContext: null,
-              },
-            });
-          },
-        );
+        });
       }
     }
-  };
+  }
 
-  handleAreaMouseOut = () => {
-    this.setState({
-      closestAxis: null,
-      closestValue: null,
-    });
-    this.context.setChartFocusedState({
+  function handleAreaMouseOut() {
+    closestAxis.current = null;
+    closestValue.current = null;
+    setChartFocusedState({
       metric: {
         runHash: null,
         metricName: null,
         traceContext: null,
       },
     });
-  };
+  }
 
-  handleBgRectClick = () => {
-    if (!this.context.chart.focused.circle.active) {
+  function handleBgRectClick() {
+    if (!chart.focused.circle.active) {
       return;
     }
 
-    this.context.setChartFocusedState({
+    setChartFocusedState({
       circle: {
         runHash: null,
         metricName: null,
         traceContext: null,
       },
     });
-  };
+  }
 
-  getDimensions = (traces) => {
+  function getDimensions(traces) {
     const types = {
       number: {
         key: 'number',
@@ -289,7 +254,7 @@ class ParallelCoordinatesChart extends Component {
 
     const dimensions = [];
 
-    this.context.runs.params.forEach((param) => {
+    runs.params.forEach((param) => {
       let dimensionType;
 
       let allNum = true,
@@ -325,8 +290,8 @@ class ParallelCoordinatesChart extends Component {
       });
     });
 
-    Object.keys(this.context.runs.aggMetrics).forEach((metric) => {
-      this.context.runs.aggMetrics[metric].forEach((context) => {
+    Object.keys(runs.aggMetrics).forEach((metric) => {
+      runs.aggMetrics[metric].forEach((context) => {
         dimensions.push({
           key: `metric-${metric}-${JSON.stringify(context)}`,
           type: types['number'],
@@ -338,382 +303,360 @@ class ParallelCoordinatesChart extends Component {
     });
 
     return dimensions;
-  };
+  }
 
-  drawArea = (recoverBrushSelection) => {
-    const parent = d3.select(this.parentRef.current);
+  function drawArea(recoverBrushSelection) {
+    const parent = d3.select(parentRef.current);
     const parentRect = parent.node().getBoundingClientRect();
 
-    const { margin } = this.state.visBox;
+    const { margin } = visBox.current;
     const width = parentRect.width;
     const height = parentRect.height;
 
     const xScale = d3
       .scalePoint()
-      .domain(d3.range(this.state.dimensions.length))
+      .domain(d3.range(dimensions.current.length))
       .range([0, width - margin.left - margin.right]);
 
-    this.setState(
-      {
-        ...this.state,
-        visBox: {
-          ...this.state.visBox,
-          width,
-          height,
-        },
-        plotBox: {
-          ...this.state.plotBox,
-          width: width - margin.left - margin.right,
-          height: height - margin.top - margin.bottom,
-        },
-        chart: {
-          xScale,
-        },
-      },
-      () => {
-        const devicePixelRatio = window.devicePixelRatio || 1;
+    visBox.current = {
+      ...visBox.current,
+      width,
+      height,
+    };
 
-        const handleAreaMouseMove = this.handleAreaMouseMove;
-        const handleAreaMouseOut = this.handleAreaMouseOut;
+    plotBox.current = {
+      ...plotBox.current,
+      width: width - margin.left - margin.right,
+      height: height - margin.top - margin.bottom,
+    };
 
-        const container = d3
-          .select(this.visRef.current)
-          .append('div')
-          .attr('class', 'ParallelCoordinates')
-          .style('width', `${this.state.visBox.width}px`)
-          .style('height', `${this.state.visBox.height}px`);
-        // .on('mouseout', function() {
-        //   handleAreaMouseOut();
-        // });
+    chartOptions.current.xScale = xScale;
 
-        this.svg = container
-          .append('svg')
-          .attr('width', this.state.visBox.width)
-          .attr('height', this.state.visBox.height)
-          .on('mousemove', function () {
-            handleAreaMouseMove(d3.mouse(this));
-          });
+    const devicePixelRatio = window.devicePixelRatio || 1;
 
-        this.bgRect = this.svg
-          .append('rect')
-          .attr('x', margin.left)
-          .attr('y', margin.top)
-          .attr('width', width - margin.left - margin.right)
-          .attr('height', height - margin.top - margin.bottom)
-          .style('fill', 'transparent')
-          .on('click', this.handleBgRectClick);
+    const container = d3
+      .select(visRef.current)
+      .append('div')
+      .attr('class', 'ParallelCoordinates')
+      .style('width', `${visBox.current.width}px`)
+      .style('height', `${visBox.current.height}px`);
+    // .on('mouseout', function() {
+    //   handleAreaMouseOut();
+    // });
 
-        if (this.context.traceList?.grouping.chart) {
-          this.svg
-            .append('text')
-            .attr('x', width / 2)
-            .attr('y', 15)
-            .attr('text-anchor', 'middle')
-            .style('font-size', '0.7em')
-            .text(
-              this.context.traceList?.grouping.chart.length > 0
-                ? `#${
-                    this.props.index + 1
-                  } ${this.context.traceList?.grouping.chart
-                    .map((key) => {
-                      return (
-                        key +
-                        '=' +
-                        formatValue(
-                          this.context.traceList.traces.find(
-                            (elem) => elem.chart === this.props.index,
-                          )?.config[key],
-                          false,
-                        )
-                      );
-                    })
-                    .join(', ')}`
-                : '',
-            )
-            .append('svg:title')
-            .text(
-              this.context.traceList?.grouping.chart.length > 0
-                ? `#${
-                    this.props.index + 1
-                  } ${this.context.traceList?.grouping.chart
-                    .map((key) => {
-                      return (
-                        key +
-                        '=' +
-                        formatValue(
-                          this.context.traceList.traces.find(
-                            (elem) => elem.chart === this.props.index,
-                          )?.config[key],
-                          false,
-                        )
-                      );
-                    })
-                    .join(', ')}`
-                : '',
-            );
-        }
+    svg.current = container
+      .append('svg')
+      .attr('width', visBox.current.width)
+      .attr('height', visBox.current.height)
+      .on('mousemove', function () {
+        handleAreaMouseMove(d3.mouse(this));
+      });
 
-        this.plot = this.svg
-          .append('g')
-          .attr(
-            'transform',
-            'translate(' + margin.left + ', ' + margin.top + ')',
-          );
+    bgRect.current = svg.current
+      .append('rect')
+      .attr('x', margin.left)
+      .attr('y', margin.top)
+      .attr('width', width - margin.left - margin.right)
+      .attr('height', height - margin.top - margin.bottom)
+      .style('fill', 'transparent')
+      .on('click', handleBgRectClick);
 
-        this.lines = this.plot.append('g').attr('class', 'Lines');
-
-        const axis = this.plot
-          .selectAll('.ParCoordsAxis')
-          .data(this.state.dimensions)
-          .enter()
-          .append('g')
-          .attr('class', (d) => `ParCoordsAxis ParCoordsAxis-${d.key}`)
-          .attr(
-            'transform',
-            (d, i) => `translate(${this.state.chart.xScale(i)})`,
-          );
-
-        this.circles = this.plot.append('g').attr('class', 'Circles');
-
-        // Draw color
-        if (this.displayParamsIndicator()) {
-          const lg = this.plot
-            .append('linearGradient')
-            .attr('id', `ParCoordsGradient-${this.props.index}`)
-            .attr('x1', 0)
-            .attr('x2', 0)
-            .attr('y1', 0)
-            .attr('y2', 1);
-
-          lg.append('stop')
-            .attr('offset', '0%')
-            .attr('stop-color', this.gradientEndColor);
-
-          lg.append('stop')
-            .attr('offset', '100%')
-            .attr('stop-color', this.gradientStartColor);
-
-          this.plot
-            .append('rect')
-            .attr('x', this.state.plotBox.width)
-            .attr('y', 0)
-            .attr('width', 15)
-            .attr('height', this.state.plotBox.height - 1)
-            .attr('stroke', '#777')
-            .attr('stroke-width', 1)
-            .attr('fill', `url(#ParCoordsGradient-${this.props.index})`);
-        }
-
-        this.state.traces.forEach((traceModel) =>
-          traceModel.series.forEach((series) => {
-            const seriesParams = series.getParamsFlatDict();
-
-            this.state.dimensions.forEach((p) => {
-              if (p.contentType !== 'param') {
-                return;
-              }
-              seriesParams[p.key] = !seriesParams[p.key]
-                ? null
-                : p.type.coerce(seriesParams[p.key]);
-            });
-
-            // Truncate long text strings to fit in data table
-            for (let key in seriesParams) {
-              if (
-                seriesParams[key] &&
-                typeof seriesParams[key] === 'string' &&
-                seriesParams[key].length > 20
-              )
-                seriesParams[key] = seriesParams[key].slice(0, 21);
-            }
-          }),
+    if (traceList?.grouping.chart) {
+      svg.current
+        .append('text')
+        .attr('x', width / 2)
+        .attr('y', 15)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '0.7em')
+        .text(
+          traceList?.grouping.chart.length > 0
+            ? `#${props.index + 1} ${traceList?.grouping.chart
+              .map((key) => {
+                return (
+                  key +
+                    '=' +
+                    formatValue(
+                      traceList.traces.find(
+                        (elem) => elem.chart === props.index,
+                      )?.config[key],
+                      false,
+                    )
+                );
+              })
+              .join(', ')}`
+            : '',
+        )
+        .append('svg:title')
+        .text(
+          traceList?.grouping.chart.length > 0
+            ? `#${props.index + 1} ${traceList?.grouping.chart
+              .map((key) => {
+                return (
+                  key +
+                    '=' +
+                    formatValue(
+                      traceList.traces.find(
+                        (elem) => elem.chart === props.index,
+                      )?.config[key],
+                      false,
+                    )
+                );
+              })
+              .join(', ')}`
+            : '',
         );
+    }
 
-        const d3_functor = (v) => (typeof v === 'function' ? v : () => v);
+    plot.current = svg.current
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
-        // Type/dimension default setting happens here
-        this.state.dimensions.forEach((dim) => {
-          if (!('domain' in dim)) {
-            // Detect domain using dimension type's extent function
-            const domain = [];
-            if (dim.contentType === 'param') {
-              this.state.traces.forEach((traceModel) =>
-                traceModel.series.forEach((series) => {
-                  const param = series.getParamsFlatDict()[dim.key];
-                  if (param !== undefined) {
-                    domain.push(param);
-                  }
-                }),
-              );
-            } else {
-              this.state.traces.forEach((traceModel) =>
-                traceModel.series.forEach((series) => {
-                  const aggValue = series.getAggregatedMetricValue(
-                    dim.metricName,
-                    dim.context,
-                  );
-                  if (aggValue !== undefined) {
-                    domain.push(aggValue);
-                  }
-                }),
-              );
-            }
-            dim.domain = d3_functor(dim.type.extent)(domain);
+    paths.current = plot.current.append('g').attr('class', 'Lines');
+
+    const axis = plot.current
+      .selectAll('.ParCoordsAxis')
+      .data(dimensions.current)
+      .enter()
+      .append('g')
+      .attr('class', (d) => `ParCoordsAxis ParCoordsAxis-${d.key}`)
+      .attr(
+        'transform',
+        (d, i) => `translate(${chartOptions.current.xScale(i)})`,
+      );
+
+    circles.current = plot.current.append('g').attr('class', 'Circles');
+
+    // Draw color
+    if (displayParamsIndicator()) {
+      const lg = plot.current
+        .append('linearGradient')
+        .attr('id', `ParCoordsGradient-${props.index}`)
+        .attr('x1', 0)
+        .attr('x2', 0)
+        .attr('y1', 0)
+        .attr('y2', 1);
+
+      lg.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', gradientEndColor);
+
+      lg.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', gradientStartColor);
+
+      plot.current
+        .append('rect')
+        .attr('x', plotBox.current.width)
+        .attr('y', 0)
+        .attr('width', 15)
+        .attr('height', plotBox.current.height - 1)
+        .attr('stroke', '#777')
+        .attr('stroke-width', 1)
+        .attr('fill', `url(#ParCoordsGradient-${props.index})`);
+    }
+
+    traces.current.forEach((traceModel) =>
+      traceModel.series.forEach((series) => {
+        const seriesParams = series.getParamsFlatDict();
+
+        dimensions.current.forEach((p) => {
+          if (p.contentType !== 'param') {
+            return;
           }
-          if (!('scale' in dim)) {
-            // Use type's default scale for dimension
-            dim.scale = dim.type
-              .defaultScale(this.state.plotBox.height - 2)
-              .copy();
-          }
-          dim.scale.domain(dim.domain);
+          seriesParams[p.key] = !seriesParams[p.key]
+            ? null
+            : p.type.coerce(seriesParams[p.key]);
         });
 
-        this.drawData();
-
-        const titleWidth =
-          this.state.plotBox.width / (this.state.dimensions.length - 1);
-        const titles = this.svg
-          .selectAll('.ParCoordsTitle')
-          .data(this.state.dimensions)
-          .enter()
-          .append('g')
-          .attr('class', (d) => 'ParCoordsTitle')
-          .attr('transform', (d, i) => {
-            const left =
-              this.state.chart.xScale(i) + this.state.visBox.margin.left;
-            const width =
-              i === 0 || i === this.state.dimensions.length - 1
-                ? titleWidth
-                : titleWidth * 2;
-            return (
-              'translate(' +
-              (i === 0
-                ? left
-                : i === this.state.dimensions.length - 1
-                  ? left - width
-                  : left - width / 2) +
-              ', ' +
-              (i % 2 === 0 ? 15 : 35) +
-              ')'
-            );
-          })
-          .append('foreignObject')
-          .attr('width', (d, i) =>
-            i === 0 || i === this.state.dimensions.length - 1
-              ? titleWidth
-              : titleWidth * 2,
+        // Truncate long text strings to fit in data table
+        for (let key in seriesParams) {
+          if (
+            seriesParams[key] &&
+            typeof seriesParams[key] === 'string' &&
+            seriesParams[key].length > 20
           )
-          .attr('height', 20)
-          .html((d, i) => {
-            const wrapperClassName = classNames({
-              ParCoordsTitle__wrapper: true,
-              left: i === 0,
-              center: i > 0 && i < this.state.dimensions.length - 1,
-              right: i === this.state.dimensions.length - 1,
-              small: titleWidth < 100,
-              metric: d.contentType === 'metric',
-              param: d.contentType === 'param',
-            });
+            seriesParams[key] = seriesParams[key].slice(0, 21);
+        }
+      }),
+    );
 
-            let description, strDescription;
-            if (d.contentType === 'metric') {
-              const contextDesc = !!d.context
-                ? Object.keys(d.context)
-                  .map((k) => `${k}=${formatValue(d.context[k])}`)
-                  .join(', ')
-                : '';
-              description = contextDesc
-                ? `${d.metricName} <span class='ParCoordsTitle__content__context'>${contextDesc}</span>`
-                : d.metricName;
-              strDescription = contextDesc
-                ? `${d.metricName} ${contextDesc}`
-                : d.metricName;
-            } else {
-              description = d.key;
-              strDescription = d.key;
-            }
+    const d3_functor = (v) => (typeof v === 'function' ? v : () => v);
 
-            return `
-            <div class='${wrapperClassName}'>
-              <div class='ParCoordsTitle__content' title='${strDescription}'>
-                 ${description}
-              </div>
-            </div>
-          `;
-          });
+    // Type/dimension default setting happens here
+    dimensions.current.forEach((dim) => {
+      if (!('domain' in dim)) {
+        // Detect domain using dimension type's extent function
+        const domain = [];
+        if (dim.contentType === 'param') {
+          traces.current.forEach((traceModel) =>
+            traceModel.series.forEach((series) => {
+              const param = series.getParamsFlatDict()[dim.key];
+              if (param !== undefined) {
+                domain.push(param);
+              }
+            }),
+          );
+        } else {
+          traces.current.forEach((traceModel) =>
+            traceModel.series.forEach((series) => {
+              const aggValue = series.getAggregatedMetricValue(
+                dim.metricName,
+                dim.context,
+              );
+              if (aggValue !== undefined) {
+                domain.push(aggValue);
+              }
+            }),
+          );
+        }
+        dim.domain = d3_functor(dim.type.extent)(domain);
+      }
+      if (!('scale' in dim)) {
+        // Use type's default scale for dimension
+        dim.scale = dim.type.defaultScale(plotBox.current.height - 2).copy();
+      }
+      dim.scale.domain(dim.domain);
+    });
 
-        axis.append('g').each(function (d) {
-          const renderAxis =
-            'axis' in d
-              ? d.axis.scale(d.scale) // Custom axis
-              : d3.axisLeft().scale(d.scale); // Default axis
-          d3.select(this).call(renderAxis);
+    if (!recoverBrushSelection) {
+      drawData();
+    }
+
+    const titleWidth = plotBox.current.width / (dimensions.current.length - 1);
+    const titles = svg.current
+      .selectAll('.ParCoordsTitle')
+      .data(dimensions.current)
+      .enter()
+      .append('g')
+      .attr('class', (d) => 'ParCoordsTitle')
+      .attr('transform', (d, i) => {
+        const left =
+          chartOptions.current.xScale(i) + visBox.current.margin.left;
+        const width =
+          i === 0 || i === dimensions.current.length - 1
+            ? titleWidth
+            : titleWidth * 2;
+        return (
+          'translate(' +
+          (i === 0
+            ? left
+            : i === dimensions.current.length - 1
+              ? left - width
+              : left - width / 2) +
+          ', ' +
+          (i % 2 === 0 ? 15 : 35) +
+          ')'
+        );
+      })
+      .append('foreignObject')
+      .attr('width', (d, i) =>
+        i === 0 || i === dimensions.current.length - 1
+          ? titleWidth
+          : titleWidth * 2,
+      )
+      .attr('height', 20)
+      .html((d, i) => {
+        const wrapperClassName = classNames({
+          ParCoordsTitle__wrapper: true,
+          left: i === 0,
+          center: i > 0 && i < dimensions.current.length - 1,
+          right: i === dimensions.current.length - 1,
+          small: titleWidth < 100,
+          metric: d.contentType === 'metric',
+          param: d.contentType === 'param',
         });
 
-        // Add and store a brush for each axis.
-        const handleBrushStart = this.handleBrushStart;
-        const handleBrushEvent = this.handleBrushEvent;
-
-        const brushHeight = this.state.plotBox.height;
-        const brushSelection = this.brushSelection;
-        axis
-          .append('g')
-          .attr('class', 'ParCoordsAxis__brush')
-          .each(function (d) {
-            d3.select(this).call(
-              (d.brush = d3
-                .brushY()
-                .extent([
-                  [-10, 0],
-                  [10, brushHeight],
-                ])
-                .on('start', handleBrushStart)
-                .on('brush', function () {
-                  handleBrushEvent();
-                })
-                .on('end', function () {
-                  handleBrushEvent();
-                })),
-            );
-            brushSelection?.find(
-              (selection) => selection?.dimension.key === d.key,
-            )?.extent;
-            if (recoverBrushSelection) {
-              d.brush.move(
-                d3.select(this),
-                brushSelection?.find(
-                  (selection) => selection?.dimension.key === d.key,
-                )?.extent ?? null,
-              );
-            }
-          })
-          .selectAll('rect')
-          .attr('x', -10)
-          .attr('width', 20);
-
-        if (recoverBrushSelection) {
-          this.handleBrushEvent(this.brushSelection);
+        let description, strDescription;
+        if (d.contentType === 'metric') {
+          const contextDesc = !!d.context
+            ? Object.keys(d.context)
+              .map((k) => `${k}=${formatValue(d.context[k])}`)
+              .join(', ')
+            : '';
+          description = contextDesc
+            ? `${d.metricName} <span class='ParCoordsTitle__content__context'>${contextDesc}</span>`
+            : d.metricName;
+          strDescription = contextDesc
+            ? `${d.metricName} ${contextDesc}`
+            : d.metricName;
+        } else {
+          description = d.key;
+          strDescription = d.key;
         }
-      },
-    );
-  };
 
-  drawData = () => {
-    const dimensions = this.state.dimensions;
-    const xScale = this.state.chart.xScale;
-    const focused = this.context.chart.focused;
+        return `
+        <div class='${wrapperClassName}'>
+          <div class='ParCoordsTitle__content' title='${strDescription}'>
+             ${description}
+          </div>
+        </div>
+      `;
+      });
+
+    axis.append('g').each(function (d) {
+      const renderAxis =
+        'axis' in d
+          ? d.axis.scale(d.scale) // Custom axis
+          : d3.axisLeft().scale(d.scale); // Default axis
+      d3.select(this).call(renderAxis);
+    });
+
+    // Add and store a brush for each axis.
+
+    const brushHeight = plotBox.current.height;
+    axis
+      .append('g')
+      .attr('class', 'ParCoordsAxis__brush')
+      .each(function (d) {
+        d3.select(this).call(
+          (d.brush = d3
+            .brushY()
+            .extent([
+              [-10, 0],
+              [10, brushHeight],
+            ])
+            .on('start', handleBrushStart)
+            .on('brush', function () {
+              handleBrushEvent();
+            })
+            .on('end', function () {
+              handleBrushEvent();
+            })),
+        );
+        brushSelection.current?.find(
+          (selection) => selection?.dimension.key === d.key,
+        )?.extent;
+        if (recoverBrushSelection) {
+          d.brush.move(
+            d3.select(this),
+            brushSelection.current?.find(
+              (selection) => selection?.dimension.key === d.key,
+            )?.extent ?? null,
+          );
+        }
+      })
+      .selectAll('rect')
+      .attr('x', -10)
+      .attr('width', 20);
+
+    if (recoverBrushSelection) {
+      handleBrushEvent(brushSelection.current);
+    }
+  }
+
+  function drawData() {
+    const focused = chart.focused;
     const focusedMetric = focused.metric;
     const focusedCircle = focused.circle;
 
-    const lastDim = dimensions[dimensions.length - 1];
+    const lastDim = dimensions.current[dimensions.current.length - 1];
     let color;
 
     if (lastDim) {
-      const lastDimValues = this.context.traceList?.traces
+      const lastDimValues = traceList?.traces
         .map((t) =>
           t.series.map((s) => {
-            if (t.chart !== this.props.index) {
+            if (t.chart !== props.index) {
               return undefined;
             }
 
@@ -737,22 +680,18 @@ class ParallelCoordinatesChart extends Component {
       color = d3
         .scaleSequential()
         .domain([_.min(lastDimValues), _.max(lastDimValues)])
-        .interpolator(
-          d3.interpolateRgb(this.gradientStartColor, this.gradientEndColor),
-        );
+        .interpolator(d3.interpolateRgb(gradientStartColor, gradientEndColor));
     } else {
       color = d3
         .scaleSequential()
-        .interpolator(
-          d3.interpolateRgb(this.gradientStartColor, this.gradientEndColor),
-        );
+        .interpolator(d3.interpolateRgb(gradientStartColor, gradientEndColor));
     }
 
-    this.state.traces.forEach((traceModel) =>
+    traces.current.forEach((traceModel) =>
       traceModel.series.forEach((series) => {
         const params = series.getParamsFlatDict();
 
-        const coords = this.state.dimensions.map((p, i) => {
+        const coords = dimensions.current.map((p, i) => {
           let val;
 
           if (p.contentType === 'param') {
@@ -765,7 +704,9 @@ class ParallelCoordinatesChart extends Component {
             val = series.getAggregatedMetricValue(p.metricName, p.context);
           }
 
-          return p.scale(val) === undefined ? null : [xScale(i), p.scale(val)];
+          return p.scale(val) === undefined
+            ? null
+            : [chartOptions.current.xScale(i), p.scale(val)];
         });
 
         let colorVal;
@@ -778,13 +719,13 @@ class ParallelCoordinatesChart extends Component {
           colorVal = params[lastDim.key];
         }
 
-        const strokeStyle = this.displayParamsIndicator()
+        const strokeStyle = displayParamsIndicator()
           ? lastDim?.key && !!color(colorVal)
             ? color(colorVal)
             : '#999999'
-          : this.context.traceList?.grouping?.color?.length > 0
+          : traceList?.grouping?.color?.length > 0
             ? traceModel.color
-            : this.context.getMetricColor(series.run, null, null);
+            : getMetricColor(series.run, null, null);
 
         const strokeDashArray = traceModel.stroke.split(' ');
 
@@ -793,18 +734,13 @@ class ParallelCoordinatesChart extends Component {
           .x((d) => d[0])
           .y((d) => d[1])
           .curve(
-            d3[
-              this.curves[
-                this.context.chart.settings.persistent.interpolate ? 5 : 0
-              ]
-            ],
+            d3[curveOptions[chart.settings.persistent.interpolate ? 5 : 0]],
           );
 
         let lines = [[]];
         let lineIndex = 0;
 
         const { run } = series;
-        const handlePointClick = this.handlePointClick;
 
         coords.forEach((p, i) => {
           const prev = coords[i - 1];
@@ -825,20 +761,20 @@ class ParallelCoordinatesChart extends Component {
               if (
                 focusedMetric.runHash === run.run_hash ||
                 focusedCircle.runHash === run.run_hash ||
-                this.state.closestAxis === p[0]
+                closestAxis.current === p[0]
               ) {
-                this.circles
+                circles.current
                   .append('circle')
                   .attr(
                     'class',
-                    `ParCoordsCircle ParCoordsCircle-${this.context.traceToHash(
+                    `ParCoordsCircle ParCoordsCircle-${traceToHash(
                       run.run_hash,
                       null,
                       null,
                     )} ${
                       !focusedCircle.runHash &&
                       focusedMetric.runHash === run.run_hash &&
-                      this.state.closestValue === p[1]
+                      closestValue.current === p[1]
                         ? 'active'
                         : ''
                     } ${focusedCircle.runHash === run.run_hash ? 'focus' : ''}`,
@@ -849,7 +785,7 @@ class ParallelCoordinatesChart extends Component {
                     'r',
                     !focusedCircle.runHash &&
                       focusedMetric.runHash === run.run_hash &&
-                      this.state.closestValue === p[1]
+                      closestValue.current === p[1]
                       ? circleActiveRadius
                       : circleRadius,
                   )
@@ -871,12 +807,12 @@ class ParallelCoordinatesChart extends Component {
 
         lines.forEach((line) => {
           if (line[0] === null) {
-            this.lines
+            paths.current
               .append('path')
               .attr('d', lineFunction(line.slice(1)))
               .attr(
                 'class',
-                `ParCoordsLine ParCoordsLine-${this.context.traceToHash(
+                `ParCoordsLine ParCoordsLine-${traceToHash(
                   run.run_hash,
                   null,
                   null,
@@ -884,12 +820,12 @@ class ParallelCoordinatesChart extends Component {
               )
               .style('fill', 'none');
           } else {
-            this.lines
+            paths.current
               .append('path')
               .attr('d', lineFunction(line))
               .attr(
                 'class',
-                `ParCoordsLine ParCoordsLine-${this.context.traceToHash(
+                `ParCoordsLine ParCoordsLine-${traceToHash(
                   run.run_hash,
                   null,
                   null,
@@ -907,19 +843,15 @@ class ParallelCoordinatesChart extends Component {
     if (focusedCircle.runHash !== null || focusedMetric.runHash !== null) {
       const focusedLineAttr =
         focusedCircle.runHash !== null ? focusedCircle : focusedMetric;
-      this.lines
+      paths.current
         .selectAll(
-          `.ParCoordsLine-${this.context.traceToHash(
-            focusedLineAttr.runHash,
-            null,
-            null,
-          )}`,
+          `.ParCoordsLine-${traceToHash(focusedLineAttr.runHash, null, null)}`,
         )
         .classed('active', true)
         .moveToFront();
-      this.circles
+      circles.current
         .selectAll(
-          `.ParCoordsCircle-${this.context.traceToHash(
+          `.ParCoordsCircle-${traceToHash(
             focusedLineAttr.runHash,
             null,
             null,
@@ -929,64 +861,55 @@ class ParallelCoordinatesChart extends Component {
         .attr('r', circleActiveRadius)
         .moveToFront();
     }
-  };
+  }
 
-  clearLines = () => {
-    this.lines?.selectAll('*')?.remove();
-  };
+  function clearLines() {
+    paths.current?.selectAll('*')?.remove();
+  }
 
-  clearCircles = () => {
-    this.circles?.selectAll('*')?.remove();
-  };
+  function clearCircles() {
+    circles.current?.selectAll('*')?.remove();
+  }
 
-  displayParamsIndicator = () => {
+  function displayParamsIndicator() {
     return (
-      this.context.chart?.settings?.persistent?.indicator &&
-      this.state.dimensions?.length > 1
+      chart?.settings?.persistent?.indicator && dimensions.current?.length > 1
     );
-  };
+  }
 
-  handlePointClick = (runHash, metricName, traceContext) => {
-    this.context.setChartFocusedState(
-      {
-        circle: {
-          active: true,
-          runHash,
-          metricName,
-          traceContext,
-        },
-        metric: {
-          runHash: null,
-          metricName: null,
-          traceContext: null,
-        },
+  function handlePointClick(runHash, metricName, traceContext) {
+    setChartFocusedState({
+      circle: {
+        active: true,
+        runHash,
+        metricName,
+        traceContext,
       },
-      () => {
-        setTimeout(() => {
-          let activeRow = document.querySelector(
-            '.ContextBox__table__cell.active',
-          );
-          if (activeRow) {
-            activeRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
-          }
-        });
+      metric: {
+        runHash: null,
+        metricName: null,
+        traceContext: null,
       },
-    );
-  };
+    });
+    setTimeout(() => {
+      let activeRow = document.querySelector('.ContextBox__table__cell.active');
+      if (activeRow) {
+        activeRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    });
+  }
 
-  handleBrushStart = () => {
+  function handleBrushStart() {
     d3.event?.sourceEvent?.stopPropagation();
-  };
+  }
 
-  handleBrushEvent = (brushSelection) => {
-    const svg = this.plot;
-
+  function handleBrushEvent(currentBrushSelection) {
     let actives = [];
-    svg
+    plot.current
       .selectAll('.ParCoordsAxis .ParCoordsAxis__brush')
       .filter(function (d) {
-        return brushSelection
-          ? brushSelection?.find(
+        return currentBrushSelection
+          ? currentBrushSelection?.find(
             (selection) => selection?.dimension.key === d.key,
           )?.extent
           : d3.brushSelection(this);
@@ -994,20 +917,20 @@ class ParallelCoordinatesChart extends Component {
       .each(function (d) {
         actives.push({
           dimension: d,
-          extent: brushSelection
-            ? brushSelection?.find(
+          extent: currentBrushSelection
+            ? currentBrushSelection?.find(
               (selection) => selection?.dimension.key === d.key,
             )?.extent
             : d3.brushSelection(this),
         });
       });
 
-    if (!brushSelection) {
-      this.brushSelection = actives.length > 0 ? actives : null;
+    if (!currentBrushSelection) {
+      brushSelection.current = actives.length > 0 ? actives : null;
     }
-    const traces = [];
-    this.context.traceList?.traces.forEach((traceModel) => {
-      if (traceModel.chart !== this.props.index) {
+    traces.current = [];
+    traceList?.traces.forEach((traceModel) => {
+      if (traceModel.chart !== props.index) {
         return;
       }
       const chartTrace = traceModel.clone();
@@ -1034,37 +957,53 @@ class ParallelCoordinatesChart extends Component {
         }
       }
 
-      traces.push(chartTrace);
+      traces.current.push(chartTrace);
     });
 
-    this.clearCircles();
-    this.clearLines();
-
-    this.setState(
-      {
-        traces,
-      },
-      () => this.drawData(),
-    );
-  };
-
-  render() {
-    return (
-      <div className="ParallelCoordinatesChart" ref={this.parentRef}>
-        <div ref={this.visRef} className="ParallelCoordinatesChart__svg" />
-      </div>
-    );
+    window.requestAnimationFrame(renderData);
   }
+
+  useEffect(() => {
+    initD3();
+    const animatedRender = () => window.requestAnimationFrame(renderChart);
+    window.addEventListener('resize', animatedRender);
+
+    return () => {
+      window.removeEventListener('resize', animatedRender);
+    };
+  }, []);
+
+  useEffect(() => {
+    window.requestAnimationFrame(renderChart);
+    return () => {
+      window.cancelAnimationFrame(renderChart);
+    };
+  }, [traceList, props.width, props.height]);
+
+  useEffect(() => {
+    window.requestAnimationFrame(renderData);
+    return () => {
+      window.cancelAnimationFrame(renderData);
+    };
+  }, [chart]);
+
+  return (
+    <div className='ParallelCoordinatesChart' ref={parentRef}>
+      <div ref={visRef} className='ParallelCoordinatesChart__svg' />
+    </div>
+  );
 }
 
 ParallelCoordinatesChart.defaultProps = {
   index: 0,
+  width: null,
+  height: null,
 };
 
 ParallelCoordinatesChart.propTypes = {
   index: PropTypes.number,
+  width: PropTypes.number,
+  height: PropTypes.number,
 };
 
-ParallelCoordinatesChart.contextType = HubMainScreenContext;
-
-export default ParallelCoordinatesChart;
+export default React.memo(ParallelCoordinatesChart);

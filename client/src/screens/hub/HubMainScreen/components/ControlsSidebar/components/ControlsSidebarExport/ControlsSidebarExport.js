@@ -66,7 +66,7 @@ function ControlsSidebarExport(props) {
         })}
         onClick={exportPanel}
       >
-        <UI.Icon i="get_app" scale={1.7} />
+        <UI.Icon i='get_app' scale={1.7} />
       </div>
     </UI.Tooltip>
   );

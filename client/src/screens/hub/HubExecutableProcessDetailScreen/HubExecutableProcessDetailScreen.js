@@ -42,7 +42,7 @@ class HubExecutableProcessDetailScreen extends Component {
   _renderContent = () => {
     if (this.state.isLoading) {
       return (
-        <UI.Text type="grey" center>
+        <UI.Text type='grey' center>
           Loading..
         </UI.Text>
       );
@@ -51,14 +51,14 @@ class HubExecutableProcessDetailScreen extends Component {
     return (
       <div>
         <UI.Text
-          className="HubExecutableProcessDetailScreen__name"
+          className='HubExecutableProcessDetailScreen__name'
           size={6}
           header
         >
           <Link to={buildUrl(screens.HUB_PROJECT_EXECUTABLES, {})}>
             Processes
           </Link>
-          <UI.Text type="grey" inline>
+          <UI.Text type='grey' inline>
             {' '}
             /{' '}
           </UI.Text>
@@ -69,12 +69,12 @@ class HubExecutableProcessDetailScreen extends Component {
           >
             {this.state.process.executable.name}
           </Link>
-          <UI.Text type="grey" inline>
+          <UI.Text type='grey' inline>
             {' '}
             / pid: {this.state.process.pid}{' '}
           </UI.Text>
         </UI.Text>
-        <UI.Segment className="HubExecutableProcessDetailScreen__process">
+        <UI.Segment className='HubExecutableProcessDetailScreen__process'>
           {/*<UI.Text small>{moment.format(this.state.process.created_at, 'HH:mm · D MMM, YY')}</UI.Text>*/}
           <UI.Text>
             Environment Variables:{' '}
@@ -111,7 +111,7 @@ class HubExecutableProcessDetailScreen extends Component {
   render() {
     return (
       <ProjectWrapper>
-        <UI.Container size="small">{this._renderContent()}</UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }
