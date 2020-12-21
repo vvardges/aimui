@@ -1,9 +1,8 @@
 import './HubMainScreen.less';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import { Helmet } from 'react-helmet';
 import { withRouter } from 'react-router-dom';
-import * as _ from 'lodash';
 
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import * as classes from '../../../constants/classes';
@@ -17,7 +16,6 @@ import {
   USER_LAST_EXPLORE_CONFIG,
 } from '../../../config';
 import Panel from './components/Panel/Panel';
-import SearchBar from '../../../components/hub/SearchBar/SearchBar';
 import ContextBox from './components/ContextBox/ContextBox';
 import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
 import {
@@ -29,6 +27,9 @@ import {
 import * as analytics from '../../../services/analytics';
 import SelectForm from './components/SelectForm/SelectForm';
 import { HubMainScreenModel } from './models/HubMainScreenModel';
+import BarViewModes from '../../../components/hub/BarViewModes/BarViewModes';
+import Alert from './components/Alert/Alert';
+import UI from '../../../ui';
 
 const URLStateParams = [
   'chart.focused.circle',
@@ -38,16 +39,21 @@ const URLStateParams = [
 ];
 
 const defaultSearchQuery = 'loss';
+const searchBarHeight = 75;
+
 function HubMainScreen(props) {
   let [state, setState] = useState({
     height: 0,
     width: 0,
     resizing: false,
     panelFlex: getItem(EXPLORE_PANEL_FLEX_STYLE),
+    viewMode: 'resizable',
   });
-  let { traceList } = HubMainScreenModel.useHubMainScreenState(
+
+  let { runs, traceList, search } = HubMainScreenModel.useHubMainScreenState([
+    HubMainScreenModel.events.SET_RUNS_STATE,
     HubMainScreenModel.events.SET_TRACE_LIST,
-  );
+  ]);
 
   const {
     setRunsState,
@@ -345,34 +351,40 @@ function HubMainScreen(props) {
     };
   }, []);
 
-  function _renderBody() {
+  function _renderContent() {
     const panelIndicesLen = traceList?.getChartsNumber();
     const panelIndices = [...Array(panelIndicesLen).keys()];
     const headerWidth = 70;
     const controlsWidth = 75;
-    const searchBarHeight = 75;
 
     return (
       <div
-        className='HubMainScreen__grid__body'
+        className={classNames({
+          HubMainScreen__grid__body: true,
+          [`HubMainScreen__grid__body--${state.viewMode}`]: true,
+        })}
         style={{
           height: `${state.height - searchBarHeight}px`,
         }}
       >
         <div className='HubMainScreen__grid__body__blocks'>
-          <div
-            className='HubMainScreen__grid__panel'
-            style={{
-              flex: state.panelFlex,
-            }}
-          >
-            <Panel
-              parentHeight={state.height}
-              parentWidth={state.width}
-              indices={panelIndices}
-              resizing={state.resizing}
-            />
-          </div>
+          {state.viewMode !== 'context' &&
+            <div
+              className='HubMainScreen__grid__panel'
+              style={{
+                flex: state.viewMode === 'panel' ? 1 : state.panelFlex,
+              }}
+            >
+              <Panel
+                parentHeight={state.height}
+                parentWidth={state.width}
+                mode={state.viewMode}
+                indices={panelIndices}
+                resizing={state.resizing}
+              />
+            </div>
+          }
+          {state.viewMode === 'resizable' &&
           <div
             className='HubMainScreen__grid__resize__area'
             onMouseDown={startResize}
@@ -386,22 +398,74 @@ function HubMainScreen(props) {
               <div className='HubMainScreen__grid__resize__icon' />
             </div>
           </div>
+          }
           <div
-            className='HubMainScreen__grid__context'
+            className={classNames({
+              HubMainScreen__grid__context: true,
+              'HubMainScreen__grid__context--minimize': state.viewMode === 'panel',
+            })}
             style={{
-              flex: 1 - state.panelFlex,
+              flex: state.viewMode === 'context' ? 1 : state.viewMode === 'panel' ? 0 : 1 - state.panelFlex,
             }}
           >
-            <ContextBox
-              width={state.width - headerWidth - controlsWidth - 5}
-              resizing={state.resizing}
-            />
+            {state.viewMode !== 'panel'
+              ? (
+                <ContextBox
+                  spacing={state.viewMode !== 'resizable'}
+                  width={state.width - headerWidth - controlsWidth - 5}
+                  resizing={state.resizing}
+                  viewMode={state.viewMode}
+                  setViewMode={(mode) => setState((s) => ({ ...s, viewMode: mode }))}
+                />
+              ) : (
+                <div className='HubMainScreen__grid__context__bar'>
+                  <BarViewModes
+                    viewMode={state.viewMode}
+                    setViewMode={(mode) => setState((s) => ({ ...s, viewMode: mode }))}
+                  />
+                </div>
+              )
+            }
           </div>
         </div>
         <div className='HubMainScreen__grid__controls'>
           <ControlsSidebar />
         </div>
       </div>
+    );
+  }
+
+  function _renderBody() {
+    return (
+      runs.isLoading === false && runs.isEmpty === true ? (
+        <div className='HubMainScreen__alerts'>
+          <Alert>
+            {!!search.query ? (
+              <UI.Text type='grey' center>
+                You haven't recorded experiments matching this query.
+              </UI.Text>
+            ) : (
+              <UI.Text type='grey' center>
+                It's super easy to search Aim experiments.
+              </UI.Text>
+            )}
+            <UI.Text type='grey' center>
+              Lookup{' '}
+              <a
+                className='link'
+                href='https://github.com/aimhubio/aim#searching-experiments'
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                search docs
+              </a>{' '}
+              to learn more.
+            </UI.Text>
+          </Alert>
+        </div>
+      ) : (
+        _renderContent()
+      )
     );
   }
 

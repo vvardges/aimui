@@ -32,6 +32,11 @@
 .HubMainScreen__grid__body {
   display: grid;
   grid-template-columns: 1fr @controls-width;
+  box-sizing: border-box;
+}
+
+.HubMainScreen__grid__body,
+.HubMainScreen__alerts {
   border-top: 1px solid var(--grey-light-xx);
   box-sizing: border-box;
 }
@@ -58,10 +63,28 @@
 }
 
 .HubMainScreen__grid__context {
-  min-height: 180px;
   height: auto;
   overflow: hidden;
   flex: 1;
+  min-height: 180px;
+
+  &.HubMainScreen__grid__context--minimize {
+    min-height: 40px;
+  }
+}
+
+.HubMainScreen__grid__context__bar {
+  background-color: #FFF;
+  overflow: hidden;
+  margin: 5px 0 0 5px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  box-sizing: border-box;
+  border: 1px solid var(--grey-light-xx);
+  border-radius: var(--border-radius);
 }
 
 .HubMainScreen__grid__resize__area {

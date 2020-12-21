@@ -7,6 +7,7 @@ import UI from '../../../ui';
 import { classNames } from '../../../utils';
 import BarFilter from './components/BarFilter/BarFilter';
 import BarRowHeightSelect from './components/BarRowHeightSelect/BarRowHeightSelect';
+import BarViewModes from '../BarViewModes/BarViewModes';
 
 function ContextTable(props) {
   let [excludedFields, setExcludedFields] = useState([]);
@@ -33,6 +34,12 @@ function ContextTable(props) {
           })}
         >
           <div className='ContextTableBar__items ContextTableBar__items--left'>
+            {props.displayViewModes &&
+              <BarViewModes
+                viewMode={props.viewMode}
+                setViewMode={props.setViewMode}
+              />
+            }
             <BarFilter
               excludedFields={excludedFields}
               setExcludedFields={setExcludedFields}
@@ -60,11 +67,17 @@ function ContextTable(props) {
 
 ContextTable.defaultProps = {
   displayBar: true,
+  displayViewModes: false,
+  viewMode: null,
+  setViewMode: null,
 };
 
 ContextTable.propTypes = {
   displayBar: PropTypes.bool,
   searchFields: PropTypes.object,
+  displayViewModes: PropTypes.bool,
+  viewMode: PropTypes.string,
+  setViewMode: PropTypes.func,
 };
 
 export default ContextTable;

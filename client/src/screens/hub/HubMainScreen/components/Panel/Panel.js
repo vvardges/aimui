@@ -97,7 +97,7 @@ function Panel(props) {
     if (props.resizing === false) {
       setSize();
     }
-  }, [state.height, props.resizing, props.parentHeight, props.parentWidth]);
+  }, [state.height, props.resizing, props.parentHeight, props.parentWidth, props.mode]);
 
   function setSize() {
     const height = panelRef.current.clientHeight;
@@ -203,44 +203,16 @@ function Panel(props) {
         )
       ) : (
         <>
-          {runs.isEmpty ? (
-            _renderPanelMsg(
-              <>
-                {!!search.query ? (
-                  <UI.Text type='grey' center>
-                    You haven't recorded experiments matching this query.
-                  </UI.Text>
-                ) : (
-                  <UI.Text type='grey' center>
-                    It's super easy to search Aim experiments.
-                  </UI.Text>
-                )}
+          {runs.isEmpty === false &&
+            (isExploreParamsModeEnabled() && getCountOfSelectedParams() === 1
+              ? _renderPanelMsg(
                 <UI.Text type='grey' center>
-                  Lookup{' '}
-                  <a
-                    className='link'
-                    href='https://github.com/aimhubio/aim#searching-experiments'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                  >
-                    search docs
-                  </a>{' '}
-                  to learn more.
-                </UI.Text>
-              </>,
+                  Please select at least two params to see parallel coordinates plot displayed.
+                </UI.Text>,
+              )
+              : <div className='Panel__chart-container'>{_renderCharts()}</div>
             )
-          ) : (
-            <div className='Panel__chart-container'>
-              {isExploreParamsModeEnabled() && getCountOfSelectedParams() === 1
-                ? _renderPanelMsg(
-                  <UI.Text type='grey' center>
-                      Please select at least two params to see parallel
-                      coordinates plot displayed.
-                  </UI.Text>,
-                )
-                : _renderCharts()}
-            </div>
-          )}
+          }
         </>
       )}
     </div>
@@ -252,6 +224,7 @@ Panel.defautlProps = {
   parentWidth: null,
   resizing: false,
   indices: null,
+  mode: '',
 };
 
 Panel.propTypes = {
@@ -259,6 +232,7 @@ Panel.propTypes = {
   parentWidth: PropTypes.number,
   resizing: PropTypes.bool,
   indices: PropTypes.array,
+  mode: PropTypes.string,
 };
 
 export default React.memo(Panel);

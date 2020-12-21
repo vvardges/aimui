@@ -18,14 +18,16 @@
   }
 
   &.ContextTable--short {
-    .Label__content {
-      padding-top: 0.2em;
-      padding-bottom: 0.2em;
-    }
+    .ContextTable__table {
+      .Label__content {
+        padding-top: 0.2em;
+        padding-bottom: 0.2em;
+      }
 
-    .Button__content {
-      padding-top: 0.33em;
-      padding-bottom: 0.33em;
+      .Button__content {
+        padding-top: 0.33em;
+        padding-bottom: 0.33em;
+      }
     }
   }
 }
@@ -58,6 +60,10 @@
     margin-left: 0;
     margin-right: 0;
   }
+}
+
+.ContextTableBar__item__group {
+  border-right: var(--border);
 }
 
 .ContextTableBar__item__wrapper {
@@ -114,4 +120,12 @@
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   z-index: 9999;
+}
+
+.ContextTableBar {
+  .BarViewModes {
+    margin-right: @table-bar-item-spacing;
+    padding: 0 15px 0 10px !important;
+    border-right: 1px solid var(--grey-light-xx) !important;
+  }
 }

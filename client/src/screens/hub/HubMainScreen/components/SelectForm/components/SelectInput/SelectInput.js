@@ -375,7 +375,7 @@ function SelectInput(props) {
       (m) => m.startsWith(suggestionsPrefix) && metrics.push(m),
     );
 
-    const params = _.cloneDeep(this.props.project?.params) ?? {};
+    const params = _.cloneDeep(props.project?.params) ?? {};
     searchNestedObject(params, suggestionsPrefix.split('.'));
     removeObjectEmptyKeys(params);
 

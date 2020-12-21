@@ -1,5 +1,6 @@
 # Changelog
 
+- Add ability to select table view mode in explore screen (gorarakelyan)
 - Optimize explore panel rendering performance (roubkar)
 - Add table control for selecting row height (gorarakelyan)
 - Add ability to filter table columns (gorarakelyan)

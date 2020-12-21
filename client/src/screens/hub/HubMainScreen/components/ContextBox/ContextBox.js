@@ -987,6 +987,9 @@ function ContextBox(props) {
             forcePinnedColumns={forcePinnedColumns}
             updateForcePinnedColumns={updateForcePinnedColumns}
             searchFields={searchFields}
+            displayViewModes={true}
+            viewMode={props.viewMode}
+            setViewMode={props.setViewMode}
           />
         </div>
       </div>
@@ -1026,7 +1029,10 @@ function ContextBox(props) {
 
   return (
     <div
-      className='ContextBox'
+      className={classNames({
+        ContextBox: true,
+        spacing: props.spacing,
+      })}
       style={{
         width: `${props.width}px`,
       }}
