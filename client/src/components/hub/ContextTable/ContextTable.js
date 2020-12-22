@@ -1,6 +1,6 @@
 import './ContextTable.less';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import UI from '../../../ui';
@@ -8,15 +8,33 @@ import { classNames } from '../../../utils';
 import BarFilter from './components/BarFilter/BarFilter';
 import BarRowHeightSelect from './components/BarRowHeightSelect/BarRowHeightSelect';
 import BarViewModes from '../BarViewModes/BarViewModes';
+import { setItem, getItem } from '../../../services/storage';
+import { CONTEXT_TABLE_CONFIG } from '../../../config';
 
 function ContextTable(props) {
-  let [excludedFields, setExcludedFields] = useState([]);
-  let [rowHeightMode, setRowHeightMode] = useState('medium');
+  const storageKey = CONTEXT_TABLE_CONFIG.replace('{name}', props.name);
+  let storageVal;
+  try {
+    storageVal = getItem(storageKey);
+    storageVal = JSON.parse(storageVal);
+  } catch (e) {
+    storageVal = {};
+  }
+
+  let [excludedFields, setExcludedFields] = useState(storageVal?.excludedFields ?? []);
+  let [rowHeightMode, setRowHeightMode] = useState(storageVal?.rowHeightMode ?? 'medium');
 
   let contextTableRef = useRef();
 
   const height = contextTableRef.current?.getBoundingClientRect()?.height;
   const itemMaxHeight = !!height ? height - 50 : null;
+
+  useEffect(() => {
+    setItem(storageKey, JSON.stringify({
+      rowHeightMode,
+      excludedFields,
+    }));
+  }, [rowHeightMode, excludedFields]);
 
   return (
     <div

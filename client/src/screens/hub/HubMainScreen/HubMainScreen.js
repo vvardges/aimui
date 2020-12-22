@@ -13,6 +13,7 @@ import {
   USER_LAST_SEARCH_QUERY,
   AIM_QL_VERSION,
   EXPLORE_PANEL_FLEX_STYLE,
+  EXPLORE_PANEL_VIEW_MODE,
   USER_LAST_EXPLORE_CONFIG,
 } from '../../../config';
 import Panel from './components/Panel/Panel';
@@ -47,7 +48,7 @@ function HubMainScreen(props) {
     width: 0,
     resizing: false,
     panelFlex: getItem(EXPLORE_PANEL_FLEX_STYLE),
-    viewMode: 'resizable',
+    viewMode: getItem(EXPLORE_PANEL_VIEW_MODE) ?? 'resizable',
   });
 
   let { runs, traceList, search } = HubMainScreenModel.useHubMainScreenState([
@@ -324,6 +325,10 @@ function HubMainScreen(props) {
       setItem(EXPLORE_PANEL_FLEX_STYLE, state.panelFlex);
     }
   }, [state.resizing]);
+
+  useEffect(() => {
+    setItem(EXPLORE_PANEL_VIEW_MODE, state.viewMode);
+  }, [state.viewMode]);
 
   useEffect(() => {
     props.completeProgress();

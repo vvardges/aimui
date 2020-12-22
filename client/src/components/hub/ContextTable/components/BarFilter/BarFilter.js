@@ -202,12 +202,15 @@ function Parameter({ paramKey, parentPath, excludedFields, toggleField }) {
 }
 
 function Parameters({ params, parentPath, excludedFields, toggleField }) {
+  const key = (k) => `${parentPath.join('.')}.${k}`;
+
   return (
     !!params &&
     Object.keys(params).map((paramKey) => (
       <>
         {typeof params[paramKey] === 'boolean' && (
           <Parameter
+            key={key(paramKey)}
             paramKey={paramKey}
             parentPath={parentPath}
             excludedFields={excludedFields}
@@ -218,7 +221,7 @@ function Parameters({ params, parentPath, excludedFields, toggleField }) {
         {typeof params[paramKey] === 'object' && (
           <div
             className='BarFilter__group'
-            key={`${parentPath.join('.')}.${paramKey}`}
+            key={key(paramKey)}
           >
             <div className='BarFilter__group__item__row group'>
               {[...Array(parentPath.length + 1)].map((_, i) => (
@@ -231,6 +234,7 @@ function Parameters({ params, parentPath, excludedFields, toggleField }) {
             </div>
             <div className='BarFilter__group__body'>
               <Parameters
+                key={key(paramKey)}
                 params={params[paramKey]}
                 parentPath={[...parentPath, paramKey]}
                 excludedFields={excludedFields}
