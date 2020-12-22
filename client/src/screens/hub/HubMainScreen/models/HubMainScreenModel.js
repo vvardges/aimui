@@ -18,6 +18,7 @@ const events = {
   SET_RUNS_STATE: 'SET_RUNS_STATE',
   SET_TRACE_LIST: 'SET_TRACE_LIST',
   SET_CHART_FOCUSED_STATE: 'SET_CHART_FOCUSED_STATE',
+  SET_CHART_FOCUSED_ACTIVE_STATE: 'SET_CHART_FOCUSED_ACTIVE_STATE',
   SET_CHART_SETTINGS_STATE: 'SET_CHART_SETTINGS_STATE',
   SET_CONTEXT_FILTER: 'SET_CONTEXT_FILTER',
   SET_SEARCH_STATE: 'SET_SEARCH_STATE',
@@ -244,6 +245,21 @@ function setChartSettingsState(settingsState, callback = null) {
 
 function setChartFocusedState(focusedState, callback = null) {
   emit(events.SET_CHART_FOCUSED_STATE, {
+    chart: {
+      ...getState().chart,
+      focused: {
+        ...getState().chart.focused,
+        ...focusedState,
+      },
+    },
+  });
+  if (callback !== null) {
+    callback();
+  }
+}
+
+function setChartFocusedActiveState(focusedState, callback = null) {
+  emit(events.SET_CHART_FOCUSED_ACTIVE_STATE, {
     chart: {
       ...getState().chart,
       focused: {
@@ -589,6 +605,7 @@ export const HubMainScreenModel = {
     setTraceList,
     setChartSettingsState,
     setChartFocusedState,
+    setChartFocusedActiveState,
     setContextFilter,
     resetControls,
     setSearchState,

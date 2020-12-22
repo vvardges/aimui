@@ -36,7 +36,7 @@ function Label({
   }
 
   return (
-    <div className={elemClassName} style={styles} onClick={onClick || null}>
+    <div className={elemClassName} style={styles} onClick={onClick ?? null}>
       {!!iconLeft && (
         <div
           className={classNames({
@@ -44,7 +44,7 @@ function Label({
             'Label__icon--left': true,
             'Label__icon--clickable': iconIsClickable,
           })}
-          onClick={iconOnClick ?? false}
+          onClick={iconOnClick ?? null}
         >
           {iconLeft}
         </div>
@@ -57,7 +57,7 @@ function Label({
             'Label__icon--right': true,
             'Label__icon--clickable': iconIsClickable,
           })}
-          onClick={iconOnClick ?? false}
+          onClick={iconOnClick ?? null}
         >
           {iconRight}
         </div>

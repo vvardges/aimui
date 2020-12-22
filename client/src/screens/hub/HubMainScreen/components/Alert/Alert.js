@@ -4,9 +4,7 @@ import React from 'react';
 
 import { classNames } from '../../../../../utils';
 
-function Alert({
-  children,
-}) {
+function Alert({ children }) {
   return (
     <div
       className={classNames({
@@ -18,7 +16,6 @@ function Alert({
   );
 }
 
-Alert.propTypes = {
-};
+Alert.propTypes = {};
 
 export default Alert;

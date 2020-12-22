@@ -21,8 +21,12 @@ function ContextTable(props) {
     storageVal = {};
   }
 
-  let [excludedFields, setExcludedFields] = useState(storageVal?.excludedFields ?? []);
-  let [rowHeightMode, setRowHeightMode] = useState(storageVal?.rowHeightMode ?? 'medium');
+  let [excludedFields, setExcludedFields] = useState(
+    storageVal?.excludedFields ?? [],
+  );
+  let [rowHeightMode, setRowHeightMode] = useState(
+    storageVal?.rowHeightMode ?? 'medium',
+  );
 
   let contextTableRef = useRef();
 
@@ -30,10 +34,13 @@ function ContextTable(props) {
   const itemMaxHeight = !!height ? height - 50 : null;
 
   useEffect(() => {
-    setItem(storageKey, JSON.stringify({
-      rowHeightMode,
-      excludedFields,
-    }));
+    setItem(
+      storageKey,
+      JSON.stringify({
+        rowHeightMode,
+        excludedFields,
+      }),
+    );
   }, [rowHeightMode, excludedFields]);
 
   return (
@@ -52,12 +59,12 @@ function ContextTable(props) {
           })}
         >
           <div className='ContextTableBar__items ContextTableBar__items--left'>
-            {props.displayViewModes &&
+            {props.displayViewModes && (
               <BarViewModes
                 viewMode={props.viewMode}
                 setViewMode={props.setViewMode}
               />
-            }
+            )}
             <BarFilter
               excludedFields={excludedFields}
               setExcludedFields={setExcludedFields}

@@ -41,8 +41,7 @@ function ContextBox(props) {
   } = HubMainScreenModel.useHubMainScreenState([
     HubMainScreenModel.events.SET_RUNS_STATE,
     HubMainScreenModel.events.SET_TRACE_LIST,
-    HubMainScreenModel.events.SET_CONTEXT_FILTER,
-    HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
+    HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
   ]);
 
   let { setChartFocusedState, setContextFilter } = HubMainScreenModel.emitters;
@@ -51,8 +50,10 @@ function ContextBox(props) {
     getTraceData,
     getMetricStepDataByStepIdx,
     contextToHash,
+    traceToHash,
     getMetricColor,
     isExploreParamsModeEnabled,
+    isExploreMetricsModeEnabled,
     getAllParamsPaths,
   } = HubMainScreenModel.helpers;
 
@@ -73,8 +74,8 @@ function ContextBox(props) {
   }
 
   function handleRowMove(runHash, metricName, traceContext) {
-    const focusedCircle = chart.focused.circle;
-    const focusedMetric = chart.focused.metric;
+    const focusedCircle = HubMainScreenModel.getState().chart.focused.circle;
+    const focusedMetric = HubMainScreenModel.getState().chart.focused.metric;
 
     if (focusedCircle.active) {
       return;
@@ -98,13 +99,14 @@ function ContextBox(props) {
   }
 
   function handleRowClick(runHash, metricName, traceContext) {
-    const focusedCircle = chart.focused.circle;
-    let step = chart.focused.step;
+    const focusedCircle = HubMainScreenModel.getState().chart.focused.circle;
+    let step = HubMainScreenModel.getState().chart.focused.step;
 
     if (
-      focusedCircle.runHash === runHash &&
-      focusedCircle.metricName === metricName &&
-      focusedCircle.traceContext === traceContext
+      (isExploreParamsModeEnabled() && focusedCircle.runHash === runHash) ||
+      (focusedCircle.runHash === runHash &&
+        focusedCircle.metricName === metricName &&
+        focusedCircle.traceContext === traceContext)
     ) {
       setChartFocusedState({
         step: step || 0,
@@ -119,14 +121,14 @@ function ContextBox(props) {
       return;
     }
 
-    if (runs?.meta?.params_selected) {
+    if (isExploreParamsModeEnabled()) {
       setChartFocusedState({
         step: step,
         circle: {
           active: true,
           runHash: runHash,
-          metricName: metricName,
-          traceContext: traceContext,
+          metricName: null,
+          traceContext: null,
         },
         metric: {
           runHash: null,
@@ -278,7 +280,7 @@ function ContextBox(props) {
       },
     ];
 
-    if (!runs?.meta?.params_selected) {
+    if (isExploreMetricsModeEnabled()) {
       columns = columns.concat([
         {
           key: 'metric',
@@ -387,7 +389,7 @@ function ContextBox(props) {
     const focusedMetric = chart.focused.metric;
 
     traceList?.traces.forEach((traceModel) => {
-      (runs?.meta?.params_selected
+      (isExploreParamsModeEnabled()
         ? _.uniqBy(traceModel.series, 'run.run_hash')
         : traceModel.series
       ).forEach((series) => {
@@ -413,7 +415,7 @@ function ContextBox(props) {
         let active = false;
 
         if (
-          (runs?.meta?.params_selected &&
+          (isExploreParamsModeEnabled() &&
             (focusedCircle.runHash === run.run_hash ||
               focusedMetric.runHash === run.run_hash)) ||
           (focusedCircle.runHash === run.run_hash &&
@@ -427,7 +429,7 @@ function ContextBox(props) {
         }
 
         if (
-          (runs?.meta?.params_selected &&
+          (isExploreParamsModeEnabled() &&
             focusedCircle.runHash === run.run_hash) ||
           (focusedCircle.runHash === run.run_hash &&
             focusedCircle.metricName === metric?.name &&
@@ -436,15 +438,20 @@ function ContextBox(props) {
           expanded[JSON.stringify(traceModel.config)] = true;
         }
 
-        const className = classNames({
+        const cellClassName = classNames({
           ContextBox__table__cell: true,
           active: active,
+          [`cell-${traceToHash(
+            run.run_hash,
+            isExploreParamsModeEnabled() ? null : metric?.name,
+            isExploreParamsModeEnabled() ? null : contextHash,
+          )}`]: true,
         });
 
         let style = {};
         if (active) {
           style = {
-            backgroundColor: colorObj.lightness(85).hsl().string(),
+            backgroundColor: colorObj.lightness(96.5).hsl().string(),
           };
         }
 
@@ -465,7 +472,7 @@ function ContextBox(props) {
               color: active ? '#FFF' : color,
               backgroundColor: active ? color : '#FAFAFA',
             },
-            className: className,
+            className: `metric ${cellClassName}`,
             props: {
               onClick: () =>
                 handleRowClick(run.run_hash, metric?.name, contextHash),
@@ -489,6 +496,7 @@ function ContextBox(props) {
               color: active ? '#FFF' : color,
               backgroundColor: active ? color : '#FAFAFA',
             },
+            className: `metric ${cellClassName}`,
             props: {
               onClick: () =>
                 handleRowClick(run.run_hash, metric?.name, contextHash),
@@ -502,6 +510,7 @@ function ContextBox(props) {
               color: active ? '#FFF' : color,
               backgroundColor: active ? color : '#FAFAFA',
             },
+            className: `metric ${cellClassName}`,
             props: {
               onClick: () =>
                 handleRowClick(run.run_hash, metric?.name, contextHash),
@@ -540,6 +549,7 @@ function ContextBox(props) {
             style: {
               backgroundColor: active ? color : '#FAFAFA',
             },
+            className: `metric ${cellClassName}`,
             props: {
               onClick: () =>
                 handleRowClick(run.run_hash, metric?.name, contextHash),
@@ -553,6 +563,11 @@ function ContextBox(props) {
                 ? roundValue(stepData[0])
                 : '-',
             style: style,
+            className: `value-${traceToHash(
+              run.run_hash,
+              metric?.name,
+              contextHash,
+            )} ${cellClassName}`,
             props: {
               onClick: () =>
                 handleRowClick(run.run_hash, metric?.name, contextHash),
@@ -564,6 +579,11 @@ function ContextBox(props) {
             content:
               stepData !== null && stepData[1] !== null ? stepData[1] : '-',
             style: style,
+            className: `step-${traceToHash(
+              run.run_hash,
+              metric?.name,
+              contextHash,
+            )} ${cellClassName}`,
             props: {
               onClick: () =>
                 handleRowClick(run.run_hash, metric?.name, contextHash),
@@ -575,6 +595,11 @@ function ContextBox(props) {
             content:
               stepData !== null && stepData[2] !== null ? stepData[2] : '-',
             style: style,
+            className: `epoch-${traceToHash(
+              run.run_hash,
+              metric?.name,
+              contextHash,
+            )} ${cellClassName}`,
             props: {
               onClick: () =>
                 handleRowClick(run.run_hash, metric?.name, contextHash),
@@ -588,6 +613,11 @@ function ContextBox(props) {
                 ? moment.unix(stepData[3]).format('HH:mm:ss · D MMM, YY')
                 : '-',
             style: style,
+            className: `time-${traceToHash(
+              run.run_hash,
+              metric?.name,
+              contextHash,
+            )} ${cellClassName}`,
             props: {
               onClick: () =>
                 handleRowClick(run.run_hash, metric?.name, contextHash),
@@ -605,6 +635,7 @@ function ContextBox(props) {
                 true,
               ),
               style: style,
+              className: cellClassName,
               props: {
                 onClick: () =>
                   handleRowClick(run.run_hash, metric?.name, contextHash),
@@ -620,6 +651,7 @@ function ContextBox(props) {
             row[`params.${paramKey}.${key}`] = {
               content: formatValue(run.params?.[paramKey]?.[key]),
               style: style,
+              className: cellClassName,
               props: {
                 onClick: () =>
                   handleRowClick(run.run_hash, metric?.name, contextHash),
@@ -644,10 +676,8 @@ function ContextBox(props) {
               traceModel.aggregation.max.trace.data,
               step,
             )?.[0];
-            const runsCount = (runs?.meta?.params_selected
-              ? _.uniqBy(traceModel.series, 'run.run_hash')
-              : traceModel.series
-            ).length;
+            const runsCount = _.uniqBy(traceModel.series, 'run.run_hash')
+              .length;
             data[JSON.stringify(traceModel.config)] = {
               items: [],
               data: {
@@ -750,7 +780,7 @@ function ContextBox(props) {
                   content: (
                     <div className='ContextBox__table__item-aggregated_labels'>
                       <UI.Label
-                        className='ContextBox__table__item-aggregated_label'
+                        className='ContextBox__table__item-aggregated_label min'
                         iconLeft={
                           <UI.Tooltip tooltip={'Minimum value'}>
                             <UI.Icon
@@ -768,7 +798,7 @@ function ContextBox(props) {
                           : '-'}
                       </UI.Label>
                       <UI.Label
-                        className='ContextBox__table__item-aggregated_label'
+                        className='ContextBox__table__item-aggregated_label avg'
                         iconLeft={
                           <UI.Tooltip tooltip={'Average value'}>
                             <UI.Icon
@@ -786,7 +816,7 @@ function ContextBox(props) {
                           : '-'}
                       </UI.Label>
                       <UI.Label
-                        className='ContextBox__table__item-aggregated_label'
+                        className='ContextBox__table__item-aggregated_label max'
                         iconLeft={
                           <UI.Tooltip tooltip={'Maximum value'}>
                             <UI.Icon
@@ -805,17 +835,28 @@ function ContextBox(props) {
                       </UI.Label>
                     </div>
                   ),
+                  className: `value-${JSON.stringify(traceModel.config).replace(
+                    /\.|"|:|{|}|,/g,
+                    '_',
+                  )}`,
                 },
                 step: {
                   content:
                     stepData !== null && stepData[1] !== null
                       ? stepData[1]
                       : '-',
+                  className: `step-${JSON.stringify(traceModel.config).replace(
+                    /\.|"|:|{|}|,/g,
+                    '_',
+                  )}`,
                 },
               },
               config: (
                 <>
-                  <GroupConfigPopup config={traceModel.config} />
+                  <GroupConfigPopup
+                    config={traceModel.config}
+                    rowsCount={traceModel.series.length}
+                  />
                   {traceList?.grouping?.chart?.length > 0 && (
                     <UI.Tooltip tooltip='Group Chart ID'>
                       <div className='ContextBox__table__group-indicator__chart'>
@@ -1026,6 +1067,214 @@ function ContextBox(props) {
       });
     }
   });
+
+  useEffect(() => {
+    const subscription = HubMainScreenModel.subscribe(
+      HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
+      () => {
+        window.requestAnimationFrame(() => {
+          const { traceList, chart } = HubMainScreenModel.getState();
+
+          const step = chart.focused.step;
+          const focusedCircle = chart.focused.circle;
+          const focusedMetric = chart.focused.metric;
+
+          let groupStepData = {};
+
+          const currentActiveRow = document.querySelectorAll(
+            '.ContextBox__table__cell.active',
+          );
+          currentActiveRow?.forEach((cell) => {
+            cell.classList.remove('active');
+            cell.style.color = cell.classList.contains('metric')
+              ? cell.style.backgroundColor
+              : '';
+            cell.style.backgroundColor = cell.classList.contains('metric')
+              ? '#FAFAFA'
+              : 'inherit';
+          });
+          traceList?.traces.forEach((traceModel) => {
+            const groupSelector = JSON.stringify(traceModel.config).replace(
+              /\.|"|:|{|}|,/g,
+              '_',
+            );
+            (isExploreParamsModeEnabled()
+              ? _.uniqBy(traceModel.series, 'run.run_hash')
+              : traceModel.series
+            ).forEach((series) => {
+              const { run, metric, trace } = series;
+              const contextHash = contextToHash(trace?.context);
+
+              const line = getTraceData(
+                run.run_hash,
+                metric?.name,
+                contextHash,
+              );
+
+              let stepData = line
+                ? getMetricStepDataByStepIdx(line?.data, step)
+                : null;
+
+              if (stepData !== null && stepData[1] !== null) {
+                groupStepData[groupSelector] = stepData[1];
+              }
+
+              let active = false;
+
+              if (
+                (isExploreParamsModeEnabled() &&
+                  (focusedCircle.runHash === run.run_hash ||
+                    focusedMetric.runHash === run.run_hash)) ||
+                (focusedCircle.runHash === run.run_hash &&
+                  focusedCircle.metricName === metric?.name &&
+                  focusedCircle.traceContext === contextHash) ||
+                (focusedMetric.runHash === run.run_hash &&
+                  focusedMetric.metricName === metric?.name &&
+                  focusedMetric.traceContext === contextHash)
+              ) {
+                active = true;
+              }
+
+              if (active) {
+                const color =
+                  traceList?.grouping?.color?.length > 0
+                    ? traceModel.color
+                    : getMetricColor(
+                      run,
+                      isExploreParamsModeEnabled() ? null : line?.metric,
+                      isExploreParamsModeEnabled() ? null : line?.trace,
+                    );
+                const colorObj = Color(color);
+                const activeRow = document.querySelectorAll(
+                  `.cell-${traceToHash(
+                    run.run_hash,
+                    isExploreParamsModeEnabled() ? null : metric?.name,
+                    isExploreParamsModeEnabled() ? null : contextHash,
+                  )}`,
+                );
+                activeRow.forEach((cell) => {
+                  cell.classList.add('active');
+                  cell.style.backgroundColor = cell.classList.contains('metric')
+                    ? color
+                    : colorObj.lightness(96.5).hsl().string();
+                  cell.style.color = cell.classList.contains('metric')
+                    ? '#FFF'
+                    : '';
+                });
+              }
+
+              if (isExploreMetricsModeEnabled()) {
+                const valueCell = document.querySelector(
+                  `.value-${traceToHash(
+                    run.run_hash,
+                    metric?.name,
+                    contextHash,
+                  )}`,
+                );
+                if (!!valueCell) {
+                  valueCell.textContent =
+                    stepData !== null && stepData[0] !== null
+                      ? roundValue(stepData[0])
+                      : '-';
+                }
+                const stepCell = document.querySelector(
+                  `.step-${traceToHash(
+                    run.run_hash,
+                    metric?.name,
+                    contextHash,
+                  )}`,
+                );
+                if (!!stepCell) {
+                  stepCell.textContent =
+                    stepData !== null && stepData[1] !== null
+                      ? stepData[1]
+                      : '-';
+                }
+
+                const epochCell = document.querySelector(
+                  `.epoch-${traceToHash(
+                    run.run_hash,
+                    metric?.name,
+                    contextHash,
+                  )}`,
+                );
+                if (!!epochCell) {
+                  epochCell.textContent =
+                    stepData !== null && stepData[2] !== null
+                      ? stepData[2]
+                      : '-';
+                }
+
+                const timeCell = document.querySelector(
+                  `.time-${traceToHash(
+                    run.run_hash,
+                    metric?.name,
+                    contextHash,
+                  )}`,
+                );
+                if (!!timeCell) {
+                  timeCell.textContent =
+                    stepData !== null && stepData[3] !== null
+                      ? moment.unix(stepData[3]).format('HH:mm:ss · D MMM, YY')
+                      : '-';
+                }
+              }
+            });
+
+            if (isExploreMetricsModeEnabled() && traceList?.traces.length > 1) {
+              const groupSetpCell = document.querySelector(
+                `.step-${groupSelector}`,
+              );
+              if (!!groupSetpCell) {
+                groupSetpCell.textContent = groupStepData[groupSelector] ?? '-';
+              }
+
+              const min = getMetricStepDataByStepIdx(
+                traceModel.aggregation.min.trace.data,
+                step,
+              )?.[0];
+              const avg = getMetricStepDataByStepIdx(
+                traceModel.aggregation.avg.trace.data,
+                step,
+              )?.[0];
+              const max = getMetricStepDataByStepIdx(
+                traceModel.aggregation.max.trace.data,
+                step,
+              )?.[0];
+
+              const groupValueCellMin = document.querySelector(
+                `.value-${groupSelector} .min .Label__content`,
+              );
+              if (!!groupValueCellMin) {
+                groupValueCellMin.textContent =
+                  min !== null && min !== undefined ? roundValue(min) : '-';
+              }
+
+              const groupValueCellAvg = document.querySelector(
+                `.value-${groupSelector} .avg .Label__content`,
+              );
+              if (!!groupValueCellAvg) {
+                groupValueCellAvg.textContent =
+                  avg !== null && avg !== undefined ? roundValue(avg) : '-';
+              }
+
+              const groupValueCellMax = document.querySelector(
+                `.value-${groupSelector} .max .Label__content`,
+              );
+              if (!!groupValueCellMax) {
+                groupValueCellMax.textContent =
+                  max !== null && max !== undefined ? roundValue(max) : '-';
+              }
+            }
+          });
+        });
+      },
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <div

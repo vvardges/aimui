@@ -97,7 +97,13 @@ function Panel(props) {
     if (props.resizing === false) {
       setSize();
     }
-  }, [state.height, props.resizing, props.parentHeight, props.parentWidth, props.mode]);
+  }, [
+    state.height,
+    props.resizing,
+    props.parentHeight,
+    props.parentWidth,
+    props.mode,
+  ]);
 
   function setSize() {
     const height = panelRef.current.clientHeight;
@@ -204,15 +210,17 @@ function Panel(props) {
       ) : (
         <>
           {runs.isEmpty === false &&
-            (isExploreParamsModeEnabled() && getCountOfSelectedParams() === 1
-              ? _renderPanelMsg(
-                <UI.Text type='grey' center>
-                  Please select at least two params to see parallel coordinates plot displayed.
-                </UI.Text>,
-              )
-              : <div className='Panel__chart-container'>{_renderCharts()}</div>
-            )
-          }
+            (isExploreParamsModeEnabled() &&
+            getCountOfSelectedParams() === 1 ? (
+                _renderPanelMsg(
+                  <UI.Text type='grey' center>
+                  Please select at least two params to see parallel coordinates
+                  plot displayed.
+                  </UI.Text>,
+                )
+              ) : (
+                <div className='Panel__chart-container'>{_renderCharts()}</div>
+              ))}
         </>
       )}
     </div>

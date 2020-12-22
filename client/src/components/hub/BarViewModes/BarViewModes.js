@@ -6,26 +6,31 @@ import PropTypes from 'prop-types';
 import { classNames } from '../../../utils';
 import UI from '../../../ui';
 
-function BarViewModes({
-  viewMode,
-  setViewMode,
-}) {
+function BarViewModes({ viewMode, setViewMode }) {
   return (
-    <div className="BarViewModes">
-      <ViewMode size="sm" active={viewMode === 'panel'} onClick={() => setViewMode('panel')} />
-      <ViewMode size="md" active={viewMode === 'resizable'} onClick={() => setViewMode('resizable')} />
-      <ViewMode size="lg" active={viewMode === 'context'} onClick={() => setViewMode('context')} />
+    <div className='BarViewModes'>
+      <ViewMode
+        size='sm'
+        active={viewMode === 'panel'}
+        onClick={() => setViewMode('panel')}
+      />
+      <ViewMode
+        size='md'
+        active={viewMode === 'resizable'}
+        onClick={() => setViewMode('resizable')}
+      />
+      <ViewMode
+        size='lg'
+        active={viewMode === 'context'}
+        onClick={() => setViewMode('context')}
+      />
     </div>
   );
 }
 
-function ViewMode({
-  size,
-  active,
-  onClick,
-}) {
+function ViewMode({ size, active, onClick }) {
   return (
-    <div className="BarViewMode">
+    <div className='BarViewMode'>
       <div
         className={classNames({
           BarViewMode: true,
@@ -33,7 +38,13 @@ function ViewMode({
         })}
       >
         <UI.Tooltip
-          tooltip={size === 'sm' ? 'Hide table' : size === 'md' ? 'Resizable table' : 'Maximize table'}
+          tooltip={
+            size === 'sm'
+              ? 'Hide table'
+              : size === 'md'
+                ? 'Resizable table'
+                : 'Maximize table'
+          }
         >
           <div
             className={classNames({

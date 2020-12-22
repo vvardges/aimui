@@ -219,10 +219,7 @@ function Parameters({ params, parentPath, excludedFields, toggleField }) {
         )}
 
         {typeof params[paramKey] === 'object' && (
-          <div
-            className='BarFilter__group'
-            key={key(paramKey)}
-          >
+          <div className='BarFilter__group' key={key(paramKey)}>
             <div className='BarFilter__group__item__row group'>
               {[...Array(parentPath.length + 1)].map((_, i) => (
                 <div className='BarFilter__group__item__placeholder' key={i} />

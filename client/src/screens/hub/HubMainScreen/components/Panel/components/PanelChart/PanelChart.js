@@ -109,10 +109,12 @@ function PanelChart(props) {
     HubMainScreenModel.events.SET_TRACE_LIST,
     HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
     HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
+    HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
   ]);
 
   let {
     setChartFocusedState,
+    setChartFocusedActiveState,
     setChartSettingsState,
   } = HubMainScreenModel.emitters;
 
@@ -943,7 +945,7 @@ function PanelChart(props) {
   }
 
   function handlePointClick(step, runHash, metricName, traceContext) {
-    setChartFocusedState({
+    setChartFocusedActiveState({
       circle: {
         active: true,
         step,

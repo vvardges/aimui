@@ -321,6 +321,17 @@ function HubMainScreen(props) {
   }, [props.location]);
 
   useEffect(() => {
+    return () => {
+      HubMainScreenModel.emit(null, {
+        search: {
+          ...HubMainScreenModel.getState().search,
+          query: '',
+        },
+      });
+    };
+  }, []);
+
+  useEffect(() => {
     if (state.resizing === false) {
       setItem(EXPLORE_PANEL_FLEX_STYLE, state.panelFlex);
     }
@@ -373,7 +384,7 @@ function HubMainScreen(props) {
         }}
       >
         <div className='HubMainScreen__grid__body__blocks'>
-          {state.viewMode !== 'context' &&
+          {state.viewMode !== 'context' && (
             <div
               className='HubMainScreen__grid__panel'
               style={{
@@ -388,49 +399,57 @@ function HubMainScreen(props) {
                 resizing={state.resizing}
               />
             </div>
-          }
-          {state.viewMode === 'resizable' &&
-          <div
-            className='HubMainScreen__grid__resize__area'
-            onMouseDown={startResize}
-          >
+          )}
+          {state.viewMode === 'resizable' && (
             <div
-              className={classNames({
-                HubMainScreen__grid__resize__handler: true,
-                active: state.resizing,
-              })}
+              className='HubMainScreen__grid__resize__area'
+              onMouseDown={startResize}
             >
-              <div className='HubMainScreen__grid__resize__icon' />
+              <div
+                className={classNames({
+                  HubMainScreen__grid__resize__handler: true,
+                  active: state.resizing,
+                })}
+              >
+                <div className='HubMainScreen__grid__resize__icon' />
+              </div>
             </div>
-          </div>
-          }
+          )}
           <div
             className={classNames({
               HubMainScreen__grid__context: true,
-              'HubMainScreen__grid__context--minimize': state.viewMode === 'panel',
+              'HubMainScreen__grid__context--minimize':
+                state.viewMode === 'panel',
             })}
             style={{
-              flex: state.viewMode === 'context' ? 1 : state.viewMode === 'panel' ? 0 : 1 - state.panelFlex,
+              flex:
+                state.viewMode === 'context'
+                  ? 1
+                  : state.viewMode === 'panel'
+                    ? 0
+                    : 1 - state.panelFlex,
             }}
           >
-            {state.viewMode !== 'panel'
-              ? (
-                <ContextBox
-                  spacing={state.viewMode !== 'resizable'}
-                  width={state.width - headerWidth - controlsWidth - 5}
-                  resizing={state.resizing}
+            {state.viewMode !== 'panel' ? (
+              <ContextBox
+                spacing={state.viewMode !== 'resizable'}
+                width={state.width - headerWidth - controlsWidth - 5}
+                resizing={state.resizing}
+                viewMode={state.viewMode}
+                setViewMode={(mode) =>
+                  setState((s) => ({ ...s, viewMode: mode }))
+                }
+              />
+            ) : (
+              <div className='HubMainScreen__grid__context__bar'>
+                <BarViewModes
                   viewMode={state.viewMode}
-                  setViewMode={(mode) => setState((s) => ({ ...s, viewMode: mode }))}
+                  setViewMode={(mode) =>
+                    setState((s) => ({ ...s, viewMode: mode }))
+                  }
                 />
-              ) : (
-                <div className='HubMainScreen__grid__context__bar'>
-                  <BarViewModes
-                    viewMode={state.viewMode}
-                    setViewMode={(mode) => setState((s) => ({ ...s, viewMode: mode }))}
-                  />
-                </div>
-              )
-            }
+              </div>
+            )}
           </div>
         </div>
         <div className='HubMainScreen__grid__controls'>
@@ -441,36 +460,34 @@ function HubMainScreen(props) {
   }
 
   function _renderBody() {
-    return (
-      runs.isLoading === false && runs.isEmpty === true ? (
-        <div className='HubMainScreen__alerts'>
-          <Alert>
-            {!!search.query ? (
-              <UI.Text type='grey' center>
-                You haven't recorded experiments matching this query.
-              </UI.Text>
-            ) : (
-              <UI.Text type='grey' center>
-                It's super easy to search Aim experiments.
-              </UI.Text>
-            )}
+    return runs.isLoading === false && runs.isEmpty === true ? (
+      <div className='HubMainScreen__alerts'>
+        <Alert>
+          {!!search.query ? (
             <UI.Text type='grey' center>
-              Lookup{' '}
-              <a
-                className='link'
-                href='https://github.com/aimhubio/aim#searching-experiments'
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                search docs
-              </a>{' '}
-              to learn more.
+              You haven't recorded experiments matching this query.
             </UI.Text>
-          </Alert>
-        </div>
-      ) : (
-        _renderContent()
-      )
+          ) : (
+            <UI.Text type='grey' center>
+              It's super easy to search Aim experiments.
+            </UI.Text>
+          )}
+          <UI.Text type='grey' center>
+            Lookup{' '}
+            <a
+              className='link'
+              href='https://github.com/aimhubio/aim#searching-experiments'
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              search docs
+            </a>{' '}
+            to learn more.
+          </UI.Text>
+        </Alert>
+      </div>
+    ) : (
+      _renderContent()
     );
   }
 

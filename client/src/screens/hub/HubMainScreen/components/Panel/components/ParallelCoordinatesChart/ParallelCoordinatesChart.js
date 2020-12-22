@@ -70,9 +70,13 @@ function ParallelCoordinatesChart(props) {
     HubMainScreenModel.events.SET_TRACE_LIST,
     HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
     HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
+    HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
   ]);
 
-  let { setChartFocusedState } = HubMainScreenModel.emitters;
+  let {
+    setChartFocusedState,
+    setChartFocusedActiveState,
+  } = HubMainScreenModel.emitters;
 
   let { getMetricColor, traceToHash } = HubMainScreenModel.helpers;
 
@@ -126,75 +130,76 @@ function ParallelCoordinatesChart(props) {
   }
 
   function handleAreaMouseMove(mouse) {
-    if (!chart.focused.circle.active) {
-      const x = mouse[0] - visBox.current.margin.left;
-      const y = mouse[1] - visBox.current.margin.top;
-      let diffX;
-      let diffY;
-      let axis;
-      let currAxis = null;
-      let currValue = null;
-      let currIndex;
-      const prevAxis = closestAxis.current;
-      dimensions.current.forEach((dim, index) => {
-        axis = chartOptions.current.xScale(index);
-        if (index === 0) {
-          diffX = Math.abs(x - axis);
-          currAxis = axis;
-          currIndex = index;
-        } else if (diffX > Math.abs(x - axis)) {
-          diffX = Math.abs(x - axis);
-          currAxis = axis;
-          currIndex = index;
-        }
-      });
-      if (currAxis !== closestAxis.current) {
-        closestAxis.current = currAxis;
-        window.requestAnimationFrame(renderData);
+    if (HubMainScreenModel.getState().chart.focused.circle.active) {
+      return false;
+    }
+    const x = mouse[0] - visBox.current.margin.left;
+    const y = mouse[1] - visBox.current.margin.top;
+    let diffX;
+    let diffY;
+    let axis;
+    let currAxis = null;
+    let currValue = null;
+    let currIndex;
+    const prevAxis = closestAxis.current;
+    dimensions.current.forEach((dim, index) => {
+      axis = chartOptions.current.xScale(index);
+      if (index === 0) {
+        diffX = Math.abs(x - axis);
+        currAxis = axis;
+        currIndex = index;
+      } else if (diffX > Math.abs(x - axis)) {
+        diffX = Math.abs(x - axis);
+        currAxis = axis;
+        currIndex = index;
       }
-      let runHash;
-      traces.current.forEach((traceModel) =>
-        traceModel.series.forEach((series, index) => {
-          const params = series.getParamsFlatDict();
-          const { run } = series;
-          let dim = dimensions.current[currIndex];
-          let val;
+    });
+    if (currAxis !== closestAxis.current) {
+      closestAxis.current = currAxis;
+      window.requestAnimationFrame(renderData);
+    }
+    let runHash;
+    traces.current.forEach((traceModel) =>
+      traceModel.series.forEach((series, index) => {
+        const params = series.getParamsFlatDict();
+        const { run } = series;
+        let dim = dimensions.current[currIndex];
+        let val;
 
-          if (dim.contentType === 'param') {
-            // check if data element has property and contains a value
-            if (!(dim.key in params) || params[dim.key] === null) {
-              return null;
-            }
-            val = params[dim.key];
-          } else {
-            val = series.getAggregatedMetricValue(dim.metricName, dim.context);
+        if (dim.contentType === 'param') {
+          // check if data element has property and contains a value
+          if (!(dim.key in params) || params[dim.key] === null) {
+            return null;
           }
-          if (dim.scale(val) !== undefined) {
-            if (currValue === null) {
-              currValue = dim.scale(val);
-              diffY = Math.abs(y - currValue);
-              runHash = run.run_hash;
-            } else if (diffY > Math.abs(y - dim.scale(val))) {
-              currValue = dim.scale(val);
-              diffY = Math.abs(y - currValue);
-              runHash = run.run_hash;
-            }
+          val = params[dim.key];
+        } else {
+          val = series.getAggregatedMetricValue(dim.metricName, dim.context);
+        }
+        if (dim.scale(val) !== undefined) {
+          if (currValue === null) {
+            currValue = dim.scale(val);
+            diffY = Math.abs(y - currValue);
+            runHash = run.run_hash;
+          } else if (diffY > Math.abs(y - dim.scale(val))) {
+            currValue = dim.scale(val);
+            diffY = Math.abs(y - currValue);
+            runHash = run.run_hash;
           }
-        }),
-      );
-      if (
-        currValue !== null &&
-        (currValue !== closestValue.current || prevAxis !== currAxis)
-      ) {
-        closestValue.current = currValue;
-        setChartFocusedState({
-          metric: {
-            runHash: runHash,
-            metricName: null,
-            traceContext: null,
-          },
-        });
-      }
+        }
+      }),
+    );
+    if (
+      currValue !== null &&
+      (currValue !== closestValue.current || prevAxis !== currAxis)
+    ) {
+      closestValue.current = currValue;
+      setChartFocusedState({
+        metric: {
+          runHash: runHash,
+          metricName: null,
+          traceContext: null,
+        },
+      });
     }
   }
 
@@ -211,7 +216,7 @@ function ParallelCoordinatesChart(props) {
   }
 
   function handleBgRectClick() {
-    if (!chart.focused.circle.active) {
+    if (!HubMainScreenModel.getState().chart.focused.circle.active) {
       return;
     }
 
@@ -878,7 +883,7 @@ function ParallelCoordinatesChart(props) {
   }
 
   function handlePointClick(runHash, metricName, traceContext) {
-    setChartFocusedState({
+    setChartFocusedActiveState({
       circle: {
         active: true,
         runHash,
