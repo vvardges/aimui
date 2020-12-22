@@ -1,5 +1,6 @@
 # Changelog
 
+- Enable nginx gzip compression (gorarakelyan)
 - Add ability to select table view mode in explore screen (gorarakelyan)
 - Optimize explore panel rendering performance (roubkar)
 - Add table control for selecting row height (gorarakelyan)
