@@ -7,7 +7,7 @@ import {
   USER_LAST_EXPLORE_CONFIG,
 } from '../../../../config';
 import { getItem, removeItem } from '../../../../services/storage';
-import { sortOnKeys } from '../../../../utils';
+import { flattenObject, sortOnKeys } from '../../../../utils';
 import Color from 'color';
 import { COLORS } from '../../../../constants/colors';
 import TraceList from './TraceList';
@@ -413,19 +413,28 @@ function getCountOfSelectedParams(includeMetrics = true) {
     : countOfParams;
 }
 
-function getAllParamsPaths() {
+function getAllParamsPaths(deep = true) {
   const paramPaths = {};
 
   getState().traceList?.traces.forEach((trace) => {
     trace.series.forEach((series) => {
       Object.keys(series?.run.params).forEach((paramKey) => {
-        if (paramKey !== '__METRICS__') {
-          if (!paramPaths.hasOwnProperty(paramKey)) {
-            paramPaths[paramKey] = [];
-          }
+        if (paramKey === '__METRICS__') {
+          return
+        }
+
+        if (!paramPaths.hasOwnProperty(paramKey)) {
+          paramPaths[paramKey] = [];
+        }
+
+        if (deep) {
+          paramPaths[paramKey].push(...Object.keys(flattenObject(series?.run.params[paramKey])));
+          paramPaths[paramKey] = _.uniq(paramPaths[paramKey]).sort();
+        } else {
           Object.keys(series?.run.params[paramKey]).forEach((key) => {
             if (!paramPaths[paramKey].includes(key)) {
               paramPaths[paramKey].push(key);
+              paramPaths[paramKey].sort();
             }
           });
         }

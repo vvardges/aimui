@@ -1060,7 +1060,7 @@ function ContextBox(props) {
       setForcePinnedColumns(newForcePinnedColumns);
     }
 
-    const paramFields = getAllParamsPaths();
+    const paramFields = getAllParamsPaths(false);
     if (!_.isEqual(paramFields, searchFields.params)) {
       setSearchFields({
         params: paramFields,
