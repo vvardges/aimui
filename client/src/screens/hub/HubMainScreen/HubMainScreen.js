@@ -321,17 +321,6 @@ function HubMainScreen(props) {
   }, [props.location]);
 
   useEffect(() => {
-    return () => {
-      HubMainScreenModel.emit(null, {
-        search: {
-          ...HubMainScreenModel.getState().search,
-          query: '',
-        },
-      });
-    };
-  }, []);
-
-  useEffect(() => {
     if (state.resizing === false) {
       setItem(EXPLORE_PANEL_FLEX_STYLE, state.panelFlex);
     }
@@ -349,6 +338,7 @@ function HubMainScreen(props) {
     const subscription = HubMainScreenModel.subscribe(
       [
         HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
+        HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
         HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
         HubMainScreenModel.events.SET_CONTEXT_FILTER,
         HubMainScreenModel.events.SET_SEARCH_STATE,
@@ -361,6 +351,12 @@ function HubMainScreen(props) {
 
     return () => {
       subscription.unsubscribe();
+      HubMainScreenModel.emit(null, {
+        search: {
+          ...HubMainScreenModel.getState().search,
+          query: '',
+        },
+      });
       window.removeEventListener('resize', updateWindowDimensions);
       document.removeEventListener('mouseup', endResize);
       document.removeEventListener('mousemove', resizeHandler);
