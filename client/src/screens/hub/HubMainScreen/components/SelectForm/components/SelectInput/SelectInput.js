@@ -10,6 +10,7 @@ import {
   flattenObject,
   searchNestedObject,
   removeObjectEmptyKeys,
+  excludeObjectPaths,
 } from '../../../../../../../utils';
 import * as storeUtils from '../../../../../../../storeUtils';
 import * as classes from '../../../../../../../constants/classes';
@@ -94,7 +95,7 @@ function SelectInput(props) {
       {
         selectInput: value,
       },
-      () => setTimeout(updateSuggestionsPrefix, 200),
+      () => setTimeout(() => updateSuggestionsPrefix(value), 50),
     );
   }
 
@@ -128,10 +129,11 @@ function SelectInput(props) {
     return selectAttrs;
   }
 
-  function selectAttribute(attrName, replace = false, cb = null) {
+  function selectAttribute(attrName, replace = false, cb = null, addTrailingComma = false) {
     replace = replace && !searchInput.selectInput.trim().endsWith(',');
 
     let selectedAttrs = getSelectedAttrs();
+    let addFlag = false;
 
     if (selectedAttrs.indexOf(attrName) !== -1) {
       selectedAttrs = selectedAttrs.filter((i) => i !== attrName);
@@ -140,13 +142,14 @@ function SelectInput(props) {
         selectedAttrs.pop();
       }
       selectedAttrs.push(attrName);
+      addFlag = true;
     }
     selectedAttrs = _.uniq(selectedAttrs.filter((i) => !!i));
 
     const value = selectedAttrs.join(', ');
     setSearchInputState(
       {
-        selectInput: value,
+        selectInput: addFlag && addTrailingComma ? `${value}, ` : value,
       },
       () => {
         resetSuggestionsPrefix();
@@ -162,9 +165,9 @@ function SelectInput(props) {
     }
   }
 
-  function updateSuggestionsPrefix() {
-    if (!!searchInput.selectInput) {
-      const lastItem = searchInput?.selectInput?.split(',').pop()?.trim();
+  function updateSuggestionsPrefix(value) {
+    if (!!value) {
+      const lastItem = value?.split(',').pop()?.trim();
       if (lastItem === state.suggestionsPrefix) {
         return;
       }
@@ -188,6 +191,7 @@ function SelectInput(props) {
     metrics,
     replaceOnClick = false,
     itemOnClickCB = null,
+    addTrailingComma = false,
   ) {
     const selectedAttrs = getSelectedAttrs();
 
@@ -217,7 +221,7 @@ function SelectInput(props) {
                 })}
                 key={`${metric}`}
                 onClick={(evt) =>
-                  selectAttribute(metric, replaceOnClick, itemOnClickCB)
+                  selectAttribute(metric, replaceOnClick, itemOnClickCB, addTrailingComma)
                 }
               >
                 <div className='SelectInput__dropdown__group__item__icon__wrapper metric'>
@@ -261,6 +265,7 @@ function SelectInput(props) {
     selectedAttrs,
     replaceOnClick,
     itemOnClickCB,
+    addTrailingComma,
   ) {
     const param = `${parentPath.join('.')}.${paramKey}`;
 
@@ -271,7 +276,7 @@ function SelectInput(props) {
           selected: selectedAttrs.indexOf(param) !== -1,
         })}
         key={param}
-        onClick={(evt) => selectAttribute(param, replaceOnClick, itemOnClickCB)}
+        onClick={(evt) => selectAttribute(param, replaceOnClick, itemOnClickCB, addTrailingComma)}
       >
         <div className='SelectInput__dropdown__group__item__icon__wrapper param'>
           {selectedAttrs.indexOf(param) !== -1 ? (
@@ -310,6 +315,7 @@ function SelectInput(props) {
     parentPath = [],
     replaceOnClick = false,
     itemOnClickCB = null,
+    addTrailingComma = false,
   ) {
     const selectedAttrs = getSelectedAttrs();
 
@@ -324,6 +330,7 @@ function SelectInput(props) {
               selectedAttrs,
               replaceOnClick,
               itemOnClickCB,
+              addTrailingComma,
             )}
 
           {typeof params[paramKey] === 'object' && (
@@ -354,6 +361,7 @@ function SelectInput(props) {
                   [...parentPath, paramKey],
                   replaceOnClick,
                   itemOnClickCB,
+                  addTrailingComma,
                 )}
               </div>
             </div>
@@ -369,15 +377,21 @@ function SelectInput(props) {
     }
 
     const suggestionsPrefix = state.suggestionsPrefix.trim();
+    const selectedFields = getSelectedAttrs();
 
     const metrics = [];
     props.project?.metrics?.map(
-      (m) => m.startsWith(suggestionsPrefix) && metrics.push(m),
+      (m) => m.startsWith(suggestionsPrefix) && selectedFields.indexOf(m) === -1 && metrics.push(m),
     );
 
     const params = _.cloneDeep(props.project?.params) ?? {};
+    excludeObjectPaths(params, selectedFields.map(i => i.split('.')));
     searchNestedObject(params, suggestionsPrefix.split('.'));
     removeObjectEmptyKeys(params);
+
+    if (metrics?.length === 0 && Object.keys(params).length === 0) {
+      return null;
+    }
 
     return (
       <div className='SelectInput__dropdown__suggestions'>
@@ -387,19 +401,14 @@ function SelectInput(props) {
           overline
           bold
         >
-          Search
+          Suggestions
         </UI.Text>
         {!!metrics?.length &&
-          _renderMetrics(metrics, true, resetSuggestionsPrefix)}
+          _renderMetrics(metrics, true, resetSuggestionsPrefix, true)}
         {!!metrics?.length && !!params && Object.keys(params).length > 0 && (
           <div className='SelectInput__dropdown__divider' />
         )}
-        {!!params && _renderParams(params, [], true, resetSuggestionsPrefix)}
-        {metrics?.length === 0 && Object.keys(params).length === 0 && (
-          <UI.Text type='grey' spacing spacingTop center>
-            No options
-          </UI.Text>
-        )}
+        {!!params && _renderParams(params, [], true, resetSuggestionsPrefix, true)}
       </div>
     );
   }

@@ -8,8 +8,16 @@
   background: #fff;
 
   &.ContextTable--displayBar {
-    display: grid;
-    grid-template-rows: @table-bar-height 1fr;
+    display: flex;
+    flex-direction: column;
+
+    .ContextTableBar {
+      height: @table-bar-height;
+    }
+
+    .ContextTable__table {
+      height: calc(100% - @table-bar-height);
+    }
 
     .ContextTable__table,
     .ContextTable__table.Table__container {

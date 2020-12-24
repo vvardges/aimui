@@ -19,7 +19,7 @@ function SelectForm(props) {
   let { setSearchState, setSearchInputState } = HubMainScreenModel.emitters;
 
   function getFullQuery() {
-    let query = searchInput.selectInput;
+    let query = searchInput.selectInput.trim().replace(/(^,)|(,$)/g, '');
     if (!!searchInput.selectConditionInput) {
       query = `${query} if ${searchInput.selectConditionInput}`;
     }

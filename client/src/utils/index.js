@@ -403,6 +403,24 @@ export function transformNestedArrToObj(item) {
   });
 }
 
+export function excludeObjectPaths(item, paths) {
+  Object.keys(item).forEach((i) => {
+    let matchedPaths = [];
+    paths?.forEach((p) => {
+      if (p?.[0] === i) {
+        if (item[i] === true && p.length === 1) {
+          delete item[i];
+        } else {
+          matchedPaths.push(p.slice(1));
+        }
+      }
+    });
+    if (matchedPaths.length) {
+      excludeObjectPaths(item[i], matchedPaths);
+    }
+  });
+}
+
 export function searchNestedObject(item, path, baseMatched = false) {
   Object.keys(item).forEach((i) => {
     if (i === path[0] || (path.length === 1 && i.startsWith(path[0]))) {
