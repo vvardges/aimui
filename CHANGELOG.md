@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.2.4 Dec 25 2020
 - Enable nginx gzip compression (gorarakelyan)
 - Add ability to select table view mode in explore screen (gorarakelyan)
 - Optimize explore panel rendering performance (roubkar)
