@@ -9,7 +9,6 @@ import * as storeUtils from '../../../storeUtils';
 import { classNames } from '../../../utils';
 import BaseWrapper from '../../BaseWrapper';
 
-
 class HubWrapper extends React.Component {
   render() {
     const hubClassName = classNames({
@@ -24,12 +23,10 @@ class HubWrapper extends React.Component {
         </Helmet>
 
         <div className={hubClassName}>
-          <div className='HubWrapper__cont'>
-            {this.props.children}
-          </div>
+          <div className='HubWrapper__cont'>{this.props.children}</div>
         </div>
       </BaseWrapper>
-    )
+    );
   }
 }
 
@@ -41,7 +38,4 @@ HubWrapper.propTypes = {
   gap: PropTypes.bool,
 };
 
-export default storeUtils.getWithState(
-  classes.HUB_WRAPPER,
-  HubWrapper
-);
+export default storeUtils.getWithState(classes.HUB_WRAPPER, HubWrapper);

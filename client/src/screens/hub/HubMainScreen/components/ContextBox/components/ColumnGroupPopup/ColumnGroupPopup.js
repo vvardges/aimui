@@ -6,7 +6,6 @@ import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
 
 function ColumnGroupPopup(props) {
-
   const { contextFilter, setContextFilter, param, triggerer } = props;
   const { groupByColor, groupByStyle, groupByChart } = contextFilter;
 
@@ -21,75 +20,92 @@ function ColumnGroupPopup(props) {
 
   function toggleGrouping(filterName, groupFilter) {
     setContextFilter({
-      [filterName]: filterIncludesParam(groupFilter) ? groupFilter.filter(key => key !== param) : groupFilter.concat([param])
+      [filterName]: filterIncludesParam(groupFilter)
+        ? groupFilter.filter((key) => key !== param)
+        : groupFilter.concat([param]),
     });
   }
 
   return (
     <UI.Popover
-      target={triggerer ?? (
-        <UI.Icon
-          i='layers'
-          className={classNames({
-            Table__header__action__icon: true,
-          })}
-        />
-      )}
-      targetClassName={opened => classNames({
-        Table__header__action: !triggerer,
-        active: opened || filterIncludesParam(groupByColor) || filterIncludesParam(groupByStyle) || filterIncludesParam(groupByChart)
-      })}
+      target={
+        triggerer ?? (
+          <UI.Icon
+            i='layers'
+            className={classNames({
+              Table__header__action__icon: true,
+            })}
+          />
+        )
+      }
+      targetClassName={(opened) =>
+        classNames({
+          Table__header__action: !triggerer,
+          active:
+            opened ||
+            filterIncludesParam(groupByColor) ||
+            filterIncludesParam(groupByStyle) ||
+            filterIncludesParam(groupByChart),
+        })
+      }
       tooltip='Apply grouping'
-      content={(
+      content={
         <>
           <div className='ContextBox__table__group__popup__header'>
-            <UI.Text overline bold>Apply grouping</UI.Text>
+            <UI.Text overline bold>
+              Apply grouping
+            </UI.Text>
           </div>
           <div className='ContextBox__table__group__popup__body'>
             <div className='ContextBox__table__group__popup__body__row'>
-              <UI.Text overline small>Group by color</UI.Text>
+              <UI.Text overline small>
+                Group by color
+              </UI.Text>
               <UI.Button
                 size='tiny'
                 type='primary'
                 ghost={!filterIncludesParam(groupByColor)}
-                onClick={evt => toggleGrouping('groupByColor', groupByColor)}
+                onClick={(evt) => toggleGrouping('groupByColor', groupByColor)}
               >
                 {filterIncludesParam(groupByColor) ? 'Remove' : 'Apply'}
               </UI.Button>
             </div>
             <UI.Line />
             <div className='ContextBox__table__group__popup__body__row'>
-              <UI.Text overline small>Group by style</UI.Text>
+              <UI.Text overline small>
+                Group by style
+              </UI.Text>
               <UI.Button
                 size='tiny'
                 type='primary'
                 ghost={!filterIncludesParam(groupByStyle)}
-                onClick={evt => toggleGrouping('groupByStyle', groupByStyle)}
+                onClick={(evt) => toggleGrouping('groupByStyle', groupByStyle)}
               >
                 {filterIncludesParam(groupByStyle) ? 'Remove' : 'Apply'}
               </UI.Button>
             </div>
             <UI.Line />
             <div className='ContextBox__table__group__popup__body__row'>
-              <UI.Text overline small>Divide into charts</UI.Text>
+              <UI.Text overline small>
+                Divide into charts
+              </UI.Text>
               <UI.Button
                 size='tiny'
                 type='primary'
                 ghost={!filterIncludesParam(groupByChart)}
-                onClick={evt => toggleGrouping('groupByChart', groupByChart)}
+                onClick={(evt) => toggleGrouping('groupByChart', groupByChart)}
               >
                 {filterIncludesParam(groupByChart) ? 'Remove' : 'Apply'}
               </UI.Button>
             </div>
           </div>
         </>
-      )}
+      }
       popupClassName='ContextBox__table__group__popup'
     />
   );
 }
 
-ColumnGroupPopup.propTypes = {
-};
+ColumnGroupPopup.propTypes = {};
 
 export default ColumnGroupPopup;

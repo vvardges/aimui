@@ -2,20 +2,26 @@ import React from 'react';
 import UI from '../../../../../../../ui';
 import PropTypes from 'prop-types';
 import { classNames } from '../../../../../../../ui/utils';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 function Aggregate(props) {
-  const { aggregated, setContextFilter, disabled } = props;
+  const { aggregated, disabled } = props;
+  const { setContextFilter } = HubMainScreenModel.emitters;
   return (
-    <UI.Tooltip tooltip={aggregated ? 'Deaggregate metrics' : 'Aggregate metrics'}>
+    <UI.Tooltip
+      tooltip={aggregated ? 'Deaggregate metrics' : 'Aggregate metrics'}
+    >
       <div
         className={classNames({
           ControlsSidebar__item: true,
           active: aggregated,
-          disabled: disabled
+          disabled: disabled,
         })}
-        onClick={evt => setContextFilter({
-          aggregated: !aggregated
-        })}
+        onClick={(evt) =>
+          setContextFilter({
+            aggregated: !aggregated,
+          })
+        }
       >
         <UI.Icon i='group_work' scale={1.7} />
       </div>
@@ -25,7 +31,6 @@ function Aggregate(props) {
 
 Aggregate.propTypes = {
   aggregated: PropTypes.bool,
-  setContextFilter: PropTypes.func
 };
 
 export default Aggregate;

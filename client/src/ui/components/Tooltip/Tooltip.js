@@ -47,28 +47,38 @@ function Tooltip(props) {
     if (visible && containerRef.current && tooltipRef.current) {
       let positions = {
         top: null,
-        left: null
+        left: null,
       };
       let containerRect = containerRef.current.getBoundingClientRect();
       let tooltipRect = tooltipRef.current.getBoundingClientRect();
 
-      if ((containerRect.y + containerRect.height + offset + tooltipRect.height) >= window.innerHeight) {
+      if (
+        containerRect.y + containerRect.height + offset + tooltipRect.height >=
+        window.innerHeight
+      ) {
         positions.top = containerRect.top - tooltipRect.height - offset;
       } else {
         positions.top = containerRect.bottom + offset;
       }
 
-      if ((containerRect.x + containerRect.width / 2 - tooltipRect.width / 2) <= 0) {
+      if (
+        containerRect.x + containerRect.width / 2 - tooltipRect.width / 2 <=
+        0
+      ) {
         positions.left = offset;
-      } else if ((containerRect.x + containerRect.width / 2 + tooltipRect.width / 2) >= window.innerWidth) {
+      } else if (
+        containerRect.x + containerRect.width / 2 + tooltipRect.width / 2 >=
+        window.innerWidth
+      ) {
         positions.left = window.innerWidth - tooltipRect.width - offset;
       } else {
-        positions.left = containerRect.x + containerRect.width / 2 - tooltipRect.width / 2;
+        positions.left =
+          containerRect.x + containerRect.width / 2 - tooltipRect.width / 2;
       }
 
-      setPosition(p => ({
+      setPosition((p) => ({
         ...p,
-        ...positions
+        ...positions,
       }));
     }
     return () => {
@@ -79,30 +89,29 @@ function Tooltip(props) {
   return (
     <div
       className='Tooltip__container'
-      onMouseOver={evt => toggleVisibility(true)}
-      onMouseLeave={evt => toggleVisibility(false)}
-      onClick={evt => {
+      onMouseOver={(evt) => toggleVisibility(true)}
+      onMouseLeave={(evt) => toggleVisibility(false)}
+      onClick={(evt) => {
         evt.stopPropagation();
         toggleVisibility(false);
       }}
       ref={containerRef}
     >
       {props.children}
-      {visible && props.tooltip && ReactDOM.createPortal((
-        <div
-          className='Tooltip'
-          ref={tooltipRef}
-          style={position}
-        >
-          <UI.Text small>{props.tooltip}</UI.Text>
-        </div>
-      ), portalRef.current)}
+      {visible &&
+        props.tooltip &&
+        ReactDOM.createPortal(
+          <div className='Tooltip' ref={tooltipRef} style={position}>
+            <UI.Text small>{props.tooltip}</UI.Text>
+          </div>,
+          portalRef.current,
+        )}
     </div>
   );
 }
 
 Tooltip.defaultProps = {
-  delay: 300
+  delay: 300,
 };
 
 Tooltip.propTypes = {

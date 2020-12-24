@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-
 function Tabs(props) {
   let className = classNames({
     Tabs: true,
@@ -21,11 +20,9 @@ function Tabs(props) {
         {props.leftItems}
         {props.children}
       </div>
-      <div className='Tabs__right'>
-        {props.rightItems}
-      </div>
+      <div className='Tabs__right'>{props.rightItems}</div>
     </div>
-  )
+  );
 }
 
 Tabs.propTypes = {

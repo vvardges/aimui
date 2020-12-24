@@ -10,8 +10,7 @@ import * as storeUtils from '../../../storeUtils';
 import ExecutableViewForm from '../../../components/hub/ExecutableViewForm/ExecutableViewForm';
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import { buildUrl } from '../../../utils';
-import DangerZone from '../../../components/hub/DangerZone/DangerZone'
-
+import DangerZone from '../../../components/hub/DangerZone/DangerZone';
 
 class HubExecutableDetailScreen extends React.Component {
   constructor(props) {
@@ -40,33 +39,36 @@ class HubExecutableDetailScreen extends React.Component {
   }
 
   getExecutable = () => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       ...prevState,
       isLoading: true,
     }));
 
     const execID = this.props.match.params.executable_id;
-    this.props.getExecutable(execID).then((data) => {
-      this.setState(prevState => ({
-        ...prevState,
-        executableParams: {
-          name: data.name,
-          scriptPath: data.script_path,
-          parameter: data.arguments,
-          environmentVariable: data.env_vars,
-          interpreterPath: data.interpreter_path,
-          workingDir: data.working_dir,
-          aimExperiment: data.aim_experiment,
-          is_hidden: data.is_hidden,
-        },
-        processes: data.processes,
-      }));
-    }).finally(() => {
-      this.setState(prevState => ({
-        ...prevState,
-        isLoading: false,
-      }));
-    });
+    this.props
+      .getExecutable(execID)
+      .then((data) => {
+        this.setState((prevState) => ({
+          ...prevState,
+          executableParams: {
+            name: data.name,
+            scriptPath: data.script_path,
+            parameter: data.arguments,
+            environmentVariable: data.env_vars,
+            interpreterPath: data.interpreter_path,
+            workingDir: data.working_dir,
+            aimExperiment: data.aim_experiment,
+            is_hidden: data.is_hidden,
+          },
+          processes: data.processes,
+        }));
+      })
+      .finally(() => {
+        this.setState((prevState) => ({
+          ...prevState,
+          isLoading: false,
+        }));
+      });
   };
 
   handleSaveBtnClick = () => {
@@ -79,30 +81,33 @@ class HubExecutableDetailScreen extends React.Component {
       saveBtn: {
         loading: true,
         disabled: true,
-      }
+      },
     });
 
     const execID = this.props.match.params.executable_id;
-    this.props.saveExecutable(execID, {
-      name: form.name,
-      script_path: form.scriptPath,
-      arguments: form.parameter,
-      env_vars: form.environmentVariable,
-      interpreter_path: form.interpreterPath,
-      working_dir: form.workingDir,
-      aim_experiment: form.aimExperiment,
-    }).then((data) => {
-      this.getExecutable();
-    }).catch((err) => {
-    }).finally(() => {
-      this.setState(prevState => ({
-        ...prevState,
-        saveBtn: {
-          loading: false,
-          disabled: false,
-        }
-      }));
-    });
+    this.props
+      .saveExecutable(execID, {
+        name: form.name,
+        script_path: form.scriptPath,
+        arguments: form.parameter,
+        env_vars: form.environmentVariable,
+        interpreter_path: form.interpreterPath,
+        working_dir: form.workingDir,
+        aim_experiment: form.aimExperiment,
+      })
+      .then((data) => {
+        this.getExecutable();
+      })
+      .catch((err) => {})
+      .finally(() => {
+        this.setState((prevState) => ({
+          ...prevState,
+          saveBtn: {
+            loading: false,
+            disabled: false,
+          },
+        }));
+      });
   };
 
   handleExecuteBtnClick = () => {
@@ -111,7 +116,7 @@ class HubExecutableDetailScreen extends React.Component {
     }
     const form = this.form.current.getForm();
 
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       ...prevState,
       executeBtn: {
         ...prevState.executeBtn,
@@ -121,35 +126,38 @@ class HubExecutableDetailScreen extends React.Component {
     }));
 
     const execID = this.props.match.params.executable_id;
-    this.props.executeExecutableForm(execID, {
-      name: form.name,
-      script_path: form.scriptPath,
-      arguments: form.parameter,
-      env_vars: form.environmentVariable,
-      interpreter_path: form.interpreterPath,
-      working_dir: form.workingDir,
-      aim_experiment: form.aimExperiment,
-    }).then(() => {
-      this.getExecutable();
-      this.setState(prevState => ({
-        ...prevState,
-        activeTab: 'processes',
-      }));
-    }).finally(() => {
-      this.setState(prevState => ({
-        ...prevState,
-        executeBtn: {
-          ...prevState.executeBtn,
-          loading: false,
-          disabled: false,
-        },
-      }));
-    });
+    this.props
+      .executeExecutableForm(execID, {
+        name: form.name,
+        script_path: form.scriptPath,
+        arguments: form.parameter,
+        env_vars: form.environmentVariable,
+        interpreter_path: form.interpreterPath,
+        working_dir: form.workingDir,
+        aim_experiment: form.aimExperiment,
+      })
+      .then(() => {
+        this.getExecutable();
+        this.setState((prevState) => ({
+          ...prevState,
+          activeTab: 'processes',
+        }));
+      })
+      .finally(() => {
+        this.setState((prevState) => ({
+          ...prevState,
+          executeBtn: {
+            ...prevState.executeBtn,
+            loading: false,
+            disabled: false,
+          },
+        }));
+      });
   };
 
   setHiddenStatus = (id, is_hidden) => {
-    this.props.hideExecutable(id, { is_hidden }).then(data => {
-      this.setState(prevState => ({
+    this.props.hideExecutable(id, { is_hidden }).then((data) => {
+      this.setState((prevState) => ({
         ...prevState,
         executableParams: {
           ...prevState.executableParams,
@@ -173,20 +181,21 @@ class HubExecutableDetailScreen extends React.Component {
           message='Hide this process template from the main page'
           name={this.state.executableParams.name}
           is_hidden={this.state.executableParams.is_hidden}
-          onDelete={() => this.setHiddenStatus(this.props.match.params.executable_id, true)}
-          onRevert={() => this.setHiddenStatus(this.props.match.params.executable_id, false)}
+          onDelete={() =>
+            this.setHiddenStatus(this.props.match.params.executable_id, true)
+          }
+          onRevert={() =>
+            this.setHiddenStatus(this.props.match.params.executable_id, false)
+          }
         />
       </div>
-    )
+    );
   };
 
   _renderTemplate = () => {
     return (
       <>
-        <ExecutableViewForm
-          ref={this.form}
-          {...this.state.executableParams}
-        />
+        <ExecutableViewForm ref={this.form} {...this.state.executableParams} />
         <UI.Buttons>
           <UI.Button
             onClick={() => this.handleSaveBtnClick()}
@@ -226,44 +235,67 @@ class HubExecutableDetailScreen extends React.Component {
   _renderProcesses = () => {
     return (
       <div className='HubExecutableDetailScreen__processes'>
-        {!!this.state.processes &&
+        {!!this.state.processes && (
           <UI.List>
-            {this.state.processes.map((p, pKey) =>
-              <UI.ListItem key={pKey} className='HubExecutableDetailScreen__processes__item'>
-                <Link to={buildUrl(screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL, {
-                  process_id: p.id,
-                })}>
+            {this.state.processes.map((p, pKey) => (
+              <UI.ListItem
+                key={pKey}
+                className='HubExecutableDetailScreen__processes__item'
+              >
+                <Link
+                  to={buildUrl(screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL, {
+                    process_id: p.id,
+                  })}
+                >
                   PID: {p.pid}
                 </Link>
-                {!!p.arguments &&
-                  <UI.Text type='grey' small>Arguments: {p.arguments}</UI.Text>
-                }
-                {!!p.env_vars &&
-                  <UI.Text type='grey' small>Environment variables: {p.env_vars}</UI.Text>
-                }
+                {!!p.arguments && (
+                  <UI.Text type='grey' small>
+                    Arguments: {p.arguments}
+                  </UI.Text>
+                )}
+                {!!p.env_vars && (
+                  <UI.Text type='grey' small>
+                    Environment variables: {p.env_vars}
+                  </UI.Text>
+                )}
               </UI.ListItem>
-            )}
+            ))}
           </UI.List>
-        }
-        {(!this.state.processes || this.state.processes.length === 0) &&
-          <UI.Text type='grey' center>Empty</UI.Text>
-        }
+        )}
+        {(!this.state.processes || this.state.processes.length === 0) && (
+          <UI.Text type='grey' center>
+            Empty
+          </UI.Text>
+        )}
       </div>
     );
   };
 
   _renderContent = () => {
     if (this.state.isLoading) {
-      return <UI.Text type='grey' center>Loading..</UI.Text>;
+      return (
+        <UI.Text type='grey' center>
+          Loading..
+        </UI.Text>
+      );
     }
 
     return (
       <div className='HubExecutableDetailScreen__FormGroup__wrapper'>
-        <UI.Text className='HubExecutableDetailScreen__name' size={6} header spacing>
+        <UI.Text
+          className='HubExecutableDetailScreen__name'
+          size={6}
+          header
+          spacing
+        >
           <Link to={buildUrl(screens.HUB_PROJECT_EXECUTABLES, {})}>
             Processes
           </Link>
-          <UI.Text type='grey' inline> / {this.state.executableParams.name}</UI.Text>
+          <UI.Text type='grey' inline>
+            {' '}
+            / {this.state.executableParams.name}
+          </UI.Text>
         </UI.Text>
         <UI.Tabs
           leftItems={
@@ -312,9 +344,7 @@ class HubExecutableDetailScreen extends React.Component {
   render() {
     return (
       <ProjectWrapper>
-        <UI.Container size='small'>
-          {this._renderContent()}
-        </UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }
@@ -322,5 +352,5 @@ class HubExecutableDetailScreen extends React.Component {
 
 export default storeUtils.getWithState(
   classes.HUB_PROJECT_EXECUTABLE_DETAIL,
-  HubExecutableDetailScreen
+  HubExecutableDetailScreen,
 );

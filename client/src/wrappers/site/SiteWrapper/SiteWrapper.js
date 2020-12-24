@@ -6,10 +6,11 @@ import BaseWrapper from '../../BaseWrapper';
 import * as classes from '../../../constants/classes';
 import * as storeUtils from '../../../storeUtils';
 
-
 class SiteWrapper extends React.Component {
-  componentWillMount() {
-    this.props.resetProgress();
+  constructor(props) {
+    super(props);
+
+    props.resetProgress();
   }
 
   componentDidMount() {
@@ -19,15 +20,10 @@ class SiteWrapper extends React.Component {
   render() {
     return (
       <BaseWrapper>
-        <div className='SiteWrapper'>
-          {this.props.children}
-        </div>
+        <div className='SiteWrapper'>{this.props.children}</div>
       </BaseWrapper>
-    )
+    );
   }
 }
 
-export default storeUtils.getWithState(
-  classes.SITE_WRAPPER,
-  SiteWrapper
-);
+export default storeUtils.getWithState(classes.SITE_WRAPPER, SiteWrapper);

@@ -3,15 +3,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 function ControlsSidebarHighlightMode(props) {
   let [opened, setOpened] = useState(false);
   let popupRef = useRef();
 
+  const { setChartSettingsState } = HubMainScreenModel.emitters;
   const { highlightMode } = props.settings;
 
   function selectHighlightMode(mode) {
-    props.setChartSettingsState({
+    setChartSettingsState({
       ...props.settings,
       highlightMode: mode,
     });
@@ -34,7 +36,7 @@ function ControlsSidebarHighlightMode(props) {
               disabled: props.disabled,
               active: opened,
             })}
-            onClick={evt => setOpened(!opened)}
+            onClick={(evt) => setOpened(!opened)}
           >
             <UI.Icon i='center_focus_weak' scale={1.7} />
           </div>
@@ -44,7 +46,7 @@ function ControlsSidebarHighlightMode(props) {
             className='ControlsSidebar__item__popup list'
             tabIndex={0}
             ref={popupRef}
-            onBlur={evt => {
+            onBlur={(evt) => {
               const currentTarget = evt.currentTarget;
               if (opened) {
                 window.setTimeout(() => {
@@ -56,15 +58,17 @@ function ControlsSidebarHighlightMode(props) {
             }}
           >
             <div className='ControlsSidebar__item__popup__header'>
-              <UI.Text overline bold>Highlight modes</UI.Text>
+              <UI.Text overline bold>
+                Highlight modes
+              </UI.Text>
             </div>
             <div className='ControlsSidebar__item__popup__list'>
               <div
                 className={classNames({
                   ControlsSidebar__item__popup__list__item: true,
-                  active: highlightMode === 'default'
+                  active: highlightMode === 'default',
                 })}
-                onClick={evt => selectHighlightMode('default')}
+                onClick={(evt) => selectHighlightMode('default')}
               >
                 <UI.Text small>Highlight off</UI.Text>
               </div>
@@ -73,9 +77,9 @@ function ControlsSidebarHighlightMode(props) {
               <div
                 className={classNames({
                   ControlsSidebar__item__popup__list__item: true,
-                  active: highlightMode === 'metric'
+                  active: highlightMode === 'metric',
                 })}
-                onClick={evt => selectHighlightMode('metric')}
+                onClick={(evt) => selectHighlightMode('metric')}
               >
                 <UI.Text small>Highlight metric on hover</UI.Text>
               </div>
@@ -84,9 +88,9 @@ function ControlsSidebarHighlightMode(props) {
               <div
                 className={classNames({
                   ControlsSidebar__item__popup__list__item: true,
-                  active: highlightMode === 'run'
+                  active: highlightMode === 'run',
                 })}
-                onClick={evt => selectHighlightMode('run')}
+                onClick={(evt) => selectHighlightMode('run')}
               >
                 <UI.Text small>Highlight run on hover</UI.Text>
               </div>
@@ -100,7 +104,6 @@ function ControlsSidebarHighlightMode(props) {
 
 ControlsSidebarHighlightMode.propTypes = {
   settings: PropTypes.object,
-  setChartSettingsState: PropTypes.func,
 };
 
 export default ControlsSidebarHighlightMode;

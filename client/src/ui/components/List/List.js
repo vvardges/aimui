@@ -1,10 +1,9 @@
 import './List.less';
 
-import React  from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
-
 
 function List({ children, className, header, icon, iconColor, margin }) {
   const compClassName = classNames({
@@ -17,14 +16,10 @@ function List({ children, className, header, icon, iconColor, margin }) {
 
   return (
     <div>
-      {!!header &&
-        <div className='List__header'>{header}</div>
-      }
-      <ul className={compClassName}>
-        {children}
-      </ul>
+      {!!header && <div className='List__header'>{header}</div>}
+      <ul className={compClassName}>{children}</ul>
     </div>
-  )
+  );
 }
 
 List.defaultProps = {

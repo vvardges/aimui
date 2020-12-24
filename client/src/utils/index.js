@@ -61,8 +61,8 @@ export function sortOnKeys(dict) {
 
 export function buildUrl(pattern, { ...params }) {
   let url = pattern;
-  for(let param in params) {
-    let regex = new RegExp( ':' + param, 'g');
+  for (let param in params) {
+    let regex = new RegExp(':' + param, 'g');
     url = url.replace(regex, params[param]);
   }
 
@@ -70,7 +70,8 @@ export function buildUrl(pattern, { ...params }) {
 }
 
 export function randomStr(length) {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;
 
   let result = '';
@@ -152,8 +153,8 @@ export function deepEqual(object1, object2) {
     const val2 = object2[key];
     const areObjects = isObject(val1) && isObject(val2);
     if (
-      areObjects && !deepEqual(val1, val2) ||
-      !areObjects && val1 !== val2
+      (areObjects && !deepEqual(val1, val2)) ||
+      (!areObjects && val1 !== val2)
     ) {
       return false;
     }
@@ -163,12 +164,15 @@ export function deepEqual(object1, object2) {
 }
 
 export function objectsIntersection(o1, o2) {
-  return Object.keys(o1).concat(Object.keys(o2)).sort().reduce(function (r, a, i, aa) {
-    if (i && aa[i - 1] === a) {
-      r.push(a);
-    }
-    return r;
-  }, []);
+  return Object.keys(o1)
+    .concat(Object.keys(o2))
+    .sort()
+    .reduce(function (r, a, i, aa) {
+      if (i && aa[i - 1] === a) {
+        r.push(a);
+      }
+      return r;
+    }, []);
 }
 
 export function arraysIntersection(a, b) {
@@ -183,20 +187,23 @@ export function arraysIntersection(a, b) {
   });
 }
 
-export function removeOutliers(values, t=2) {
+export function removeOutliers(values, t = 2) {
   values.sort((a, b) => a - b);
   while (true) {
     if (!values.length) {
       break;
     }
-    const q1 = values[Math.floor((values.length / 4))];
-    const q3 = values[Math.ceil((values.length * (3 / 4)))];
+    const q1 = values[Math.floor(values.length / 4)];
+    const q3 = values[Math.ceil(values.length * (3 / 4))];
     // Inter-quartile range
     const iqr = q3 - q1;
     const mean = values.reduce((pv, cv) => pv + cv, 0) / values.length;
-    const furthest = mean - values[0] > values[values.length-1] - mean ? values[0] : values[values.length-1];
+    const furthest =
+      mean - values[0] > values[values.length - 1] - mean
+        ? values[0]
+        : values[values.length - 1];
     if (Math.abs(furthest - mean) > t * iqr) {
-      values = values.filter(elem => elem !== furthest);
+      values = values.filter((elem) => elem !== furthest);
     } else {
       break;
     }
@@ -244,7 +251,7 @@ export function formatValue(value, sepCaseForUndefined = true) {
 }
 
 export function interpolateColors(values) {
-  let filteredValues = values.filter(elem => typeof elem === 'number');
+  let filteredValues = values.filter((elem) => typeof elem === 'number');
 
   if (filteredValues.length === 0) {
     return;
@@ -255,7 +262,7 @@ export function interpolateColors(values) {
 
   if (min === max) {
     return {
-      [min]: 'rgb(155, 233, 168)'
+      [min]: 'rgb(155, 233, 168)',
     };
   }
 
@@ -270,38 +277,40 @@ export function interpolateColors(values) {
       result[i] = Math.round(result[i] + factor * (color2[i] - color1[i]));
     }
     return result;
-  };
+  }
 
   for (let val of filteredValues) {
     let factor = (val - min) / (max - min);
-    colorsByValue[val] = `rgb(${interpolateColor(start, end, factor).join(',')})`;
+    colorsByValue[val] = `rgb(${interpolateColor(start, end, factor).join(
+      ',',
+    )})`;
   }
 
   return colorsByValue;
 }
 
-export const renderQueue = (function(func) {
-  let _queue = [],                 // Data to be rendered
-    _rate = 1000,                  // Number of calls per frame
-    _invalidate = function() {},   // Invalidate last render queue
-    _clear = function() {};        // Clearing function
+export const renderQueue = function (func) {
+  let _queue = [], // Data to be rendered
+    _rate = 1000, // Number of calls per frame
+    _invalidate = function () {}, // Invalidate last render queue
+    _clear = function () {}; // Clearing function
 
-  let rq = function(data) {
+  let rq = function (data) {
     if (data) rq.data(data);
     _invalidate();
     _clear();
     rq.render();
   };
 
-  rq.render = function() {
+  rq.render = function () {
     let valid = true;
-    _invalidate = rq.invalidate = function() {
+    _invalidate = rq.invalidate = function () {
       valid = false;
     };
 
     function doFrame() {
       if (!valid) return true;
-      let chunk = _queue.splice(0,_rate);
+      let chunk = _queue.splice(0, _rate);
       chunk.map(func);
       timer_frame(doFrame);
     }
@@ -309,27 +318,27 @@ export const renderQueue = (function(func) {
     doFrame();
   };
 
-  rq.data = function(data) {
+  rq.data = function (data) {
     _invalidate();
     _queue = data.slice(0);
     return rq;
   };
 
-  rq.add = function(data) {
+  rq.add = function (data) {
     _queue = _queue.concat(data);
   };
 
-  rq.rate = function(value) {
+  rq.rate = function (value) {
     if (!arguments.length) return _rate;
     _rate = value;
     return rq;
   };
 
-  rq.remaining = function() {
+  rq.remaining = function () {
     return _queue.length;
   };
 
-  rq.clear = function(func) {
+  rq.clear = function (func) {
     if (!arguments.length) {
       _clear();
       return rq;
@@ -340,15 +349,18 @@ export const renderQueue = (function(func) {
 
   rq.invalidate = _invalidate;
 
-  let timer_frame = window.requestAnimationFrame
-    || window.webkitRequestAnimationFrame
-    || window.mozRequestAnimationFrame
-    || window.oRequestAnimationFrame
-    || window.msRequestAnimationFrame
-    || function(callback) { setTimeout(callback, 17); };
+  let timer_frame =
+    window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.oRequestAnimationFrame ||
+    window.msRequestAnimationFrame ||
+    function (callback) {
+      setTimeout(callback, 17);
+    };
 
   return rq;
-});
+};
 
 export function flattenObject(ob, prefix = false, result = null) {
   result = result || {};
@@ -363,7 +375,11 @@ export function flattenObject(ob, prefix = false, result = null) {
 
   for (const i in ob) {
     if (Object.prototype.hasOwnProperty.call(ob, i)) {
-      if (typeof ob[i] === 'object' && ob[i] !== null && !Array.isArray(ob[i])) {
+      if (
+        typeof ob[i] === 'object' &&
+        ob[i] !== null &&
+        !Array.isArray(ob[i])
+      ) {
         // Recursion on deeper objects
         flattenObject(ob[i], prefix + i, result);
       } else {
@@ -372,4 +388,64 @@ export function flattenObject(ob, prefix = false, result = null) {
     }
   }
   return result;
+}
+
+export function transformNestedArrToObj(item) {
+  // Transform {foo: ['bar', 'baz']} to {foo: {bar: true, baz: true}}
+  Object.keys(item).forEach((i) => {
+    if (Array.isArray(item[i])) {
+      const d = {};
+      item[i].forEach((v) => (d[v] = true));
+      item[i] = d;
+    } else if (typeof item[i] === 'object') {
+      transformNestedArrToObj(item[i]);
+    }
+  });
+}
+
+export function excludeObjectPaths(item, paths) {
+  Object.keys(item).forEach((i) => {
+    let matchedPaths = [];
+    paths?.forEach((p) => {
+      if (p?.[0] === i) {
+        if (item[i] === true && p.length === 1) {
+          delete item[i];
+        } else {
+          matchedPaths.push(p.slice(1));
+        }
+      }
+    });
+    if (matchedPaths.length) {
+      excludeObjectPaths(item[i], matchedPaths);
+    }
+  });
+}
+
+export function searchNestedObject(item, path, baseMatched = false) {
+  Object.keys(item).forEach((i) => {
+    if (i === path[0] || (path.length === 1 && i.startsWith(path[0]))) {
+      if (path.length > 1) {
+        searchNestedObject(item[i], path.slice(1), true);
+      }
+    } else if (!baseMatched && item[i] !== true) {
+      searchNestedObject(item[i], path, false);
+    } else {
+      delete item[i];
+    }
+  });
+}
+
+export function removeObjectEmptyKeys(item) {
+  if (item === true) {
+    return false;
+  } else if (Object.keys(item).length === 0) {
+    return true;
+  } else {
+    Object.keys(item).forEach((i) => {
+      if (removeObjectEmptyKeys(item[i])) {
+        delete item[i];
+      }
+    });
+    return Object.keys(item).length === 0;
+  }
 }

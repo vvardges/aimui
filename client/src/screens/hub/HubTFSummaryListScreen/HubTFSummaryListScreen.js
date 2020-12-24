@@ -10,9 +10,8 @@ import * as storeUtils from '../../../storeUtils';
 import * as classes from '../../../constants/classes';
 import * as analytics from '../../../services/analytics';
 
-
 class HubTFSummaryListScreen extends Component {
-  constructor(props){
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -39,27 +38,32 @@ class HubTFSummaryListScreen extends Component {
   }
 
   listTFSummary = () => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       ...prevState,
       isLoading: true,
     }));
 
-    this.props.getTFSummaryList().then(data => {
-      const separatedPaths = data.map(p => p.split('/').filter(p => p.length));
-      const tree = [];
-      for (let path in separatedPaths) {
-        this.appendPathToTree(tree, separatedPaths[path]);
-      }
-      this.setState(prevState => ({
-        ...prevState,
-        tree,
-      }));
-    }).finally(() => {
-      this.setState(prevState => ({
-        ...prevState,
-        isLoading: false,
-      }));
-    });
+    this.props
+      .getTFSummaryList()
+      .then((data) => {
+        const separatedPaths = data.map((p) =>
+          p.split('/').filter((p) => p.length),
+        );
+        const tree = [];
+        for (let path in separatedPaths) {
+          this.appendPathToTree(tree, separatedPaths[path]);
+        }
+        this.setState((prevState) => ({
+          ...prevState,
+          tree,
+        }));
+      })
+      .finally(() => {
+        this.setState((prevState) => ({
+          ...prevState,
+          isLoading: false,
+        }));
+      });
   };
 
   appendPathToTree = (tree, path) => {
@@ -87,7 +91,7 @@ class HubTFSummaryListScreen extends Component {
 
         depthSubset.push(nodeOptions);
 
-        lastItem = depthSubset[depthSubset.length-1];
+        lastItem = depthSubset[depthSubset.length - 1];
         depthSubset = lastItem.children;
       } else {
         depthSubset = tree[treeIndex].children;
@@ -135,16 +139,21 @@ class HubTFSummaryListScreen extends Component {
     // Parse input
     const valMatch = value.endsWith('\n') ? value : value + '\n';
     if (valMatch.match(/^(([A-z0-9_\-\.,]+)\s+([A-z0-9_\-\.,]+)\n+)+$/g)) {
-      formSummary = value.split('\n').map(r => r.trim().split(/\s+/).map(v => v.trim()));
+      formSummary = value.split('\n').map((r) =>
+        r
+          .trim()
+          .split(/\s+/)
+          .map((v) => v.trim()),
+      );
       formParsedParams = {};
-      formSummary.forEach(i => {
+      formSummary.forEach((i) => {
         if (i.length > 1) {
           formParsedParams[i[0]] = i[1];
         }
       });
     }
 
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       ...prevState,
       formSummary,
       formParams: {
@@ -158,7 +167,7 @@ class HubTFSummaryListScreen extends Component {
     const value = e.target.value;
     const name = e.target.name;
 
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       ...prevState,
       formParams: {
         ...prevState.formParams,
@@ -183,44 +192,47 @@ class HubTFSummaryListScreen extends Component {
       showActions: false,
       isLoading: true,
     });
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       ...prevState,
       tree,
       formSaveBtn: {
         loading: false,
         disabled: false,
-      }
+      },
     }));
 
     const fullPath = this.formatPath(path);
 
-    this.props.getTFLogParams(fullPath).then(data => {
-      this.updateTreeNode(tree, path, {
-        showForm: true,
-        isLoading: false,
+    this.props
+      .getTFLogParams(fullPath)
+      .then((data) => {
+        this.updateTreeNode(tree, path, {
+          showForm: true,
+          isLoading: false,
+        });
+        this.setState((prevState) => ({
+          ...prevState,
+          tree,
+          formPath: path,
+          formParams: {
+            params: data.params || '',
+            parsedParams: {},
+          },
+        }));
+        this.setSummary(data.params);
+      })
+      .catch(() => {
+        this.updateTreeNode(tree, path, {
+          showActions: true,
+          isLoading: false,
+          showForm: false,
+          formSummary: null,
+        });
+        this.setState((prevState) => ({
+          ...prevState,
+          tree,
+        }));
       });
-      this.setState(prevState => ({
-        ...prevState,
-        tree,
-        formPath: path,
-        formParams: {
-          params: data.params || '',
-          parsedParams: {},
-        },
-      }));
-      this.setSummary(data.params);
-    }).catch(() => {
-      this.updateTreeNode(tree, path, {
-        showActions: true,
-        isLoading: false,
-        showForm: false,
-        formSummary: null,
-      });
-      this.setState(prevState => ({
-        ...prevState,
-        tree,
-      }));
-    });
   };
 
   handleSaveBtnClick = () => {
@@ -228,32 +240,35 @@ class HubTFSummaryListScreen extends Component {
       formSaveBtn: {
         loading: true,
         disabled: true,
-      }
+      },
     });
 
     const path = this.formatPath(this.state.formPath);
     const params = this.state.formParams.params;
     const parsedParams = this.state.formParams.parsedParams;
 
-    this.props.postTFLogParams(path, params, parsedParams).then(data => {
-      const tree = [...this.state.tree];
-      this.updateTreeNode(tree, this.state.formPath, {
-        showForm: false,
-        showActions: true,
+    this.props
+      .postTFLogParams(path, params, parsedParams)
+      .then((data) => {
+        const tree = [...this.state.tree];
+        this.updateTreeNode(tree, this.state.formPath, {
+          showForm: false,
+          showActions: true,
+        });
+        this.setState((prevState) => ({
+          ...prevState,
+          tree,
+          formPath: null,
+        }));
+      })
+      .finally(() => {
+        this.setState({
+          formSaveBtn: {
+            loading: false,
+            disabled: false,
+          },
+        });
       });
-      this.setState(prevState => ({
-        ...prevState,
-        tree,
-        formPath: null,
-      }));
-    }).finally(() => {
-      this.setState({
-        formSaveBtn: {
-          loading: false,
-          disabled: false,
-        }
-      });
-    });
   };
 
   handleCancelBtnClick = () => {
@@ -262,14 +277,14 @@ class HubTFSummaryListScreen extends Component {
       showForm: false,
       showActions: true,
     });
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       ...prevState,
       tree,
       formPath: null,
       formSaveBtn: {
         loading: false,
         disabled: false,
-      }
+      },
     }));
   };
 
@@ -278,31 +293,37 @@ class HubTFSummaryListScreen extends Component {
       <div className='HubTFSummaryListScreen__node__params'>
         <UI.Text type='grey-dark' spacing>
           Set parameters to search and compare run
-          <UI.Text type='grey-darker' inline> `{this.formatPath(node.fullPath)}` </UI.Text>
+          <UI.Text type='grey-darker' inline>
+            {' '}
+            `{this.formatPath(node.fullPath)}`{' '}
+          </UI.Text>
         </UI.Text>
         <div className='HubTFSummaryListScreen__node__params__form'>
-          <UI.Text type='grey' small>Parameters:</UI.Text>
-          <UI.Text type='grey' small>Parsed result:</UI.Text>
+          <UI.Text type='grey' small>
+            Parameters:
+          </UI.Text>
+          <UI.Text type='grey' small>
+            Parsed result:
+          </UI.Text>
           <div className='HubTFSummaryListScreen__node__params__input'>
             <UI.Input
               name='params'
               multiLine={true}
               onChange={this.handleInputChange}
               value={this.state.formParams.params}
-              placeholder={(
-                'lr 0.01\n' +
-                'hidden_dim 256\n' +
-                'conv 1'
-              )}
+              placeholder={'lr 0.01\n' + 'hidden_dim 256\n' + 'conv 1'}
             />
           </div>
           <div className='HubTFSummaryListScreen__node__params__summary'>
-            {this.state.formSummary !== null && this.state.formSummary.length > 0 &&
-              this.state.formSummary.map((row, rowKey) =>
-                row.length > 1 &&
-                <UI.Text key={rowKey} small>
-                  params.{row[0]} == {row[1]}
-                </UI.Text>
+            {this.state.formSummary !== null &&
+              this.state.formSummary.length > 0 &&
+              this.state.formSummary.map(
+                (row, rowKey) =>
+                  row.length > 1 && (
+                    <UI.Text key={rowKey} small>
+                      params.{row[0]} == {row[1]}
+                    </UI.Text>
+                  ),
               )}
           </div>
         </div>
@@ -313,7 +334,8 @@ class HubTFSummaryListScreen extends Component {
           >
             Cancel
           </UI.Button>
-          {(this.state.formSummary !== null || !this.state.formParams.params) &&
+          {(this.state.formSummary !== null ||
+            !this.state.formParams.params) && (
             <UI.Button
               type='primary'
               onClick={() => this.handleSaveBtnClick()}
@@ -321,10 +343,10 @@ class HubTFSummaryListScreen extends Component {
             >
               Save
             </UI.Button>
-          }
+          )}
         </UI.Buttons>
       </div>
-    )
+    );
   };
 
   _renderTree = (tree) => {
@@ -332,55 +354,60 @@ class HubTFSummaryListScreen extends Component {
       return null;
     }
 
-    return (
-      tree.map((node, nodeKey) =>
-        <div key={nodeKey} className='HubTFSummaryListScreen__node'>
-          <div className='HubTFSummaryListScreen__node__title'>
-            <UI.Text type='grey-dark'>
-              {node.path}
-            </UI.Text>
-          </div>
-          {node.children.length > 0
-            ? this._renderTree(node.children)
-            : (
-              <div className='HubTFSummaryListScreen__node__body'>
-                {node.showActions &&
-                  <UI.Buttons>
-                    <UI.Button
-                      size='tiny'
-                      type='positive'
-                      onClick={() => this.handleParamBtnClick(node.fullPath)}
-                    >
-                      Edit params
-                    </UI.Button>
-                  </UI.Buttons>
-                }
-                {node.isLoading &&
-                  <UI.Text type='grey' small>Loading..</UI.Text>
-                }
-                {node.showForm &&
-                  this._renderParamsForm(node)
-                }
-              </div>
-            )
-          }
+    return tree.map((node, nodeKey) => (
+      <div key={nodeKey} className='HubTFSummaryListScreen__node'>
+        <div className='HubTFSummaryListScreen__node__title'>
+          <UI.Text type='grey-dark'>{node.path}</UI.Text>
         </div>
-      )
-    )
+        {node.children.length > 0 ? (
+          this._renderTree(node.children)
+        ) : (
+          <div className='HubTFSummaryListScreen__node__body'>
+            {node.showActions && (
+              <UI.Buttons>
+                <UI.Button
+                  size='tiny'
+                  type='positive'
+                  onClick={() => this.handleParamBtnClick(node.fullPath)}
+                >
+                  Edit params
+                </UI.Button>
+              </UI.Buttons>
+            )}
+            {node.isLoading && (
+              <UI.Text type='grey' small>
+                Loading..
+              </UI.Text>
+            )}
+            {node.showForm && this._renderParamsForm(node)}
+          </div>
+        )}
+      </div>
+    ));
   };
 
   _renderContent = () => {
     if (!this.props.project.tf_enabled) {
-      return <UI.Text type='grey' center>Can't find TF summary logs directory</UI.Text>
+      return (
+        <UI.Text type='grey' center>
+          Can't find TF summary logs directory
+        </UI.Text>
+      );
     }
 
     if (this.state.isLoading) {
-      return <UI.Text type='grey' center>Loading..</UI.Text>
+      return (
+        <UI.Text type='grey' center>
+          Loading..
+        </UI.Text>
+      );
     }
 
     return (
       <div className='HubTFSummaryListScreen__content'>
-        <UI.Text size={6} header divided>TF Summary Logs</UI.Text>
+        <UI.Text size={6} header divided>
+          TF Summary Logs
+        </UI.Text>
         <UI.Text className='HubTFSummaryListScreen__desc' type='grey'>
           Configure your TensorFlow logs for fast and easy search or comparison
         </UI.Text>
@@ -388,7 +415,7 @@ class HubTFSummaryListScreen extends Component {
           {this._renderTree(this.state.tree)}
         </div>
       </div>
-    )
+    );
   };
 
   render() {
@@ -398,11 +425,9 @@ class HubTFSummaryListScreen extends Component {
           <meta title='' content='' />
         </Helmet>
 
-        <UI.Container size='small'>
-          {this._renderContent()}
-        </UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
-    )
+    );
   }
 }
 
@@ -410,5 +435,5 @@ HubTFSummaryListScreen.propTypes = {};
 
 export default storeUtils.getWithState(
   classes.HUB_TF_SUMMARY_LIST_SCREEN,
-  HubTFSummaryListScreen
+  HubTFSummaryListScreen,
 );

@@ -55,17 +55,20 @@ class TagSettingForm extends React.Component {
   };
 
   handleColorClick = (color) => {
-    this.setState((prevState) => ({
-      ...prevState,
-      form: {
-        ...prevState.form,
-        color,
+    this.setState(
+      (prevState) => ({
+        ...prevState,
+        form: {
+          ...prevState.form,
+          color,
+        },
+      }),
+      () => {
+        if (this.props.onUpdate) {
+          this.props.onUpdate();
+        }
       },
-    }), () => {
-      if (this.props.onUpdate) {
-        this.props.onUpdate();
-      }
-    });
+    );
   };
 
   handleInputChange = (e) => {
@@ -83,7 +86,7 @@ class TagSettingForm extends React.Component {
         if (this.props.onUpdate) {
           this.props.onUpdate();
         }
-      }
+      },
     );
   };
 

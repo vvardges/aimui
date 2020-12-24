@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-
 function Segment(props) {
   const className = classNames({
     Segment: true,
@@ -17,11 +16,9 @@ function Segment(props) {
 
   return (
     <div className={className}>
-      <div className='Segment__cont'>
-        {props.children}
-      </div>
+      <div className='Segment__cont'>{props.children}</div>
     </div>
-  )
+  );
 }
 
 Segment.defaultProps = {

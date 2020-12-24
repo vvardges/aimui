@@ -4,7 +4,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { classNames } from '../../../../../../../utils';
 
-
 class PopUp extends Component {
   render() {
     return (
@@ -22,12 +21,14 @@ class PopUp extends Component {
           width: this.props.width,
         }}
       >
-        {this.props.chainArrow &&
-          <div className={classNames({
-            PopUp__body__arrow: true,
-            [this.props.chainArrow]: !!this.props.chainArrow,
-          })} />
-        }
+        {this.props.chainArrow && (
+          <div
+            className={classNames({
+              PopUp__body__arrow: true,
+              [this.props.chainArrow]: !!this.props.chainArrow,
+            })}
+          />
+        )}
         <div
           className='PopUp__body'
           style={{

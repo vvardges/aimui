@@ -22,7 +22,6 @@ import HubTagDetailScreen from './screens/hub/HubTagDetailScreen/HubTagDetailScr
 import HubTFSummaryListScreen from './screens/hub/HubTFSummaryListScreen/HubTFSummaryListScreen';
 import HubExperimentsDashboardScreen from './screens/hub/HubExperimentsDashboardScreen/HubExperimentsDashboardScreen';
 
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -30,10 +29,8 @@ class App extends React.Component {
     this.state = {
       isLoading: false,
     };
-  }
 
-  componentWillMount() {
-    this.props.resetProgress();
+    props.resetProgress();
   }
 
   componentDidMount() {
@@ -69,34 +66,61 @@ class App extends React.Component {
         {/*  </>*/}
         {/*}*/}
         <Switch>
-          <Route exact path={screens.MAIN} component={RedirectFromMainScreen}/>
-          <Route exact path={screens.EXPLORE} component={HubMainScreen}/>
-          <Route exact path={screens.EXPLORE_SEARCH} component={HubMainScreen}/>
+          <Route exact path={screens.MAIN} component={RedirectFromMainScreen} />
+          <Route exact path={screens.EXPLORE} component={HubMainScreen} />
+          <Route
+            exact
+            path={screens.EXPLORE_SEARCH}
+            component={HubMainScreen}
+          />
           {/*<Route exact path={screens.HUB_PROJECT_EXECUTABLES} component={HubExecutablesScreen}/>*/}
           {/*<Route exact path={screens.HUB_PROJECT_EXECUTABLE_PROCESS_DETAIL} component={HubExecutableProcessDetailScreen}/>*/}
           {/*<Route exact path={screens.HUB_PROJECT_CREATE_EXECUTABLE} component={HubExecutableCreateScreen}/>*/}
           {/*<Route exact path={screens.HUB_PROJECT_EXECUTABLE_DETAIL} component={HubExecutableDetailScreen}/>*/}
-          <Route exact path={screens.HUB_PROJECT_TAGS} component={HubTagsScreen}/>
-          <Route exact path={screens.HUB_PROJECT_CREATE_TAG} component={HubTagCreateScreen}/>
-          <Route exact path={screens.HUB_PROJECT_EDIT_TAG} component={HubTagDetailScreen}/>
-          <Route exact path={screens.HUB_TF_SUMMARY_LIST} component={HubTFSummaryListScreen}/>
-          <Route exact path={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD} component={HubExperimentsDashboardScreen}/>
-          <Route exact path={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD_SEARCH} component={HubExperimentsDashboardScreen}/>
-          <Route exact path={screens.HUB_PROJECT_EXPERIMENT} component={HubExperimentScreen}/>
-          <Route component={SiteNotFoundScreen}/>
+          <Route
+            exact
+            path={screens.HUB_PROJECT_TAGS}
+            component={HubTagsScreen}
+          />
+          <Route
+            exact
+            path={screens.HUB_PROJECT_CREATE_TAG}
+            component={HubTagCreateScreen}
+          />
+          <Route
+            exact
+            path={screens.HUB_PROJECT_EDIT_TAG}
+            component={HubTagDetailScreen}
+          />
+          <Route
+            exact
+            path={screens.HUB_TF_SUMMARY_LIST}
+            component={HubTFSummaryListScreen}
+          />
+          <Route
+            exact
+            path={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD}
+            component={HubExperimentsDashboardScreen}
+          />
+          <Route
+            exact
+            path={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD_SEARCH}
+            component={HubExperimentsDashboardScreen}
+          />
+          <Route
+            exact
+            path={screens.HUB_PROJECT_EXPERIMENT}
+            component={HubExperimentScreen}
+          />
+          <Route component={SiteNotFoundScreen} />
         </Switch>
       </BrowserRouter>
-    )
+    );
   }
 }
 
 function RedirectFromMainScreen() {
-  return (
-    <Redirect to={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD} />
-  )
+  return <Redirect to={screens.HUB_PROJECT_EXPERIMENT_DASHBOARD} />;
 }
 
-export default storeUtils.getWithState(
-  classes.APP,
-  App
-);
+export default storeUtils.getWithState(classes.APP, App);

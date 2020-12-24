@@ -15,7 +15,8 @@ export const HUB_PROJECT_CREATE_TAG = '/tag/new';
 export const HUB_PROJECT_EDIT_TAG = '/tag/:tag_id';
 export const HUB_TF_SUMMARY_LIST = '/tf/summary/list';
 export const HUB_PROJECT_EXPERIMENT_DASHBOARD = '/dashboard';
-export const HUB_PROJECT_EXPERIMENT_DASHBOARD_SEARCH = '/dashboard?search=:search';
+export const HUB_PROJECT_EXPERIMENT_DASHBOARD_SEARCH =
+  '/dashboard?search=:search';
 export const HUB_PROJECT_EXPERIMENT_DEFAULT = '/experiment/default/latest';
 export const HUB_PROJECT_EXPERIMENT_INDEX = '/experiment/default/index';
 export const HUB_PROJECT_EXPERIMENT = '/experiment/:experiment_name/:commit_id';

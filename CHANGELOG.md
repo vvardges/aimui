@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.4 Dec 25 2020
+- Enable nginx gzip compression (gorarakelyan)
+- Add ability to select table view mode in explore screen (gorarakelyan)
+- Optimize explore panel rendering performance (roubkar)
+- Add table control for selecting row height (gorarakelyan)
+- Add ability to filter table columns (gorarakelyan)
+- Implement autocomplete for select dropdown of explore screen (gorarakelyan)
+
 ## 1.2.3 Dec 11 2020
 - Pin table column to the left when grouping by a corresponding field is applied (roubkar)
 - Disable highlight mode control if metrics are aggregated (gorarakelyan)

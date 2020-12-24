@@ -7,7 +7,6 @@ import UI from '../../../ui';
 import { getCookie, setCookie } from '../../../services/cookie';
 import { USER_ANALYTICS_COOKIE_NAME } from '../../../config';
 
-
 class AnalyticsPermission extends Component {
   constructor(props) {
     super(props);
@@ -45,11 +44,19 @@ class AnalyticsPermission extends Component {
       <div className='AnalyticsPermission'>
         <div className='AnalyticsPermission__body'>
           <UI.Text>
-            Enable AimDE to collect your usage stats to build better and superior tool.
+            Enable AimDE to collect your usage stats to build better and
+            superior tool.
           </UI.Text>
           <UI.Buttons className='AnalyticsPermission__actions'>
-            <UI.Button type='primary' onClick={() => this.handleAcceptClick()}>Enable</UI.Button>
-            <UI.Button type='negative' onClick={() => this.handleDeclineClick()}>Disable</UI.Button>
+            <UI.Button type='primary' onClick={() => this.handleAcceptClick()}>
+              Enable
+            </UI.Button>
+            <UI.Button
+              type='negative'
+              onClick={() => this.handleDeclineClick()}
+            >
+              Disable
+            </UI.Button>
           </UI.Buttons>
         </div>
       </div>

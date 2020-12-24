@@ -5,15 +5,16 @@ import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import * as histogram from 'highcharts/modules/histogram-bellcurve';
 
-
 class Histogram extends Component {
   constructor(props) {
     super(props);
 
-    let series = [{
-      type: 'histogram',
-      data: this.props.data,
-    }];
+    let series = [
+      {
+        type: 'histogram',
+        data: this.props.data,
+      },
+    ];
 
     if (this.props.line) {
       series.push({
@@ -70,13 +71,10 @@ class Histogram extends Component {
             },
           },
         },
-      }
+      },
     };
 
     this.chartRef = React.createRef();
-  }
-
-  componentWillMount() {
     histogram(Highcharts);
   }
 

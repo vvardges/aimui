@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-
 function ListItem({ children, className, description }) {
   const compClassName = classNames({
     ListItem: true,
@@ -15,11 +14,9 @@ function ListItem({ children, className, description }) {
   return (
     <li className={compClassName}>
       {children}
-      {!!description &&
-        <div className='ListItem__desc'>{description}</div>
-      }
+      {!!description && <div className='ListItem__desc'>{description}</div>}
     </li>
-  )
+  );
 }
 
 ListItem.defaultProps = {

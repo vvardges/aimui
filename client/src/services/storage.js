@@ -1,7 +1,7 @@
 export function setItem(key, value) {
   try {
     localStorage.setItem(key, value);
-  } catch (error) { }
+  } catch (error) {}
 }
 
 export function getItem(key) {
@@ -15,11 +15,11 @@ export function getItem(key) {
 export function removeItem(key) {
   try {
     localStorage.removeItem(key);
-  } catch (error) { }
+  } catch (error) {}
 }
 
 export function clear() {
   try {
     localStorage.clear();
-  } catch (error) { }
+  } catch (error) {}
 }

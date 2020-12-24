@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-
 function Button(props) {
   const className = classNames({
     Button: true,
@@ -24,32 +23,15 @@ function Button(props) {
       onClick={(e) => props.onClick && props.onClick(e)}
       style={props.style}
     >
-      {!!props.iconLeft &&
-        <div className='Button__icon left'>
-          {props.iconLeft}
-        </div>
-      }
-      <div className='Button__content'>
-        {props.children}
-      </div>
-      {!!props.iconRight &&
-        <div className='Button__icon right'>
-          {props.iconRight}
-        </div>
-      }
+      {!!props.iconLeft && (
+        <div className='Button__icon left'>{props.iconLeft}</div>
+      )}
+      <div className='Button__content'>{props.children}</div>
+      {!!props.iconRight && (
+        <div className='Button__icon right'>{props.iconRight}</div>
+      )}
     </button>
-  )
-}
-
-export function Buttons(props) {
-  return (
-    <div className={classNames({
-      Buttons: true,
-      [props.className]: !!props.className,
-    })}>
-      {props.children}
-    </div>
-  )
+  );
 }
 
 Button.defaultProps = {
@@ -64,7 +46,7 @@ Button.defaultProps = {
 
 Button.propTypes = {
   size: PropTypes.oneOf(['tiny', 'small', 'medium', 'large']),
-  type: PropTypes.oneOf(['primary', 'secondary', 'positive', 'negative',]),
+  type: PropTypes.oneOf(['primary', 'secondary', 'positive', 'negative']),
   iconLeft: PropTypes.node,
   iconRight: PropTypes.node,
   style: PropTypes.object,
@@ -74,5 +56,18 @@ Button.propTypes = {
   onClick: PropTypes.func,
   children: PropTypes.node,
 };
+
+export function Buttons(props) {
+  return (
+    <div
+      className={classNames({
+        Buttons: true,
+        [props.className]: !!props.className,
+      })}
+    >
+      {props.children}
+    </div>
+  );
+}
 
 export default React.memo(Button);

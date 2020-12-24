@@ -12,13 +12,11 @@ import ReactSVG from 'react-svg';
 import { getItem } from '../../../services/storage';
 import { USER_LAST_EXPLORE_CONFIG } from '../../../config';
 
-
 class Header extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-    };
+    this.state = {};
   }
 
   render() {
@@ -50,7 +48,10 @@ class Header extends React.Component {
                 </NavLink>
               </div>
               <div className='Header__item__wrapper'>
-                <NavLink exact to={getItem(USER_LAST_EXPLORE_CONFIG) ?? screens.EXPLORE}>
+                <NavLink
+                  exact
+                  to={getItem(USER_LAST_EXPLORE_CONFIG) ?? screens.EXPLORE}
+                >
                   <div className='Header__item'>
                     <UI.Icon i='timeline' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Explore</UI.Text>
@@ -83,7 +84,7 @@ class Header extends React.Component {
                   </div>
                 </NavLink>
               </div>
-              {this.props.project.tf_enabled &&
+              {this.props.project.tf_enabled && (
                 <div className='Header__item__wrapper'>
                   <NavLink
                     to={screens.HUB_TF_SUMMARY_LIST}
@@ -100,11 +101,16 @@ class Header extends React.Component {
                     </div>
                   </NavLink>
                 </div>
-              }
+              )}
             </div>
             <div className='Header__items bottom'>
               <div className='Header__item__wrapper'>
-                <a className='link' href='https://github.com/aimhubio/aim#contents' target='_blank' rel='noreferrer noopener'>
+                <a
+                  className='link'
+                  href='https://github.com/aimhubio/aim#contents'
+                  target='_blank'
+                  rel='noreferrer noopener'
+                >
                   <div className='Header__item'>
                     <UI.Icon i='description' className='Header__item__icon' />
                     <UI.Text className='Header__item__title'>Docs</UI.Text>
@@ -115,11 +121,8 @@ class Header extends React.Component {
           </div>
         </div>
       </>
-    )
+    );
   }
 }
 
-export default withRouter(storeUtils.getWithState(
-  classes.HEADER,
-  Header
-));
+export default withRouter(storeUtils.getWithState(classes.HEADER, Header));

@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 
-
 const colors = [
   '#142447',
   '#28A745',
@@ -46,8 +45,8 @@ export default class LineChart extends React.Component {
           },
           resetZoomButton: {
             theme: {
-              display: 'none'
-            }
+              display: 'none',
+            },
           },
         },
 
@@ -100,7 +99,10 @@ export default class LineChart extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.data !== this.props.data || prevProps.dim !== this.props.dim) {
+    if (
+      prevProps.data !== this.props.data ||
+      prevProps.dim !== this.props.dim
+    ) {
       if (this.chartRef.current.chart) {
         const seriesIndex = this.props.smooth ? 1 : 0;
         while (this.chartRef.current.chart.series.length > seriesIndex) {
@@ -121,7 +123,7 @@ export default class LineChart extends React.Component {
       data = [data];
     }
 
-    const l =  this.props.dim !== -1 ? this.props.dim : 1;
+    const l = this.props.dim !== -1 ? this.props.dim : 1;
 
     for (let s = 0; s < l; s++) {
       if (!data[s]) {
@@ -129,9 +131,12 @@ export default class LineChart extends React.Component {
       }
 
       let headerPrefix = '';
-      if (typeof(this.props.header) === 'string') {
+      if (typeof this.props.header === 'string') {
         headerPrefix = `${this.props.header}: `;
-      } else if (typeof(this.props.header) === 'object' && Array.isArray(this.props.header)) {
+      } else if (
+        typeof this.props.header === 'object' &&
+        Array.isArray(this.props.header)
+      ) {
         headerPrefix = `${this.props.header[s]}: `;
       }
 
@@ -210,7 +215,10 @@ export default class LineChart extends React.Component {
       let timer = now;
 
       if (clickerState.clickedOnce) {
-        if (clickerState.timer && now - clickerState.timer < clickerState.timeBetweenClicks) {
+        if (
+          clickerState.timer &&
+          now - clickerState.timer < clickerState.timeBetweenClicks
+        ) {
           // Double clicked
           clickedOnce = false;
           timer = null;
@@ -246,7 +254,7 @@ export default class LineChart extends React.Component {
     while (i < data.length) {
       let tempValues = [];
       if (i >= range && i < data.length - range) {
-        tempValues = data.slice(i - range/2, i + range/2);
+        tempValues = data.slice(i - range / 2, i + range / 2);
       } else {
         if (i < range) {
           tempValues = data.slice(i, i + range);
@@ -256,7 +264,9 @@ export default class LineChart extends React.Component {
         }
       }
 
-      smoothData.push(tempValues.reduce((a, b) => a + b, 0) / tempValues.length);
+      smoothData.push(
+        tempValues.reduce((a, b) => a + b, 0) / tempValues.length,
+      );
 
       i++;
     }
@@ -284,10 +294,7 @@ LineChart.defaultProps = {
 
 LineChart.propTypes = {
   xAxisFormat: PropTypes.oneOf(['step']),
-  header: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.array,
-  ]),
+  header: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   data: PropTypes.array,
   dim: PropTypes.number,
   smooth: PropTypes.bool,

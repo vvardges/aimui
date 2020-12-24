@@ -1,14 +1,13 @@
 import './SidebarMenu.less';
 
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
-import HubMainScreenContext from '../../../../HubMainScreenContext/HubMainScreenContext';
+import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 function SidebarMenu(props) {
-  let {
-    resetControls, areControlsChanged,
-  } = useContext(HubMainScreenContext);
+  let { areControlsChanged } = HubMainScreenModel.helpers;
+  let { resetControls } = HubMainScreenModel.emitters;
 
   let [opened, setOpened] = useState(false);
 
@@ -36,7 +35,7 @@ function SidebarMenu(props) {
           className='ControlsSidebar__item__popup list ControlsSidebar__item__popup-sidebar'
           tabIndex={0}
           ref={popupRef}
-          onBlur={evt => {
+          onBlur={(evt) => {
             const currentTarget = evt.currentTarget;
             if (opened) {
               window.setTimeout(() => {
@@ -48,7 +47,9 @@ function SidebarMenu(props) {
           }}
         >
           <div className='ControlsSidebar__item__popup__header'>
-            <UI.Text overline bold>Menu</UI.Text>
+            <UI.Text overline bold>
+              Menu
+            </UI.Text>
           </div>
           <div className='ControlsSidebar__item__popup__list'>
             <div

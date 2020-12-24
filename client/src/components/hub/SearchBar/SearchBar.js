@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import UI from '../../../ui';
 import { deepEqual } from '../../../utils';
 
-
 class SearchBar extends Component {
   constructor(props) {
     super(props);
@@ -74,12 +73,12 @@ class SearchBar extends Component {
             onChange={(evt) => this.onChange(evt.target.value)}
             onKeyPress={(evt) => this.handleKeyPress(evt)}
           />
-          {!!this.state.value &&
+          {!!this.state.value && (
             <div
               className='SearchBar__search__icon clear clickable'
               onClick={() => this.onClear()}
             />
-          }
+          )}
         </div>
       </div>
     );
@@ -101,4 +100,4 @@ SearchBar.propTypes = {
   onSubmit: PropTypes.func,
 };
 
-export default SearchBar
+export default SearchBar;

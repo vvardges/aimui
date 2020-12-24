@@ -12,17 +12,26 @@
   --button-md: calc(var(--button-size));
   --button-lg: calc(var(--button-size) + 0.15em);
 
-  --primary-gradient: linear-gradient(180deg, var(--primary) 0%,
-                                              var(--primary-dark) 75%,
-                                              var(--primary-darker) 90%);
+  --primary-gradient: linear-gradient(
+    180deg,
+    var(--primary) 0%,
+    var(--primary-dark) 75%,
+    var(--primary-darker) 90%
+  );
 
-  --positive-gradient: linear-gradient(180deg, var(--positive) 0%,
-                                              var(--positive-dark) 45%,
-                                              var(--positive-darker) 90%);
+  --positive-gradient: linear-gradient(
+    180deg,
+    var(--positive) 0%,
+    var(--positive-dark) 45%,
+    var(--positive-darker) 90%
+  );
 
-  --negative-gradient: linear-gradient(180deg, var(--negative) 0%,
-                                              var(--negative-dark) 55%,
-                                              var(--negative-darker) 90%);
+  --negative-gradient: linear-gradient(
+    180deg,
+    var(--negative) 0%,
+    var(--negative-dark) 55%,
+    var(--negative-darker) 90%
+  );
 }
 
 .Button {
@@ -45,9 +54,7 @@
   border: 1px solid transparent;
   border-radius: calc(var(--border-radius));
   letter-spacing: var(--text-letter-spacing);
-  transition: background 100ms linear,
-              color 100ms linear,
-              border 100ms linear;
+  transition: background 100ms linear, color 100ms linear, border 100ms linear;
 
   /* Coloring */
   &.primary {
@@ -57,11 +64,17 @@
     &.no_gradient {
       background: var(--primary);
 
-      &.no_gradient:hover { background: var(--primary-dark); }
-      &.no_gradient:active { background: var(--primary-darker); }
+      &.no_gradient:hover {
+        background: var(--primary-dark);
+      }
+      &.no_gradient:active {
+        background: var(--primary-darker);
+      }
     }
 
-    &.gradient { background: var(--primary-gradient); }
+    &.gradient {
+      background: var(--primary-gradient);
+    }
   }
 
   &.positive {
@@ -72,11 +85,17 @@
     &.no_gradient {
       background: var(--positive);
 
-      &.no_gradient:hover { background: var(--positive-dark); }
-      &.no_gradient:active { background: var(--positive-darker); }
+      &.no_gradient:hover {
+        background: var(--positive-dark);
+      }
+      &.no_gradient:active {
+        background: var(--positive-darker);
+      }
     }
 
-    &.gradient { background: var(--positive-gradient); }
+    &.gradient {
+      background: var(--positive-gradient);
+    }
   }
 
   &.negative {
@@ -86,11 +105,17 @@
     &.no_gradient {
       background: var(--negative);
 
-      &.no_gradient:hover { background: var(--negative-dark); }
-      &.no_gradient:active { background: var(--negative-darker); }
+      &.no_gradient:hover {
+        background: var(--negative-dark);
+      }
+      &.no_gradient:active {
+        background: var(--negative-darker);
+      }
     }
 
-    &.gradient { background: var(--negative-gradient); }
+    &.gradient {
+      background: var(--negative-gradient);
+    }
   }
 
   &.secondary {
@@ -109,16 +134,23 @@
     }
   }
 
-  &.primary.gradient, &.positive.gradient, &.negative.gradient {
+  &.primary.gradient,
+  &.positive.gradient,
+  &.negative.gradient {
     background-repeat: no-repeat;
     background-size: 100% 300%;
     background-position: 0 0;
 
-    &:hover { background-position: 0 calc(100% / 3); }
-    &:active { background-position: 0 calc(100% / 3 * 2); }
+    &:hover {
+      background-position: 0 calc(100% / 3);
+    }
+    &:active {
+      background-position: 0 calc(100% / 3 * 2);
+    }
   }
 
-  &.ghost.gradient, &.ghost.no_gradient {
+  &.ghost.gradient,
+  &.ghost.no_gradient {
     background: var(--white);
     text-shadow: unset;
 

@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-
 function Tab(props) {
   const className = classNames({
     Tab: true,
@@ -17,7 +16,7 @@ function Tab(props) {
     <div className={className} onClick={props.onClick}>
       {props.children}
     </div>
-  )
+  );
 }
 
 Tab.defaultProps = {

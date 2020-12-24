@@ -44,7 +44,10 @@ function Popover(props) {
       timerRef.current = setInterval(() => {
         if (containerRef.current && popupRef.current) {
           let containerRect = containerRef.current.getBoundingClientRect();
-          if (Math.abs(containerRectRef.current.x - containerRect.x) > offset || Math.abs(containerRectRef.current.y - containerRect.y) > offset) {
+          if (
+            Math.abs(containerRectRef.current.x - containerRect.x) > offset ||
+            Math.abs(containerRectRef.current.y - containerRect.y) > offset
+          ) {
             setOpened(false);
           } else {
             calculatePosition();
@@ -60,7 +63,7 @@ function Popover(props) {
   function calculatePosition() {
     let positions = {
       top: null,
-      left: null
+      left: null,
     };
     let containerRect = containerRef.current.getBoundingClientRect();
     let popupRect = popupRef.current.getBoundingClientRect();
@@ -69,21 +72,24 @@ function Popover(props) {
       containerRectRef.current = containerRect;
     }
 
-    if ((containerRect.y + containerRect.height + margin + popupRect.height) >= window.innerHeight) {
+    if (
+      containerRect.y + containerRect.height + margin + popupRect.height >=
+      window.innerHeight
+    ) {
       positions.top = containerRect.top - popupRect.height - margin;
     } else {
       positions.top = containerRect.bottom + margin;
     }
 
-    if ((containerRect.x - popupRect.width + containerRect.width) <= 10) {
+    if (containerRect.x - popupRect.width + containerRect.width <= 10) {
       positions.left = margin;
     } else {
       positions.left = containerRect.x - popupRect.width + containerRect.width;
     }
 
-    setPosition(p => ({
+    setPosition((p) => ({
       ...p,
-      ...positions
+      ...positions,
     }));
   }
 
@@ -94,36 +100,44 @@ function Popover(props) {
           ref={containerRef}
           className={classNames({
             Popover__target: true,
-            [typeof props.targetClassName === 'function' ? props.targetClassName(opened) : props.targetClassName]: !!props.targetClassName
+            [typeof props.targetClassName === 'function'
+              ? props.targetClassName(opened)
+              : props.targetClassName]: !!props.targetClassName,
           })}
-          onClick={evt => setOpened(!opened)}
+          onClick={(evt) => setOpened(!opened)}
         >
-          {typeof props.target === 'function' ? props.target(opened) : props.target}
+          {typeof props.target === 'function'
+            ? props.target(opened)
+            : props.target}
         </div>
       </UI.Tooltip>
-      {opened && ReactDOM.createPortal((
-        <div
-          className={classNames({
-            Popover__body: true,
-            [props.popupClassName]: !!props.popupClassName
-          })}
-          tabIndex={0}
-          ref={popupRef}
-          style={position}
-          onBlur={evt => {
-            const currentTarget = evt.currentTarget;
-            if (opened) {
-              window.setTimeout(() => {
-                if (!currentTarget.contains(document.activeElement)) {
-                  setOpened(false);
-                }
-              }, 200);
-            }
-          }}
-        >
-          {typeof props.content === 'function' ? props.content(opened, setOpened) : props.content}
-        </div>
-      ), portalRef.current)}
+      {opened &&
+        ReactDOM.createPortal(
+          <div
+            className={classNames({
+              Popover__body: true,
+              [props.popupClassName]: !!props.popupClassName,
+            })}
+            tabIndex={0}
+            ref={popupRef}
+            style={position}
+            onBlur={(evt) => {
+              const currentTarget = evt.currentTarget;
+              if (opened) {
+                window.setTimeout(() => {
+                  if (!currentTarget.contains(document.activeElement)) {
+                    setOpened(false);
+                  }
+                }, 200);
+              }
+            }}
+          >
+            {typeof props.content === 'function'
+              ? props.content(opened, setOpened)
+              : props.content}
+          </div>,
+          portalRef.current,
+        )}
     </>
   );
 }

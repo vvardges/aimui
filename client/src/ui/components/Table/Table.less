@@ -1,17 +1,25 @@
 @import '../../../vars.less';
 
-@border-color-dark: #CCC;
-@header-cell-bg-color: #EEE;
-@cell-height: 30px;
+@border-color-dark: #ccc;
+@header-cell-bg-color: #eee;
 
 .Table__container {
   height: 100%;
   width: 100%;
-  overflow: auto;
   box-sizing: border-box;
-  border-radius: var(--border-radius);
-  border: 1px solid @border-color-dark;
-  background: #FFF;
+  background: #fff;
+
+  &.Table__container--short {
+    --cell-height: 24px;
+  }
+
+  &.Table__container--medium {
+    --cell-height: 30px;
+  }
+
+  &.Table__container--tall {
+    --cell-height: 36px;
+  }
 }
 
 .Table {
@@ -21,6 +29,7 @@
   min-width: 100%;
   min-height: 100%;
   box-sizing: border-box;
+  content-visibility: auto;
 }
 
 .Table__pane {
@@ -50,7 +59,7 @@
 .Table__column {
   display: flex;
   flex-direction: column;
-  background-color: #FFF;
+  background-color: #fff;
   z-index: 0;
   width: stretch;
   width: -webkit-fill-available;
@@ -68,14 +77,15 @@
   display: flex;
   align-items: center;
   background-color: var(--grey-bg);
-  height: @cell-height;
+  height: var(--cell-height);
+  padding-bottom: 2px;
   box-shadow: inset 0px -1px 0 0 @border-color-dark;
   box-sizing: border-box;
   z-index: 2;
 
   &.expanded {
     position: sticky;
-    top: calc(2 * @cell-height);
+    top: calc(2 * var(--cell-height));
   }
 }
 
@@ -131,7 +141,7 @@
 
   &:active {
     background-color: var(--primary);
-    color: #FFF;
+    color: #fff;
   }
 }
 
@@ -150,18 +160,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  height: @cell-height;
+  height: var(--cell-height);
 
   &.Table__group__header__cell {
     position: relative;
-    background-color: #FAFAFA;
+    background-color: #fafafa;
     border-color: @border-color-dark;
     z-index: 1;
     transition: background-color 0.2s ease-out;
 
     &.expanded {
       position: sticky;
-      top: calc(3 * @cell-height);
+      top: calc(3 * var(--cell-height));
     }
 
     &.expandable:hover {
@@ -178,7 +188,7 @@
 
 .Table__cell--header {
   position: sticky;
-  top: @cell-height;
+  top: var(--cell-height);
   flex: none;
   background-color: @header-cell-bg-color;
   padding: var(--space-xxs) var(--space-sm);
@@ -212,7 +222,7 @@
   justify-content: center;
   box-sizing: border-box;
   width: 25px;
-  height: 22px;
+  height: 21px;
   margin-left: var(--space-xxs);
   background-color: var(--primary-bg);
   border: 1px solid var(--primary-lighter);
@@ -223,7 +233,8 @@
   user-select: none;
   transition: border-color 110ms ease;
 
-  &:hover, &.active {
+  &:hover,
+  &.active {
     border-color: var(--primary-light);
   }
 
@@ -239,7 +250,7 @@
 
 .Table__group {
   margin-top: 10px;
-  background-color: #FFF;
+  background-color: #fff;
   border-top: 1px solid @border-color-dark;
 
   .Table__cell:last-of-type {

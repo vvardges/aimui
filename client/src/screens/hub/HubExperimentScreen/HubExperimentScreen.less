@@ -84,12 +84,14 @@
   padding: var(--component-spacing-sm);
   box-sizing: border-box;
   background: var(--primary-bg);
-  background: linear-gradient(90deg,
-  var(--primary-bg) 0%,
-  var(--primary-bg) 35%,
-  var(--primary-lighter) 55%,
-  var(--primary-bg) 75%,
-  var(--primary-bg) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--primary-bg) 0%,
+    var(--primary-bg) 35%,
+    var(--primary-lighter) 55%,
+    var(--primary-bg) 75%,
+    var(--primary-bg) 100%
+  );
   background-size: 300% 100%;
   background-position: 0 0;
   background-repeat: no-repeat;
@@ -246,7 +248,7 @@
   display: block;
   margin-bottom: 15px;
   font-size: 30px;
-  color: #CCC;
+  color: #ccc;
 }
 
 .ExperimentCheckpoint {
@@ -254,7 +256,8 @@
   pointer-events: none;
   transition: background-color 110ms ease;
 
-  &:active, &.active {
+  &:active,
+  &.active {
     background-color: var(--primary-bg);
   }
 }
@@ -359,7 +362,7 @@
 
 .ExperimentParams {
   .ExperimentParams__item {
-    background-color: #FFF;
+    background-color: #fff;
     color: var(--primary-darker);
 
     .ExperimentParams__item__idx {
@@ -369,7 +372,7 @@
     }
   }
 
-  .ExperimentParams__item:nth-child(2n+1) {
+  .ExperimentParams__item:nth-child(2n + 1) {
     background-color: var(--grey-bg-light);
     color: var(--grey-darker);
 

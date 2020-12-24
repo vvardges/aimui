@@ -56,24 +56,27 @@ class HubTagDetailScreen extends React.Component {
       isLoading: true,
     }));
 
-    this.props.getTag(tag_id).then((tag) => {
-      this.setState({
-        tag: tag,
-        form: {
-          name: tag.name,
-          color: tag.color,
-        },
-        actualFormValues: {
-          name: tag.name,
-          color: tag.color,
-        }
+    this.props
+      .getTag(tag_id)
+      .then((tag) => {
+        this.setState({
+          tag: tag,
+          form: {
+            name: tag.name,
+            color: tag.color,
+          },
+          actualFormValues: {
+            name: tag.name,
+            color: tag.color,
+          },
+        });
       })
-    }).finally(() => {
-      this.setState((prevState) => ({
-        ...prevState,
-        isLoading: false,
-      }));
-    });
+      .finally(() => {
+        this.setState((prevState) => ({
+          ...prevState,
+          isLoading: false,
+        }));
+      });
   };
 
   getRelatedRuns = (tag_id) => {
@@ -90,8 +93,8 @@ class HubTagDetailScreen extends React.Component {
       is_hidden,
     };
 
-    this.props.updateTag(form).then(data => {
-      this.setState(prevState => ({
+    this.props.updateTag(form).then((data) => {
+      this.setState((prevState) => ({
         ...prevState,
         tag: {
           ...prevState.tag,
@@ -105,7 +108,10 @@ class HubTagDetailScreen extends React.Component {
     const form = this.form.current.getForm();
     const { actualFormValues } = this.state;
 
-    if (form.name !== actualFormValues.name || form.color !== actualFormValues.color) {
+    if (
+      form.name !== actualFormValues.name ||
+      form.color !== actualFormValues.color
+    ) {
       this.setState({
         cancelButtonStatus: {
           disabled: false,
@@ -130,7 +136,8 @@ class HubTagDetailScreen extends React.Component {
 
     const form = this.form.current.getForm();
 
-    this.props.updateTag(form)
+    this.props
+      .updateTag(form)
       .then((data) => {
         this.setState({
           actualFormValues: {
@@ -191,9 +198,11 @@ class HubTagDetailScreen extends React.Component {
               </UI.Text>
             </div>
           ))}
-          {!this.state.relatedRuns.length &&
-            <UI.Text type='grey' spacingTop center>Empty</UI.Text>
-          }
+          {!this.state.relatedRuns.length && (
+            <UI.Text type='grey' spacingTop center>
+              Empty
+            </UI.Text>
+          )}
         </div>
       </div>
     );
@@ -202,10 +211,7 @@ class HubTagDetailScreen extends React.Component {
   _renderSettings = () => {
     return (
       <div className='HubTagDetailScreen__settings'>
-        <UI.Text
-          className='HubTagDetailScreen__form__title'
-          size={6}
-        >
+        <UI.Text className='HubTagDetailScreen__form__title' size={6}>
           Edit
         </UI.Text>
         <UI.Segment>
@@ -245,8 +251,12 @@ class HubTagDetailScreen extends React.Component {
           message='Hide this tag from the main page'
           name={this.state.tag.name}
           is_hidden={this.state.tag.is_hidden}
-          onDelete={() => this.setHiddenStatus(this.props.match.params.tag_id, true)}
-          onRevert={() => this.setHiddenStatus(this.props.match.params.tag_id, false)}
+          onDelete={() =>
+            this.setHiddenStatus(this.props.match.params.tag_id, true)
+          }
+          onRevert={() =>
+            this.setHiddenStatus(this.props.match.params.tag_id, false)
+          }
         />
       </div>
     );
@@ -263,13 +273,12 @@ class HubTagDetailScreen extends React.Component {
 
     return (
       <>
-        <UI.Text
-          size={6}
-          header
-          spacing
-        >
+        <UI.Text size={6} header spacing>
           <Link to={screens.HUB_PROJECT_TAGS}> Tags </Link>
-          <UI.Text type='grey' inline> / </UI.Text>
+          <UI.Text type='grey' inline>
+            {' '}
+            /{' '}
+          </UI.Text>
           <UI.Text color={this.state.tag.color} inline>
             {this.state.tag.name}
           </UI.Text>
@@ -309,9 +318,7 @@ class HubTagDetailScreen extends React.Component {
           <meta title='' content='' />
         </Helmet>
 
-        <UI.Container size='small'>
-          {this._renderContent()}
-        </UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }
@@ -319,5 +326,5 @@ class HubTagDetailScreen extends React.Component {
 
 export default storeUtils.getWithState(
   classes.HUB_PROJECT_EDIT_TAG,
-  HubTagDetailScreen
+  HubTagDetailScreen,
 );

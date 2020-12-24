@@ -6,10 +6,13 @@ import projectReducer from './reducers/project';
 
 let store;
 export function configureStore() {
-  store = createStore(combineReducers({
-    default: defaultReducer,
-    project: projectReducer,
-  }), applyMiddleware(thunk));
+  store = createStore(
+    combineReducers({
+      default: defaultReducer,
+      project: projectReducer,
+    }),
+    applyMiddleware(thunk),
+  );
 }
 configureStore();
 

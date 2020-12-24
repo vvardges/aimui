@@ -13,7 +13,7 @@ function ControlsSidebarYScale(props) {
     window.addEventListener('click', this.handleWindowClick);
     return () => {
       window.removeEventListener('click', this.handleWindowClick);
-    }
+    };
   }, []);
 
   handleWindowClick = () => {
@@ -36,7 +36,7 @@ function ControlsSidebarYScale(props) {
   };
 
   handleYScaleChange = (yScale) => {
-    props.setChartSettingsState({ 'yScale': yScale });
+    props.setChartSettingsState({ yScale: yScale });
   };
 
   return (
@@ -59,7 +59,9 @@ function ControlsSidebarYScale(props) {
       >
         <div className='ControlsSidebar__menu__list'>
           <div className='ControlsSidebar__menu__list__header'>
-            <UI.Text overline bold>Scale Y axis</UI.Text>
+            <UI.Text overline bold>
+              Scale Y axis
+            </UI.Text>
           </div>
           <div className='ControlsSidebar__menu__list__items'>
             <div
@@ -82,7 +84,7 @@ function ControlsSidebarYScale(props) {
 }
 
 ControlsSidebar.propTypes = {
-  setChartSettingsState: PropTypes.func
+  setChartSettingsState: PropTypes.func,
 };
 
 export default ControlsSidebarYScale;

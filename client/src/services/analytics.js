@@ -1,9 +1,8 @@
 import { isDev } from '../utils';
 import { SEGMENT_WRITE_KEY, SEGMENT_DEMO_WRITE_KEY } from '../config';
 
-
 const enabled = () => {
-  return !isDev();//!isDev() && cookies.getCookie(configs.USER_ANALYTICS_COOKIE_NAME) == 1;
+  return !isDev(); //!isDev() && cookies.getCookie(configs.USER_ANALYTICS_COOKIE_NAME) == 1;
 };
 
 const init = () => {
@@ -11,18 +10,18 @@ const init = () => {
     return;
   }
 
-  if (window.location.hostname.indexOf('aimstack.io') !== -1
-    && (
-      window.location.hostname.indexOf('demo') !== -1
-      || window.location.hostname.indexOf('play') !== -1
-    )) {
+  if (
+    window.location.hostname.indexOf('aimstack.io') !== -1 &&
+    (window.location.hostname.indexOf('demo') !== -1 ||
+      window.location.hostname.indexOf('play') !== -1)
+  ) {
     window.analytics.load(SEGMENT_DEMO_WRITE_KEY);
   } else {
     window.analytics.load(SEGMENT_WRITE_KEY);
   }
 };
 
-const pageView = (pageName, pageCat=null) => {
+const pageView = (pageName, pageCat = null) => {
   if (!enabled()) {
     return;
   }

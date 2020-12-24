@@ -1,10 +1,9 @@
 import './RangeSlider.less';
 
-import React  from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
-
 
 class RangeSlider extends React.Component {
   constructor(props) {

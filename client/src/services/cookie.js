@@ -1,8 +1,12 @@
 export function getCookie(name) {
-  var matches = document.cookie.match(new RegExp(
-    // eslint-disable-next-line
-    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-  ));
+  var matches = document.cookie.match(
+    new RegExp(
+      // eslint-disable-next-line
+      '(?:^|; )' +
+        name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
+        '=([^;]*)',
+    ),
+  );
   return matches ? decodeURIComponent(matches[1]) : undefined;
 }
 
@@ -11,7 +15,7 @@ export function setCookie(name, value, props) {
   let exp = props.expires;
   if (!!exp) {
     let d = new Date();
-    d.setTime(d.getTime() + exp*1000);
+    d.setTime(d.getTime() + exp * 1000);
     exp = props.expires = d;
   }
 

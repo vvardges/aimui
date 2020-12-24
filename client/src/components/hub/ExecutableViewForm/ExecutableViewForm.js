@@ -25,7 +25,7 @@ class ExecutableViewForm extends Component {
     this.evInputRef = React.createRef();
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.appendEV(null);
     this.appendParameters(null);
   }
@@ -47,7 +47,7 @@ class ExecutableViewForm extends Component {
         if (callback) {
           callback(e);
         }
-      }
+      },
     );
   };
 
@@ -72,10 +72,10 @@ class ExecutableViewForm extends Component {
     for (let j = 0; j < parsedInput.length; j++) {
       let elementLength = parsedInput[j].length;
       parsedInput[j] = {
-        value: parsedInput[j], 
+        value: parsedInput[j],
         start: currentStartPosition,
         end: currentStartPosition + elementLength + 1,
-        index: j
+        index: j,
       };
       currentStartPosition += elementLength + 1;
     }
@@ -94,10 +94,10 @@ class ExecutableViewForm extends Component {
     for (let j = 0; j < parsedInput.length; j++) {
       let elementLength = parsedInput[j].length;
       parsedInput[j] = {
-        value: parsedInput[j], 
+        value: parsedInput[j],
         start: currentStartPosition,
         end: currentStartPosition + elementLength + 1,
-        index: j
+        index: j,
       };
       currentStartPosition += elementLength + 1;
     }
@@ -106,13 +106,13 @@ class ExecutableViewForm extends Component {
 
   appendParameters = (e) => {
     this.setState({
-      parameterLists: this.parseParameter(this.state.parameter)
+      parameterLists: this.parseParameter(this.state.parameter),
     });
   };
 
   appendEV = (e) => {
     this.setState({
-      environmentVariableLists: this.parseEV(this.state.environmentVariable)
+      environmentVariableLists: this.parseEV(this.state.environmentVariable),
     });
   };
 
@@ -139,8 +139,8 @@ class ExecutableViewForm extends Component {
               value: tag.value,
               start: tag.start - inputTagLength,
               end: tag.end - inputTagLength,
-              index: tag.index - 1
-            }
+              index: tag.index - 1,
+            };
           } else {
             return tag;
           }
@@ -169,15 +169,15 @@ class ExecutableViewForm extends Component {
             this.removeTag(parameter, 'parameter', 'parameterLists')
           }
         >
-          <UI.Icon
-            i='delete'
-            className='ExecutableViewForm__FormGroup__icon'
-          />
+          <UI.Icon i='delete' className='ExecutableViewForm__FormGroup__icon' />
         </div>
       </UI.Label>
     ));
     const evTagsContent = this.state.environmentVariableLists.map((ev) => (
-      <UI.Label key={ev.value} onClick={() => this.selectTag(ev, this.evInputRef)}>
+      <UI.Label
+        key={ev.value}
+        onClick={() => this.selectTag(ev, this.evInputRef)}
+      >
         {ev.value}
         <div
           className='ExecutableViewForm__FormGroup__icon__wrapper'
@@ -185,14 +185,11 @@ class ExecutableViewForm extends Component {
             this.removeTag(
               ev,
               'environmentVariable',
-              'environmentVariableLists'
+              'environmentVariableLists',
             )
           }
         >
-          <UI.Icon
-            i='delete'
-            className='ExecutableViewForm__FormGroup__icon'
-          />
+          <UI.Icon i='delete' className='ExecutableViewForm__FormGroup__icon' />
         </div>
       </UI.Label>
     ));

@@ -1,12 +1,18 @@
 import Trace from './Trace';
-import { deepEqual, getObjectValueByPath, arraysIntersection, formatValue, flattenObject } from '../../../../utils';
+import {
+  deepEqual,
+  getObjectValueByPath,
+  arraysIntersection,
+  formatValue,
+  flattenObject,
+} from '../../../../utils';
 import { COLORS } from '../../../../constants/colors';
 import { STROKES } from '../../../../constants/strokes';
 import _ from 'lodash';
 import Series from './Series';
 
 export default class TraceList {
-  constructor(grouping=null) {
+  constructor(grouping = null) {
     this.traces = [];
 
     this.grouping = grouping;
@@ -19,7 +25,9 @@ export default class TraceList {
       }
      */
 
-    this.groupingFields = Object.values(this.grouping).flat().filter((v, i , self) => self.indexOf(v) === i);
+    this.groupingFields = Object.values(this.grouping)
+      .flat()
+      .filter((v, i, self) => self.indexOf(v) === i);
 
     this.groupingConfigMap = {
       colors: [],
@@ -115,7 +123,11 @@ export default class TraceList {
       return metric !== null ? metric.name : undefined;
     } else if (paramName.startsWith('context.')) {
       const contextKey = paramName.substring(8);
-      return trace !== null && !!trace.context && Object.keys(trace.context).indexOf(contextKey) !== -1 ? trace.context[contextKey] : undefined;
+      return trace !== null &&
+        !!trace.context &&
+        Object.keys(trace.context).indexOf(contextKey) !== -1
+        ? trace.context[contextKey]
+        : undefined;
     } else if (paramName.startsWith('params.')) {
       try {
         return getObjectValueByPath(run.params, paramName.substring(7));
@@ -131,9 +143,9 @@ export default class TraceList {
     }
   };
 
-  addSeries = (run, metric = null, trace = null) => {
+  addSeries = (run, metric = null, trace = null, aggregate = false) => {
     let subGroup = this.groups;
-    this.groupingFields.forEach(g => {
+    this.groupingFields.forEach((g) => {
       const groupVal = this.getRunParam(g, run, metric, trace);
 
       if (Object.keys(subGroup).indexOf(g) === -1) {
@@ -154,12 +166,12 @@ export default class TraceList {
           value: groupVal,
           group: {},
         });
-        subGroup = subGroup[g][subGroup[g].length-1].group;
+        subGroup = subGroup[g][subGroup[g].length - 1].group;
       }
     });
 
     const traceModelConfig = {};
-    this.groupingFields.forEach(g => {
+    this.groupingFields.forEach((g) => {
       traceModelConfig[g] = this.getRunParam(g, run, metric, trace);
     });
 
@@ -178,19 +190,24 @@ export default class TraceList {
     // Apply coloring
     if ('color' in this.grouping) {
       let color = null;
-      const modelColorConfigKeys = arraysIntersection(Object.keys(traceModelConfig), this.grouping.color);
+      const modelColorConfigKeys = arraysIntersection(
+        Object.keys(traceModelConfig),
+        this.grouping.color,
+      );
       const modelColorConfig = {};
-      modelColorConfigKeys.forEach(k => {
+      modelColorConfigKeys.forEach((k) => {
         modelColorConfig[k] = traceModelConfig[k];
       });
-      this.groupingConfigMap.colors.forEach(colorGroup => {
+      this.groupingConfigMap.colors.forEach((colorGroup) => {
         if (color === null && deepEqual(colorGroup.config, modelColorConfig)) {
           color = colorGroup.value;
         }
       });
       if (color === null) {
         // Get new color
-        const groupsCount = this.groupingConfigMap.colors.map(colorGroup => colorGroup.value)?.length;
+        const groupsCount = this.groupingConfigMap.colors.map(
+          (colorGroup) => colorGroup.value,
+        )?.length;
         color = COLORS[groupsCount % COLORS.length];
         this.groupingConfigMap.colors.push({
           config: modelColorConfig,
@@ -203,19 +220,24 @@ export default class TraceList {
     // Apply stroke styling
     if ('stroke' in this.grouping) {
       let stroke = null;
-      const modelStrokeConfigKeys = arraysIntersection(Object.keys(traceModelConfig), this.grouping.stroke);
+      const modelStrokeConfigKeys = arraysIntersection(
+        Object.keys(traceModelConfig),
+        this.grouping.stroke,
+      );
       const modelStrokeConfig = {};
-      modelStrokeConfigKeys.forEach(k => {
+      modelStrokeConfigKeys.forEach((k) => {
         modelStrokeConfig[k] = traceModelConfig[k];
       });
-      this.groupingConfigMap.strokes.forEach(strGroup => {
+      this.groupingConfigMap.strokes.forEach((strGroup) => {
         if (stroke === null && deepEqual(strGroup.config, modelStrokeConfig)) {
           stroke = strGroup.value;
         }
       });
       if (stroke === null) {
         // Get new stroke style
-        const groupsCount = this.groupingConfigMap.strokes.map(strGroup => strGroup.value)?.length;
+        const groupsCount = this.groupingConfigMap.strokes.map(
+          (strGroup) => strGroup.value,
+        )?.length;
         stroke = STROKES[groupsCount % STROKES.length];
         this.groupingConfigMap.strokes.push({
           config: modelStrokeConfig,
@@ -229,19 +251,26 @@ export default class TraceList {
     if ('chart' in this.grouping) {
       // FIXME: Remove code/logic duplication -> one function to handle color, stroke styling and chart division
       let chart = null;
-      const modelChartConfigKeys = arraysIntersection(Object.keys(traceModelConfig), this.grouping.chart);
+      const modelChartConfigKeys = arraysIntersection(
+        Object.keys(traceModelConfig),
+        this.grouping.chart,
+      );
       const modelChartConfig = {};
-      modelChartConfigKeys.forEach(k => {
+      modelChartConfigKeys.forEach((k) => {
         modelChartConfig[k] = traceModelConfig[k];
       });
-      this.groupingConfigMap.charts.forEach(chartGroup => {
+      this.groupingConfigMap.charts.forEach((chartGroup) => {
         if (chart === null && deepEqual(chartGroup.config, modelChartConfig)) {
           chart = chartGroup.value;
         }
       });
       if (chart === null) {
-        chart = this.groupingConfigMap.charts.length ?
-          Math.max(...this.groupingConfigMap.charts.map(chartGroup => chartGroup.value)) + 1
+        chart = this.groupingConfigMap.charts.length
+          ? Math.max(
+            ...this.groupingConfigMap.charts.map(
+              (chartGroup) => chartGroup.value,
+            ),
+          ) + 1
           : 0;
         this.groupingConfigMap.charts.push({
           config: modelChartConfig,
@@ -253,7 +282,7 @@ export default class TraceList {
 
     // Add series to trace
     const seriesModel = new Series(run, metric, trace);
-    traceModel.addSeries(seriesModel);
+    traceModel.addSeries(seriesModel, aggregate);
   };
 
   getChartsNumber = () => {

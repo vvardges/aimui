@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import Select from 'react-select';
 import { classNames } from '../../utils';
 
-
 class Dropdown extends React.Component {
   constructor(props) {
     super(props);
@@ -17,33 +16,25 @@ class Dropdown extends React.Component {
       option: (provided, state) => ({
         ...provided,
         color: state.isSelected ? '#FFF' : '#000',
-        backgroundColor: (
-          state.isSelected
-            ? '#395CA8'
-            : state.isFocused
-              ? '#EEE'
-              : null
-        ),
+        backgroundColor: state.isSelected
+          ? '#395CA8'
+          : state.isFocused
+            ? '#EEE'
+            : null,
         cursor: 'pointer',
         fontSize: '14px',
         ':active': {
           ...provided[':active'],
-          backgroundColor: (
-            state.isSelected
-              ? '#395CA8'
-              : '#DDD'
-          ),
+          backgroundColor: state.isSelected ? '#395CA8' : '#DDD',
         },
       }),
       container: (provided, state) => ({
         ...provided,
-        width: (
-          this.props.width
-            ? `${this.props.width}px`
-            : this.props.inline
-              ? '300px'
-              : '100%'
-        ),
+        width: this.props.width
+          ? `${this.props.width}px`
+          : this.props.inline
+            ? '300px'
+            : '100%',
       }),
     };
 
@@ -57,7 +48,7 @@ class Dropdown extends React.Component {
     if (this.props.isOpen) {
       props.menuIsOpen = true;
     }
-    
+
     return (
       <Select
         defaultValue={this.props.defaultValue}
@@ -71,7 +62,7 @@ class Dropdown extends React.Component {
         ref={this.selectRef}
         {...props}
       />
-    )
+    );
   }
 }
 
@@ -87,7 +78,7 @@ Dropdown.propTypes = {
   isOpen: PropTypes.bool,
   multi: PropTypes.bool,
   options: PropTypes.array,
-  defaultValue: PropTypes.object,
+  defaultValue: PropTypes.any,
   inline: PropTypes.bool,
   right: PropTypes.bool,
   width: PropTypes.number,

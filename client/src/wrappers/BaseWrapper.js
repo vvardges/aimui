@@ -3,9 +3,7 @@ import * as storeUtils from '../storeUtils';
 import * as classes from '../constants/classes';
 
 class BaseWrapper extends React.Component {
-  componentWillMount() {
-    this.loadBarFocus = true;
-  }
+  loadBarFocus = true;
 
   componentDidMount() {
     window.scrollTo(0, 0);
@@ -16,16 +14,8 @@ class BaseWrapper extends React.Component {
   }
 
   render() {
-    return (
-      <>
-        {this.props.children}
-      </>
-    )
+    return <>{this.props.children}</>;
   }
 }
 
-
-export default storeUtils.getWithState(
-  classes.BASE_WRAPPER,
-  BaseWrapper
-);
+export default storeUtils.getWithState(classes.BASE_WRAPPER, BaseWrapper);

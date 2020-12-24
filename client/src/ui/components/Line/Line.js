@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-
 function Line({ size, spacing, color }) {
   const className = classNames({
     Line: true,
@@ -14,9 +13,7 @@ function Line({ size, spacing, color }) {
     [color]: true,
   });
 
-  return (
-    <div className={className} />
-  )
+  return <div className={className} />;
 }
 
 Line.defaultProps = {

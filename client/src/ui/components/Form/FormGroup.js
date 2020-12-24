@@ -5,20 +5,14 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-
 function FormGroup({ children }) {
   const className = classNames({
     FormGroup: true,
   });
 
-  return (
-    <div className={className}>
-      {children}
-    </div>
-  )
+  return <div className={className}>{children}</div>;
 }
 
-FormGroup.propTypes = {
-};
+FormGroup.propTypes = {};
 
 export default React.memo(FormGroup);

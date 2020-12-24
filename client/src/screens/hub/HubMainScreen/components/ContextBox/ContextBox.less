@@ -1,11 +1,13 @@
 .ContextBox {
   width: 100%;
   height: 100%;
-  box-sizing: border-box;
   overflow: hidden;
-  background-color: #FFF;
   margin-left: auto;
-  border-radius: var(--border-radius);
+  box-sizing: border-box;
+
+  &.spacing {
+    padding-top: 5px;
+  }
 }
 
 .ContextBox__loader__wrapper,
@@ -18,20 +20,16 @@
   border-radius: var(--border-radius);
   overflow: hidden;
   box-sizing: border-box;
-}
-
-.ContextBox__resizing {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  background-color: var(--primary-bg);
-  user-select: none;
+  background-color: #fff;
 }
 
 .ContextBox__content {
   width: 100%;
   height: 100%;
   overflow: auto;
+  background-color: #fff;
+  box-sizing: border-box;
+  border-radius: var(--border-radius);
 
   &.resizing * {
     user-select: none;
@@ -81,7 +79,9 @@
 
 .ContextBox__table__item__name {
   color: inherit;
-  &:hover, &:active, &:visited {
+  &:hover,
+  &:active,
+  &:visited {
     color: inherit;
   }
 }
@@ -109,7 +109,7 @@
 
 .ContextBox__table__group-indicator__stroke {
   display: block;
-  background-color: #FFF;
+  background-color: #fff;
   width: 1.8rem;
   height: 0.85rem;
   margin-left: var(--space-xxs);
@@ -144,7 +144,7 @@
 }
 
 .ContextBox__table__item-aggregated_label {
-  color: #FFF;
+  color: #fff;
   text-shadow: none;
   margin-right: var(--space-xxs);
 

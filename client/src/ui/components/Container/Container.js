@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
 
-
 class Container extends React.Component {
   constructor(props) {
     super(props);
@@ -23,7 +22,7 @@ class Container extends React.Component {
       <div className={className} ref={this.containerRef}>
         {this.props.children}
       </div>
-    )
+    );
   }
 }
 

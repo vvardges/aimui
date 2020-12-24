@@ -11,7 +11,6 @@ import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper'
 import * as storeUtils from '../../../storeUtils';
 import { Link } from 'react-router-dom';
 
-
 class HubTagCreateScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -37,7 +36,8 @@ class HubTagCreateScreen extends React.Component {
 
     const form = this.form.current.getForm();
 
-    this.props.postNewTag(form)
+    this.props
+      .postNewTag(form)
       .then((data) => {
         this.setState((prevState) => ({
           ...prevState,
@@ -62,9 +62,7 @@ class HubTagCreateScreen extends React.Component {
         <UI.Text size={6} header divided>
           Create New Tag
         </UI.Text>
-        <TagSettingForm
-          ref={this.form}
-        />
+        <TagSettingForm ref={this.form} />
         <UI.Line />
         <UI.Buttons>
           <UI.Button
@@ -84,14 +82,12 @@ class HubTagCreateScreen extends React.Component {
 
   render() {
     if (this.state.shouldRedirect) {
-      return <Redirect to={screens.HUB_PROJECT_TAGS} push />
+      return <Redirect to={screens.HUB_PROJECT_TAGS} push />;
     }
 
     return (
       <ProjectWrapper>
-        <UI.Container size='small'>
-          {this._renderContent()}
-        </UI.Container>
+        <UI.Container size='small'>{this._renderContent()}</UI.Container>
       </ProjectWrapper>
     );
   }
@@ -99,5 +95,5 @@ class HubTagCreateScreen extends React.Component {
 
 export default storeUtils.getWithState(
   classes.HUB_PROJECT_CREATE_TAG,
-  HubTagCreateScreen
+  HubTagCreateScreen,
 );

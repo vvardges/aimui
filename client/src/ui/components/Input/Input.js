@@ -1,6 +1,6 @@
 import './Input.less';
 
-import React  from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import { classNames } from '../../utils';
@@ -10,7 +10,7 @@ class Input extends React.Component {
     super(props);
 
     this.state = {
-      indicatorWidth: 0
+      indicatorWidth: 0,
     };
 
     this.inputRef = React.createRef();
@@ -52,26 +52,30 @@ class Input extends React.Component {
       tabIndex: `${this.props.tabIndex}`,
       ref: this.inputRef,
       style: {
-        paddingRight: 16 + this.state.indicatorWidth
-      }
+        paddingRight: 16 + this.state.indicatorWidth,
+      },
     };
 
     let cont;
     if (this.props.multiLine) {
-      cont = <textarea
-        id={this.props.id}
-        ref={this.props.reference ? this.props.reference : 'input'}
-        {...params}
-        value={this.props.value}
-      />;
+      cont = (
+        <textarea
+          id={this.props.id}
+          ref={this.props.reference ? this.props.reference : 'input'}
+          {...params}
+          value={this.props.value}
+        />
+      );
     } else {
-      cont = <input
-        id={this.props.id}
-        ref= {this.props.reference ? this.props.reference : 'input'}
-        {...params}
-        value={this.props.value}
-        disabled={this.props.disabled}
-      />;
+      cont = (
+        <input
+          id={this.props.id}
+          ref={this.props.reference ? this.props.reference : 'input'}
+          {...params}
+          value={this.props.value}
+          disabled={this.props.disabled}
+        />
+      );
     }
 
     return (
@@ -80,14 +84,23 @@ class Input extends React.Component {
 
         {cont}
 
-        {this.props.indicator && <div className='Input__indicator' ref={(ref) => !this.state.indicatorWidth &&
-          this.setState({ indicatorWidth: (ref || 0) })}>{this.props.indicator}</div>}
+        {this.props.indicator && (
+          <div
+            className='Input__indicator'
+            ref={(ref) =>
+              !this.state.indicatorWidth &&
+              this.setState({ indicatorWidth: ref || 0 })
+            }
+          >
+            {this.props.indicator}
+          </div>
+        )}
 
-        {this.props.errorLabel &&
+        {this.props.errorLabel && (
           <div className='Input__error_label'>{this.props.errorLabel}</div>
-        }
+        )}
       </div>
-    )
+    );
   }
 
   _onChange = (e) => {
