@@ -171,21 +171,22 @@ function HubMainScreen(props) {
         return;
       }
 
-      setContextFilter(state.contextFilter, null, false);
+      setContextFilter(state.contextFilter, null, false, true);
       if (!deepEqual(state.search, HubMainScreenModel.getState().search)) {
         setSearchState(
           state.search,
           () => {
             searchByQuery(false).then(() => {
-              setChartFocusedState(state.chart.focused, null);
-              setChartSettingsState(state.chart.settings, null);
+              setChartFocusedState(state.chart.focused, null, true);
+              setChartSettingsState(state.chart.settings, null, true);
             });
           },
           false,
+          true,
         );
       } else {
-        setChartFocusedState(state.chart.focused, null);
-        setChartSettingsState(state.chart.settings, null);
+        setChartFocusedState(state.chart.focused, null, true);
+        setChartSettingsState(state.chart.settings, null, true);
       }
     } else {
       let setSearchQuery = getItem(USER_LAST_SEARCH_QUERY);
@@ -201,12 +202,13 @@ function HubMainScreen(props) {
             searchByQuery().then(() => {});
           },
           false,
+          true,
         );
       }
     }
   }
 
-  function updateURL(replace = false) {
+  function updateURL({ replaceUrl }) {
     if (!isURLStateOutdated(window.location.search)) {
       return;
     }
@@ -232,7 +234,7 @@ function HubMainScreen(props) {
     const URL = stateToURL(state);
     setItem(USER_LAST_EXPLORE_CONFIG, URL);
     if (window.location.pathname + window.location.search !== URL) {
-      if (replace) {
+      if (replaceUrl) {
         props.history.replace(URL);
         console.log(`Replace: URL(${URL})`);
       } else {

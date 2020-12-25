@@ -44,7 +44,11 @@ function ContextBox(props) {
     HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
   ]);
 
-  let { setChartFocusedState, setContextFilter } = HubMainScreenModel.emitters;
+  let {
+    setChartFocusedState,
+    setChartFocusedActiveState,
+    setContextFilter,
+  } = HubMainScreenModel.emitters;
 
   let {
     getTraceData,
@@ -108,7 +112,7 @@ function ContextBox(props) {
         focusedCircle.metricName === metricName &&
         focusedCircle.traceContext === traceContext)
     ) {
-      setChartFocusedState({
+      setChartFocusedActiveState({
         step: step || 0,
         circle: {
           active: false,
@@ -122,7 +126,7 @@ function ContextBox(props) {
     }
 
     if (isExploreParamsModeEnabled()) {
-      setChartFocusedState({
+      setChartFocusedActiveState({
         step: step,
         circle: {
           active: true,
@@ -149,7 +153,7 @@ function ContextBox(props) {
         step = line.data[line.data.length - 1][1];
       }
 
-      setChartFocusedState({
+      setChartFocusedActiveState({
         step: step,
         circle: {
           active: true,
