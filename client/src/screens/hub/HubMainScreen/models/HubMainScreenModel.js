@@ -159,7 +159,7 @@ function subscribe(event, fn) {
 }
 
 function emit(event, data) {
-  setState(data);
+  setState(_.omit(data, 'replaceUrl'));
   (subscriptions[event] || []).forEach((fn) => fn(data));
 }
 
@@ -228,7 +228,11 @@ function setTraceList() {
   });
 }
 
-function setChartSettingsState(settingsState, callback = null) {
+function setChartSettingsState(
+  settingsState,
+  callback = null,
+  replaceUrl = false,
+) {
   emit(events.SET_CHART_SETTINGS_STATE, {
     chart: {
       ...getState().chart,
@@ -237,13 +241,18 @@ function setChartSettingsState(settingsState, callback = null) {
         ...settingsState,
       },
     },
+    replaceUrl,
   });
   if (callback !== null) {
     callback();
   }
 }
 
-function setChartFocusedState(focusedState, callback = null) {
+function setChartFocusedState(
+  focusedState,
+  callback = null,
+  replaceUrl = false,
+) {
   emit(events.SET_CHART_FOCUSED_STATE, {
     chart: {
       ...getState().chart,
@@ -252,6 +261,7 @@ function setChartFocusedState(focusedState, callback = null) {
         ...focusedState,
       },
     },
+    replaceUrl,
   });
   if (callback !== null) {
     callback();
@@ -273,13 +283,22 @@ function setChartFocusedActiveState(focusedState, callback = null) {
   }
 }
 
-function setContextFilter(contextFilterUpdate, callback = null, resetZoom) {
+function setContextFilter(
+  contextFilterUpdate,
+  callback = null,
+  resetZoom,
+  replaceUrl = false,
+) {
   let stateUpdate = {
     contextFilter: {
       ...getState().contextFilter,
       ...contextFilterUpdate,
     },
   };
+
+  if (replaceUrl) {
+    stateUpdate.replaceUrl = true;
+  }
 
   if (
     stateUpdate.contextFilter.aggregated &&
@@ -333,7 +352,12 @@ function resetControls() {
   removeItem(USER_LAST_EXPLORE_CONFIG);
 }
 
-function setSearchState(searchState, callback = null, resetZoom = true) {
+function setSearchState(
+  searchState,
+  callback = null,
+  resetZoom = true,
+  replaceUrl = false,
+) {
   const searchQuery = searchState.query || getState().searchInput?.value;
 
   let selectInput = '';
@@ -374,6 +398,7 @@ function setSearchState(searchState, callback = null, resetZoom = true) {
         },
       },
     }),
+    replaceUrl,
   });
   if (callback !== null) {
     callback();
@@ -420,7 +445,7 @@ function getAllParamsPaths(deep = true) {
     trace.series.forEach((series) => {
       Object.keys(series?.run.params).forEach((paramKey) => {
         if (paramKey === '__METRICS__') {
-          return
+          return;
         }
 
         if (!paramPaths.hasOwnProperty(paramKey)) {
@@ -428,7 +453,9 @@ function getAllParamsPaths(deep = true) {
         }
 
         if (deep) {
-          paramPaths[paramKey].push(...Object.keys(flattenObject(series?.run.params[paramKey])));
+          paramPaths[paramKey].push(
+            ...Object.keys(flattenObject(series?.run.params[paramKey])),
+          );
           paramPaths[paramKey] = _.uniq(paramPaths[paramKey]).sort();
         } else {
           Object.keys(series?.run.params[paramKey]).forEach((key) => {

@@ -129,7 +129,12 @@ function SelectInput(props) {
     return selectAttrs;
   }
 
-  function selectAttribute(attrName, replace = false, cb = null, addTrailingComma = false) {
+  function selectAttribute(
+    attrName,
+    replace = false,
+    cb = null,
+    addTrailingComma = false,
+  ) {
     replace = replace && !searchInput.selectInput.trim().endsWith(',');
 
     let selectedAttrs = getSelectedAttrs();
@@ -221,7 +226,12 @@ function SelectInput(props) {
                 })}
                 key={`${metric}`}
                 onClick={(evt) =>
-                  selectAttribute(metric, replaceOnClick, itemOnClickCB, addTrailingComma)
+                  selectAttribute(
+                    metric,
+                    replaceOnClick,
+                    itemOnClickCB,
+                    addTrailingComma,
+                  )
                 }
               >
                 <div className='SelectInput__dropdown__group__item__icon__wrapper metric'>
@@ -276,7 +286,14 @@ function SelectInput(props) {
           selected: selectedAttrs.indexOf(param) !== -1,
         })}
         key={param}
-        onClick={(evt) => selectAttribute(param, replaceOnClick, itemOnClickCB, addTrailingComma)}
+        onClick={(evt) =>
+          selectAttribute(
+            param,
+            replaceOnClick,
+            itemOnClickCB,
+            addTrailingComma,
+          )
+        }
       >
         <div className='SelectInput__dropdown__group__item__icon__wrapper param'>
           {selectedAttrs.indexOf(param) !== -1 ? (
@@ -381,11 +398,17 @@ function SelectInput(props) {
 
     const metrics = [];
     props.project?.metrics?.map(
-      (m) => m.startsWith(suggestionsPrefix) && selectedFields.indexOf(m) === -1 && metrics.push(m),
+      (m) =>
+        m.startsWith(suggestionsPrefix) &&
+        selectedFields.indexOf(m) === -1 &&
+        metrics.push(m),
     );
 
     const params = _.cloneDeep(props.project?.params) ?? {};
-    excludeObjectPaths(params, selectedFields.map(i => i.split('.')));
+    excludeObjectPaths(
+      params,
+      selectedFields.map((i) => i.split('.')),
+    );
     searchNestedObject(params, suggestionsPrefix.split('.'));
     removeObjectEmptyKeys(params);
 
@@ -408,7 +431,8 @@ function SelectInput(props) {
         {!!metrics?.length && !!params && Object.keys(params).length > 0 && (
           <div className='SelectInput__dropdown__divider' />
         )}
-        {!!params && _renderParams(params, [], true, resetSuggestionsPrefix, true)}
+        {!!params &&
+          _renderParams(params, [], true, resetSuggestionsPrefix, true)}
       </div>
     );
   }

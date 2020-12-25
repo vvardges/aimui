@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
 import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
+import { setItem } from '../../../../../../../services/storage';
+import { EXPLORE_METRIC_HIGHLIGHT_MODE } from '../../../../../../../config';
 
 function ControlsSidebarHighlightMode(props) {
   let [opened, setOpened] = useState(false);
@@ -17,6 +19,7 @@ function ControlsSidebarHighlightMode(props) {
       ...props.settings,
       highlightMode: mode,
     });
+    setItem(EXPLORE_METRIC_HIGHLIGHT_MODE, mode);
     setOpened(false);
   }
 

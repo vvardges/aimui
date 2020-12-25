@@ -102,17 +102,6 @@ function PanelChart(props) {
   });
 
   let {
-    contextFilter,
-    traceList,
-    chart,
-  } = HubMainScreenModel.useHubMainScreenState([
-    HubMainScreenModel.events.SET_TRACE_LIST,
-    HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
-    HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
-    HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
-  ]);
-
-  let {
     setChartFocusedState,
     setChartFocusedActiveState,
     setChartSettingsState,
@@ -177,6 +166,7 @@ function PanelChart(props) {
   }
 
   function drawData() {
+    const { contextFilter } = HubMainScreenModel.getState();
     if (contextFilter.aggregated) {
       drawAggregatedLines();
     } else {
@@ -186,6 +176,7 @@ function PanelChart(props) {
   }
 
   function drawArea() {
+    const { traceList, chart } = HubMainScreenModel.getState();
     const parent = d3.select(parentRef.current);
     const visArea = d3.select(visRef.current);
     const parentRect = parent.node().getBoundingClientRect();
@@ -193,8 +184,8 @@ function PanelChart(props) {
     const parentHeight = parentRect.height;
 
     const { margin } = visBox.current;
-    const width = props.width ? props.width : parentWidth;
-    const height = props.height ? props.height : parentHeight;
+    const width = parentWidth;
+    const height = parentHeight;
 
     visBox.current = {
       ...visBox.current,
@@ -301,6 +292,7 @@ function PanelChart(props) {
   }
 
   function drawAxes() {
+    const { traceList, chart } = HubMainScreenModel.getState();
     const { width, height, margin } = visBox.current;
 
     let xNum = 0,
@@ -423,6 +415,7 @@ function PanelChart(props) {
   }
 
   function drawLines() {
+    const { traceList, chart } = HubMainScreenModel.getState();
     const highlightMode = chart.settings.highlightMode;
 
     const focusedMetric = chart.focused.metric;
@@ -493,6 +486,7 @@ function PanelChart(props) {
   }
 
   function drawAggregatedLines() {
+    const { traceList, chart } = HubMainScreenModel.getState();
     const focusedMetric = chart.focused.metric;
     const focusedCircle = chart.focused.circle;
     const focusedLineAttr =
@@ -596,6 +590,7 @@ function PanelChart(props) {
   }
 
   function drawHoverAttributes() {
+    const { chart, traceList, contextFilter } = HubMainScreenModel.getState();
     const focused = chart.focused;
     if (focused.circle.runHash === null || focused.circle.active === false) {
       hideActionPopUps(false);
@@ -831,6 +826,7 @@ function PanelChart(props) {
   }
 
   function handleZoomChange() {
+    const { chart } = HubMainScreenModel.getState();
     let extent = d3.event.selection;
 
     // If no selection, back to initial coordinate. Otherwise, update X axis domain
@@ -890,6 +886,7 @@ function PanelChart(props) {
   }
 
   function handleAreaMouseMove(mouse) {
+    const { chart } = HubMainScreenModel.getState();
     // Disable hover effects if circle is focused
     if (chart.focused.circle.active) {
       return false;
@@ -907,6 +904,7 @@ function PanelChart(props) {
   }
 
   function handleBgRectClick(mouse) {
+    const { chart } = HubMainScreenModel.getState();
     if (!chart.focused.circle.active) {
       return;
     }
@@ -925,6 +923,7 @@ function PanelChart(props) {
   }
 
   function handleLineClick(mouse) {
+    const { chart } = HubMainScreenModel.getState();
     if (!chart.focused.circle.active) {
       return;
     }
@@ -969,6 +968,7 @@ function PanelChart(props) {
   }
 
   function setActiveLineAndCircle(mouse, marginInc = true) {
+    const { chart } = HubMainScreenModel.getState();
     const { margin } = visBox.current;
 
     if (isMouseInVisArea(mouse)) {
@@ -1284,6 +1284,7 @@ function PanelChart(props) {
   }
 
   function _renderPopUpContent() {
+    const { traceList, contextFilter } = HubMainScreenModel.getState();
     const { run, metric, trace, point } = chartPopUp;
     const commitPopUpData = commitPopUp.data;
 
@@ -1549,8 +1550,29 @@ function PanelChart(props) {
     initD3();
     const animatedRender = () => window.requestAnimationFrame(renderChart);
     window.addEventListener('resize', animatedRender);
+    const rerenderSubscription = HubMainScreenModel.subscribe(
+      [
+        HubMainScreenModel.events.SET_TRACE_LIST,
+        HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
+        HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
+      ],
+      animatedRender,
+    );
+    const updateSubscription = HubMainScreenModel.subscribe(
+      HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
+      () => {
+        window.requestAnimationFrame(() => {
+          lines.current?.selectAll('path').remove();
+          attributes.current?.selectAll('g').remove();
+          attributes.current?.selectAll('line').remove();
+          drawData();
+        });
+      },
+    );
 
     return () => {
+      rerenderSubscription.unsubscribe();
+      updateSubscription.unsubscribe();
       window.removeEventListener('resize', animatedRender);
     };
   }, []);
@@ -1560,7 +1582,7 @@ function PanelChart(props) {
     return () => {
       window.cancelAnimationFrame(renderChart);
     };
-  }, [traceList, chart, props.width, props.height]);
+  }, [props.width, props.height]);
 
   const styles = {};
 
