@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.5 Dec 25 2020
+- Apply imperative pattern to panel chart redraw (roubkar) 
+
 ## 1.2.4 Dec 25 2020
 - Enable nginx gzip compression (gorarakelyan)
 - Add ability to select table view mode in explore screen (gorarakelyan)
