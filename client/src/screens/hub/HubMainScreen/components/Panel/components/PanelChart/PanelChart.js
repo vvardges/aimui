@@ -869,11 +869,11 @@ function PanelChart(props) {
             ...(chart.settings.persistent.zoom ?? {}),
             [props.index]: {
               x:
-                extent[1][0] - extent[0][0] < 50
+                extent[1][0] - extent[0][0] < 5
                   ? null
                   : [left < xMin ? xMin : left, right > xMax ? xMax : right],
               y:
-                extent[1][1] - extent[0][1] < 50
+                extent[1][1] - extent[0][1] < 5
                   ? null
                   : [bottom < yMin ? yMin : bottom, top > yMax ? yMax : top],
             },

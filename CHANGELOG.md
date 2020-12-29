@@ -1,5 +1,7 @@
 # Changelog
 
+- Pick smaller range for ignoring zoom change (roubkar)
+
 ## 1.2.5 Dec 25 2020
 - Apply imperative pattern to panel chart redraw (roubkar) 
 
