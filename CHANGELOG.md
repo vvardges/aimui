@@ -1,5 +1,6 @@
 # Changelog
 
+- Fix run navigation link issue (roubkar)
 - Rerender parallel coordinates plot on chart settings update (roubkar)
 
 ## 1.2.6 Dec 29 2020

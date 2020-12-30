@@ -502,8 +502,11 @@ function ContextBox(props) {
             },
             className: `metric ${cellClassName}`,
             props: {
-              onClick: () =>
-                handleRowClick(run.run_hash, metric?.name, contextHash),
+              onClick: (evt) => {
+                if (evt.target === evt.currentTarget) {
+                  handleRowClick(run.run_hash, metric?.name, contextHash);
+                }
+              },
               onMouseMove: () =>
                 handleRowMove(run.run_hash, metric?.name, contextHash),
             },

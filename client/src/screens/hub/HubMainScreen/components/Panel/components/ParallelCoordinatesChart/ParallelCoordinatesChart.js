@@ -991,14 +991,14 @@ function ParallelCoordinatesChart(props) {
     return () => {
       window.cancelAnimationFrame(renderChart);
     };
-  }, [traceList, chart, props.width, props.height]);
+  }, [traceList, props.width, props.height]);
 
-  // useEffect(() => {
-  //   window.requestAnimationFrame(renderData);
-  //   return () => {
-  //     window.cancelAnimationFrame(renderData);
-  //   };
-  // }, [chart]);
+  useEffect(() => {
+    window.requestAnimationFrame(renderData);
+    return () => {
+      window.cancelAnimationFrame(renderData);
+    };
+  }, [chart]);
 
   return (
     <div className='ParallelCoordinatesChart' ref={parentRef}>
