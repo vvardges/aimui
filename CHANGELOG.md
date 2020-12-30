@@ -1,5 +1,7 @@
 # Changelog
 
+- Rerender parallel coordinates plot on chart settings update (roubkar)
+
 ## 1.2.6 Dec 29 2020
 - Pick smaller range for ignoring zoom change (roubkar)
 
