@@ -1,5 +1,6 @@
 # Changelog
 
+- Close select form suggestions on ESC key press (roubkar)
 - Fix run navigation link issue (roubkar)
 - Rerender parallel coordinates plot on chart settings update (roubkar)
 

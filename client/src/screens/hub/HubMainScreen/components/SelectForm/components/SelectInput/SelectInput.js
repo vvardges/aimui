@@ -25,6 +25,8 @@ function SelectInput(props) {
     suggestionsPrefix: null,
   });
 
+  let dropdownIsOpenRef = useRef(false);
+
   let { searchInput } = HubMainScreenModel.getState();
   let { setSearchInputState } = HubMainScreenModel.emitters;
 
@@ -41,6 +43,7 @@ function SelectInput(props) {
   }, []);
 
   useEffect(() => {
+    dropdownIsOpenRef.current = state.dropdownIsOpen;
     if (state.dropdownIsOpen) {
       incProgress();
       props.getProjectParams().then((data) => {
@@ -53,7 +56,7 @@ function SelectInput(props) {
     if (evt.key === 'Escape') {
       const isNotCombinedKey = !(evt.ctrlKey || evt.altKey || evt.shiftKey);
       if (isNotCombinedKey) {
-        if (state.dropdownIsOpen) {
+        if (dropdownIsOpenRef.current) {
           blurSelectInput();
         }
       }
