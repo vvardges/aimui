@@ -96,6 +96,7 @@ function ParallelCoordinatesChart(props) {
   function renderData() {
     clearLines();
     clearCircles();
+    clearIndicator();
 
     drawData();
   }
@@ -431,35 +432,6 @@ function ParallelCoordinatesChart(props) {
 
     circles.current = plot.current.append('g').attr('class', 'Circles');
 
-    // Draw color
-    if (displayParamsIndicator()) {
-      const lg = plot.current
-        .append('linearGradient')
-        .attr('id', `ParCoordsGradient-${props.index}`)
-        .attr('x1', 0)
-        .attr('x2', 0)
-        .attr('y1', 0)
-        .attr('y2', 1);
-
-      lg.append('stop')
-        .attr('offset', '0%')
-        .attr('stop-color', gradientEndColor);
-
-      lg.append('stop')
-        .attr('offset', '100%')
-        .attr('stop-color', gradientStartColor);
-
-      plot.current
-        .append('rect')
-        .attr('x', plotBox.current.width)
-        .attr('y', 0)
-        .attr('width', 15)
-        .attr('height', plotBox.current.height - 1)
-        .attr('stroke', '#777')
-        .attr('stroke-width', 1)
-        .attr('fill', `url(#ParCoordsGradient-${props.index})`);
-    }
-
     traces.current.forEach((traceModel) =>
       traceModel.series.forEach((series) => {
         const seriesParams = series.getParamsFlatDict();
@@ -692,6 +664,37 @@ function ParallelCoordinatesChart(props) {
         .interpolator(d3.interpolateRgb(gradientStartColor, gradientEndColor));
     }
 
+    // Draw color
+    if (displayParamsIndicator()) {
+      const lg = plot.current
+        .append('linearGradient')
+        .attr('id', `ParCoordsGradient-${props.index}`)
+        .attr('class', 'ParCoordsGradient')
+        .attr('x1', 0)
+        .attr('x2', 0)
+        .attr('y1', 0)
+        .attr('y2', 1);
+
+      lg.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', gradientEndColor);
+
+      lg.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', gradientStartColor);
+
+      plot.current
+        .append('rect')
+        .attr('class', 'ParCoordsGradient__rect')
+        .attr('x', plotBox.current.width)
+        .attr('y', 0)
+        .attr('width', 15)
+        .attr('height', plotBox.current.height - 1)
+        .attr('stroke', '#777')
+        .attr('stroke-width', 1)
+        .attr('fill', `url(#ParCoordsGradient-${props.index})`);
+    }
+
     traces.current.forEach((traceModel) =>
       traceModel.series.forEach((series) => {
         const params = series.getParamsFlatDict();
@@ -874,6 +877,11 @@ function ParallelCoordinatesChart(props) {
 
   function clearCircles() {
     circles.current?.selectAll('*')?.remove();
+  }
+
+  function clearIndicator() {
+    plot.current?.selectAll('.ParCoordsGradient')?.remove();
+    plot.current?.selectAll('.ParCoordsGradient__rect')?.remove();
   }
 
   function displayParamsIndicator() {
