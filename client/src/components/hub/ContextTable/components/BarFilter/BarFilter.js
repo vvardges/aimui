@@ -1,6 +1,6 @@
 import './BarFilter.less';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 import {
@@ -31,7 +31,7 @@ function BarFilter({ excludedFields, setExcludedFields, maxHeight, fields }) {
 
   // Parameters
   // TODO: add metrics as well
-  const paramFields = { ...fields.params };
+  const paramFields = { ...fields.params.paramFields };
   const paramFieldsPaths = [];
   Object.keys(flattenObject(paramFields)).forEach((paramPrefix) => {
     !!paramFields[paramPrefix] &&
@@ -207,10 +207,9 @@ function Parameters({ params, parentPath, excludedFields, toggleField }) {
   return (
     !!params &&
     Object.keys(params).map((paramKey) => (
-      <>
+      <Fragment key={key(paramKey)}>
         {typeof params[paramKey] === 'boolean' && (
           <Parameter
-            key={key(paramKey)}
             paramKey={paramKey}
             parentPath={parentPath}
             excludedFields={excludedFields}
@@ -240,7 +239,7 @@ function Parameters({ params, parentPath, excludedFields, toggleField }) {
             </div>
           </div>
         )}
-      </>
+      </Fragment>
     ))
   );
 }

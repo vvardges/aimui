@@ -38,16 +38,19 @@ function ContextBox(props) {
     traceList,
     chart,
     contextFilter,
+    sortFields,
   } = HubMainScreenModel.useHubMainScreenState([
     HubMainScreenModel.events.SET_RUNS_STATE,
     HubMainScreenModel.events.SET_TRACE_LIST,
     HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
+    HubMainScreenModel.events.SET_SORT_FIELDS,
   ]);
 
   let {
     setChartFocusedState,
     setChartFocusedActiveState,
     setContextFilter,
+    setSortFields,
   } = HubMainScreenModel.emitters;
 
   let {
@@ -1035,9 +1038,12 @@ function ContextBox(props) {
             forcePinnedColumns={forcePinnedColumns}
             updateForcePinnedColumns={updateForcePinnedColumns}
             searchFields={searchFields}
-            displayViewModes={true}
+            displayViewModes
             viewMode={props.viewMode}
             setViewMode={props.setViewMode}
+            displaySort
+            sortFields={sortFields}
+            setSortFields={setSortFields}
           />
         </div>
       </div>
@@ -1068,9 +1074,13 @@ function ContextBox(props) {
     }
 
     const paramFields = getAllParamsPaths(false);
-    if (!_.isEqual(paramFields, searchFields.params)) {
+    const deepParamFields = getAllParamsPaths(true, true);
+    if (!_.isEqual(deepParamFields, searchFields.params.deepParamFields)) {
       setSearchFields({
-        params: paramFields,
+        params: {
+          paramFields,
+          deepParamFields,
+        },
       });
     }
   });

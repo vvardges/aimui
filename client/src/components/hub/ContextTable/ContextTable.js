@@ -10,6 +10,7 @@ import BarRowHeightSelect from './components/BarRowHeightSelect/BarRowHeightSele
 import BarViewModes from '../BarViewModes/BarViewModes';
 import { setItem, getItem } from '../../../services/storage';
 import { CONTEXT_TABLE_CONFIG } from '../../../config';
+import BarSort from './components/BarSort/BarSort';
 
 function ContextTable(props) {
   const storageKey = CONTEXT_TABLE_CONFIG.replace('{name}', props.name);
@@ -71,6 +72,14 @@ function ContextTable(props) {
               maxHeight={itemMaxHeight}
               fields={props.searchFields}
             />
+            {props.displaySort && (
+              <BarSort
+                sortFields={props.sortFields}
+                setSortFields={props.setSortFields}
+                maxHeight={itemMaxHeight}
+                fields={props.searchFields}
+              />
+            )}
             <BarRowHeightSelect
               rowHeightMode={rowHeightMode}
               setRowHeightMode={setRowHeightMode}
@@ -95,6 +104,8 @@ ContextTable.defaultProps = {
   displayViewModes: false,
   viewMode: null,
   setViewMode: null,
+  displaySort: false,
+  sortFields: [],
 };
 
 ContextTable.propTypes = {
@@ -103,6 +114,9 @@ ContextTable.propTypes = {
   displayViewModes: PropTypes.bool,
   viewMode: PropTypes.string,
   setViewMode: PropTypes.func,
+  displaySort: PropTypes.bool,
+  sortFields: PropTypes.array,
+  setSortFields: PropTypes.func,
 };
 
 export default ContextTable;

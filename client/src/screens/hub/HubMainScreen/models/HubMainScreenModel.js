@@ -5,8 +5,9 @@ import {
   AIM_QL_VERSION,
   EXPLORE_METRIC_HIGHLIGHT_MODE,
   USER_LAST_EXPLORE_CONFIG,
+  EXPLORE_PANEL_SORT_FIELDS,
 } from '../../../../config';
-import { getItem, removeItem } from '../../../../services/storage';
+import { getItem, removeItem, setItem } from '../../../../services/storage';
 import { flattenObject, sortOnKeys } from '../../../../utils';
 import Color from 'color';
 import { COLORS } from '../../../../constants/colors';
@@ -23,6 +24,7 @@ const events = {
   SET_CONTEXT_FILTER: 'SET_CONTEXT_FILTER',
   SET_SEARCH_STATE: 'SET_SEARCH_STATE',
   SET_SEARCH_INPUT_STATE: 'SET_SEARCH_INPUT_STATE',
+  SET_SORT_FIELDS: 'SET_SORT_FIELDS',
 };
 
 // State
@@ -87,6 +89,9 @@ const state = {
     groupByChart: [],
     aggregated: false,
   },
+
+  // Sort fields
+  sortFields: JSON.parse(getItem(EXPLORE_PANEL_SORT_FIELDS)) ?? [],
 
   // Trace list
   traceList: null,
@@ -210,8 +215,13 @@ function setTraceList() {
 
   const traceList = new TraceList(grouping);
   const aggregate = traceList.groupingFields.length > 0;
+  const sortFields = getState().sortFields;
 
-  runs.forEach((run) => {
+  _.orderBy(
+    runs,
+    sortFields.map((field) => field[0]),
+    sortFields.map((field) => field[1]),
+  ).forEach((run) => {
     if (!run.metrics?.length) {
       traceList.addSeries(run, null, null, aggregate);
     } else {
@@ -417,6 +427,16 @@ function setSearchInputState(searchInput, callback = null) {
   }
 }
 
+function setSortFields(sortFields) {
+  emit(events.SET_SORT_FIELDS, {
+    sortFields,
+  });
+
+  setTraceList();
+
+  setItem(EXPLORE_PANEL_SORT_FIELDS, JSON.stringify(sortFields));
+}
+
 // helpers
 
 function isExploreMetricsModeEnabled() {
@@ -438,7 +458,7 @@ function getCountOfSelectedParams(includeMetrics = true) {
     : countOfParams;
 }
 
-function getAllParamsPaths(deep = true) {
+function getAllParamsPaths(deep = true, nested = false) {
   const paramPaths = {};
 
   getState().traceList?.traces.forEach((trace) => {
@@ -449,14 +469,37 @@ function getAllParamsPaths(deep = true) {
         }
 
         if (!paramPaths.hasOwnProperty(paramKey)) {
-          paramPaths[paramKey] = [];
+          if (deep && nested) {
+            paramPaths[paramKey] = {};
+          } else {
+            paramPaths[paramKey] = [];
+          }
         }
 
         if (deep) {
-          paramPaths[paramKey].push(
-            ...Object.keys(flattenObject(series?.run.params[paramKey])),
-          );
-          paramPaths[paramKey] = _.uniq(paramPaths[paramKey]).sort();
+          if (nested) {
+            for (let key in series?.run.params[paramKey]) {
+              if (
+                typeof paramPaths[paramKey][key] === 'object' ||
+                typeof series?.run.params[paramKey][key] === 'object'
+              ) {
+                if (!paramPaths.hasOwnProperty(paramKey)) {
+                  paramPaths[paramKey][key] = {};
+                }
+                paramPaths[paramKey][key] = _.merge(
+                  paramPaths[paramKey][key],
+                  series?.run.params[paramKey][key],
+                );
+              } else {
+                paramPaths[paramKey][key] = series?.run.params[paramKey][key];
+              }
+            }
+          } else {
+            paramPaths[paramKey].push(
+              ...Object.keys(flattenObject(series?.run.params[paramKey])),
+            );
+            paramPaths[paramKey] = _.uniq(paramPaths[paramKey]).sort();
+          }
         } else {
           Object.keys(series?.run.params[paramKey]).forEach((key) => {
             if (!paramPaths[paramKey].includes(key)) {
@@ -646,6 +689,7 @@ export const HubMainScreenModel = {
     resetControls,
     setSearchState,
     setSearchInputState,
+    setSortFields,
   },
   helpers: {
     isExploreMetricsModeEnabled,
