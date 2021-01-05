@@ -66,13 +66,6 @@ function ParallelCoordinatesChart(props) {
   const circles = useRef(null);
   const brushSelection = useRef(null);
 
-  let { runs, traceList, chart } = HubMainScreenModel.useHubMainScreenState([
-    HubMainScreenModel.events.SET_TRACE_LIST,
-    HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
-    HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
-    HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
-  ]);
-
   let {
     setChartFocusedState,
     setChartFocusedActiveState,
@@ -112,6 +105,7 @@ function ParallelCoordinatesChart(props) {
   }
 
   function draw(recoverBrushSelection = false) {
+    let { traceList } = HubMainScreenModel.getState();
     if (!visRef.current) {
       return;
     }
@@ -131,7 +125,8 @@ function ParallelCoordinatesChart(props) {
   }
 
   function handleAreaMouseMove(mouse) {
-    if (HubMainScreenModel.getState().chart.focused.circle.active) {
+    let { chart } = HubMainScreenModel.getState();
+    if (chart.focused.circle.active) {
       return false;
     }
     const x = mouse[0] - visBox.current.margin.left;
@@ -217,7 +212,8 @@ function ParallelCoordinatesChart(props) {
   }
 
   function handleBgRectClick() {
-    if (!HubMainScreenModel.getState().chart.focused.circle.active) {
+    let { chart } = HubMainScreenModel.getState();
+    if (!chart.focused.circle.active) {
       return;
     }
 
@@ -231,6 +227,7 @@ function ParallelCoordinatesChart(props) {
   }
 
   function getDimensions(traces) {
+    let { runs } = HubMainScreenModel.getState();
     const types = {
       number: {
         key: 'number',
@@ -312,6 +309,7 @@ function ParallelCoordinatesChart(props) {
   }
 
   function drawArea(recoverBrushSelection) {
+    let { traceList } = HubMainScreenModel.getState();
     const parent = d3.select(parentRef.current);
     const parentRect = parent.node().getBoundingClientRect();
 
@@ -622,6 +620,7 @@ function ParallelCoordinatesChart(props) {
   }
 
   function drawData() {
+    let { traceList, chart } = HubMainScreenModel.getState();
     const focused = chart.focused;
     const focusedMetric = focused.metric;
     const focusedCircle = focused.circle;
@@ -885,6 +884,7 @@ function ParallelCoordinatesChart(props) {
   }
 
   function displayParamsIndicator() {
+    let { chart } = HubMainScreenModel.getState();
     return (
       chart?.settings?.persistent?.indicator && dimensions.current?.length > 1
     );
@@ -917,6 +917,7 @@ function ParallelCoordinatesChart(props) {
   }
 
   function handleBrushEvent(currentBrushSelection) {
+    let { traceList } = HubMainScreenModel.getState();
     let actives = [];
     plot.current
       .selectAll('.ParCoordsAxis .ParCoordsAxis__brush')
@@ -980,8 +981,22 @@ function ParallelCoordinatesChart(props) {
     initD3();
     const animatedRender = () => window.requestAnimationFrame(renderChart);
     window.addEventListener('resize', animatedRender);
+    const rerenderSubscription = HubMainScreenModel.subscribe(
+      [
+        HubMainScreenModel.events.SET_TRACE_LIST,
+        HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
+        HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
+      ],
+      animatedRender,
+    );
+    const updateSubscription = HubMainScreenModel.subscribe(
+      HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
+      () => window.requestAnimationFrame(renderData),
+    );
 
     return () => {
+      rerenderSubscription.unsubscribe();
+      updateSubscription.unsubscribe();
       window.removeEventListener('resize', animatedRender);
     };
   }, []);
@@ -991,14 +1006,7 @@ function ParallelCoordinatesChart(props) {
     return () => {
       window.cancelAnimationFrame(renderChart);
     };
-  }, [traceList, props.width, props.height]);
-
-  useEffect(() => {
-    window.requestAnimationFrame(renderData);
-    return () => {
-      window.cancelAnimationFrame(renderData);
-    };
-  }, [chart]);
+  }, [props.width, props.height]);
 
   return (
     <div className='ParallelCoordinatesChart' ref={parentRef}>
