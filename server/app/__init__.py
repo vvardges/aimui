@@ -1,4 +1,5 @@
 import os
+from urllib import parse
 
 from flask import Flask, redirect, request, make_response
 from flask_cors import CORS
@@ -24,6 +25,14 @@ class App(metaclass=Singleton):
             rp = request.path
             if rp != '/' and rp.endswith('/'):
                 return redirect(rp.rstrip('/'))
+
+        @api.before_request
+        def set_timezone():
+            tz = request.cookies.get('__AIMDE__:TIMEZONE')
+            if tz:
+                request.tz = parse.unquote(tz)
+            else:
+                request.tz = None
 
         CORS(api,
              origins='*',

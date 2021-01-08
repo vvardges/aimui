@@ -20,7 +20,7 @@ class AnalyticsPermission extends Component {
 
   setAnalyticsCookie = (val) => {
     setCookie(USER_ANALYTICS_COOKIE_NAME, val, {
-      exp: this.cookieExp,
+      expires: this.cookieExp,
     });
     this.setState({
       cookieIsSet: getCookie(USER_ANALYTICS_COOKIE_NAME) !== undefined,

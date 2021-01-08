@@ -2,68 +2,34 @@ import './HubExperimentsDashboardScreen.less';
 
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, withRouter, Redirect } from 'react-router-dom';
-import _ from 'lodash';
-import Color from 'color';
+import { withRouter } from 'react-router-dom';
 
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import * as analytics from '../../../services/analytics';
 import * as storeUtils from '../../../storeUtils';
 import * as classes from '../../../constants/classes';
 import * as screens from '../../../constants/screens';
-import UI from '../../../ui';
-import SearchBar from '../../../components/hub/SearchBar/SearchBar';
-import { HUB_PROJECT_EXPERIMENT, EXPLORE } from '../../../constants/screens';
-import { setItem } from '../../../services/storage';
-import { USER_LAST_SEARCH_QUERY } from '../../../config';
-import moment from 'moment';
-import ContextTable from '../../../components/hub/ContextTable/ContextTable';
-import {
-  buildUrl,
-  deepEqual,
-  interpolateColors,
-  formatValue,
-  classNames,
-  roundValue,
-  getObjectValueByPath,
-} from '../../../utils';
+import { buildUrl } from '../../../utils';
+import Activity from './components/Activity/Activity';
+import Runs from './components/Runs/Runs';
 
 class HubExperimentsDashboardScreen extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      height: 0,
-      subheaderTop: 0,
-      isLoading: true,
-      redirectToPanel: false,
-      runs: [],
-      experiments: [],
-      selectedExperiments: [],
-      selectedRuns: [],
-      coloredCols: {},
-      searchFields: {
-        params: {},
-      },
+      searchQuery: null,
     };
 
-    this.paramKeys = {};
-    this.metricKeys = {};
-    this.firstMetricName = null;
-    this.defaultMetricName = 'loss';
     this.initSearchQuery = '';
 
-    this.searchBarRef = React.createRef();
-    this.projectWrapperRef = React.createRef();
-    this.topHeaderRef = React.createRef();
+    this.runsRef = React.createRef();
 
     props.resetProgress();
   }
 
   componentDidMount() {
     this.props.completeProgress();
-    this.updateWindowDimensions();
-    window.addEventListener('resize', this.updateWindowDimensions);
 
     this.recoverStateFromURL(window.location.search);
 
@@ -75,24 +41,6 @@ class HubExperimentsDashboardScreen extends React.Component {
     if (this.props.location !== prevProps.location) {
       this.recoverStateFromURL(location.search);
     }
-
-    const paramFields = this.props.project?.params
-      ? { ...this.props.project?.params }
-      : {};
-    Object.keys(paramFields).forEach((paramKey) => {
-      paramFields[paramKey] = Object.keys(paramFields[paramKey]);
-    });
-    if (!_.isEqual(paramFields, this.state.searchFields.params)) {
-      this.setState({
-        searchFields: {
-          params: paramFields,
-        },
-      });
-    }
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.updateWindowDimensions);
   }
 
   recoverStateFromURL = (search) => {
@@ -104,11 +52,15 @@ class HubExperimentsDashboardScreen extends React.Component {
       const state = this.URLSearchToState(search);
       const searchKey = state?.searchKey ?? '';
       this.initSearchQuery = searchKey;
-      this.searchBarRef?.current?.setValue(searchKey, false);
-      this.getRuns(searchKey, false);
+      this.setRunsSearchBarValue(searchKey, false);
+      this.setState({
+        searchQuery: searchKey,
+      });
     } else {
-      this.searchBarRef?.current?.setValue('', false);
-      this.getRuns('', false);
+      this.setRunsSearchBarValue('', false);
+      this.setState({
+        searchQuery: '',
+      });
     }
   };
 
@@ -138,7 +90,7 @@ class HubExperimentsDashboardScreen extends React.Component {
       return !(!!searchQuery && searchQuery.indexOf('?search=') !== -1);
     }
 
-    if (this.searchBarRef?.current?.getValue() !== state.searchKey) {
+    if (this.getRunsSearchBarValue() !== state.searchKey) {
       return true;
     }
 
@@ -147,7 +99,7 @@ class HubExperimentsDashboardScreen extends React.Component {
 
   updateURL = () => {
     const state = {
-      searchKey: this.searchBarRef.current?.getValue(),
+      searchKey: this.getRunsSearchBarValue(),
     };
 
     const URL = this.stateToURL(state);
@@ -159,702 +111,48 @@ class HubExperimentsDashboardScreen extends React.Component {
     }
   };
 
-  updateWindowDimensions = () => {
-    const wrapper = this.projectWrapperRef.current;
-    const projectWrapperHeight = wrapper
-      ? this.projectWrapperRef.current.getHeaderHeight()
-      : null;
-    const { height } = this.topHeaderRef.current?.getBoundingClientRect() ?? {};
-    if (projectWrapperHeight !== null) {
-      this.setState({
-        height: window.innerHeight - projectWrapperHeight - 1,
-        subheaderTop: height ?? 0,
-      });
+  setRunsSearchBarValue = (val, submit = true) => {
+    const searchBarRef = this.runsRef?.current?.searchBarRef?.current;
+    if (!!searchBarRef) {
+      searchBarRef.setValue(val, submit);
     } else {
-      setTimeout(() => this.updateWindowDimensions(), 25);
+      setTimeout(() => this.setRunsSearchBarValue(val, submit), 20);
     }
   };
 
-  getRuns = (query, updateURL = true) => {
-    window.scrollTo(0, 0);
-
-    this.setState({
-      isLoading: true,
-    });
-
-    this.props
-      .getRunsByQuery(query)
-      .then((data) => {
-        this.paramKeys = {};
-        this.metricKeys = {};
-        const experiments = data?.runs.map((run) => run.experiment_name);
-        data?.runs.forEach((run) => {
-          Object.keys(run.params).forEach((paramKey) => {
-            if (paramKey !== '__METRICS__') {
-              if (!this.paramKeys.hasOwnProperty(paramKey)) {
-                this.paramKeys[paramKey] = [];
-              }
-              Object.keys(run.params[paramKey]).forEach((key) => {
-                if (!this.paramKeys[paramKey].includes(key)) {
-                  this.paramKeys[paramKey].push(key);
-                }
-              });
-            } else {
-              Object.keys(run.params[paramKey]).forEach((metricName) => {
-                if (this.firstMetricName === null) {
-                  this.firstMetricName = metricName;
-                }
-                if (!this.metricKeys.hasOwnProperty(metricName)) {
-                  this.metricKeys[metricName] = [];
-                }
-                run.params[paramKey][metricName].forEach((metricContext) => {
-                  const contextDict = {};
-                  if (metricContext.context !== null) {
-                    metricContext.context.forEach((contextItem) => {
-                      contextDict[contextItem[0]] = contextItem[1];
-                    });
-                  }
-                  let contextExists = false;
-                  this.metricKeys[metricName].forEach(
-                    (existingMetricContext) => {
-                      if (deepEqual(existingMetricContext, contextDict)) {
-                        contextExists = true;
-                      }
-                    },
-                  );
-                  if (!contextExists) {
-                    this.metricKeys[metricName].push(contextDict);
-                  }
-                });
-              });
-            }
-          });
-        });
-
-        this.setState((prevState) => {
-          let coloredCols = {};
-          Object.keys(prevState.coloredCols)
-            .filter((key) => !!prevState.coloredCols[key])
-            .forEach((prop) => {
-              coloredCols[prop] = interpolateColors(
-                data.runs.map((run) => _.get(run, JSON.parse(prop))),
-              );
-            });
-
-          return {
-            runs: data?.runs?.sort((a, b) => b.date - a.date) ?? [],
-            experiments: _.uniq(experiments),
-            selectedExperiments: [],
-            selectedRuns: [],
-            coloredCols: coloredCols,
-          };
-        });
-      })
-      .catch(() => {
-        this.setState({
-          runs: [],
-          experiments: [],
-          selectedExperiments: [],
-        });
-      })
-      .finally(() => {
-        this.setState(
-          {
-            isLoading: false,
-          },
-          () => {
-            this.updateWindowDimensions();
-            if (updateURL) {
-              this.updateURL();
-            }
-          },
-        );
-      });
-  };
-
-  handleSearchBarSubmit = (value) => {
-    this.getRuns(value);
-  };
-
-  searchByExperiment = (experimentName) => {
-    this.searchBarRef?.current?.setValue(`experiment == ${experimentName}`);
-  };
-
-  searchExperiments = () => {
-    const experiments = this.state.selectedExperiments;
-    const experimentsRow = experiments.map((e) => `"${e}"`).join(', ');
-    const query = `experiment in (${experimentsRow})`;
-    this.searchBarRef?.current?.setValue(query);
-  };
-
-  exploreExperiments = () => {
-    const experiments = this.state.selectedExperiments;
-    const experimentsRow = experiments.map((e) => `"${e}"`).join(', ');
-    const metricName = this.firstMetricName ?? this.defaultMetricName;
-    const query = `${metricName} if experiment in (${experimentsRow})`;
-    setItem(USER_LAST_SEARCH_QUERY, query);
-    this.setState({
-      redirectToPanel: true,
-    });
-  };
-
-  exploreRuns = () => {
-    const runs = this.state.selectedRuns;
-    const runsRow = runs.map((e) => `"${e}"`).join(', ');
-    const metricName = this.firstMetricName ?? this.defaultMetricName;
-    const query = `${metricName} if run.hash in (${runsRow})`;
-    setItem(USER_LAST_SEARCH_QUERY, query);
-    this.setState({
-      redirectToPanel: true,
-    });
-  };
-
-  exploreMetric = (metricName, context) => {
-    const contextQuery = [];
-    if (!!context) {
-      Object.keys(context).forEach((contextKey) => {
-        if (typeof context[contextKey] === 'boolean') {
-          contextQuery.push(
-            `context.${contextKey} is ${formatValue(
-              context[contextKey],
-              false,
-            )}`,
-          );
-        } else if (typeof context[contextKey] === 'number') {
-          contextQuery.push(`context.${contextKey} == ${context[contextKey]}`);
-        } else {
-          contextQuery.push(
-            `context.${contextKey} == "${context[contextKey]}"`,
-          );
-        }
-      });
-    }
-
-    const queryPrefix = this.searchBarRef?.current?.getValue() || null;
-
-    let condition = contextQuery.join(' and ');
-    if (!!queryPrefix) {
-      if (!!condition) {
-        condition = `(${queryPrefix}) and ${condition}`;
-      } else {
-        condition = queryPrefix;
-      }
-    }
-
-    const query = !!condition ? `${metricName} if ${condition}` : metricName;
-    setItem(USER_LAST_SEARCH_QUERY, query);
-    this.setState({
-      redirectToPanel: true,
-    });
-  };
-
-  resetExperiments = () => {
-    this.setState({
-      selectedExperiments: [],
-    });
-  };
-
-  resetRuns = () => {
-    this.setState({
-      selectedRuns: [],
-    });
-  };
-
-  toggleExperiment = (experimentName) => {
-    this.setState((prevState) => {
-      let { selectedExperiments } = prevState;
-
-      if (selectedExperiments.indexOf(experimentName) === -1) {
-        selectedExperiments.push(experimentName);
-      } else {
-        selectedExperiments = _.remove(
-          selectedExperiments,
-          (v) => v !== experimentName,
-        );
-      }
-
-      return {
-        ...prevState,
-        selectedExperiments,
-      };
-    });
-  };
-
-  toggleRun = (experimentName, runHash) => {
-    this.setState((prevState) => {
-      let { selectedRuns } = prevState;
-
-      if (selectedRuns.indexOf(runHash) === -1) {
-        selectedRuns.push(runHash);
-      } else {
-        selectedRuns = _.remove(selectedRuns, (v) => v !== runHash);
-      }
-
-      return {
-        ...prevState,
-        selectedRuns,
-      };
-    });
-  };
-
-  checkAbilityForColoring = (prop) => {
-    return (
-      this.state.runs
-        .map((run) => _.get(run, prop))
-        .filter((elem) => typeof elem === 'number').length > 0
-    );
-  };
-
-  toggleColoring = (prop) => {
-    let key = JSON.stringify(prop);
-    this.setState((prevState) => ({
-      coloredCols: {
-        ...prevState.coloredCols,
-        [key]: !!prevState.coloredCols[key]
-          ? undefined
-          : interpolateColors(this.state.runs.map((run) => _.get(run, prop))),
-      },
-    }));
-  };
-
-  getMetricValue = (run, metricName, metricContext) => {
-    const metric = run.params?.['__METRICS__']?.[metricName];
-
-    if (metric === undefined || metric === null) {
-      return metric;
-    }
-
-    let value = null;
-    metric.forEach((metricContextItem) => {
-      const contextDict = {};
-      if (metricContextItem.context !== null) {
-        metricContextItem.context.forEach((contextItem) => {
-          contextDict[contextItem[0]] = contextItem[1];
-        });
-      }
-      if (deepEqual(contextDict, metricContext)) {
-        value = metricContextItem.values.last;
-      }
-    });
-
-    return value;
-  };
-
-  _renderExperiments = () => {
-    if (!this.state.experiments || this.state.experiments.length === 0) {
-      return null;
-    }
-
-    return (
-      <div className='HubExperimentsDashboardScreen__experiments__items'>
-        <UI.Menu
-          bordered
-          outline
-          headerElem={
-            <div className='HubExperimentsDashboardScreen__experiments__header'>
-              Experiments
-              {!!this.state.selectedExperiments?.length && (
-                <UI.Buttons className='HubExperimentsDashboardScreen__experiments__actions'>
-                  <UI.Button
-                    type='primary'
-                    size='small'
-                    onClick={() => this.searchExperiments()}
-                    iconLeft={<UI.Icon i='search' />}
-                  >
-                    Search
-                  </UI.Button>
-                  <UI.Button
-                    type='positive'
-                    size='small'
-                    onClick={() => this.exploreExperiments()}
-                    iconLeft={<UI.Icon i='timeline' />}
-                  >
-                    Explore
-                  </UI.Button>
-                  <UI.Button
-                    type='secondary'
-                    size='small'
-                    onClick={() => this.resetExperiments()}
-                  >
-                    Reset
-                  </UI.Button>
-                </UI.Buttons>
-              )}
-            </div>
-          }
-        >
-          {this.state.experiments.map((exp, i) => (
-            <UI.MenuItem
-              className='HubExperimentsDashboardScreen__experiments__item'
-              key={i}
-              onClick={() => this.toggleExperiment(exp)}
-              active={this.state.selectedExperiments.indexOf(exp) !== -1}
-              activeClass='activeCheck'
-            >
-              {exp}
-            </UI.MenuItem>
-          ))}
-        </UI.Menu>
-      </div>
-    );
-  };
-
-  _renderRuns = () => {
-    if (!this.state.runs || this.state.runs.length === 0) {
-      return null;
-    }
-
-    let columns = [
-      {
-        key: 'run',
-        content: !!this.state.selectedRuns?.length ? (
-          <UI.Buttons className='HubExperimentsDashboardScreen__runs__actions'>
-            <UI.Button
-              type='positive'
-              size='tiny'
-              onClick={this.exploreRuns}
-              iconLeft={<UI.Icon i='timeline' />}
-            >
-              Explore
-            </UI.Button>
-            <UI.Button
-              type='secondary'
-              size='tiny'
-              onClick={() => this.resetRuns()}
-            >
-              Reset
-            </UI.Button>
-          </UI.Buttons>
-        ) : (
-          <UI.Text overline>Runs</UI.Text>
-        ),
-        minWidth: 200,
-        pin: 'left',
-      },
-    ];
-
-    Object.keys(this.metricKeys).forEach((metricName, metricKey) =>
-      this.metricKeys[metricName].forEach((metricContext, contextKey) => {
-        columns.push({
-          key: `${metricKey}-${contextKey}`,
-          content: (
-            <>
-              <div className='HubExperimentsDashboardScreen__runs__context__cell'>
-                {!!metricContext &&
-                  Object.keys(metricContext).map((metricContextKey) => (
-                    <UI.Label
-                      key={metricContextKey}
-                      size='small'
-                      className='HubExperimentsDashboardScreen__runs__context__item'
-                    >
-                      {metricContextKey}:{' '}
-                      {formatValue(metricContext[metricContextKey])}
-                    </UI.Label>
-                  ))}
-                {(metricContext === null ||
-                  Object.keys(metricContext).length === 0) && (
-                  <UI.Label
-                    key={0}
-                    size='small'
-                    className='HubExperimentsDashboardScreen__runs__context__item'
-                  >
-                    No context
-                  </UI.Label>
-                )}
-              </div>
-              <div className='Table__header__action__container'>
-                <UI.Tooltip tooltip='Explore metric'>
-                  <div
-                    className='Table__header__action'
-                    onClick={() =>
-                      this.exploreMetric(metricName, metricContext)
-                    }
-                  >
-                    <UI.Icon
-                      i='timeline'
-                      scale={1.2}
-                      className='HubExperimentsDashboardScreen__runs__context__icon'
-                    />
-                  </div>
-                </UI.Tooltip>
-                <UI.Tooltip
-                  tooltip={
-                    !this.checkAbilityForColoring([
-                      'params',
-                      '__METRICS__',
-                      metricName,
-                      contextKey,
-                      'values',
-                      'last',
-                    ])
-                      ? 'Unable to apply coloring to this column'
-                      : !!this.state.coloredCols[
-                        JSON.stringify([
-                          'params',
-                          '__METRICS__',
-                          metricName,
-                          contextKey,
-                          'values',
-                          'last',
-                        ])
-                      ]
-                        ? 'Remove coloring'
-                        : 'Apply coloring'
-                  }
-                >
-                  <div
-                    className={classNames({
-                      Table__header__action: true,
-                      active: !!this.state.coloredCols[
-                        JSON.stringify([
-                          'params',
-                          '__METRICS__',
-                          metricName,
-                          contextKey,
-                          'values',
-                          'last',
-                        ])
-                      ],
-                      disabled: !this.checkAbilityForColoring([
-                        'params',
-                        '__METRICS__',
-                        metricName,
-                        contextKey,
-                        'values',
-                        'last',
-                      ]),
-                    })}
-                    onClick={(evt) =>
-                      this.toggleColoring([
-                        'params',
-                        '__METRICS__',
-                        metricName,
-                        contextKey,
-                        'values',
-                        'last',
-                      ])
-                    }
-                  >
-                    <UI.Icon
-                      i='filter_list'
-                      className='Table__header__action__icon'
-                    />
-                  </div>
-                </UI.Tooltip>
-              </div>
-            </>
-          ),
-          topHeader: metricName,
-          minWidth: 180,
-        });
-      }),
-    );
-
-    Object.keys(this.paramKeys).forEach((paramKey) =>
-      this.paramKeys[paramKey].forEach((key, index) => {
-        columns.push({
-          key: `params.${paramKey}.${key}`,
-          content: (
-            <>
-              <UI.Text small>{key}</UI.Text>
-              <UI.Tooltip
-                tooltip={
-                  !this.checkAbilityForColoring(['params', paramKey, key])
-                    ? 'Unable to apply coloring to this column'
-                    : !!this.state.coloredCols[
-                      JSON.stringify(['params', paramKey, key])
-                    ]
-                      ? 'Remove coloring'
-                      : 'Apply coloring'
-                }
-              >
-                <div
-                  className={classNames({
-                    Table__header__action: true,
-                    active: !!this.state.coloredCols[
-                      JSON.stringify(['params', paramKey, key])
-                    ],
-                    disabled: !this.checkAbilityForColoring([
-                      'params',
-                      paramKey,
-                      key,
-                    ]),
-                  })}
-                  onClick={(evt) =>
-                    this.toggleColoring(['params', paramKey, key])
-                  }
-                >
-                  <UI.Icon
-                    i='filter_list'
-                    className='Table__header__action__icon'
-                  />
-                </div>
-              </UI.Tooltip>
-            </>
-          ),
-          topHeader: paramKey,
-          minWidth: 150,
-        });
-      }),
-    );
-
-    let data = this.state.runs.map((run) => {
-      let item = {
-        run: {
-          content: (
-            <Link
-              to={buildUrl(HUB_PROJECT_EXPERIMENT, {
-                experiment_name: run.experiment_name,
-                commit_id: run.run_hash,
-              })}
-            >
-              <UI.Text className='HubExperimentsDashboardScreen__runs__item__name'>
-                {run.experiment_name} |{' '}
-                {moment(run.date * 1000).format('HH:mm · D MMM, YY')}
-              </UI.Text>
-            </Link>
-          ),
-          className: classNames({
-            HubExperimentsDashboardScreen__runs__item__cell: true,
-            active: this.state.selectedRuns.includes(run.run_hash),
-          }),
-          props: {
-            onClick: () => this.toggleRun(run.experiment_name, run.run_hash),
-          },
-        },
-      };
-
-      Object.keys(this.metricKeys).forEach((metricName, metricKey) =>
-        this.metricKeys[metricName].forEach((metricContext, contextKey) => {
-          let metricValue = this.getMetricValue(run, metricName, metricContext);
-          let color = this.state.coloredCols[
-            JSON.stringify([
-              'params',
-              '__METRICS__',
-              metricName,
-              contextKey,
-              'values',
-              'last',
-            ])
-          ]?.[metricValue];
-          item[`${metricKey}-${contextKey}`] = {
-            content: formatValue(
-              typeof metricValue === 'number'
-                ? roundValue(metricValue)
-                : undefined,
-            ),
-            style: {
-              backgroundColor: color,
-              color: !!color && Color(color).isDark() ? '#FFF' : 'var(--grey)',
-            },
-          };
-        }),
-      );
-
-      Object.keys(this.paramKeys).forEach((paramKey) =>
-        this.paramKeys[paramKey].forEach((key) => {
-          let color = this.state.coloredCols[
-            JSON.stringify(['params', paramKey, key])
-          ]?.[run.params?.[paramKey]?.[key]];
-          item[`params.${paramKey}.${key}`] = {
-            content: formatValue(run.params?.[paramKey]?.[key]),
-            style: {
-              backgroundColor: color,
-              color: !!color && Color(color).isDark() ? '#FFF' : 'var(--grey)',
-            },
-          };
-        }),
-      );
-
-      return item;
-    });
-
-    return (
-      <div className='HubExperimentsDashboardScreen__runs__content'>
-        <div className='HubExperimentsDashboardScreen__runs__table__wrapper'>
-          <ContextTable
-            name='runs'
-            topHeader
-            columns={columns}
-            data={data}
-            searchFields={this.state.searchFields}
-          />
-        </div>
-      </div>
-    );
+  getRunsSearchBarValue = () => {
+    return this.runsRef?.current?.searchBarRef?.current?.getValue();
   };
 
   _renderContent = () => {
     return (
-      <div
-        className='HubExperimentsDashboardScreen'
-        style={{ height: this.state.height }}
-      >
-        <div className='HubExperimentsDashboardScreen__nav'>
-          <SearchBar
-            ref={this.searchBarRef}
-            initValue={this.initSearchQuery}
-            placeholder={
-              'e.g. `experiment in (nmt_syntok_dynamic, nmt_syntok_greedy) and hparams.lr >= 0.0001`'
-            }
-            onSubmit={(value) => this.handleSearchBarSubmit(value)}
-            onClear={(value) => this.handleSearchBarSubmit(value)}
-          />
+      <div className='HubExperimentsDashboardScreen'>
+        <div className='HubExperimentsDashboardScreen__content'>
+          <div className="HubExperimentsDashboardScreen__content__block HubExperimentsDashboardScreen__content__block--activity">
+            <Activity
+              setRunsSearchBarValue={this.setRunsSearchBarValue}
+            />
+          </div>
+          <div className="HubExperimentsDashboardScreen__content__block">
+            <Runs
+              ref={this.runsRef}
+              searchQuery={this.state.searchQuery ?? this.initSearchQuery}
+              updateURL={this.updateURL}
+            />
+          </div>
         </div>
-        {this.state.isLoading ? (
-          <UI.Text className='' type='grey' center spacingTop>
-            Loading..
-          </UI.Text>
-        ) : this.state.runs.length ? (
-          <div className='HubExperimentsDashboardScreen__content'>
-            <div className='HubExperimentsDashboardScreen__experiments'>
-              {this._renderExperiments()}
-            </div>
-            <div className='HubExperimentsDashboardScreen__runs'>
-              {this._renderRuns()}
-            </div>
-          </div>
-        ) : (
-          <div>
-            {!!this.searchBarRef?.current?.getValue() ? (
-              <UI.Text type='grey' center spacingTop>
-                You haven't recorded experiments matching this query.
-              </UI.Text>
-            ) : (
-              <UI.Text type='grey' center spacingTop>
-                It's super easy to search Aim experiments.
-              </UI.Text>
-            )}
-            <UI.Text type='grey' center>
-              Lookup{' '}
-              <a
-                className='link'
-                href='https://github.com/aimhubio/aim#searching-experiments'
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                search docs
-              </a>{' '}
-              to learn more.
-            </UI.Text>
-          </div>
-        )}
       </div>
     );
   };
 
   render() {
-    if (this.state.redirectToPanel) {
-      return <Redirect to={EXPLORE} push />;
-    }
-
     return (
-      <ProjectWrapper size='fluid' gap={false} ref={this.projectWrapperRef}>
+      <ProjectWrapper size='fluid' gap={false}>
         <Helmet>
           <meta title='' content='' />
         </Helmet>
 
-        <>{this._renderContent()}</>
+        {this._renderContent()}
       </ProjectWrapper>
     );
   }

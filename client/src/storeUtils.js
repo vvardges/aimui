@@ -160,6 +160,7 @@ export function getWithState(caseName, caseClass) {
     case classes.HUB_PROJECT_EXPERIMENTS_DASHBOARD_SCREEN:
       Object.assign(mapDispatch2Props, {
         getRunsByQuery: commitActions.getRunsByQuery,
+        getProjectActivity: projectActions.getProjectActivity,
       });
       mapState2Props = (state) => ({
         ...state.project,

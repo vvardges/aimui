@@ -2,6 +2,9 @@ import json
 import os
 import time
 import copy
+from collections import Counter
+from datetime import datetime
+import pytz
 
 from flask import (
     abort,
@@ -12,6 +15,7 @@ from flask import (
     send_from_directory,
 )
 from flask_restful import Api, Resource
+from sqlalchemy import func
 
 from app.db import db
 from app.projects.utils import (
@@ -19,8 +23,10 @@ from app.projects.utils import (
     get_branch_commits,
     deep_merge,
     dump_dict_values,
+    upgrade_runs_table,
 )
 from app.projects.project import Project
+from app.commits.models import Commit
 from artifacts.artifact import Metric as MetricRecord
 
 
@@ -55,6 +61,47 @@ class ProjectDataApi(Resource):
 
         return jsonify({
             'branches': project.repo.list_branches(),
+        })
+
+
+@projects_api.resource('/activity')
+class ProjectActivityApi(Resource):
+    def get(self):
+        project = Project()
+
+        if not project.exists():
+            return make_response(jsonify({}), 404)
+
+        last_synced_run = db.session\
+            .query(func.max(Commit.session_started_at),
+                   func.max(Commit.session_closed_at))\
+            .first()
+        last_synced_run_time = max(last_synced_run[0] or 0,
+                                   last_synced_run[1] or 0)
+
+        modified_runs = project.get_modified_runs(last_synced_run_time)
+        upgrade_runs_table(project, modified_runs)
+
+        all_runs = db.session\
+            .query(Commit.hash,
+                   Commit.experiment_name,
+                   Commit.session_started_at)\
+            .filter(Commit.session_started_at > 0)\
+            .all()
+
+        experiments = {r.experiment_name for r in all_runs}
+        activity_counter = Counter([
+            datetime.fromtimestamp(r.session_started_at,
+                                   pytz.timezone(request.tz))
+                    .strftime('%Y-%m-%d')
+            if r.session_started_at > 0 else 0
+            for r in all_runs
+        ])
+
+        return jsonify({
+            'num_experiments': len(experiments),
+            'num_runs': len(all_runs),
+            'activity_map': dict(activity_counter),
         })
 
 

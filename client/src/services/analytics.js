@@ -34,7 +34,6 @@ const pageView = (pageName, pageCat = null) => {
   });
 };
 
-/*
 const trackEvent = (eventName, properties={}) => {
   if (!enabled()) {
     return;
@@ -42,10 +41,9 @@ const trackEvent = (eventName, properties={}) => {
 
   window.analytics.track(eventName, properties);
 };
- */
 
 export {
   init,
   pageView,
-  // trackEvent,
+  trackEvent,
 };

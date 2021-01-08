@@ -449,3 +449,9 @@ export function removeObjectEmptyKeys(item) {
     return Object.keys(item).length === 0;
   }
 }
+
+export function shiftDate(date, numDays) {
+  const newDate = new Date(date);
+  newDate.setDate(newDate.getDate() + numDays);
+  return newDate;
+}

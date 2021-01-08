@@ -15,7 +15,8 @@
   width: 100%;
   background-color: #fff;
   border-radius: var(--border-radius);
-  height: 2.5em;
+  border: 1px solid var(--grey-lighter);
+  height: 2.2rem;
 
   /*
   @media @lg-max {
@@ -30,12 +31,14 @@
 
 .SearchBar__search__icon {
   display: block;
-  font-size: 1.2em !important;
+  font-size: 1em !important;
   margin: 0 var(--component-spacing-sm) !important;
-  color: var(--grey-dark) !important;
+  color: var(--grey-light) !important;
+  cursor: default;
+  user-select: none;
 
   &.clickable {
-    margin: 0 var(--component-spacing-xs) !important;
+    margin: 0 var(--space-xxs) !important;
     border-radius: 50%;
     cursor: pointer;
     width: 2em;
@@ -43,7 +46,6 @@
     line-height: 2em;
     text-align: center;
     transition: background-color 110ms ease;
-    user-select: none;
 
     &:hover {
       background-color: var(--grey-lighter);
@@ -65,10 +67,10 @@
       position: absolute;
       content: '';
       display: block;
-      width: 1em;
-      height: 2px;
+      width: 0.9em;
+      height: 1.5px;
       background-color: var(--grey-light);
-      left: calc(50% - 0.5em);
+      left: calc(50% - 0.45em);
     }
 
     &:before {

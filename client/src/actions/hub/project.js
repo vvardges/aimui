@@ -107,6 +107,20 @@ export function getProjectParams() {
   };
 }
 
+export function getProjectActivity() {
+  return (dispatch) => {
+    return new Promise((resolve, reject) => {
+      callApi('Project.getProjectActivity')
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  };
+}
+
 export function downloadModel(experiment_name, model_name) {
   return (dispatch) => {
     return new Promise((resolve, reject) => {

@@ -5,21 +5,19 @@ import { SERVER_HOST } from '../config';
 function setApiClient() {
   return new Promise((resolve, reject) => {
     if (!window.ApiClient) {
-      Swagger('/swagger.0.0.7.yaml')
+      Swagger('/swagger.0.0.8.yaml')
         .then((client) => {
           client.spec.servers = [
-            ...client.spec.servers,
-            ...[
-              {
-                url: `http://${window.location.hostname}:${window.location.port}/{basePath}`,
-                variables: {
-                  basePath: {
-                    default: 'api/v1',
-                  },
+            {
+              url: `${SERVER_HOST}/{basePath}`,
+              variables: {
+                basePath: {
+                  default: 'api/v1',
                 },
               },
-            ],
+            },
           ];
+          client.http.withCredentials = true;
           window.ApiClient = client;
           resolve(window.ApiClient);
         })

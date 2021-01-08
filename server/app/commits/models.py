@@ -18,6 +18,8 @@ class Commit(db.Model):
     hash = db.Column(db.Text)
     experiment_name = db.Column(db.Text, default='')
     tags = relationship('Tag', secondary=CommitTagAssociation)
+    session_started_at = db.Column(db.Integer, default=0)
+    session_closed_at = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=default_created_at)
     is_archived = db.Column(db.Boolean)
 

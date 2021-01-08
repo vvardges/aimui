@@ -12,12 +12,6 @@ tags:
     description: Executables module
   - name: Tag
     description: Tags module
-servers:
-  - url: http://127.0.0.1:43801/{basePath}
-    variables:
-      basePath:
-        default: api/v1
-    description: Local env
 security:
   - tokenAuth:
 paths:
@@ -616,6 +610,19 @@ paths:
     get:
       operationId: getProjectData
       summary: Get project
+      tags:
+        - Project
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+  "/projects/activity":
+    get:
+      operationId: getProjectActivity
+      summary: Get project activity
       tags:
         - Project
       responses:

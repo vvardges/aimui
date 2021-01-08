@@ -21,6 +21,8 @@ import HubTagCreateScreen from './screens/hub/HubTagCreateScreen/HubTagCreateScr
 import HubTagDetailScreen from './screens/hub/HubTagDetailScreen/HubTagDetailScreen';
 import HubTFSummaryListScreen from './screens/hub/HubTFSummaryListScreen/HubTFSummaryListScreen';
 import HubExperimentsDashboardScreen from './screens/hub/HubExperimentsDashboardScreen/HubExperimentsDashboardScreen';
+import { setCookie } from './services/cookie';
+import { TIMEZONE_COOKIE_NAME } from './config';
 
 class App extends React.Component {
   constructor(props) {
@@ -29,6 +31,10 @@ class App extends React.Component {
     this.state = {
       isLoading: false,
     };
+
+    setCookie(TIMEZONE_COOKIE_NAME, Intl.DateTimeFormat().resolvedOptions().timeZone, {
+      expires: 365 * 24 * 3600,
+    });
 
     props.resetProgress();
   }

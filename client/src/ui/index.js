@@ -24,6 +24,7 @@ import Tag from './components/Tag/Tag';
 import Table from './components/Table/Table';
 import Tooltip from './components/Tooltip/Tooltip';
 import Popover from './components/Popover/Popover';
+import CalendarHeatmap from './components/CalendarHeatmap/CalendarHeatmap';
 
 export default {
   Button,
@@ -53,4 +54,5 @@ export default {
   Table,
   Tooltip,
   Popover,
+  CalendarHeatmap,
 };

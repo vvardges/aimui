@@ -10,6 +10,7 @@ if (window.location.hostname === 'aim-dev.loc') {
   WS_HOST = `ws://${window.location.hostname}:${window.location.port}/live`;
 }
 
+export const TIMEZONE_COOKIE_NAME = '__AIMDE__:TIMEZONE';
 export const USER_ANALYTICS_COOKIE_NAME =
   '__AIMDE__:USER_ANALYTICS_COOKIE_NAME';
 export const USER_LAST_SEARCH_QUERY = '__AIMDE__:USER_LAST_SEARCH_QUERY';

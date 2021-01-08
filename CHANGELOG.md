@@ -1,5 +1,6 @@
 # Changelog
 
+- Add activity block to dashboard (gorarakelyan)
 - Apply imperative pattern to parallel coordinates plot redraw (roubkar) 
 - Add sort by filter in explore section (roubkar)
 - Close select form suggestions on ESC key press (roubkar)

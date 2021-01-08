@@ -1,107 +1,21 @@
 .HubExperimentsDashboardScreen {
-  background-color: var(--grey-lighter);
-  padding: 10px;
+  background-color: var(--grey-bg);
+  min-height: 100vh;
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 0fr 1fr;
 }
 
 .HubExperimentsDashboardScreen__content {
-  display: grid;
-  grid-template-columns: minmax(300px, 1fr) minmax(calc(100% - 300px), 3fr);
-  grid-template-rows: 1fr;
-  overflow: hidden;
 }
 
-.HubExperimentsDashboardScreen__nav {
-}
+.HubExperimentsDashboardScreen__content__block {
+  padding: var(--component-spacing-sm) var(--component-spacing-md) var(--component-spacing-md);
 
-.HubExperimentsDashboardScreen__runs {
-  margin: 10px 0 0 10px;
-  overflow: auto;
-}
-
-.HubExperimentsDashboardScreen__runs__content {
-  height: 100%;
-}
-
-.HubExperimentsDashboardScreen__runs__table__wrapper {
-  height: 100%;
-  width: auto;
-  white-space: nowrap;
-}
-
-.HubExperimentsDashboardScreen__runs__context__cell {
-  display: flex;
-  align-items: stretch;
-  font-weight: 400;
-}
-
-.HubExperimentsDashboardScreen__runs__context__item {
-  margin-right: var(--component-spacing-xs);
-  background-color: var(--grey-light-xx) !important;
-  color: var(--grey-dark) !important;
-  border: 1px solid var(--grey-light-x) !important;
-
-  &:last-child {
-    margin-right: 0 !important;
+  &.HubExperimentsDashboardScreen__content__block--activity {
+    background-color: var(--grey-lighter);
+    border-bottom: 1px solid var(--grey-light-xx);
   }
 }
 
-.HubExperimentsDashboardScreen__runs__context__icon {
-}
-
-.HubExperimentsDashboardScreen__runs__item {
-  cursor: default;
-}
-
-.HubExperimentsDashboardScreen__runs__item__cell {
-  &.active {
-    background-color: var(--primary-lighter) !important;
-  }
-}
-
-.HubExperimentsDashboardScreen__runs__item__name {
-  display: inline;
-}
-
-.HubExperimentsDashboardScreen__experiments {
-  position: relative;
-  margin-top: 10px;
-  overflow: auto;
-}
-
-.HubExperimentsDashboardScreen__experiments__items {
-  .Menu {
-    background-color: #fff;
-    border: 1px solid var(--grey-light-xx);
-  }
-}
-
-.HubExperimentsDashboardScreen__experiments__header {
-  padding: var(--component-spacing-sm);
-  background-color: var(--grey-bg);
-  border-bottom: var(--border);
-  color: var(--grey-dark);
-  font-size: var(--text-sm);
-}
-
-.HubExperimentsDashboardScreen__experiments__actions {
-  padding-top: var(--component-spacing-xs);
-  margin-top: var(--component-spacing-xs);
-  border-top: var(--border);
-}
-
-.HubExperimentsDashboardScreen__experiments__item {
-}
-
-.HubExperimentsDashboardScreen__runs__actions {
-  flex-wrap: nowrap;
-  padding: 2px 0;
-
-  .Button__content {
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-  }
+.HubExperimentsDashboardScreen__content__block__title {
+  margin-bottom: var(--component-spacing-xs) !important;
 }

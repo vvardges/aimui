@@ -4,6 +4,31 @@ from copy import deepcopy
 from functools import reduce
 
 from file_read_backwards import FileReadBackwards
+from app.db import db
+from app.commits.models import Commit
+
+
+def upgrade_runs_table(project, modified_runs):
+    for experiment, runs in modified_runs.items():
+        for run_hash, run_modified_time in runs:
+            run_model = Commit.query.filter(Commit.hash == run_hash).first()
+
+            if not run_model:
+                run_model = Commit(run_hash, experiment)
+                db.session.add(run_model)
+
+            run_config = project.get_run_config(experiment, run_hash)
+
+            if run_config is not None:
+                process = run_config.get('process')
+                started_at, finished_at = (process.get('start_date'),
+                                           process.get('finish_date'))
+                if started_at:
+                    run_model.session_started_at = started_at
+                if finished_at:
+                    run_model.session_closed_at = finished_at
+
+    db.session.commit()
 
 
 def get_branch_commits(branch_path):

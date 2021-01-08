@@ -19,7 +19,7 @@ class HubWrapper extends React.Component {
     return (
       <BaseWrapper>
         <Helmet>
-          <title>Aim: {this.props.project.path}</title>
+          <title>{`Aim: ${this.props.project.path}`}</title>
         </Helmet>
 
         <div className={hubClassName}>
