@@ -375,9 +375,9 @@ function ParallelCoordinatesChart(props) {
         .text(
           traceList?.grouping.chart.length > 0
             ? `#${props.index + 1} ${traceList?.grouping.chart
-                .map((key) => {
-                  return (
-                    key +
+              .map((key) => {
+                return (
+                  key +
                     '=' +
                     formatValue(
                       traceList.traces.find(
@@ -385,18 +385,18 @@ function ParallelCoordinatesChart(props) {
                       )?.config[key],
                       false,
                     )
-                  );
-                })
-                .join(', ')}`
+                );
+              })
+              .join(', ')}`
             : '',
         )
         .append('svg:title')
         .text(
           traceList?.grouping.chart.length > 0
             ? `#${props.index + 1} ${traceList?.grouping.chart
-                .map((key) => {
-                  return (
-                    key +
+              .map((key) => {
+                return (
+                  key +
                     '=' +
                     formatValue(
                       traceList.traces.find(
@@ -404,9 +404,9 @@ function ParallelCoordinatesChart(props) {
                       )?.config[key],
                       false,
                     )
-                  );
-                })
-                .join(', ')}`
+                );
+              })
+              .join(', ')}`
             : '',
         );
     }
@@ -924,8 +924,8 @@ function ParallelCoordinatesChart(props) {
       .filter(function (d) {
         return currentBrushSelection
           ? currentBrushSelection?.find(
-              (selection) => selection?.dimension.key === d.key,
-            )?.extent
+            (selection) => selection?.dimension.key === d.key,
+          )?.extent
           : d3.brushSelection(this);
       })
       .each(function (d) {
@@ -933,8 +933,8 @@ function ParallelCoordinatesChart(props) {
           dimension: d,
           extent: currentBrushSelection
             ? currentBrushSelection?.find(
-                (selection) => selection?.dimension.key === d.key,
-              )?.extent
+              (selection) => selection?.dimension.key === d.key,
+            )?.extent
             : d3.brushSelection(this),
         });
       });

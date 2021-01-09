@@ -216,9 +216,9 @@ function PanelChart(props) {
         .text(
           traceList?.grouping.chart.length > 0
             ? `#${props.index + 1} ${traceList?.grouping.chart
-                .map((key) => {
-                  return (
-                    key +
+              .map((key) => {
+                return (
+                  key +
                     '=' +
                     formatValue(
                       traceList.traces.find(
@@ -226,18 +226,18 @@ function PanelChart(props) {
                       )?.config[key],
                       false,
                     )
-                  );
-                })
-                .join(', ')}`
+                );
+              })
+              .join(', ')}`
             : '',
         )
         .append('svg:title')
         .text(
           traceList?.grouping.chart.length > 0
             ? `#${props.index + 1} ${traceList?.grouping.chart
-                .map((key) => {
-                  return (
-                    key +
+              .map((key) => {
+                return (
+                  key +
                     '=' +
                     formatValue(
                       traceList.traces.find(
@@ -245,9 +245,9 @@ function PanelChart(props) {
                       )?.config[key],
                       false,
                     )
-                  );
-                })
-                .join(', ')}`
+                );
+              })
+              .join(', ')}`
             : '',
         );
     }
@@ -816,6 +816,10 @@ function PanelChart(props) {
       handleAreaMouseMove(d3.mouse(this));
     });
 
+    svg.current.on('mouseleave', function () {
+      handleVisAreaMouseOut(d3.mouse(this));
+    });
+
     bgRect.current.on('click', function () {
       handleBgRectClick(d3.mouse(this));
     });
@@ -899,8 +903,8 @@ function PanelChart(props) {
     unsetHoveredLine(mouse);
   }
 
-  function handleVisAreaMouseOut() {
-    unsetHoveredLine();
+  function handleVisAreaMouseOut(mouse) {
+    unsetHoveredLine(mouse);
   }
 
   function handleBgRectClick(mouse) {
