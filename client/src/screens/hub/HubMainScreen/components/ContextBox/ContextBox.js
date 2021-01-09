@@ -29,6 +29,7 @@ function ContextBox(props) {
     JSON.parse(getItem(TABLE_COLUMNS))?.context?.forcePinned,
   );
   let [searchFields, setSearchFields] = useState({
+    metrics: {},
     params: {},
   });
   let paramKeys = useRef();
@@ -62,6 +63,7 @@ function ContextBox(props) {
     isExploreParamsModeEnabled,
     isExploreMetricsModeEnabled,
     getAllParamsPaths,
+    getAllMetrics,
   } = HubMainScreenModel.helpers;
 
   function updateForcePinnedColumns(columnKey, value) {
@@ -1075,12 +1077,17 @@ function ContextBox(props) {
 
     const paramFields = getAllParamsPaths(false);
     const deepParamFields = getAllParamsPaths(true, true);
-    if (!_.isEqual(deepParamFields, searchFields.params.deepParamFields)) {
+    const metrics = isExploreParamsModeEnabled() ? getAllMetrics() : null;
+    if (
+      !_.isEqual(deepParamFields, searchFields.params.deepParamFields) ||
+      !_.isEqual(metrics, searchFields.metrics)
+    ) {
       setSearchFields({
         params: {
           paramFields,
           deepParamFields,
         },
+        metrics,
       });
     }
   });

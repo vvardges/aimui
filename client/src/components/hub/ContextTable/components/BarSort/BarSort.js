@@ -8,7 +8,6 @@ import {
   flattenObject,
   removeObjectEmptyKeys,
   searchNestedObject,
-  excludeObjectPaths,
 } from '../../../../../utils';
 import UI from '../../../../../ui';
 import * as _ from 'lodash';
@@ -30,20 +29,38 @@ function BarSort({ sortFields, setSortFields, maxHeight, fields }) {
   }, [opened]);
 
   // Parameters
-  // TODO: add metrics as well
   const paramFields = _.cloneDeep(fields.params.deepParamFields);
   const paramFieldsPaths = [];
-  Object.keys(flattenObject(paramFields)).forEach((paramPath) => {
-    paramFieldsPaths.push(`params.${paramPath}`);
-    _.set(paramFields, paramPath, true);
-  });
-  searchNestedObject(paramFields, searchInput.split('.'));
-  sortFields
-    .map((f) => f[0].replace('params.', ''))
-    .forEach((paramPath) => {
-      _.set(paramFields, paramPath, false);
+  if (paramFields && !_.isEmpty(paramFields)) {
+    Object.keys(flattenObject(paramFields)).forEach((paramPath) => {
+      paramFieldsPaths.push(`params.${paramPath}`);
+      _.set(paramFields, paramPath, true);
     });
-  removeObjectEmptyKeys(paramFields);
+    searchNestedObject(paramFields, searchInput.split('.'));
+    sortFields
+      .map((f) => f[0].replace('params.', ''))
+      .forEach((paramPath) => {
+        _.set(paramFields, paramPath, false);
+      });
+    removeObjectEmptyKeys(paramFields);
+  }
+
+  // Metrics
+  const metricFields = _.cloneDeep(fields.metrics);
+  const metricFieldsPaths = [];
+  if (metricFields && !_.isEmpty(metricFields)) {
+    Object.keys(flattenObject(metricFields)).forEach((metricPath) => {
+      metricFieldsPaths.push(`params.metrics.${metricPath}`);
+      _.set(metricFields, metricPath, true);
+    });
+    searchNestedObject(metricFields, searchInput.split('.'));
+    sortFields
+      .map((f) => f[0].replace('params.metrics.', ''))
+      .forEach((metricPath) => {
+        _.set(metricFields, metricPath, false);
+      });
+    removeObjectEmptyKeys(metricFields);
+  }
 
   function handleFieldToggle(path, order = 'asc') {
     let updSortFields = [...sortFields];
@@ -91,7 +108,7 @@ function BarSort({ sortFields, setSortFields, maxHeight, fields }) {
             }
           }}
         >
-          {paramFieldsPaths.length ? (
+          {paramFieldsPaths.length || metricFields.length ? (
             <div className='BarSort__content'>
               <div className='BarSort__body'>
                 {sortFields.length > 0 && (
@@ -164,18 +181,34 @@ function BarSort({ sortFields, setSortFields, maxHeight, fields }) {
                   />
                 </div>
                 <div className='BarSort__parameters__box'>
-                  {!!paramFields && Object.keys(paramFields).length ? (
-                    <Parameters
-                      params={paramFields}
-                      parentPath={[]}
-                      sortFields={sortFields}
-                      toggleField={handleFieldToggle}
-                    />
-                  ) : (
-                    <UI.Text type='grey' spacingTop spacing center small>
+                  {(!!paramFields || !!metricFields) &&
+                  (Object.keys(paramFields).length > 0 ||
+                    Object.keys(metricFields).length > 0) ? (
+                    <>
+                      {!!metricFields &&
+                        Object.keys(metricFields).length > 0 && (
+                        <Parameters
+                          params={metricFields}
+                          parentPath={[]}
+                          sortFields={sortFields}
+                          toggleField={handleFieldToggle}
+                          metric
+                        />
+                      )}
+                      {!!paramFields && Object.keys(paramFields).length > 0 && (
+                        <Parameters
+                          params={paramFields}
+                          parentPath={[]}
+                          sortFields={sortFields}
+                          toggleField={handleFieldToggle}
+                        />
+                      )}
+                    </>
+                    ) : (
+                      <UI.Text type='grey' spacingTop spacing center small>
                       No options
-                    </UI.Text>
-                  )}
+                      </UI.Text>
+                    )}
                 </div>
               </div>
               <div className='BarSort__footer'>
@@ -236,8 +269,10 @@ BarSort.propTypes = {
   fields: PropTypes.object,
 };
 
-function Parameter({ paramKey, parentPath, toggleField }) {
-  const path = `params.${parentPath.join('.')}.${paramKey}`;
+function Parameter({ paramKey, parentPath, toggleField, metric }) {
+  const path = metric
+    ? `${parentPath.join('.')} ${paramKey}`
+    : `${parentPath.join('.')}.${paramKey}`;
 
   return (
     <div
@@ -262,13 +297,15 @@ function Parameter({ paramKey, parentPath, toggleField }) {
   );
 }
 
-function Parameters({ params, parentPath, sortFields, toggleField }) {
+function Parameters({ params, parentPath, sortFields, toggleField, metric }) {
   const key = (k) => `${parentPath.join('.')}.${k}`;
   const unselectedParams =
     !!params &&
     Object.keys(params)
       .filter((paramKey) => {
-        const path = `params.${parentPath.join('.')}.${paramKey}`;
+        const path = metric
+          ? `${parentPath.join('.')} ${paramKey}`
+          : `${parentPath.join('.')}.${paramKey}`;
         const off = sortFields.findIndex((field) => field[0] === path) === -1;
         return off;
       })
@@ -281,11 +318,12 @@ function Parameters({ params, parentPath, sortFields, toggleField }) {
           paramKey={paramKey}
           parentPath={parentPath}
           toggleField={toggleField}
+          metric={metric}
         />
       )}
       {typeof params[paramKey] === 'object' &&
         Object.keys(params[paramKey]).filter((key) => {
-          const path = `params.${paramKey}.${key}`;
+          const path = metric ? `${paramKey} ${key}` : `${paramKey}.${key}`;
           const off = sortFields.findIndex((field) => field[0] === path) === -1;
           return off;
         }).length > 0 && (
@@ -306,6 +344,7 @@ function Parameters({ params, parentPath, sortFields, toggleField }) {
               parentPath={[...parentPath, paramKey]}
               sortFields={sortFields}
               toggleField={toggleField}
+              metric={metric}
             />
           </div>
         </div>

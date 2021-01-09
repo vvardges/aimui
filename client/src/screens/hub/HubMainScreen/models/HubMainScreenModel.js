@@ -194,6 +194,28 @@ function setRunsState(runsState, callback = null) {
 
   if (!getState().runs.isLoading && !getState().runs.isEmpty) {
     setTraceList();
+    const paramsPaths = getAllParamsPaths();
+    let possibleSortFields = Object.keys(paramsPaths)
+      .map((paramKey) => {
+        return paramsPaths[paramKey].map((key) => `${paramKey}.${key}`);
+      })
+      .flat();
+    if (isExploreParamsModeEnabled()) {
+      const metrics = getAllMetrics();
+      possibleSortFields = possibleSortFields.concat(
+        Object.keys(metrics)
+          .map((metricKey) => {
+            return Object.keys(metrics[metricKey]).map(
+              (key) => `${metricKey} ${key}`,
+            );
+          })
+          .flat(),
+      );
+    }
+    const sortFields = getState().sortFields.filter((field) => {
+      return possibleSortFields.includes(field[0]);
+    });
+    setSortFields(sortFields);
   }
 
   if (callback !== null) {
@@ -219,7 +241,27 @@ function setTraceList() {
 
   _.orderBy(
     runs,
-    sortFields.map((field) => field[0]),
+    sortFields.map(
+      (field) =>
+        function (run) {
+          if (field[0].includes('="') || field[0].includes('No context')) {
+            const paramKey = '__METRICS__';
+            for (let key in run.params?.[paramKey]) {
+              for (let i = 0; i < run.params[paramKey][key].length; i++) {
+                const value = run.params[paramKey][key][i].context
+                  .map((metric) => `${metric[0]}="${metric[1]}"`)
+                  .join(', ');
+                const context = value === '' ? 'No context' : `${value}`;
+                if (field[0] === `${key} ${context}`) {
+                  return run.params[paramKey][key][i].values?.last ?? '';
+                }
+              }
+            }
+            return '';
+          }
+          return _.get(run, `params.${field[0]}`) ?? '';
+        },
+    ),
     sortFields.map((field) => field[1]),
   ).forEach((run) => {
     if (!run.metrics?.length) {
@@ -515,6 +557,29 @@ function getAllParamsPaths(deep = true, nested = false) {
   return sortOnKeys(paramPaths);
 }
 
+function getAllMetrics() {
+  const metrics = {};
+  const paramKey = '__METRICS__';
+  getState().traceList?.traces.forEach((trace) => {
+    trace.series.forEach((series) => {
+      for (let key in series?.run.params?.[paramKey]) {
+        if (!metrics.hasOwnProperty(key)) {
+          metrics[key] = {};
+        }
+        for (let i = 0; i < series.run.params[paramKey][key].length; i++) {
+          const value = series.run.params[paramKey][key][i].context
+            .map((metric) => `${metric[0]}="${metric[1]}"`)
+            .join(', ');
+          const context = value === '' ? 'No context' : `${value}`;
+          metrics[key][context] = true;
+        }
+      }
+    });
+  });
+
+  return sortOnKeys(metrics);
+}
+
 function getAllContextKeys() {
   const contextKeys = [];
 
@@ -697,6 +762,7 @@ export const HubMainScreenModel = {
     getCountOfSelectedParams,
     getAllParamsPaths,
     getAllContextKeys,
+    getAllMetrics,
     areControlsChanged,
     getTFSummaryScalars,
     isAimRun,

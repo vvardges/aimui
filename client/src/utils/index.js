@@ -423,7 +423,11 @@ export function excludeObjectPaths(item, paths) {
 
 export function searchNestedObject(item, path, baseMatched = false) {
   Object.keys(item).forEach((i) => {
-    if (i === path[0] || (path.length === 1 && i.startsWith(path[0]))) {
+    if (
+      i.toLocaleLowerCase() === path[0].toLocaleLowerCase() ||
+      (path.length === 1 &&
+        i.toLocaleLowerCase().startsWith(path[0].toLocaleLowerCase()))
+    ) {
       if (path.length > 1) {
         searchNestedObject(item[i], path.slice(1), true);
       }

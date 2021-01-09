@@ -15,12 +15,15 @@ function Activity(props) {
   });
 
   useEffect(() => {
-    props.getProjectActivity()
+    props
+      .getProjectActivity()
       .then((data) => {
         setState((s) => ({
           ...s,
           ...data,
-          activityMapMax: !!data?.activity_map ? Math.max(...(Object.values(data.activity_map))) : 0,
+          activityMapMax: !!data?.activity_map
+            ? Math.max(...Object.values(data.activity_map))
+            : 0,
         }));
 
         if (Number.isInteger(data?.num_experiments)) {
@@ -35,10 +38,12 @@ function Activity(props) {
         }
       })
       .catch(() => {})
-      .finally(() => setState((s) => ({
-        ...s,
-        isLoading: false,
-      })));
+      .finally(() =>
+        setState((s) => ({
+          ...s,
+          isLoading: false,
+        })),
+      );
   }, []);
 
   const today = new Date();
@@ -53,13 +58,15 @@ function Activity(props) {
     const query = `run.date > ${Math.floor(dateUTC / 1000)} and run.date < ${Math.ceil(dateUTC / 1000 + 24 * 60 * 60)}`;
      */
 
-    const query = `run.date > ${Math.floor(date.getTime() / 1000)} and run.date < ${Math.ceil(shiftDate(date, 1).getTime() / 1000)}`;
+    const query = `run.date > ${Math.floor(
+      date.getTime() / 1000,
+    )} and run.date < ${Math.ceil(shiftDate(date, 1).getTime() / 1000)}`;
     props.setRunsSearchBarValue(query, true);
   }
 
   return (
     <div className='HubExperimentsDashboardScreen__activity'>
-      {state.isLoading &&
+      {state.isLoading && (
         <ContentLoader
           height={160}
           width={900}
@@ -73,8 +80,8 @@ function Activity(props) {
           <rect x='480' y='0' rx='4' ry='4' width='120' height='20' />
           <rect x='480' y='30' rx='4' ry='4' width='400' height='130' />
         </ContentLoader>
-      }
-      {!state.isLoading &&
+      )}
+      {!state.isLoading && (
         <div className='HubExperimentsDashboardScreen__activity__body'>
           <div className='HubExperimentsDashboardScreen__activity__stats'>
             <UI.Text
@@ -90,7 +97,10 @@ function Activity(props) {
                 <UI.Text className='HubExperimentsDashboardScreen__activity__stats__title'>
                   Experiments
                 </UI.Text>
-                <UI.Text size={1} className='HubExperimentsDashboardScreen__activity__stats__figure'>
+                <UI.Text
+                  size={1}
+                  className='HubExperimentsDashboardScreen__activity__stats__figure'
+                >
                   {state?.num_experiments ?? '0'}
                 </UI.Text>
                 <div className='HubExperimentsDashboardScreen__activity__stats__icon'>
@@ -101,7 +111,10 @@ function Activity(props) {
                 <UI.Text className='HubExperimentsDashboardScreen__activity__stats__title'>
                   Runs
                 </UI.Text>
-                <UI.Text size={1} className='HubExperimentsDashboardScreen__activity__stats__figure'>
+                <UI.Text
+                  size={1}
+                  className='HubExperimentsDashboardScreen__activity__stats__figure'
+                >
                   {state?.num_runs ?? '0'}
                 </UI.Text>
                 <div className='HubExperimentsDashboardScreen__activity__stats__icon'>
@@ -124,15 +137,15 @@ function Activity(props) {
                 startDate={shiftDate(today, -10 * 30)}
                 endDate={today}
                 onCellClick={searchRuns}
-                data={Object.keys(state?.activity_map ?? {}).map(k => ([
+                data={Object.keys(state?.activity_map ?? {}).map((k) => [
                   new Date(k),
                   state.activity_map[k],
-                ]))}
+                ])}
               />
             </div>
           </div>
         </div>
-      }
+      )}
     </div>
   );
 }

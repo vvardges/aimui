@@ -32,9 +32,13 @@ class App extends React.Component {
       isLoading: false,
     };
 
-    setCookie(TIMEZONE_COOKIE_NAME, Intl.DateTimeFormat().resolvedOptions().timeZone, {
-      expires: 365 * 24 * 3600,
-    });
+    setCookie(
+      TIMEZONE_COOKIE_NAME,
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+      {
+        expires: 365 * 24 * 3600,
+      },
+    );
 
     props.resetProgress();
   }

@@ -11,9 +11,15 @@ import * as classes from '../../../../../constants/classes';
 import * as screens from '../../../../../constants/screens';
 import UI from '../../../../../ui';
 import SearchBar from '../../../../../components/hub/SearchBar/SearchBar';
-import { HUB_PROJECT_EXPERIMENT, EXPLORE } from '../../../../../constants/screens';
-import { setItem } from '../../../../../services/storage';
-import { USER_LAST_SEARCH_QUERY } from '../../../../../config';
+import {
+  HUB_PROJECT_EXPERIMENT,
+  EXPLORE,
+} from '../../../../../constants/screens';
+import { getItem, setItem } from '../../../../../services/storage';
+import {
+  USER_LAST_SEARCH_QUERY,
+  DASHBOARD_SORT_FIELDS,
+} from '../../../../../config';
 import ContextTable from '../../../../../components/hub/ContextTable/ContextTable';
 import {
   buildUrl,
@@ -22,7 +28,8 @@ import {
   formatValue,
   classNames,
   roundValue,
-  getObjectValueByPath,
+  sortOnKeys,
+  flattenObject,
 } from '../../../../../utils';
 
 class Runs extends React.Component {
@@ -38,8 +45,10 @@ class Runs extends React.Component {
       selectedRuns: [],
       coloredCols: {},
       searchFields: {
+        metrics: {},
         params: {},
       },
+      sortFields: JSON.parse(getItem(DASHBOARD_SORT_FIELDS)) ?? [],
     };
 
     this.paramKeys = {};
@@ -59,16 +68,24 @@ class Runs extends React.Component {
       this.getRuns(this.props.searchQuery, false);
     }
 
-    const paramFields = this.props.project?.params
-      ? { ...this.props.project?.params }
-      : {};
-    Object.keys(paramFields).forEach((paramKey) => {
-      paramFields[paramKey] = Object.keys(paramFields[paramKey]);
-    });
-    if (!_.isEqual(paramFields, this.state.searchFields.params)) {
+    const deepParamFields = this.getAllParamsPaths(this.state.runs, true, true);
+    const paramFields = this.getAllParamsPaths(this.state.runs, true, false);
+    let metrics = this.getAllMetrics(this.state.runs);
+
+    if (
+      !_.isEqual(
+        deepParamFields,
+        this.state.searchFields.params.deepParamFields,
+      ) ||
+      !_.isEqual(metrics, this.state.searchFields.metrics)
+    ) {
       this.setState({
         searchFields: {
-          params: paramFields,
+          params: {
+            paramFields,
+            deepParamFields,
+          },
+          metrics,
         },
       });
     }
@@ -139,9 +156,30 @@ class Runs extends React.Component {
                 data.runs.map((run) => _.get(run, JSON.parse(prop))),
               );
             });
+          const paramsPaths = this.getAllParamsPaths(data?.runs);
+          let possibleSortFields = Object.keys(paramsPaths)
+            .map((paramKey) => {
+              return paramsPaths[paramKey].map((key) => `${paramKey}.${key}`);
+            })
+            .flat();
+          const metrics = this.getAllMetrics(data?.runs);
+          possibleSortFields = possibleSortFields.concat(
+            Object.keys(metrics)
+              .map((metricKey) => {
+                return Object.keys(metrics[metricKey]).map(
+                  (key) => `${metricKey} ${key}`,
+                );
+              })
+              .flat(),
+          );
+
+          const sortFields = prevState.sortFields.filter((field) => {
+            return possibleSortFields.includes(field[0]);
+          });
 
           return {
-            runs: data?.runs?.sort((a, b) => b.date - a.date) ?? [],
+            runs: data?.runs ? this.orderRuns(data?.runs, sortFields) : [],
+            sortFields,
             experiments: _.uniq(experiments),
             selectedRuns: [],
             coloredCols: coloredCols,
@@ -336,15 +374,140 @@ class Runs extends React.Component {
     return value;
   };
 
+  getAllParamsPaths = (runs, deep = true, nested = false) => {
+    const paramPaths = {};
+
+    runs.forEach((run) => {
+      Object.keys(run.params).forEach((paramKey) => {
+        if (paramKey === '__METRICS__') {
+          return;
+        }
+
+        if (!paramPaths.hasOwnProperty(paramKey)) {
+          if (deep && nested) {
+            paramPaths[paramKey] = {};
+          } else {
+            paramPaths[paramKey] = [];
+          }
+        }
+
+        if (deep) {
+          if (nested) {
+            for (let key in run.params[paramKey]) {
+              if (
+                typeof paramPaths[paramKey][key] === 'object' ||
+                typeof run.params[paramKey][key] === 'object'
+              ) {
+                if (!paramPaths.hasOwnProperty(paramKey)) {
+                  paramPaths[paramKey][key] = {};
+                }
+                paramPaths[paramKey][key] = _.merge(
+                  paramPaths[paramKey][key],
+                  run.params[paramKey][key],
+                );
+              } else {
+                paramPaths[paramKey][key] = run.params[paramKey][key];
+              }
+            }
+          } else {
+            paramPaths[paramKey].push(
+              ...Object.keys(flattenObject(run.params[paramKey])),
+            );
+            paramPaths[paramKey] = _.uniq(paramPaths[paramKey]).sort();
+          }
+        } else {
+          Object.keys(run.params[paramKey]).forEach((key) => {
+            if (!paramPaths[paramKey].includes(key)) {
+              paramPaths[paramKey].push(key);
+              paramPaths[paramKey].sort();
+            }
+          });
+        }
+      });
+    });
+
+    return sortOnKeys(paramPaths);
+  };
+
+  getAllMetrics = (runs) => {
+    const metrics = {};
+    const paramKey = '__METRICS__';
+    runs.forEach((run) => {
+      for (let key in run.params?.[paramKey]) {
+        if (!metrics.hasOwnProperty(key)) {
+          metrics[key] = {};
+        }
+        for (let i = 0; i < run.params[paramKey][key].length; i++) {
+          const value = run.params[paramKey][key][i].context
+            .map((metric) => `${metric[0]}="${metric[1]}"`)
+            .join(', ');
+          const context = value === '' ? 'No context' : `${value}`;
+          metrics[key][context] = true;
+        }
+      }
+    });
+
+    return sortOnKeys(metrics);
+  };
+
+  setSortFields = (sortFields) => {
+    setItem(DASHBOARD_SORT_FIELDS, JSON.stringify(sortFields));
+    this.setState((state) => ({
+      sortFields,
+      runs: this.orderRuns(state.runs, sortFields),
+    }));
+  };
+
+  orderRuns = (runs, fields) => {
+    return _.orderBy(
+      runs,
+      fields.length === 0
+        ? ['date']
+        : fields.map(
+          (field) =>
+            function (run) {
+              if (
+                field[0].includes('="') ||
+                  field[0].includes('No context')
+              ) {
+                const paramKey = '__METRICS__';
+                for (let key in run.params?.[paramKey]) {
+                  for (let i = 0; i < run.params[paramKey][key].length; i++) {
+                    const value = run.params[paramKey][key][i].context
+                      .map((metric) => `${metric[0]}="${metric[1]}"`)
+                      .join(', ');
+                    const context = value === '' ? 'No context' : `${value}`;
+                    if (field[0] === `${key} ${context}`) {
+                      return run.params[paramKey][key][i].values?.last ?? '';
+                    }
+                  }
+                }
+                return '';
+              }
+              return _.get(run, `params.${field[0]}`) ?? '';
+            },
+        ),
+      fields.length === 0 ? ['desc'] : fields.map((field) => field[1]),
+    );
+  };
+
   _renderExperiments = () => {
     if (this.props.isLoading) {
-      return <UI.Text className='' type='grey' left>Loading..</UI.Text>
+      return (
+        <UI.Text className='' type='grey' left>
+          Loading..
+        </UI.Text>
+      );
     }
 
     const experiments = this.props.project?.branches ?? [];
 
     if (!experiments || experiments.length === 0) {
-      return <UI.Text className='' type='grey' left>No experiments</UI.Text>
+      return (
+        <UI.Text className='' type='grey' left>
+          No experiments
+        </UI.Text>
+      );
     }
 
     return (
@@ -442,16 +605,16 @@ class Runs extends React.Component {
             <>
               <div className='HubExperimentsDashboardScreen__runs__context__cell'>
                 {!!metricContext &&
-                Object.keys(metricContext).map((metricContextKey) => (
-                  <UI.Label
-                    key={metricContextKey}
-                    size='small'
-                    className='HubExperimentsDashboardScreen__runs__context__item'
-                  >
-                    {metricContextKey}:{' '}
-                    {formatValue(metricContext[metricContextKey])}
-                  </UI.Label>
-                ))}
+                  Object.keys(metricContext).map((metricContextKey) => (
+                    <UI.Label
+                      key={metricContextKey}
+                      size='small'
+                      className='HubExperimentsDashboardScreen__runs__context__item'
+                    >
+                      {metricContextKey}:{' '}
+                      {formatValue(metricContext[metricContextKey])}
+                    </UI.Label>
+                  ))}
                 {(metricContext === null ||
                   Object.keys(metricContext).length === 0) && (
                   <UI.Label
@@ -678,6 +841,9 @@ class Runs extends React.Component {
           columns={columns}
           data={data}
           searchFields={this.state.searchFields}
+          displaySort
+          sortFields={this.state.sortFields}
+          setSortFields={this.setSortFields}
         />
       </div>
     );
@@ -689,9 +855,7 @@ class Runs extends React.Component {
     }
 
     return (
-      <div
-        className='HubExperimentsDashboardScreen__runs'
-      >
+      <div className='HubExperimentsDashboardScreen__runs'>
         <div className='HubExperimentsDashboardScreen__runs__body'>
           <div>
             <UI.Text
@@ -728,36 +892,37 @@ class Runs extends React.Component {
                 onClear={(value) => this.handleSearchBarSubmit(value)}
               />
             </div>
-            {this.state.isLoading
-              ? <UI.Text className='' type='grey' center spacingTop>Loading..</UI.Text>
-              : this.state.runs.length
-                ? this._renderRuns()
-                : (
-                  <div>
-                    {!!this.searchBarRef?.current?.getValue() ? (
-                      <UI.Text type='grey' center spacingTop>
-                        You haven't recorded experiments matching this query.
-                      </UI.Text>
-                    ) : (
-                      <UI.Text type='grey' center spacingTop>
-                        It's super easy to search Aim experiments.
-                      </UI.Text>
-                    )}
-                    <UI.Text type='grey' center>
-                      Lookup{' '}
-                      <a
-                        className='link'
-                        href='https://github.com/aimhubio/aim#searching-experiments'
-                        target='_blank'
-                        rel='noopener noreferrer'
-                      >
-                        search docs
-                      </a>{' '}
-                      to learn more.
-                    </UI.Text>
-                  </div>
-                )
-            }
+            {this.state.isLoading ? (
+              <UI.Text className='' type='grey' center spacingTop>
+                Loading..
+              </UI.Text>
+            ) : this.state.runs.length ? (
+              this._renderRuns()
+            ) : (
+              <div>
+                {!!this.searchBarRef?.current?.getValue() ? (
+                  <UI.Text type='grey' center spacingTop>
+                    You haven't recorded experiments matching this query.
+                  </UI.Text>
+                ) : (
+                  <UI.Text type='grey' center spacingTop>
+                    It's super easy to search Aim experiments.
+                  </UI.Text>
+                )}
+                <UI.Text type='grey' center>
+                  Lookup{' '}
+                  <a
+                    className='link'
+                    href='https://github.com/aimhubio/aim#searching-experiments'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                  >
+                    search docs
+                  </a>{' '}
+                  to learn more.
+                </UI.Text>
+              </div>
+            )}
           </div>
         </div>
       </div>

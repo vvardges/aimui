@@ -128,12 +128,10 @@ class HubExperimentsDashboardScreen extends React.Component {
     return (
       <div className='HubExperimentsDashboardScreen'>
         <div className='HubExperimentsDashboardScreen__content'>
-          <div className="HubExperimentsDashboardScreen__content__block HubExperimentsDashboardScreen__content__block--activity">
-            <Activity
-              setRunsSearchBarValue={this.setRunsSearchBarValue}
-            />
+          <div className='HubExperimentsDashboardScreen__content__block HubExperimentsDashboardScreen__content__block--activity'>
+            <Activity setRunsSearchBarValue={this.setRunsSearchBarValue} />
           </div>
-          <div className="HubExperimentsDashboardScreen__content__block">
+          <div className='HubExperimentsDashboardScreen__content__block'>
             <Runs
               ref={this.runsRef}
               searchQuery={this.state.searchQuery ?? this.initSearchQuery}
