@@ -55,8 +55,12 @@ class Project:
                 run_path = os.path.join(self.repo.path, experiment, run)
                 run_config_path = os.path.join(run_path,
                                                AIM_COMMIT_CONFIG_FILE_NAME)
+
+                if not os.path.exists(run_config_path):
+                    continue
+
                 run_config_path = Path(run_config_path)
-                if not run_config_path:
+                if not run_config_path or not run_config_path.exists():
                     continue
 
                 run_stats = run_config_path.stat()

@@ -13,6 +13,7 @@ CommitTagAssociation = db.Table('commit_tag',
 
 class Commit(db.Model):
     __tablename__ = 'commits'
+    __table_args__ = (db.UniqueConstraint('experiment_name', 'hash'),)
 
     uuid = db.Column(db.Text, primary_key=True)
     hash = db.Column(db.Text)
@@ -21,13 +22,17 @@ class Commit(db.Model):
     session_started_at = db.Column(db.Integer, default=0)
     session_closed_at = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=default_created_at)
-    is_archived = db.Column(db.Boolean)
+    is_archived = db.Column(db.Boolean, default=False)
 
     def __init__(self, hash, experiment_name):
-        self.uuid = str(uuid.uuid1())
+        self.uuid = self.generate_uuid()
         self.hash = hash
         self.experiment_name = experiment_name
         self.is_archived = False
+
+    @staticmethod
+    def generate_uuid():
+        return str(uuid.uuid1())
 
 
 class TFSummaryLog(db.Model):

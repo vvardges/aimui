@@ -37,12 +37,19 @@ function Activity(props) {
           });
         }
       })
-      .catch(() => {})
+      .catch(() =>
+        setState((s) => ({
+          ...s,
+          activity_map: {},
+          num_experiments: 0,
+          num_runs: 0,
+        }))
+      )
       .finally(() =>
         setState((s) => ({
           ...s,
           isLoading: false,
-        })),
+        }))
       );
   }, []);
 
