@@ -31,6 +31,7 @@ const pageView = (pageName, pageCat = null) => {
     url: window.location.hostname,
     search: null,
     referrer: null,
+    title: null,
   });
 };
 
@@ -39,7 +40,17 @@ const trackEvent = (eventName, properties = {}) => {
     return;
   }
 
-  window.analytics.track(eventName, properties);
+  window.analytics.track(eventName, properties, {
+    path: window.location.pathname,
+    url: window.location.hostname,
+    page: {
+      path: null,
+      search: null,
+      referrer: null,
+      title: null,
+      url: null,
+    },
+  });
 };
 
 export { init, pageView, trackEvent };

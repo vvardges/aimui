@@ -6,8 +6,10 @@ import ContentLoader from 'react-content-loader';
 import * as analytics from '../../../../../services/analytics';
 import * as storeUtils from '../../../../../storeUtils';
 import * as classes from '../../../../../constants/classes';
+import { NUM_EXPERIMENTS_KEY, NUM_RUNS_KEY } from '../../../../../config';
 import { shiftDate } from '../../../../../utils';
 import UI from '../../../../../ui';
+import { getItem, setItem } from '../../../../../services/storage';
 
 function Activity(props) {
   let [state, setState] = useState({
@@ -29,12 +31,16 @@ function Activity(props) {
         if (Number.isInteger(data?.num_experiments)) {
           analytics.trackEvent('Number of experiments', {
             num_experiments: data.num_experiments,
+            diff: data.num_experiments - (getItem(NUM_EXPERIMENTS_KEY) || 0),
           });
+          setItem(NUM_EXPERIMENTS_KEY, data.num_experiments);
         }
         if (Number.isInteger(data?.num_runs)) {
           analytics.trackEvent('Number of runs', {
             num_runs: data.num_runs,
+            diff: data.num_runs - (getItem(NUM_RUNS_KEY) || 0),
           });
+          setItem(NUM_RUNS_KEY, data.num_runs);
         }
       })
       .catch(() =>
