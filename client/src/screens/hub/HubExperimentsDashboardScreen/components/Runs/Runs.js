@@ -1,6 +1,6 @@
 import './Runs.less';
 
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import _ from 'lodash';
 import Color from 'color';
@@ -31,6 +31,7 @@ import {
   sortOnKeys,
   flattenObject,
 } from '../../../../../utils';
+import QueryParseErrorAlert from '../../../../../components/hub/QueryParseErrorAlert/QueryParseErrorAlert';
 
 class Runs extends React.Component {
   constructor(props) {
@@ -49,6 +50,7 @@ class Runs extends React.Component {
         params: {},
       },
       sortFields: JSON.parse(getItem(DASHBOARD_SORT_FIELDS)) ?? [],
+      searchError: null,
     };
 
     this.paramKeys = {};
@@ -183,13 +185,16 @@ class Runs extends React.Component {
             experiments: _.uniq(experiments),
             selectedRuns: [],
             coloredCols: coloredCols,
+            searchError: null,
           };
         });
       })
-      .catch(() => {
+      .catch((err) => {
+        const errorBody = err?.response?.body;
         this.setState({
           runs: [],
           experiments: [],
+          searchError: errorBody?.type === 'parse_error' ? errorBody : null,
         });
       })
       .finally(() => {
@@ -849,6 +854,46 @@ class Runs extends React.Component {
     );
   };
 
+  _renderParseErrorAlert = () => {
+    return (
+      <div className='HubExperimentsDashboardScreen__runs__alert'>
+        <QueryParseErrorAlert
+          key={this.state.searchError.statement}
+          query={this.state.searchError.statement}
+          errorOffset={this.state.searchError.location - 1}
+        />
+      </div>
+    );
+  };
+
+  _renderNoExperimentsAlert = () => {
+    return (
+      <div className='HubExperimentsDashboardScreen__runs__alert HubExperimentsDashboardScreen__runs__alert--segment'>
+        {!!this.searchBarRef?.current?.getValue() ? (
+          <UI.Text type='grey' center>
+            You haven't recorded experiments matching this query.
+          </UI.Text>
+        ) : (
+          <UI.Text type='grey' center>
+            It's super easy to search Aim experiments.
+          </UI.Text>
+        )}
+        <UI.Text type='grey' center>
+          Lookup{' '}
+          <a
+            className='link'
+            href='https://github.com/aimhubio/aim#searching-experiments'
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            search docs
+          </a>{' '}
+          to learn more.
+        </UI.Text>
+      </div>
+    );
+  };
+
   render = () => {
     if (this.state.redirectToPanel) {
       return <Redirect to={EXPLORE} push />;
@@ -899,28 +944,10 @@ class Runs extends React.Component {
             ) : this.state.runs.length ? (
               this._renderRuns()
             ) : (
-              <div>
-                {!!this.searchBarRef?.current?.getValue() ? (
-                  <UI.Text type='grey' center spacingTop>
-                    You haven't recorded experiments matching this query.
-                  </UI.Text>
-                ) : (
-                  <UI.Text type='grey' center spacingTop>
-                    It's super easy to search Aim experiments.
-                  </UI.Text>
-                )}
-                <UI.Text type='grey' center>
-                  Lookup{' '}
-                  <a
-                    className='link'
-                    href='https://github.com/aimhubio/aim#searching-experiments'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                  >
-                    search docs
-                  </a>{' '}
-                  to learn more.
-                </UI.Text>
+              <div className=''>
+                {!!this.state.searchError && this._renderParseErrorAlert()}
+                {this.state.searchError === null &&
+                  this._renderNoExperimentsAlert()}
               </div>
             )}
           </div>

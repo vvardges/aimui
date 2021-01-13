@@ -449,7 +449,10 @@ function SelectInput(props) {
     ];
 
     const selectedFields = getSelectedAttrs()?.filter(
-      (v, i, self) => !!v.length && self.indexOf(v) === i,
+      (v, i, self) =>
+        !!v.length &&
+        self.indexOf(v) === i &&
+        availableFields.indexOf(v) !== -1,
     );
 
     if (!selectedFields || !selectedFields.length) {
@@ -467,21 +470,18 @@ function SelectInput(props) {
           Selected fields
         </UI.Text>
         <div className='SelectInput__dropdown__selected__items'>
-          {selectedFields.map(
-            (f, i) =>
-              availableFields.indexOf(f) !== -1 && (
-                <UI.Label
-                  className='SelectInput__dropdown__selected__item'
-                  key={i}
-                  iconRight={<UI.Icon i='close' />}
-                  iconOnClick={() => selectAttribute(f)}
-                  iconIsClickable
-                  outline
-                >
-                  {f}
-                </UI.Label>
-              ),
-          )}
+          {selectedFields.map((f, i) => (
+            <UI.Label
+              className='SelectInput__dropdown__selected__item'
+              key={i}
+              iconRight={<UI.Icon i='close' />}
+              iconOnClick={() => selectAttribute(f)}
+              iconIsClickable
+              outline
+            >
+              {f}
+            </UI.Label>
+          ))}
         </div>
       </div>
     );

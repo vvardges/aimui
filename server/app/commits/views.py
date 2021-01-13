@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify, request, \
     abort, make_response, send_from_directory
 from flask_restful import Api, Resource
 
+from pyrser.error import Diagnostic, Severity, Notification
 from aim.ql.grammar.statement import Statement, Expression
 
 from app import App
@@ -29,6 +30,11 @@ commits_api = Api(commits_bp)
 @commits_api.resource('/search/run')
 class CommitSearchApi(Resource):
     def get(self):
+        # Get project
+        project = Project()
+        if not project.exists():
+            return make_response(jsonify({}), 404)
+
         expression = request.args.get('q').strip()
 
         if 'run.archived' not in expression:
@@ -36,12 +42,28 @@ class CommitSearchApi(Resource):
         else:
             default_expression = None
 
-        # Get project
-        project = Project()
-        if not project.exists():
-            return make_response(jsonify({}), 404)
+        try:
+            parser = Expression()
+            parsed_expr = parser.parse(expression)
+        except Diagnostic as d:
+            parser_error_logs = d.logs or []
+            for error_log in reversed(parser_error_logs):
+                if not isinstance(error_log, Notification):
+                    continue
+                if error_log.severity != Severity.ERROR:
+                    continue
+                error_location = error_log.location
+                if error_location:
+                    return make_response(jsonify({
+                        'type': 'parse_error',
+                        'statement': expression,
+                        'location': error_location.col,
+                    }), 403)
+            return make_response(jsonify({}), 403)
+        except Exception:
+            return make_response(jsonify({}), 403)
 
-        runs = project.repo.select_runs(expression, default_expression)
+        runs = project.repo.select_runs(parsed_expr, default_expression)
 
         serialized_runs = []
         for run in runs:
@@ -55,16 +77,36 @@ class CommitSearchApi(Resource):
 @commits_api.resource('/search/metric')
 class CommitMetricSearchApi(Resource):
     def get(self):
-        search_statement = request.args.get('q').strip()
-
         # TODO: get from request
         steps_num = 50
+
+        # Get project
+        project = Project()
+        if not project.exists():
+            return make_response(jsonify({}), 404)
+
+        search_statement = request.args.get('q').strip()
 
         # Parse statement
         try:
             parser = Statement()
             parsed_stmt = parser.parse(search_statement.strip())
-        except:
+        except Diagnostic as d:
+            parser_error_logs = d.logs or []
+            for error_log in reversed(parser_error_logs):
+                if not isinstance(error_log, Notification):
+                    continue
+                if error_log.severity != Severity.ERROR:
+                    continue
+                error_location = error_log.location
+                if error_location:
+                    return make_response(jsonify({
+                        'type': 'parse_error',
+                        'statement': search_statement,
+                        'location': error_location.col,
+                    }), 403)
+            return make_response(jsonify({}), 403)
+        except Exception:
             return make_response(jsonify({}), 403)
 
         statement_select = parsed_stmt.node['select']
@@ -76,11 +118,6 @@ class CommitMetricSearchApi(Resource):
             default_expression = 'run.archived is not True'
         else:
             default_expression = None
-
-        # Get project
-        project = Project()
-        if not project.exists():
-            return make_response(jsonify({}), 404)
 
         aim_select_result = project.repo.select(aim_select,
                                                 statement_expr,

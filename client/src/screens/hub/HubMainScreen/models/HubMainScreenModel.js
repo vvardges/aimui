@@ -658,7 +658,7 @@ function getTraceData(runHash, metricName, context) {
     matchedTrace = null,
     data = null;
 
-  getState().runs.data.forEach((run) => {
+  getState().runs?.data?.forEach((run) => {
     if (matchedTrace !== null) return;
     run.metrics.forEach((metric) => {
       if (matchedTrace !== null) return;

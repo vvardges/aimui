@@ -31,6 +31,7 @@ import { HubMainScreenModel } from './models/HubMainScreenModel';
 import BarViewModes from '../../../components/hub/BarViewModes/BarViewModes';
 import Alert from './components/Alert/Alert';
 import UI from '../../../ui';
+import QueryParseErrorAlert from '../../../components/hub/QueryParseErrorAlert/QueryParseErrorAlert';
 
 const URLStateParams = [
   'chart.focused.circle',
@@ -49,9 +50,15 @@ function HubMainScreen(props) {
     resizing: false,
     panelFlex: getItem(EXPLORE_PANEL_FLEX_STYLE),
     viewMode: getItem(EXPLORE_PANEL_VIEW_MODE) ?? 'resizable',
+    searchError: null,
   });
 
-  let { runs, traceList, search } = HubMainScreenModel.useHubMainScreenState([
+  let {
+    runs,
+    traceList,
+    search,
+    searchInput,
+  } = HubMainScreenModel.useHubMainScreenState([
     HubMainScreenModel.events.SET_RUNS_STATE,
     HubMainScreenModel.events.SET_TRACE_LIST,
   ]);
@@ -298,9 +305,17 @@ function HubMainScreen(props) {
             },
             resolve,
           );
+          setState((s) => ({
+            ...s,
+            searchError: null,
+          }));
         })
         .catch((err) => {
-          // console.log(err, err.status);
+          const errorBody = err?.response?.body;
+          setState((s) => ({
+            ...s,
+            searchError: errorBody?.type === 'parse_error' ? errorBody : null,
+          }));
           setRunsState(
             {
               isEmpty: true,
@@ -457,32 +472,81 @@ function HubMainScreen(props) {
     );
   }
 
+  function _renderEmptyFieldsAlert() {
+    return (
+      <Alert segment>
+        <UI.Text type='grey' center>
+          No metric or parameter is selected.
+          Please{' '}
+          <UI.Text
+            className='link'
+            type='primary'
+            inline
+            onClick={() =>
+              document
+                .querySelector('.SelectForm__form__row__input__wrapper input')
+                .focus()
+            }
+          >
+            select
+          </UI.Text>{' '}
+          one to explore your runs.
+        </UI.Text>
+      </Alert>
+    );
+  }
+
+  function _renderParseErrorAlert() {
+    return (
+      <Alert>
+        <QueryParseErrorAlert
+          key={state.searchError.statement}
+          query={`select ${state.searchError.statement}`}
+          errorOffset={state.searchError.location - 1 + 7}
+        />
+      </Alert>
+    );
+  }
+
+  function _renderNoExperimentsAlert() {
+    return (
+      <Alert segment>
+        {!!search.query ? (
+          <UI.Text type='grey' center>
+            You haven't recorded experiments matching this query.
+          </UI.Text>
+        ) : (
+          <UI.Text type='grey' center>
+            It's super easy to search Aim experiments.
+          </UI.Text>
+        )}
+        <UI.Text type='grey' center>
+          Lookup{' '}
+          <a
+            className='link'
+            href='https://github.com/aimhubio/aim#searching-experiments'
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            search docs
+          </a>{' '}
+          to learn more.
+        </UI.Text>
+      </Alert>
+    );
+  }
+
   function _renderBody() {
     return runs.isLoading === false && runs.isEmpty === true ? (
       <div className='HubMainScreen__alerts'>
-        <Alert>
-          {!!search.query ? (
-            <UI.Text type='grey' center>
-              You haven't recorded experiments matching this query.
-            </UI.Text>
-          ) : (
-            <UI.Text type='grey' center>
-              It's super easy to search Aim experiments.
-            </UI.Text>
-          )}
-          <UI.Text type='grey' center>
-            Lookup{' '}
-            <a
-              className='link'
-              href='https://github.com/aimhubio/aim#searching-experiments'
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              search docs
-            </a>{' '}
-            to learn more.
-          </UI.Text>
-        </Alert>
+        {!searchInput.selectInput.length ? (
+          _renderEmptyFieldsAlert()
+        ) : (
+          <Fragment>
+            {!!state.searchError && _renderParseErrorAlert()}
+            {state.searchError === null && _renderNoExperimentsAlert()}
+          </Fragment>
+        )}
       </div>
     ) : (
       _renderContent()

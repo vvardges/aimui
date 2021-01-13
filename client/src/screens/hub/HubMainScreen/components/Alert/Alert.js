@@ -1,14 +1,16 @@
 import './Alert.less';
 
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import { classNames } from '../../../../../utils';
 
-function Alert({ children }) {
+function Alert({ segment, children }) {
   return (
     <div
       className={classNames({
-        Alert: true,
+        HubMainScreenAlert: true,
+        'HubMainScreenAlert--segment': segment,
       })}
     >
       {children}
@@ -16,6 +18,12 @@ function Alert({ children }) {
   );
 }
 
-Alert.propTypes = {};
+Alert.defaultProps = {
+  segment: false,
+};
+
+Alert.propTypes = {
+  segment: PropTypes.bool,
+};
 
 export default Alert;
