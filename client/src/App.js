@@ -37,6 +37,7 @@ class App extends React.Component {
       Intl.DateTimeFormat().resolvedOptions().timeZone,
       {
         expires: 365 * 24 * 3600,
+        path: '/',
       },
     );
 

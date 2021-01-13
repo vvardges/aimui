@@ -136,7 +136,9 @@ function BarSort({ sortFields, setSortFields, maxHeight, fields }) {
                           small
                           className='BarSort__selected__item__field'
                         >
-                          <span title={field[0]}>{field[0]}</span>
+                          <span title={field[0].replace(' No context', '')}>
+                            {field[0].replace(' No context', '')}
+                          </span>
                         </UI.Text>
                         <div className='BarSort__selected__item__order'>
                           <span
@@ -290,7 +292,11 @@ function Parameter({ paramKey, parentPath, toggleField, metric }) {
           <div className='BarSort__group__item__placeholder' key={i} />
         ))}
         <div className='BarSort__group__item__name' title={path}>
-          {paramKey}
+          {paramKey === 'No context' ? (
+            <span className='BarSort__group__item__name__meta'>{paramKey}</span>
+          ) : (
+            paramKey
+          )}
         </div>
       </div>
     </div>
