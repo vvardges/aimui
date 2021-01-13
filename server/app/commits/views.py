@@ -35,35 +35,36 @@ class CommitSearchApi(Resource):
         if not project.exists():
             return make_response(jsonify({}), 404)
 
-        expression = request.args.get('q').strip()
+        raw_expression = request.args.get('q').strip()
 
-        if 'run.archived' not in expression:
+        if 'run.archived' not in raw_expression:
             default_expression = 'run.archived is not True'
         else:
             default_expression = None
 
-        try:
-            parser = Expression()
-            parsed_expr = parser.parse(expression)
-        except Diagnostic as d:
-            parser_error_logs = d.logs or []
-            for error_log in reversed(parser_error_logs):
-                if not isinstance(error_log, Notification):
-                    continue
-                if error_log.severity != Severity.ERROR:
-                    continue
-                error_location = error_log.location
-                if error_location:
-                    return make_response(jsonify({
-                        'type': 'parse_error',
-                        'statement': expression,
-                        'location': error_location.col,
-                    }), 403)
-            return make_response(jsonify({}), 403)
-        except Exception:
-            return make_response(jsonify({}), 403)
+        if raw_expression:
+            try:
+                parser = Expression()
+                parser.parse(raw_expression)
+            except Diagnostic as d:
+                parser_error_logs = d.logs or []
+                for error_log in reversed(parser_error_logs):
+                    if not isinstance(error_log, Notification):
+                        continue
+                    if error_log.severity != Severity.ERROR:
+                        continue
+                    error_location = error_log.location
+                    if error_location:
+                        return make_response(jsonify({
+                            'type': 'parse_error',
+                            'statement': raw_expression,
+                            'location': error_location.col,
+                        }), 403)
+                return make_response(jsonify({}), 403)
+            except Exception:
+                return make_response(jsonify({}), 403)
 
-        runs = project.repo.select_runs(parsed_expr, default_expression)
+        runs = project.repo.select_runs(raw_expression, default_expression)
 
         serialized_runs = []
         for run in runs:
