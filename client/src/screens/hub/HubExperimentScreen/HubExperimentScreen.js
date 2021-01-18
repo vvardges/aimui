@@ -7,6 +7,7 @@ import { Redirect, Link } from 'react-router-dom';
 import ReactSVG from 'react-svg';
 import { parseDiff, Diff, Hunk, Decoration } from 'react-diff-view';
 import moment from 'moment';
+import ReactJson from 'react-json-view';
 
 import ProjectWrapper from '../../../wrappers/hub/ProjectWrapper/ProjectWrapper';
 import ExperimentCell from '../../../components/hub/ExperimentCell/ExperimentCell';
@@ -43,6 +44,7 @@ class HubExperimentScreen extends React.Component {
       metricsData: {},
       tags: [],
       tagsAreLoading: true,
+      activeTab: 'parameters',
       archivationBtn: {
         loading: false,
         disabled: false,
@@ -405,122 +407,6 @@ class HubExperimentScreen extends React.Component {
     }
   };
 
-  _formatFileSize = (size) => {
-    let formatted = formatSize(size);
-    return `${formatted[0]}${formatted[1]}`;
-  };
-
-  _renderMetric = (metric, key) => {
-    return (
-      <>
-        {metric.traces.map((trace, traceKey) => (
-          <ExperimentCell
-            type='metric'
-            footerTitle={metric.name}
-            footerLabels={
-              !!trace.context
-                ? Object.keys(trace.context).map(
-                  (c) => `${c}: ${trace.context[c]}`,
-                )
-                : []
-            }
-            key={`${key * 10 + 5}-${traceKey}`}
-          >
-            <UI.LineChart
-              header={metric.name}
-              data={trace.data}
-              xAxisFormat='step'
-              smooth={false}
-            />
-          </ExperimentCell>
-        ))}
-      </>
-    );
-  };
-
-  _renderModel = (model, key) => {
-    let className = classNames({
-      ExperimentCheckpoint: true,
-      active: this.state.selectedModel === model,
-    });
-
-    let experimentName = this.props.match.params.experiment_name;
-
-    let commitId = this.state.commit.hash;
-
-    return (
-      <div className={className} key={key * 10 + 2}>
-        <div
-          className='ExperimentCheckpoint__area'
-          onClick={() => this.handleModelOpen(model)}
-        >
-          <div className='ExperimentCheckpoint__header'>
-            <UI.Text type='grey-darker' subtitle>
-              {model.name}
-            </UI.Text>
-            <a
-              href={`${SERVER_API_HOST}/projects/${experimentName}/${commitId}/models/${model.name}.aim`}
-              target='_blank'
-              rel='noopener noreferrer'
-              download={`${model.name}`}
-            >
-              Download{' '}
-              <UI.Text type='grey-light' small inline>
-                (~{this._formatFileSize(model.size)})
-              </UI.Text>
-            </a>
-          </div>
-          <div className='ExperimentCheckpoint__body'>
-            <UI.Text type='grey-light' small subtitle>
-              Epoch: {model.data.epoch}
-            </UI.Text>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  _renderMap = (mapItem, mapKey) => {
-    return (
-      <>
-        <ExperimentCell
-          type='dictionary'
-          footerTitle={mapItem.name}
-          key={mapKey * 10 + 9}
-          width={1}
-          className='ExperimentParams'
-        >
-          <div className='ExperimentParams__item title' key={0}>
-            <div>
-              <UI.Text type='primary' right overline bold>
-                #
-              </UI.Text>
-            </div>
-            <div>
-              <UI.Text type='primary' overline bold>
-                Key
-              </UI.Text>
-            </div>
-            <div>
-              <UI.Text type='primary' overline bold>
-                Value
-              </UI.Text>
-            </div>
-          </div>
-          {Object.keys(mapItem.data).map((item, key) => (
-            <div className='ExperimentParams__item' key={key}>
-              <div className='ExperimentParams__item__idx__wrapper'>
-                <div className='ExperimentParams__item__idx'>{key + 1}</div>
-              </div>
-              <div>{item}</div>
-              <div>{JSON.stringify(mapItem.data[item])}</div>
-            </div>
-          ))}
-        </ExperimentCell>
-      </>
-    );
-  };
-
   handleArchivationBtnClick = () => {
     const experimentName = this.props.match.params.experiment_name;
     const runHash = this.state.commit.hash;
@@ -551,6 +437,39 @@ class HubExperimentScreen extends React.Component {
           },
         });
       });
+  };
+
+  _formatFileSize = (size) => {
+    let formatted = formatSize(size);
+    return `${formatted[0]}${formatted[1]}`;
+  };
+
+  _renderMetric = (metric, key) => {
+    return (
+      <>
+        {metric.traces.map((trace, traceKey) => (
+          <ExperimentCell
+            header='metric'
+            footerTitle={metric.name}
+            footerLabels={
+              !!trace.context
+                ? Object.keys(trace.context).map(
+                  (c) => `${c}: ${trace.context[c]}`,
+                )
+                : []
+            }
+            key={`${key * 10 + 5}-${traceKey}`}
+          >
+            <UI.LineChart
+              header={metric.name}
+              data={trace.data}
+              xAxisFormat='step'
+              smooth={false}
+            />
+          </ExperimentCell>
+        ))}
+      </>
+    );
   };
 
   _renderExperimentHeader = () => {
@@ -627,7 +546,7 @@ class HubExperimentScreen extends React.Component {
                 )}
               </div>
             </div>
-            {!!this.state.commit && (
+            {!!this.state.commit && !!this.state.tags?.length && (
               <>
                 <UI.Line />
                 <div className='HubExperimentScreen__header__bottom'>
@@ -656,18 +575,6 @@ class HubExperimentScreen extends React.Component {
                         ))}
                       </>
                     )}
-                  </div>
-                  <div className='HubExperimentScreen__header__actions'>
-                    <UI.Button
-                      size='tiny'
-                      type='secondary'
-                      onClick={() => this.handleArchivationBtnClick()}
-                      {...this.state.archivationBtn}
-                    >
-                      {this.state.commit.archived
-                        ? 'Unarchive run'
-                        : 'Archive run'}
-                    </UI.Button>
                   </div>
                 </div>
                 <UI.Line />
@@ -736,9 +643,83 @@ class HubExperimentScreen extends React.Component {
     );
   };
 
-  _renderContent = () => {
-    let selectedModel = this.state.selectedModel;
+  _renderParameters = () => {
+    if (!this.state.experiment?.maps?.length) {
+      return <UI.Text type='grey' center>No tracked parameter</UI.Text>;
+    }
 
+    const maps = [];
+    this.state.experiment.maps.forEach((mapItem, mapKey) => {
+      if (mapItem.nested) {
+        Object.keys(mapItem.data).forEach((mapItemKeyName, mapItemKey) => {
+          maps.push({
+            name: mapItemKeyName,
+            data: mapItem.data[mapItemKeyName],
+          });
+        });
+      } else {
+        maps.push({
+          name: mapKey,
+          data: mapItem,
+        });
+      }
+    });
+
+    return (
+      <div className='HubExperimentScreen__grid'>
+        <div className='HubExperimentScreen__grid__wrapper'>
+          {maps.map((i, k) => (
+            <ExperimentCell
+              header={i.name}
+              height='auto'
+              width={2}
+            >
+              <div className='ExperimentParams ExperimentParams--tree' key={k}>
+                <ReactJson
+                  name={false}
+                  theme='bright:inverted'
+                  src={i.data}
+                />
+              </div>
+            </ExperimentCell>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  _renderMetrics = () => {
+    if (!this.state.experiment?.metrics?.length) {
+      return <UI.Text type='grey' center>No tracked metric</UI.Text>;
+    }
+
+    return (
+      <div className='HubExperimentScreen__grid'>
+        <div className='HubExperimentScreen__grid__wrapper'>
+          {this.state.experiment.metrics.map((item, key) =>
+            this._renderMetric(item, key),
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  _renderSettings = () => {
+    return (
+      <UI.Button
+        size='tiny'
+        type='secondary'
+        onClick={() => this.handleArchivationBtnClick()}
+        {...this.state.archivationBtn}
+      >
+        {this.state.commit.archived
+          ? 'Unarchive run'
+          : 'Archive run'}
+      </UI.Button>
+    );
+  };
+
+  _renderContent = () => {
     if (this.state.versionError) {
       return <IncompatibleVersion />;
     }
@@ -761,78 +742,37 @@ class HubExperimentScreen extends React.Component {
     return (
       <>
         {this._renderExperimentHeader()}
-        <div className='HubExperimentScreen__grid'>
-          <div className='HubExperimentScreen__grid__wrapper'>
-            {this.state.experiment.maps.map((mapItem, mapKey) => (
-              <>
-                {mapItem.nested
-                  ? Object.keys(mapItem.data).map(
-                    (mapItemKeyName, mapItemKey) =>
-                      this._renderMap(
-                        {
-                          data: mapItem.data[mapItemKeyName],
-                          name: `${mapItemKeyName}`,
-                        },
-                          `${mapItemKeyName}-${mapItemKey}`,
-                      ),
-                  )
-                  : this._renderMap(mapItem, mapKey)}
-              </>
-            ))}
-            {this.state.experiment.metrics.map((item, key) =>
-              this._renderMetric(item, key),
-            )}
-            {!!this.state.experiment.models.length && (
-              <ExperimentCell
-                type='model'
-                footerTitle={this.state.experiment.models[0].data.name}
-                height='auto'
-                width={2}
+        <UI.Tabs
+          leftItems={
+            <>
+              <UI.Tab
+                className=''
+                active={this.state.activeTab === 'parameters'}
+                onClick={() => this.setState({ activeTab: 'parameters' })}
               >
-                <div className='ExperimentModel__body'>
-                  <div className='ExperimentModel__list'>
-                    {Object.keys(
-                      this.state.experiment.models,
-                    ).map((itemKey, key) =>
-                      this._renderModel(
-                        this.state.experiment.models[itemKey],
-                        key,
-                      ),
-                    )}
-                  </div>
-                  <div className='ExperimentModel__detail'>
-                    {!selectedModel && (
-                      <div className='ExperimentModel__detail__default'>
-                        <UI.Text type='grey-light' size={6}>
-                          Select a model
-                          <br />
-                          from left menu
-                        </UI.Text>
-                      </div>
-                    )}
-                    {!!selectedModel && (
-                      <div className='ExperimentModel__detail__item'>
-                        <UI.Text type='grey-dark' divided spacing>
-                          {selectedModel.name}
-                        </UI.Text>
-                        {!!selectedModel.data.meta && (
-                          <>
-                            {Object.keys(selectedModel.data.meta).map(
-                              (item, key) => (
-                                <UI.Text key={key} type='grey'>
-                                  {item}: {selectedModel.data.meta[item]}
-                                </UI.Text>
-                              ),
-                            )}
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </ExperimentCell>
-            )}
-          </div>
+                Parameters
+              </UI.Tab>
+              <UI.Tab
+                className=''
+                active={this.state.activeTab === 'metrics'}
+                onClick={() => this.setState({ activeTab: 'metrics' })}
+              >
+                Metrics
+              </UI.Tab>
+              <UI.Tab
+                className=''
+                active={this.state.activeTab === 'settings'}
+                onClick={() => this.setState({ activeTab: 'settings' })}
+              >
+                Settings
+              </UI.Tab>
+            </>
+          }
+        />
+        <div className='HubExperimentScreen__body'>
+          {this.state.activeTab === 'parameters' && this._renderParameters()}
+          {this.state.activeTab === 'metrics' && this._renderMetrics()}
+          {this.state.activeTab === 'settings' && this._renderSettings()}
         </div>
       </>
     );

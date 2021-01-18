@@ -49,6 +49,10 @@
   justify-content: space-between;
 }
 
+.HubExperimentScreen__body {
+  padding-top: calc(2 * var(--component-spacing-xs));
+}
+
 .HubExperimentScreen__grid {
   display: block;
   overflow: hidden;
@@ -61,7 +65,7 @@
 }
 
 .HubExperimentScreen__grid__wrapper {
-  margin: calc(-1 * var(--component-spacing-sm));
+  margin: calc(-1 * var(--component-spacing-xs));
 }
 
 .HubExperimentScreen__init__markdown {
@@ -124,82 +128,6 @@
   }
 }
 
-.ExperimentMisClassification__labels {
-  height: 100%;
-  overflow-y: auto;
-}
-
-.ExperimentMisClassification__label {
-  position: relative;
-  margin: var(--component-spacing-xs);
-  border: var(--border);
-  cursor: pointer;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  transition: border 110ms linear;
-
-  &.active {
-    border-color: var(--primary-light);
-
-    .ExperimentMisClassification__label__bg {
-      border-right-color: var(--primary-light);
-      background-color: var(--primary-lighter);
-    }
-  }
-}
-
-.ExperimentMisClassification__label__bg {
-  position: absolute;
-  left: 0;
-  right: 100%;
-  top: 0;
-  bottom: 0;
-  z-index: 1;
-  border-right: 1px solid var(--grey-lighter);
-  background-color: var(--grey-bg);
-  transition: background-color 110ms linear, border-right-color 110ms linear;
-}
-
-.ExperimentMisClassification__label__cont {
-  position: relative;
-  z-index: 2;
-  font-size: var(--text-xs);
-  padding: var(--component-spacing-sm);
-}
-
-.ExperimentMisClassification__cluster {
-  display: none;
-  height: 100%;
-  overflow-y: auto;
-  background-color: var(--grey-bg);
-  border-left: var(--border);
-}
-
-.ExperimentMisClassification__cluster__item {
-  display: none;
-
-  &.active {
-    display: block;
-  }
-}
-
-.ExperimentMisClassification__cluster__cont {
-  display: grid;
-  grid-template-columns: 50px 1fr;
-  grid-column-gap: var(--component-spacing-xs);
-  margin: var(--component-spacing-xs);
-}
-
-.ExperimentMisClassification__img {
-  height: 50px;
-  width: 50px;
-}
-
-.ExperimentMisClassification__meta {
-  display: flex;
-  align-items: center;
-}
-
 .ExperimentMetric__parent {
   height: inherit;
   overflow: hidden;
@@ -212,65 +140,6 @@
   @media @md-max {
     grid-template-columns: 1fr;
   }
-}
-
-.ExperimentModel__list {
-  max-height: 350px;
-  min-height: 200px;
-  overflow-y: auto;
-}
-
-.ExperimentModel__detail {
-  height: 100%;
-  box-sizing: border-box;
-  overflow-y: auto;
-  border-left: 1px solid var(--primary-lighter);
-
-  @media @md-max {
-    border-left: none;
-    border-top: 1px solid var(--primary-lighter);
-  }
-}
-
-.ExperimentModel__detail__item {
-  padding: var(--component-spacing-sm);
-}
-
-.ExperimentModel__detail__default {
-  display: flex;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.ExperimentModel__detail__icon {
-  display: block;
-  margin-bottom: 15px;
-  font-size: 30px;
-  color: #ccc;
-}
-
-.ExperimentCheckpoint {
-  border-bottom: 1px solid var(--primary-lighter);
-  pointer-events: none;
-  transition: background-color 110ms ease;
-
-  &:active,
-  &.active {
-    background-color: var(--primary-bg);
-  }
-}
-
-.ExperimentCheckpoint__area {
-  padding: var(--component-spacing-sm);
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.ExperimentCheckpoint__header {
-  display: flex;
-  justify-content: space-between;
 }
 
 .HubExperimentScreen__empty {
@@ -360,7 +229,18 @@
   margin-right: var(--component-spacing-xs);
 }
 
-.ExperimentParams {
+.ExperimentParams--tree {
+  padding: var(--component-spacing-sm);
+  overflow: hidden;
+  font-size: 0.85em;
+  background-color: #FFF;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.ExperimentParams--flat {
   .ExperimentParams__item {
     background-color: #fff;
     color: var(--primary-darker);
@@ -382,70 +262,36 @@
       border-color: var(--grey-light-xx);
     }
   }
-}
 
-.ExperimentParams__item {
-  display: grid;
-  grid-template-columns: 30px 1fr minmax(100px, 1fr);
-  grid-column-gap: var(--component-spacing-sm);
-  align-items: center;
-  padding: var(--component-spacing-sm);
-  border-bottom: 1px solid var(--grey-lighter);
-  word-break: break-word;
+  .ExperimentParams__item {
+    display: grid;
+    grid-template-columns: 30px 1fr minmax(100px, 1fr);
+    grid-column-gap: var(--component-spacing-sm);
+    align-items: center;
+    padding: var(--component-spacing-sm);
+    border-bottom: 1px solid var(--grey-lighter);
+    word-break: break-word;
 
-  &.title {
-    background-color: var(--primary-bg) !important;
-    border-bottom-color: var(--primary-lighter);
-    padding: var(--component-spacing-xs) var(--component-spacing-sm);
-  }
-}
-
-.ExperimentParams__item__idx__wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  user-select: none;
-}
-
-.ExperimentParams__item__idx {
-  font-size: var(--text-xs);
-  font-family: var(--number-font);
-  padding: var(--space-xxxs) var(--space-xs);
-  border: 1px solid;
-  border-radius: var(--border-radius);
-  line-height: 1;
-}
-
-.ExperimentStat__head {
-  overflow-y: auto;
-  width: auto;
-  white-space: nowrap;
-  background: var(--primary-bg);
-  border-bottom: 1px solid var(--primary-lighter);
-
-  > * {
-    margin: var(--component-spacing-sm);
-    margin-right: 0;
-
-    &:last-child {
-      margin-right: var(--component-spacing-sm);
+    &.title {
+      background-color: var(--primary-bg) !important;
+      border-bottom-color: var(--primary-lighter);
+      padding: var(--component-spacing-xs) var(--component-spacing-sm);
     }
   }
-}
 
-.ExperimentStat__body {
-  height: 350px;
-  overflow: hidden;
-}
+  .ExperimentParams__item__idx__wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    user-select: none;
+  }
 
-.ExperimentStat__resource__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  height: inherit;
-  box-sizing: border-box;
-  padding: var(--component-spacing-sm);
-  background-color: var(--grey-bg-light);
+  .ExperimentParams__item__idx {
+    font-size: var(--text-xs);
+    font-family: var(--number-font);
+    padding: var(--space-xxxs) var(--space-xs);
+    border: 1px solid;
+    border-radius: var(--border-radius);
+    line-height: 1;
+  }
 }
