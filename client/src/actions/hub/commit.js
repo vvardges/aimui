@@ -15,10 +15,13 @@ export function getRunsByQuery(query) {
   };
 }
 
-export function getCommitsMetricsByQuery(query) {
+export function getCommitsMetricsByQuery(query, numPoints) {
   return (dispatch) => {
     return new Promise((resolve, reject) => {
-      callApi('Commit.getCommitsMetricsByQuery', { query })
+      callApi('Commit.getCommitsMetricsByQuery', {
+        query,
+        num_points: numPoints,
+      })
         .then((data) => {
           resolve(data);
         })

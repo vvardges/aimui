@@ -400,10 +400,13 @@ class Runs extends React.Component {
           if (nested) {
             for (let key in run.params[paramKey]) {
               if (
-                typeof paramPaths[paramKey][key] === 'object' ||
-                typeof run.params[paramKey][key] === 'object'
+                typeof run.params[paramKey][key] === 'object' &&
+                run.params[paramKey][key] !== null
               ) {
-                if (!paramPaths.hasOwnProperty(paramKey)) {
+                if (
+                  typeof paramPaths[paramKey][key] !== 'object' ||
+                  paramPaths[paramKey][key] === null
+                ) {
                   paramPaths[paramKey][key] = {};
                 }
                 paramPaths[paramKey][key] = _.merge(

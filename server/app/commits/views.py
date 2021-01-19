@@ -78,8 +78,10 @@ class CommitSearchApi(Resource):
 @commits_api.resource('/search/metric')
 class CommitMetricSearchApi(Resource):
     def get(self):
-        # TODO: get from request
-        steps_num = 50
+        try:
+            steps_num = int(request.args.get('p').strip())
+        except:
+            steps_num = 50
 
         # Get project
         project = Project()
@@ -133,6 +135,8 @@ class CommitMetricSearchApi(Resource):
             aim_select_result.get_selected_params(),
             aim_select_result.get_selected_metrics_context()
         )
+
+        aim_selected_runs.sort(key=lambda r: r.config.get('date'), reverse=True)
 
         response = {
             'runs': [],

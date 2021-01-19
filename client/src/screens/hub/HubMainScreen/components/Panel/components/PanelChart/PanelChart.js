@@ -112,10 +112,9 @@ function PanelChart(props) {
     traceToHash,
     getTraceData,
     getMetricColor,
-    getMetricStepValueByStepIdx,
-    getMetricStepDataByStepIdx,
     isAimRun,
     isTFSummaryScalar,
+    getClosestStepData,
   } = HubMainScreenModel.helpers;
 
   const parentRef = useRef();
@@ -294,30 +293,47 @@ function PanelChart(props) {
   function drawAxes() {
     const { traceList, chart } = HubMainScreenModel.getState();
     const { width, height, margin } = visBox.current;
+    const xAlignment = chart.settings.persistent.xAlignment;
 
-    let xNum = 0,
-      xMax = 0,
-      xSteps = [];
+    let xNum = 0;
+    let xMax = 0;
+    let xMin = Infinity;
+    let xSteps = [];
+    let xTicks = [];
 
-    traceList?.traces.forEach((traceModel) =>
+    if (xAlignment === 'epoch' && traceList.epochSteps) {
+      xTicks = Object.keys(traceList.epochSteps).map((epoch) => {
+        return [
+          traceList.epochSteps[epoch][0],
+          epoch === 'null' ? null : epoch,
+        ];
+      });
+    }
+
+    traceList?.traces.forEach((traceModel) => {
       traceModel.series.forEach((series) => {
         if (traceModel.chart !== props.index) {
           return;
         }
         const { run, metric, trace } = series;
-        if (trace?.num_steps > xMax) {
-          xMax = trace.num_steps;
+        const max = trace.axisValues[trace.axisValues.length - 1]; // xAlignment === 'step' || xAlignment === 'epoch' ? maxStep : xAlignment === 'absolute_time' ? maxTime : null;
+        const min = 0;
+        if (max > xMax) {
+          xMax = max;
         }
-        if (trace?.data.length > xNum) {
-          xNum = trace?.data.length;
-          xSteps = trace?.data.map((s) => s[1]);
+        if (min < xMin) {
+          xMin = min;
         }
-      }),
-    );
+        if (trace.axisValues.length > xNum) {
+          xNum = trace.axisValues.length;
+          xSteps = trace.axisValues;
+        }
+      });
+    });
 
     const xScale = d3
       .scaleLinear()
-      .domain(chart.settings.persistent.zoom?.[props.index]?.x ?? [0, xMax])
+      .domain(chart.settings.persistent.zoom?.[props.index]?.x ?? [xMin, xMax])
       .range([0, width - margin.left - margin.right]);
 
     let yMax = null,
@@ -396,11 +412,19 @@ function PanelChart(props) {
       .domain(chart.settings.persistent.zoom?.[props.index]?.y ?? [yMin, yMax])
       .range([height - margin.top - margin.bottom, 0]);
 
+    let xAxisTicks = d3.axisBottom(xScale);
+
+    if (xAlignment === 'epoch') {
+      xAxisTicks
+        .tickValues(xTicks.map((tick) => tick[0]))
+        .tickFormat((d, i) => xTicks[i][1]);
+    }
+
     axes.current
       .append('g')
       .attr('class', 'x axis')
       .attr('transform', `translate(0, ${plotBox.current.height})`)
-      .call(d3.axisBottom(xScale));
+      .call(xAxisTicks);
 
     axes.current.append('g').attr('class', 'y axis').call(d3.axisLeft(yScale));
 
@@ -434,7 +458,7 @@ function PanelChart(props) {
         const { run, metric, trace } = series;
         const line = d3
           .line()
-          .x((d) => chartOptions.current.xScale(d[1]))
+          .x((d, i) => chartOptions.current.xScale(trace.axisValues[i]))
           .y((d) => chartOptions.current.yScale(d[0]))
           .curve(
             d3[curveOptions[chart.settings.persistent.interpolate ? 5 : 0]],
@@ -595,12 +619,12 @@ function PanelChart(props) {
     if (focused.circle.runHash === null || focused.circle.active === false) {
       hideActionPopUps(false);
     }
-    const step = focused.circle.active ? focused.circle.step : focused.step;
+    let step = focused.circle.active ? focused.circle.step : focused.step;
     if (step === null || step === undefined) {
       return;
     }
 
-    const x = chartOptions.current.xScale(step);
+    let x = chartOptions.current.xScale(step);
     const { height } = plotBox.current;
 
     // Draw hover line
@@ -628,7 +652,15 @@ function PanelChart(props) {
           return;
         }
         const { run, metric, trace } = series;
-        const val = getMetricStepValueByStepIdx(trace?.data, step);
+        let { closestStep, stepData } = getClosestStepData(
+          step,
+          trace?.data,
+          trace?.axisValues,
+        );
+
+        let val = stepData?.[0] ?? null;
+        x = chartOptions.current.xScale(closestStep);
+
         if (val !== null) {
           const y = chartOptions.current.yScale(val);
           const traceContext = contextToHash(trace?.context);
@@ -636,7 +668,7 @@ function PanelChart(props) {
             .append('circle')
             .attr(
               'class',
-              `HoverCircle HoverCircle-${step} HoverCircle-${traceToHash(
+              `HoverCircle HoverCircle-${closestStep} HoverCircle-${traceToHash(
                 run.run_hash,
                 metric?.name,
                 traceContext,
@@ -647,7 +679,7 @@ function PanelChart(props) {
             .attr('r', circleRadius)
             .attr('data-x', x)
             .attr('data-y', y)
-            .attr('data-step', step)
+            .attr('data-step', closestStep)
             .attr('data-run-hash', run.run_hash)
             .attr('data-metric-name', metric?.name)
             .attr('data-trace-context-hash', contextToHash(trace?.context))
@@ -659,7 +691,12 @@ function PanelChart(props) {
                 : getMetricColor(run, metric, trace),
             )
             .on('click', function () {
-              handlePointClick(step, run.run_hash, metric?.name, traceContext);
+              handlePointClick(
+                closestStep,
+                run.run_hash,
+                metric?.name,
+                traceContext,
+              );
             });
 
           if (
@@ -677,8 +714,8 @@ function PanelChart(props) {
 
     // Apply focused state to line and circle
     if (focusedMetric.runHash !== null) {
-      plot.current.selectAll('.PlotLine.current').moveToFront();
       plot.current.selectAll('.PlotArea.active').moveToFront();
+      plot.current.selectAll('.PlotLine.current').moveToFront();
 
       circles.current.selectAll('*.focus').moveToFront();
       circles.current
@@ -722,10 +759,9 @@ function PanelChart(props) {
           focusedCircle.traceContext,
         );
         if (line !== null) {
-          const focusedCircleVal = getMetricStepValueByStepIdx(
-            line.data,
-            focusedCircle.step,
-          );
+          const focusedCircleVal =
+            line?.data?.[line?.axisValues?.indexOf(focusedCircle.step)]?.[0] ??
+            null;
           if (focusedCircleVal !== null) {
             const focusedCircleY = chartOptions.current.yScale(
               focusedCircleVal,
@@ -742,7 +778,7 @@ function PanelChart(props) {
               .attr('r', circleActiveRadius)
               .attr('data-x', focusedCircleX)
               .attr('data-y', focusedCircleY)
-              .attr('data-step', step)
+              .attr('data-step', closestStep)
               .attr('data-run-hash', focusedCircle.runHash)
               .attr('data-metric-name', focusedCircle.metricName)
               .attr('data-trace-context-hash', focusedCircle.traceContext)
@@ -750,6 +786,7 @@ function PanelChart(props) {
               .style('fill', getMetricColor(line.run, line.metric, line.trace))
               .on('click', function () {
                 handlePointClick(
+                  closestStep,
                   focusedCircle.runHash,
                   focusedCircle.metricName,
                   focusedCircle.traceContext,
@@ -769,7 +806,8 @@ function PanelChart(props) {
         focusedCircle.traceContext,
       );
       if (line !== null) {
-        point = getMetricStepDataByStepIdx(line.data, focusedCircle.step);
+        point =
+          line?.data?.[line?.axisValues?.indexOf(focusedCircle.step)] ?? null;
         if (point !== null) {
           pos = positionPopUp(
             chartOptions.current.xScale(focusedCircle.step),
@@ -1001,31 +1039,35 @@ function PanelChart(props) {
           // Circles
           let nearestCircle = [];
 
-          circles.current.selectAll('.HoverCircle').each(function () {
-            const elem = d3.select(this);
-            const elemY = parseFloat(elem.attr('data-y'));
-            const r = Math.abs(elemY - y);
+          circles.current
+            .selectAll(`.HoverCircle[data-step='${step}']`)
+            .each(function () {
+              const elem = d3.select(this);
+              const elemY = parseFloat(elem.attr('data-y'));
+              const r = Math.abs(elemY - y);
 
-            if (nearestCircle.length === 0 || r < nearestCircle[0].r) {
-              nearestCircle = [
-                {
+              if (nearestCircle.length === 0 || r < nearestCircle[0].r) {
+                nearestCircle = [
+                  {
+                    r: r,
+                    nearestCircleRunHash: elem.attr('data-run-hash'),
+                    nearestCircleMetricName: elem.attr('data-metric-name'),
+                    nearestCircleTraceContext: elem.attr(
+                      'data-trace-context-hash',
+                    ),
+                  },
+                ];
+              } else if (nearestCircle.length && r === nearestCircle[0].r) {
+                nearestCircle.push({
                   r: r,
                   nearestCircleRunHash: elem.attr('data-run-hash'),
                   nearestCircleMetricName: elem.attr('data-metric-name'),
                   nearestCircleTraceContext: elem.attr(
                     'data-trace-context-hash',
                   ),
-                },
-              ];
-            } else if (nearestCircle.length && r === nearestCircle[0].r) {
-              nearestCircle.push({
-                r: r,
-                nearestCircleRunHash: elem.attr('data-run-hash'),
-                nearestCircleMetricName: elem.attr('data-metric-name'),
-                nearestCircleTraceContext: elem.attr('data-trace-context-hash'),
-              });
-            }
-          });
+                });
+              }
+            });
 
           nearestCircle.sort((a, b) => {
             const aHash = traceToHash(

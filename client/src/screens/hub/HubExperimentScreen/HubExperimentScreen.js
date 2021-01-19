@@ -543,21 +543,25 @@ class HubExperimentScreen extends React.Component {
                         </div>
                       )}
                     </div>
-                    {!!this.state.tags?.length &&
+                    {!!this.state.tags?.length && (
                       <div className='HubExperimentScreen__header__tags'>
-                        {!this.state.tagsAreLoading && this.state.tags.length > 0 && (
+                        {!this.state.tagsAreLoading &&
+                          this.state.tags.length > 0 && (
                           <Link
                             to={buildUrl(screens.HUB_PROJECT_EDIT_TAG, {
-                              tag_id:  this.state.tags[0].id,
+                              tag_id: this.state.tags[0].id,
                             })}
                           >
-                            <UI.Label key={ this.state.tags[0].id} color={ this.state.tags[0].color}>
+                            <UI.Label
+                              key={this.state.tags[0].id}
+                              color={this.state.tags[0].color}
+                            >
                               {this.state.tags[0].name}
                             </UI.Label>
                           </Link>
                         )}
                       </div>
-                    }
+                    )}
                   </div>
                 )}
               </div>
@@ -627,7 +631,11 @@ class HubExperimentScreen extends React.Component {
 
   _renderParameters = () => {
     if (!this.state.experiment?.maps?.length) {
-      return <UI.Text type='grey' center>No logged parameters</UI.Text>;
+      return (
+        <UI.Text type='grey' center>
+          No logged parameters
+        </UI.Text>
+      );
     }
 
     const maps = [];
@@ -651,17 +659,9 @@ class HubExperimentScreen extends React.Component {
       <div className='HubExperimentScreen__grid'>
         <div className='HubExperimentScreen__grid__wrapper'>
           {maps.map((i, k) => (
-            <ExperimentCell
-              header={i.name}
-              height='auto'
-              width={2}
-            >
+            <ExperimentCell header={i.name} height='auto' width={2}>
               <div className='ExperimentParams ExperimentParams--tree' key={k}>
-                <ReactJson
-                  name={false}
-                  theme='bright:inverted'
-                  src={i.data}
-                />
+                <ReactJson name={false} theme='bright:inverted' src={i.data} />
               </div>
             </ExperimentCell>
           ))}
@@ -672,7 +672,11 @@ class HubExperimentScreen extends React.Component {
 
   _renderMetrics = () => {
     if (!this.state.experiment?.metrics?.length) {
-      return <UI.Text type='grey' center>No tracked metrics</UI.Text>;
+      return (
+        <UI.Text type='grey' center>
+          No tracked metrics
+        </UI.Text>
+      );
     }
 
     return (
@@ -690,26 +694,24 @@ class HubExperimentScreen extends React.Component {
     return (
       <div>
         <UI.Segment type='negative'>
-          {this.state.commit.archived &&
+          {this.state.commit.archived && (
             <UI.Text type='grey-dark' spacing>
               This run is archived.
             </UI.Text>
-          }
+          )}
           <UI.Button
             type={this.state.commit.archived ? 'secondary' : 'negative'}
             onClick={() => this.handleArchivationBtnClick()}
             {...this.state.archivationBtn}
           >
-            {this.state.commit.archived
-              ? 'Unarchive'
-              : 'Archive this run'
-            }
+            {this.state.commit.archived ? 'Unarchive' : 'Archive this run'}
           </UI.Button>
-          {!this.state.commit.archived &&
+          {!this.state.commit.archived && (
             <UI.Text type='grey-dark' spacingTop>
-              Archived runs will not appear in search both on Dashboard and Explore.
+              Archived runs will not appear in search both on Dashboard and
+              Explore.
             </UI.Text>
-          }
+          )}
         </UI.Segment>
       </div>
     );

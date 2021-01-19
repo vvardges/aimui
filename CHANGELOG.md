@@ -1,5 +1,6 @@
 # Changelog
 
+- Add ability to align X axis by epoch (roubkar)
 - Display experiment params with JSON tree inspector (gorarakelyan)
 - Display error message when an invalid AimQL query is made (gorarakelyan)
 - Add ability to order runs by metrics (roubkar)

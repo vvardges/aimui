@@ -27,6 +27,22 @@ export default class Series {
     return this.trace;
   }
 
+  get maxStep() {
+    return this.trace.data[this.trace.data.length - 1][1];
+  }
+
+  get maxEpoch() {
+    return this.trace.data[this.trace.data.length - 1][2];
+  }
+
+  get maxTime() {
+    return this.trace.data[this.trace.data.length - 1][3];
+  }
+
+  get minTime() {
+    return this.trace.data[0][3];
+  }
+
   getPoint = (index) => {
     if (index >= 0 && !!this.trace?.data && this.trace?.data?.length > index) {
       return this.trace.data[index];

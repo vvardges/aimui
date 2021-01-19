@@ -50,6 +50,10 @@
     color: var(--grey-dark);
   }
 
+  &.column {
+    flex-direction: column;
+  }
+
   &:active,
   &.active {
     background-color: var(--primary-bg);
@@ -135,6 +139,11 @@
   a:hover {
     text-decoration: none !important;
   }
+}
+
+.ControlsSidebar__item__popup__item {
+  padding: var(--component-spacing-xs) var(--component-spacing-sm);
+  color: var(--primary);
 }
 
 .ControlsSidebar__item__popup__list__item {

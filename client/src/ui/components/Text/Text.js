@@ -24,6 +24,7 @@ class Text extends React.Component {
       inline: this.props.inline,
       bold: this.props.bold,
       uppercase: this.props.uppercase,
+      italic: this.props.italic,
     });
 
     if (this.props.className) {
@@ -128,6 +129,7 @@ Text.propTypes = {
   inline: PropTypes.bool,
   bold: PropTypes.bool,
   uppercase: PropTypes.bool,
+  italic: PropTypes.bool,
   spacing: PropTypes.bool,
   spacingTop: PropTypes.bool,
   onClick: PropTypes.func,

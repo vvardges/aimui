@@ -496,7 +496,7 @@ paths:
             application/json:
               schema:
                 type: object
-  "/commits/search/metric?q={query}":
+  "/commits/search/metric?p={num_points}&q={query}":
     get:
       operationId: getCommitsMetricsByQuery
       summary: Get runs metrics
@@ -508,6 +508,11 @@ paths:
             required: false
             schema:
               type: string
+          - name: num_points
+            in: path
+            required: true
+            schema:
+              type: number
       responses:
         "200":
           description: ok

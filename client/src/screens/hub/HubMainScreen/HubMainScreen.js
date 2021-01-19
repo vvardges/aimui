@@ -184,10 +184,12 @@ function HubMainScreen(props) {
         setSearchState(
           state.search,
           () => {
-            searchByQuery(false).then(() => {
-              setChartFocusedState(state.chart.focused, null, true);
-              setChartSettingsState(state.chart.settings, setTraceList, true);
-            });
+            searchByQuery(state.chart.settings.persistent.pointsCount).then(
+              () => {
+                setChartFocusedState(state.chart.focused, null, true);
+                setChartSettingsState(state.chart.settings, setTraceList, true);
+              },
+            );
           },
           false,
           true,
@@ -259,7 +261,10 @@ function HubMainScreen(props) {
     }
   }
 
-  function searchByQuery() {
+  function searchByQuery(
+    pointsCount = HubMainScreenModel.getState().chart.settings.persistent
+      .pointsCount,
+  ) {
     return new Promise((resolve) => {
       const query = HubMainScreenModel.getState().search?.query?.trim();
       setChartFocusedState(
@@ -280,7 +285,7 @@ function HubMainScreen(props) {
         },
         () => {
           Promise.all([
-            getRunsByQuery(query),
+            getRunsByQuery(query, pointsCount),
             // Get other properties
           ]).then(() => {
             resolve();
@@ -290,11 +295,11 @@ function HubMainScreen(props) {
     });
   }
 
-  function getRunsByQuery(query) {
+  function getRunsByQuery(query, numPoints) {
     return new Promise((resolve, reject) => {
       setRunsState({ isLoading: true });
       props
-        .getCommitsMetricsByQuery(query)
+        .getCommitsMetricsByQuery(query, numPoints)
         .then((data) => {
           setRunsState(
             {
@@ -358,6 +363,7 @@ function HubMainScreen(props) {
         HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
         HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
         HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
+        HubMainScreenModel.events.SET_CHART_POINTS_COUNT,
         HubMainScreenModel.events.SET_CONTEXT_FILTER,
         HubMainScreenModel.events.SET_SEARCH_STATE,
         HubMainScreenModel.events.SET_SEED,
@@ -365,11 +371,19 @@ function HubMainScreen(props) {
       updateURL,
     );
 
+    const pointsCountChangeSubscription = HubMainScreenModel.subscribe(
+      HubMainScreenModel.events.SET_CHART_POINTS_COUNT,
+      (stateUpdate) => {
+        searchByQuery(stateUpdate.chart.settings.persistent.pointsCount);
+      },
+    );
+
     // Analytics
     analytics.pageView('search');
 
     return () => {
       subscription.unsubscribe();
+      pointsCountChangeSubscription.unsubscribe();
       HubMainScreenModel.emit(null, {
         search: {
           ...HubMainScreenModel.getState().search,

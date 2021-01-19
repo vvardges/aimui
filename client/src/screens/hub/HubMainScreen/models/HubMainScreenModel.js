@@ -21,6 +21,7 @@ const events = {
   SET_CHART_FOCUSED_STATE: 'SET_CHART_FOCUSED_STATE',
   SET_CHART_FOCUSED_ACTIVE_STATE: 'SET_CHART_FOCUSED_ACTIVE_STATE',
   SET_CHART_SETTINGS_STATE: 'SET_CHART_SETTINGS_STATE',
+  SET_CHART_POINTS_COUNT: 'SET_CHART_POINTS_COUNT',
   SET_CONTEXT_FILTER: 'SET_CONTEXT_FILTER',
   SET_SEARCH_STATE: 'SET_SEARCH_STATE',
   SET_SEARCH_INPUT_STATE: 'SET_SEARCH_INPUT_STATE',
@@ -58,6 +59,8 @@ const state = {
         zoom: null,
         interpolate: false,
         indicator: true,
+        xAlignment: 'step',
+        pointsCount: 50,
       },
     },
   },
@@ -115,6 +118,7 @@ const initialControls = {
         zoom: null,
         interpolate: false,
         indicator: true,
+        pointsCount: getState().chart.settings.persistent.pointsCount,
       },
     },
   },
@@ -241,6 +245,7 @@ function setTraceList() {
     stroke: getState().contextFilter.groupByStyle,
     chart: getState().contextFilter.groupByChart,
   };
+  const xAlignment = getState().chart.settings.persistent.xAlignment;
 
   const traceList = new TraceList(grouping);
   const aggregate = traceList.groupingFields.length > 0;
@@ -272,11 +277,11 @@ function setTraceList() {
     sortFields.map((field) => field[1]),
   ).forEach((run) => {
     if (!run.metrics?.length) {
-      traceList.addSeries(run, null, null, aggregate, seed);
+      traceList.addSeries(run, null, null, xAlignment, aggregate, seed);
     } else {
       run.metrics.forEach((metric) => {
         metric.traces.forEach((trace) => {
-          traceList.addSeries(run, metric, trace, aggregate, seed);
+          traceList.addSeries(run, metric, trace, xAlignment, aggregate, seed);
         });
       });
     }
@@ -305,6 +310,21 @@ function setChartSettingsState(
   if (callback !== null) {
     callback();
   }
+}
+
+function setChartPointsCount(count) {
+  emit(events.SET_CHART_POINTS_COUNT, {
+    chart: {
+      ...getState().chart,
+      settings: {
+        ...getState().chart.settings,
+        persistent: {
+          ...getState().chart.settings.persistent,
+          pointsCount: +count,
+        },
+      },
+    },
+  });
 }
 
 function setChartFocusedState(
@@ -543,10 +563,13 @@ function getAllParamsPaths(deep = true, nested = false) {
           if (nested) {
             for (let key in series?.run.params[paramKey]) {
               if (
-                typeof paramPaths[paramKey][key] === 'object' ||
-                typeof series?.run.params[paramKey][key] === 'object'
+                typeof series?.run.params[paramKey][key] === 'object' &&
+                series?.run.params[paramKey][key] !== null
               ) {
-                if (!paramPaths.hasOwnProperty(paramKey)) {
+                if (
+                  typeof paramPaths[paramKey][key] !== 'object' ||
+                  paramPaths[paramKey][key] === null
+                ) {
                   paramPaths[paramKey][key] = {};
                 }
                 paramPaths[paramKey][key] = _.merge(
@@ -677,32 +700,32 @@ function getTraceData(runHash, metricName, context) {
   let matchedRun = null,
     matchedMetric = null,
     matchedTrace = null,
-    data = null;
+    data = null,
+    axisValues = null;
 
-  getState().runs?.data?.forEach((run) => {
-    if (matchedTrace !== null) return;
-    run.metrics.forEach((metric) => {
+  getState().traceList?.traces.forEach((traceModel) => {
+    traceModel.series.forEach((series) => {
+      const { run, metric, trace } = series;
       if (matchedTrace !== null) return;
-      metric.traces.forEach((trace) => {
-        if (matchedTrace !== null) return;
-        if (
-          run.run_hash === runHash &&
-          metric.name === metricName &&
-          contextToHash(trace.context) === context
-        ) {
-          if (matchedTrace === null) {
-            matchedRun = run;
-            matchedMetric = metric;
-            matchedTrace = trace;
-            data = trace.data;
-          }
+      if (
+        run.run_hash === runHash &&
+        metric.name === metricName &&
+        contextToHash(trace.context) === context
+      ) {
+        if (matchedTrace === null) {
+          matchedRun = run;
+          matchedMetric = metric;
+          matchedTrace = trace;
+          data = trace.data;
+          axisValues = trace.axisValues;
         }
-      });
+      }
     });
   });
 
   return {
     data,
+    axisValues,
     run: matchedRun,
     metric: matchedMetric,
     trace: matchedTrace,
@@ -740,6 +763,47 @@ function getMetricColor(run, metric, trace, alpha = 1) {
   return hashToColor(hash, alpha);
 }
 
+function getClosestStepData(step, data, axisValues) {
+  let stepData;
+  let closestStepIndex = null;
+  let closestStep = null;
+
+  if (step === null || step === undefined) {
+    stepData = null;
+  } else {
+    let lastStepIndex = axisValues?.length - 1;
+    if (data && step > axisValues?.[lastStepIndex]) {
+      stepData = data?.[lastStepIndex] ?? null;
+      closestStep = axisValues?.[lastStepIndex];
+      closestStepIndex = lastStepIndex;
+    } else {
+      const index = axisValues?.indexOf(step);
+      if (index > -1) {
+        stepData = data?.[index] ?? null;
+        closestStep = step;
+        closestStepIndex = index;
+      } else {
+        closestStep = axisValues?.[0];
+        closestStepIndex = 0;
+        for (let i = 1; i < axisValues?.length; i++) {
+          let current = axisValues[i];
+          if (Math.abs(step - current) < Math.abs(step - closestStep)) {
+            closestStep = current;
+            closestStepIndex = i;
+          }
+        }
+
+        stepData = data?.[closestStepIndex] ?? null;
+      }
+    }
+  }
+  return {
+    stepData,
+    closestStep,
+    closestStepIndex,
+  };
+}
+
 // custom hook
 
 function useHubMainScreenState(events) {
@@ -769,6 +833,7 @@ export const HubMainScreenModel = {
     setRunsState,
     setTraceList,
     setChartSettingsState,
+    setChartPointsCount,
     setChartFocusedState,
     setChartFocusedActiveState,
     setContextFilter,
@@ -797,5 +862,6 @@ export const HubMainScreenModel = {
     traceToHash,
     hashToColor,
     getMetricColor,
+    getClosestStepData,
   },
 };

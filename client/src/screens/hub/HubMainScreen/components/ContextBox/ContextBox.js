@@ -63,6 +63,7 @@ function ContextBox(props) {
     isExploreParamsModeEnabled,
     isExploreMetricsModeEnabled,
     getAllParamsPaths,
+    getClosestStepData,
     getAllMetrics,
   } = HubMainScreenModel.helpers;
 
@@ -151,11 +152,11 @@ function ContextBox(props) {
         return;
       }
 
-      const point = getMetricStepDataByStepIdx(line.data, step);
-
-      if (point === null) {
-        // Select last point
-        step = line.data[line.data.length - 1][1];
+      if (step === null) {
+        step = line?.axisValues?.[line?.axisValues?.length - 1];
+      } else {
+        step = getClosestStepData(step, line?.data, line?.axisValues)
+          .closestStep;
       }
 
       setChartFocusedActiveState({
@@ -407,9 +408,11 @@ function ContextBox(props) {
 
         const line = getTraceData(run.run_hash, metric?.name, contextHash);
 
-        let stepData = line
-          ? getMetricStepDataByStepIdx(line?.data, step)
-          : null;
+        let { stepData } = getClosestStepData(
+          step,
+          line?.data,
+          line?.axisValues,
+        );
 
         const color =
           traceList?.grouping?.color?.length > 0
@@ -1135,9 +1138,11 @@ function ContextBox(props) {
                 contextHash,
               );
 
-              let stepData = line
-                ? getMetricStepDataByStepIdx(line?.data, step)
-                : null;
+              let { stepData } = getClosestStepData(
+                step,
+                line?.data,
+                line?.axisValues,
+              );
 
               if (stepData !== null && stepData[1] !== null) {
                 groupStepData[groupSelector] = stepData[1];

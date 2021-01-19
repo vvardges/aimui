@@ -15,6 +15,7 @@ import ControlsSidebarToggleInterpolation from './components/ControlsSidebarTogg
 import ControlsSidebarExport from './components/ControlsSidebarExport/ControlsSidebarExport';
 import ControlsSidebarHighlightMode from './components/ControlsSidebarHighlightMode/ControlsSidebarHighlightMode';
 import { HubMainScreenModel } from '../../models/HubMainScreenModel';
+import ControlsSidebarXAlignment from './components/ControlsSidebarXAlignment/ControlsSidebarXAlignment';
 
 function ControlsSidebar() {
   let {
@@ -24,6 +25,7 @@ function ControlsSidebar() {
   } = HubMainScreenModel.useHubMainScreenState([
     HubMainScreenModel.events.SET_RUNS_STATE,
     HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
+    HubMainScreenModel.events.SET_CHART_POINTS_COUNT,
     HubMainScreenModel.events.SET_CONTEXT_FILTER,
     HubMainScreenModel.events.SET_SEED,
   ]);
@@ -77,6 +79,10 @@ function ControlsSidebar() {
                 settings={chart.settings}
               />
               <ControlsSidebarToggleInterpolation
+                disabled={runs.isLoading || runs.isEmpty}
+                settings={chart.settings}
+              />
+              <ControlsSidebarXAlignment
                 disabled={runs.isLoading || runs.isEmpty}
                 settings={chart.settings}
               />
