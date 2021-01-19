@@ -26,6 +26,7 @@ import CommitNavigation from '../../../components/hub/CommitNavigation/CommitNav
 import IncompatibleVersion from '../../../components/global/IncompatibleVersion/IncompatibleVersion';
 import CurrentRunIndicator from '../../../components/hub/CurrentRunIndicator/CurrentRunIndicator';
 import * as analytics from '../../../services/analytics';
+import DangerZone from '../../../components/hub/DangerZone/DangerZone';
 
 class HubExperimentScreen extends React.Component {
   constructor(props) {
@@ -542,44 +543,25 @@ class HubExperimentScreen extends React.Component {
                         </div>
                       )}
                     </div>
+                    {!!this.state.tags?.length &&
+                      <div className='HubExperimentScreen__header__tags'>
+                        {!this.state.tagsAreLoading && this.state.tags.length > 0 && (
+                          <Link
+                            to={buildUrl(screens.HUB_PROJECT_EDIT_TAG, {
+                              tag_id:  this.state.tags[0].id,
+                            })}
+                          >
+                            <UI.Label key={ this.state.tags[0].id} color={ this.state.tags[0].color}>
+                              {this.state.tags[0].name}
+                            </UI.Label>
+                          </Link>
+                        )}
+                      </div>
+                    }
                   </div>
                 )}
               </div>
             </div>
-            {!!this.state.commit && !!this.state.tags?.length && (
-              <>
-                <UI.Line />
-                <div className='HubExperimentScreen__header__bottom'>
-                  <div className='HubExperimentScreen__header__tags'>
-                    {!this.state.tagsAreLoading && this.state.tags.length > 0 && (
-                      <>
-                        <UI.Text
-                          className='HubExperimentScreen__header__tags__title'
-                          key='tag'
-                          type='grey'
-                          small
-                          inline
-                        >
-                          Tag:
-                        </UI.Text>
-                        {this.state.tags.map((tag) => (
-                          <Link
-                            to={buildUrl(screens.HUB_PROJECT_EDIT_TAG, {
-                              tag_id: tag.id,
-                            })}
-                          >
-                            <UI.Label key={tag.id} color={tag.color}>
-                              {tag.name}
-                            </UI.Label>
-                          </Link>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                </div>
-                <UI.Line />
-              </>
-            )}
           </div>
         )}
       </>
@@ -645,7 +627,7 @@ class HubExperimentScreen extends React.Component {
 
   _renderParameters = () => {
     if (!this.state.experiment?.maps?.length) {
-      return <UI.Text type='grey' center>No tracked parameter</UI.Text>;
+      return <UI.Text type='grey' center>No logged parameters</UI.Text>;
     }
 
     const maps = [];
@@ -690,7 +672,7 @@ class HubExperimentScreen extends React.Component {
 
   _renderMetrics = () => {
     if (!this.state.experiment?.metrics?.length) {
-      return <UI.Text type='grey' center>No tracked metric</UI.Text>;
+      return <UI.Text type='grey' center>No tracked metrics</UI.Text>;
     }
 
     return (
@@ -706,16 +688,30 @@ class HubExperimentScreen extends React.Component {
 
   _renderSettings = () => {
     return (
-      <UI.Button
-        size='tiny'
-        type='secondary'
-        onClick={() => this.handleArchivationBtnClick()}
-        {...this.state.archivationBtn}
-      >
-        {this.state.commit.archived
-          ? 'Unarchive run'
-          : 'Archive run'}
-      </UI.Button>
+      <div>
+        <UI.Segment type='negative'>
+          {this.state.commit.archived &&
+            <UI.Text type='grey-dark' spacing>
+              This run is archived.
+            </UI.Text>
+          }
+          <UI.Button
+            type={this.state.commit.archived ? 'secondary' : 'negative'}
+            onClick={() => this.handleArchivationBtnClick()}
+            {...this.state.archivationBtn}
+          >
+            {this.state.commit.archived
+              ? 'Unarchive'
+              : 'Archive this run'
+            }
+          </UI.Button>
+          {!this.state.commit.archived &&
+            <UI.Text type='grey-dark' spacingTop>
+              Archived runs will not appear in search both on Dashboard and Explore.
+            </UI.Text>
+          }
+        </UI.Segment>
+      </div>
     );
   };
 
@@ -742,6 +738,7 @@ class HubExperimentScreen extends React.Component {
     return (
       <>
         {this._renderExperimentHeader()}
+        <div className='HubExperimentScreen__divider' />
         <UI.Tabs
           leftItems={
             <>

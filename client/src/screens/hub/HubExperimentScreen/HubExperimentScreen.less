@@ -23,6 +23,7 @@
 }
 
 .HubExperimentScreen__header__content__process {
+  flex: 1 0 50%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -33,6 +34,8 @@
 }
 
 .HubExperimentScreen__header__tags {
+  flex: 0 auto;
+
   a {
     text-decoration: none;
   }
@@ -42,11 +45,10 @@
   margin-right: var(--space-xs);
 }
 
-.HubExperimentScreen__header__bottom {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
+.HubExperimentScreen__divider {
+  height: 1px;
+  background-color: var(--grey-lighter);
+  margin-top: var(--component-spacing-sm);
 }
 
 .HubExperimentScreen__body {
