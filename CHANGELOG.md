@@ -1,5 +1,6 @@
 # Changelog
 
+- Display experiment params with JSON tree inspector (gorarakelyan)
 - Display error message when an invalid AimQL query is made (gorarakelyan)
 - Add ability to order runs by metrics (roubkar)
 - Add activity block to dashboard (gorarakelyan)
