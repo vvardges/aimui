@@ -143,7 +143,7 @@ export default class TraceList {
     }
   };
 
-  addSeries = (run, metric = null, trace = null, aggregate = false) => {
+  addSeries = (run, metric = null, trace = null, aggregate = false, seed) => {
     let subGroup = this.groups;
     this.groupingFields.forEach((g) => {
       const groupVal = this.getRunParam(g, run, metric, trace);
@@ -205,10 +205,24 @@ export default class TraceList {
       });
       if (color === null) {
         // Get new color
-        const groupsCount = this.groupingConfigMap.colors.map(
-          (colorGroup) => colorGroup.value,
-        )?.length;
-        color = COLORS[groupsCount % COLORS.length];
+
+        // const groupsCount = this.groupingConfigMap.colors.map(
+        //   (colorGroup) => colorGroup.value,
+        // )?.length;
+
+        const configEntries = Object.keys(modelColorConfig)
+          .sort()
+          .map((key) => [key, modelColorConfig[key]]);
+        const configHash = btoa(JSON.stringify(configEntries)).replace(
+          /[\=\+\/]/g,
+          '',
+        );
+        const index = configHash
+          .split('')
+          .map((c, i) => configHash.charCodeAt(i))
+          .reduce((a, b) => (a % seed.color) + b);
+
+        color = COLORS[index % COLORS.length];
         this.groupingConfigMap.colors.push({
           config: modelColorConfig,
           value: color,
@@ -235,10 +249,24 @@ export default class TraceList {
       });
       if (stroke === null) {
         // Get new stroke style
-        const groupsCount = this.groupingConfigMap.strokes.map(
-          (strGroup) => strGroup.value,
-        )?.length;
-        stroke = STROKES[groupsCount % STROKES.length];
+
+        // const groupsCount = this.groupingConfigMap.strokes.map(
+        //   (strGroup) => strGroup.value,
+        // )?.length;
+
+        const configEntries = Object.keys(modelStrokeConfig)
+          .sort()
+          .map((key) => [key, modelStrokeConfig[key]]);
+        const configHash = btoa(JSON.stringify(configEntries)).replace(
+          /[\=\+\/]/g,
+          '',
+        );
+        const index = configHash
+          .split('')
+          .map((c, i) => configHash.charCodeAt(i))
+          .reduce((a, b) => (a % seed.style) + b);
+
+        stroke = STROKES[index % STROKES.length];
         this.groupingConfigMap.strokes.push({
           config: modelStrokeConfig,
           value: stroke,

@@ -8,12 +8,12 @@ import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 function GroupByColor(props) {
   let [opened, setOpened] = useState(false);
 
-  const { groupByColor } = props;
+  const { groupByColor, seed } = props;
 
   let popupRef = useRef();
   let dropdownRef = useRef();
 
-  let { setContextFilter } = HubMainScreenModel.emitters;
+  let { setContextFilter, setSeed } = HubMainScreenModel.emitters;
 
   let {
     getAllParamsPaths,
@@ -106,6 +106,16 @@ function GroupByColor(props) {
               isOpen
               multi
             />
+            <UI.Line />
+            <div className='ControlsSidebar__item__popup__body__action'>
+              <UI.Button
+                size='tiny'
+                disabled={groupByColor.length === 0}
+                onClick={(evt) => setSeed(seed + 1, 'color')}
+              >
+                Shuffle groups colors
+              </UI.Button>
+            </div>
           </div>
         </div>
       )}
@@ -115,6 +125,7 @@ function GroupByColor(props) {
 
 GroupByColor.propTypes = {
   groupByColor: PropTypes.arrayOf(PropTypes.string),
+  seed: PropTypes.number,
 };
 
 export default GroupByColor;

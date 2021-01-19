@@ -8,12 +8,12 @@ import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 function GroupByStyle(props) {
   let [opened, setOpened] = useState(false);
 
-  const { groupByStyle } = props;
+  const { groupByStyle, seed } = props;
 
   let popupRef = useRef();
   let dropdownRef = useRef();
 
-  let { setContextFilter } = HubMainScreenModel.emitters;
+  let { setContextFilter, setSeed } = HubMainScreenModel.emitters;
 
   let {
     getAllParamsPaths,
@@ -44,7 +44,7 @@ function GroupByStyle(props) {
             ? `Styled by ${groupByStyle.length} field${
                 groupByStyle.length > 1 ? 's' : ''
               }`
-            : 'Group by style'
+            : 'Group by stroke style'
         }
       >
         <div
@@ -75,7 +75,7 @@ function GroupByStyle(props) {
         >
           <div className='ControlsSidebar__item__popup__header'>
             <UI.Text overline bold>
-              Select fields for grouping by style
+              Select fields for grouping by stroke style
             </UI.Text>
           </div>
           <div className='ControlsSidebar__item__popup__body'>
@@ -106,6 +106,16 @@ function GroupByStyle(props) {
               isOpen
               multi
             />
+            <UI.Line />
+            <div className='ControlsSidebar__item__popup__body__action'>
+              <UI.Button
+                size='tiny'
+                disabled={groupByStyle.length === 0}
+                onClick={(evt) => setSeed(seed + 1, 'style')}
+              >
+                Shuffle groups stroke styles
+              </UI.Button>
+            </div>
           </div>
         </div>
       )}
@@ -115,6 +125,7 @@ function GroupByStyle(props) {
 
 GroupByStyle.propTypes = {
   groupByStyle: PropTypes.arrayOf(PropTypes.string),
+  seed: PropTypes.number,
 };
 
 export default GroupByStyle;

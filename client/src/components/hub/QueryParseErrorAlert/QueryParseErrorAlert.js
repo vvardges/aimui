@@ -25,8 +25,8 @@ function QueryParseErrorAlert({ query, errorOffset }) {
       <div className='QueryParseErrorAlert__footer'>
         <UI.Icon i='info' scale={1.3} spacingRight />
         <UI.Text inline small>
-          Aim Query Language is pythonic and fairly easy to get used to.
-          If having issues, please refer to the{' '}
+          Aim Query Language is pythonic and fairly easy to get used to. If
+          having issues, please refer to the{' '}
           <a
             className='link'
             href='https://github.com/aimhubio/aim#searching-experiments'

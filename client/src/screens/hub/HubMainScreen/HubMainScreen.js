@@ -69,6 +69,7 @@ function HubMainScreen(props) {
     setSearchState,
     setChartFocusedState,
     setChartSettingsState,
+    setTraceList,
   } = HubMainScreenModel.emitters;
 
   const projectWrapperRef = useRef();
@@ -185,7 +186,7 @@ function HubMainScreen(props) {
           () => {
             searchByQuery(false).then(() => {
               setChartFocusedState(state.chart.focused, null, true);
-              setChartSettingsState(state.chart.settings, null, true);
+              setChartSettingsState(state.chart.settings, setTraceList, true);
             });
           },
           false,
@@ -193,7 +194,7 @@ function HubMainScreen(props) {
         );
       } else {
         setChartFocusedState(state.chart.focused, null, true);
-        setChartSettingsState(state.chart.settings, null, true);
+        setChartSettingsState(state.chart.settings, setTraceList, true);
       }
     } else {
       let setSearchQuery = getItem(USER_LAST_SEARCH_QUERY);
@@ -359,6 +360,7 @@ function HubMainScreen(props) {
         HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
         HubMainScreenModel.events.SET_CONTEXT_FILTER,
         HubMainScreenModel.events.SET_SEARCH_STATE,
+        HubMainScreenModel.events.SET_SEED,
       ],
       updateURL,
     );
@@ -476,8 +478,7 @@ function HubMainScreen(props) {
     return (
       <Alert segment>
         <UI.Text type='grey' center>
-          No metric or parameter is selected.
-          Please{' '}
+          No metric or parameter is selected. Please{' '}
           <UI.Text
             className='link'
             type='primary'

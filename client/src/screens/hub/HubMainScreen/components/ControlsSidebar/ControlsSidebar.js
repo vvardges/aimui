@@ -25,6 +25,7 @@ function ControlsSidebar() {
     HubMainScreenModel.events.SET_RUNS_STATE,
     HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
     HubMainScreenModel.events.SET_CONTEXT_FILTER,
+    HubMainScreenModel.events.SET_SEED,
   ]);
 
   let {
@@ -37,6 +38,7 @@ function ControlsSidebar() {
     groupByStyle,
     groupByChart,
     aggregated,
+    seed,
   } = contextFilter;
 
   return (
@@ -56,8 +58,8 @@ function ControlsSidebar() {
         </ContentLoader>
       ) : (
         <div className='ControlsSidebar__items'>
-          <GroupByColor groupByColor={groupByColor} />
-          <GroupByStyle groupByStyle={groupByStyle} />
+          <GroupByColor groupByColor={groupByColor} seed={seed.color} />
+          <GroupByStyle groupByStyle={groupByStyle} seed={seed.style} />
           <GroupByChart groupByChart={groupByChart} />
           {isExploreMetricsModeEnabled() && (
             <>

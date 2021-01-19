@@ -25,6 +25,7 @@ const events = {
   SET_SEARCH_STATE: 'SET_SEARCH_STATE',
   SET_SEARCH_INPUT_STATE: 'SET_SEARCH_INPUT_STATE',
   SET_SORT_FIELDS: 'SET_SORT_FIELDS',
+  SET_SEED: 'SET_SEED',
 };
 
 // State
@@ -88,6 +89,10 @@ const state = {
     groupByStyle: [],
     groupByChart: [],
     aggregated: false,
+    seed: {
+      color: 10,
+      style: 10,
+    },
   },
 
   // Sort fields
@@ -118,6 +123,7 @@ const initialControls = {
     groupByStyle: [],
     groupByChart: [],
     aggregated: false,
+    seed: getState().contextFilter.seed,
   },
 };
 
@@ -229,6 +235,7 @@ function setTraceList() {
     return;
   }
 
+  const seed = getState().contextFilter.seed;
   const grouping = {
     color: getState().contextFilter.groupByColor,
     stroke: getState().contextFilter.groupByStyle,
@@ -265,11 +272,11 @@ function setTraceList() {
     sortFields.map((field) => field[1]),
   ).forEach((run) => {
     if (!run.metrics?.length) {
-      traceList.addSeries(run, null, null, aggregate);
+      traceList.addSeries(run, null, null, aggregate, seed);
     } else {
       run.metrics.forEach((metric) => {
         metric.traces.forEach((trace) => {
-          traceList.addSeries(run, metric, trace, aggregate);
+          traceList.addSeries(run, metric, trace, aggregate, seed);
         });
       });
     }
@@ -477,6 +484,20 @@ function setSortFields(sortFields) {
   setTraceList();
 
   setItem(EXPLORE_PANEL_SORT_FIELDS, JSON.stringify(sortFields));
+}
+
+function setSeed(seed, type) {
+  emit(events.SET_SEED, {
+    contextFilter: {
+      ...getState().contextFilter,
+      seed: {
+        ...getState().contextFilter.seed,
+        [type]: seed,
+      },
+    },
+  });
+
+  setTraceList();
 }
 
 // helpers
@@ -755,6 +776,7 @@ export const HubMainScreenModel = {
     setSearchState,
     setSearchInputState,
     setSortFields,
+    setSeed,
   },
   helpers: {
     isExploreMetricsModeEnabled,
