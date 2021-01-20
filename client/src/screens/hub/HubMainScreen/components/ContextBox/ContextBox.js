@@ -855,16 +855,16 @@ function ContextBox(props) {
                     '_',
                   )}`,
                 },
-                step: {
-                  content:
-                    stepData !== null && stepData[1] !== null
-                      ? stepData[1]
-                      : '-',
-                  className: `step-${JSON.stringify(traceModel.config).replace(
-                    /\.|"|:|{|}|,/g,
-                    '_',
-                  )}`,
-                },
+                // step: {
+                //   content:
+                //     stepData !== null && stepData[1] !== null
+                //       ? stepData[1]
+                //       : '-',
+                //   className: `step-${JSON.stringify(traceModel.config).replace(
+                //     /\.|"|:|{|}|,/g,
+                //     '_',
+                //   )}`,
+                // },
               },
               config: (
                 <>
@@ -918,6 +918,44 @@ function ContextBox(props) {
                   )}
                 </>
               ),
+            };
+
+            let stepValue;
+            let epochValue;
+            for (let i = 0; i < traceModel.series.length; i++) {
+              const series = traceModel.series[i];
+              let { stepData } = getClosestStepData(
+                step,
+                series?.trace?.data,
+                series?.trace?.axisValues,
+              );
+              if (i === 0) {
+                stepValue = stepData?.[1];
+                epochValue = stepData?.[2];
+              } else {
+                if (stepValue !== stepData?.[1]) {
+                  stepValue = undefined;
+                }
+                if (epochValue !== stepData?.[2]) {
+                  epochValue = undefined;
+                }
+              }
+            }
+
+            data[JSON.stringify(traceModel.config)].data.step = {
+              content: stepValue ?? '-',
+              className: `step-${JSON.stringify(traceModel.config).replace(
+                /\.|"|:|{|}|,/g,
+                '_',
+              )}`,
+            };
+
+            data[JSON.stringify(traceModel.config)].data.epoch = {
+              content: epochValue ?? '-',
+              className: `epoch-${JSON.stringify(traceModel.config).replace(
+                /\.|"|:|{|}|,/g,
+                '_',
+              )}`,
             };
 
             for (let metricKey in runs?.aggMetrics) {
@@ -1107,6 +1145,7 @@ function ContextBox(props) {
           const focusedMetric = chart.focused.metric;
 
           let groupStepData = {};
+          let groupEpochData = {};
 
           const currentActiveRow = document.querySelectorAll(
             '.ContextBox__table__cell.active',
@@ -1145,7 +1184,15 @@ function ContextBox(props) {
               );
 
               if (stepData !== null && stepData[1] !== null) {
-                groupStepData[groupSelector] = stepData[1];
+                if (!groupStepData.hasOwnProperty(groupSelector)) {
+                  groupStepData[groupSelector] = stepData[1];
+                  groupEpochData[groupSelector] = stepData[2];
+                } else {
+                  if (groupStepData[groupSelector] !== stepData[1]) {
+                    groupStepData[groupSelector] = undefined;
+                    groupEpochData[groupSelector] = undefined;
+                  }
+                }
               }
 
               let active = false;
@@ -1254,8 +1301,15 @@ function ContextBox(props) {
               const groupSetpCell = document.querySelector(
                 `.step-${groupSelector}`,
               );
+              const groupEpochCell = document.querySelector(
+                `.epoch-${groupSelector}`,
+              );
               if (!!groupSetpCell) {
                 groupSetpCell.textContent = groupStepData[groupSelector] ?? '-';
+              }
+              if (!!groupEpochCell) {
+                groupEpochCell.textContent =
+                  groupEpochData[groupSelector] ?? '-';
               }
 
               const min = getMetricStepDataByStepIdx(
