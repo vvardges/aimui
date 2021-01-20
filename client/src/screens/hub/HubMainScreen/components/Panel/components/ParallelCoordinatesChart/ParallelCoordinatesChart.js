@@ -734,7 +734,8 @@ function ParallelCoordinatesChart(props) {
             ? traceModel.color
             : getMetricColor(series.run, null, null);
 
-        const strokeDashArray = traceModel.stroke.split(' ');
+        const strokeDashArray =
+          traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0';
 
         const lineFunction = d3
           .line()
