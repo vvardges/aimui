@@ -347,63 +347,74 @@ export default class TraceList {
       case 'epoch':
         let epochSteps = {};
         this.traces.forEach((traceModel) => {
+          if (!epochSteps.hasOwnProperty(traceModel.chart)) {
+            epochSteps[traceModel.chart] = {};
+          }
           traceModel.series.forEach((series) => {
             const { trace } = series;
             if (trace !== undefined && trace !== null) {
               trace.data.forEach((point) => {
                 const epoch = point[2];
-                if (!epochSteps.hasOwnProperty(epoch)) {
-                  epochSteps[epoch] = [];
+                if (!epochSteps[traceModel.chart].hasOwnProperty(epoch)) {
+                  epochSteps[traceModel.chart][epoch] = [];
                 }
               });
             }
           });
         });
 
-        for (let epoch in epochSteps) {
-          this.traces.forEach((traceModel) => {
-            traceModel.series.forEach((series) => {
-              const { trace } = series;
-              if (trace !== undefined && trace !== null) {
-                const stepsInEpoch = trace.data
-                  .filter((point) => `${point[2]}` === epoch)
-                  .map((point) => point[1]);
-                if (stepsInEpoch.length > epochSteps[epoch].length) {
-                  if (epoch !== 'null' && +epoch > 0) {
-                    const prevEpoch = +epoch - 1;
-                    if (
-                      epochSteps.hasOwnProperty(prevEpoch) &&
-                      epochSteps[prevEpoch][epochSteps[prevEpoch].length - 1] >=
-                        stepsInEpoch[0]
-                    ) {
-                      const prevEpochLastValue =
-                        epochSteps[prevEpoch][epochSteps[prevEpoch].length - 1];
-                      let steps = [];
-                      let prevValue = prevEpochLastValue;
-                      stepsInEpoch.forEach((step, i) => {
-                        if (i === 0) {
-                          prevValue =
-                            prevValue +
-                            (prevValue -
-                              epochSteps[prevEpoch][
-                                epochSteps[prevEpoch].length - 2
-                              ]);
+        for (let chart in epochSteps) {
+          for (let epoch in epochSteps[chart]) {
+            this.traces.forEach((traceModel) => {
+              if (traceModel.chart === +chart) {
+                traceModel.series.forEach((series) => {
+                  const { trace } = series;
+                  if (trace !== undefined && trace !== null) {
+                    const stepsInEpoch = trace.data
+                      .filter((point) => `${point[2]}` === epoch)
+                      .map((point) => point[1]);
+                    if (stepsInEpoch.length > epochSteps[chart][epoch].length) {
+                      if (epoch !== 'null' && +epoch > 0) {
+                        const prevEpoch = +epoch - 1;
+                        if (
+                          epochSteps[chart].hasOwnProperty(prevEpoch) &&
+                          epochSteps[chart][prevEpoch][
+                            epochSteps[chart][prevEpoch].length - 1
+                          ] >= stepsInEpoch[0]
+                        ) {
+                          const prevEpochLastValue =
+                            epochSteps[chart][prevEpoch][
+                              epochSteps[chart][prevEpoch].length - 1
+                            ];
+                          let steps = [];
+                          let prevValue = prevEpochLastValue;
+                          stepsInEpoch.forEach((step, i) => {
+                            if (i === 0) {
+                              prevValue =
+                                prevValue +
+                                (prevValue -
+                                  epochSteps[chart][prevEpoch][
+                                    epochSteps[chart][prevEpoch].length - 2
+                                  ]);
+                            } else {
+                              prevValue =
+                                prevValue +
+                                (stepsInEpoch[i] - stepsInEpoch[i - 1]);
+                            }
+                            steps.push(prevValue);
+                          });
                         } else {
-                          prevValue =
-                            prevValue + (stepsInEpoch[i] - stepsInEpoch[i - 1]);
+                          epochSteps[chart][epoch] = stepsInEpoch;
                         }
-                        steps.push(prevValue);
-                      });
-                    } else {
-                      epochSteps[epoch] = stepsInEpoch;
+                      } else {
+                        epochSteps[chart][epoch] = stepsInEpoch;
+                      }
                     }
-                  } else {
-                    epochSteps[epoch] = stepsInEpoch;
                   }
-                }
+                });
               }
             });
-          });
+          }
         }
 
         this.epochSteps = epochSteps;
@@ -413,19 +424,24 @@ export default class TraceList {
             const { trace } = series;
             if (trace !== undefined && trace !== null) {
               trace.axisValues = [];
-              for (let epoch in epochSteps) {
-                const stepsInEpoch = trace.data
-                  .filter((point) => `${point[2]}` === epoch)
-                  .map((point) => point[1]);
-                if (stepsInEpoch.length > 0) {
-                  trace.axisValues =
-                    epoch === 'null'
-                      ? stepsInEpoch
-                      : trace.axisValues.concat(
-                        epochSteps[epoch].slice(
-                          epochSteps[epoch].length - stepsInEpoch.length,
-                        ),
-                      );
+              for (let chart in epochSteps) {
+                if (traceModel.chart === +chart) {
+                  for (let epoch in epochSteps[chart]) {
+                    const stepsInEpoch = trace.data
+                      .filter((point) => `${point[2]}` === epoch)
+                      .map((point) => point[1]);
+                    if (stepsInEpoch.length > 0) {
+                      trace.axisValues =
+                        epoch === 'null'
+                          ? stepsInEpoch
+                          : trace.axisValues.concat(
+                            epochSteps[chart][epoch].slice(
+                              epochSteps[chart][epoch].length -
+                                  stepsInEpoch.length,
+                            ),
+                          );
+                    }
+                  }
                 }
               }
             }

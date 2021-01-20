@@ -301,10 +301,10 @@ function PanelChart(props) {
     let xSteps = [];
     let xTicks = [];
 
-    if (xAlignment === 'epoch' && traceList.epochSteps) {
-      xTicks = Object.keys(traceList.epochSteps).map((epoch) => {
+    if (xAlignment === 'epoch' && traceList.epochSteps[props.index]) {
+      xTicks = Object.keys(traceList.epochSteps[props.index]).map((epoch) => {
         return [
-          traceList.epochSteps[epoch][0],
+          traceList.epochSteps[props.index][epoch][0],
           epoch === 'null' ? null : epoch,
         ];
       });
