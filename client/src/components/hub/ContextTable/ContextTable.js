@@ -11,6 +11,7 @@ import BarViewModes from '../BarViewModes/BarViewModes';
 import { setItem, getItem } from '../../../services/storage';
 import { CONTEXT_TABLE_CONFIG } from '../../../config';
 import BarSort from './components/BarSort/BarSort';
+import BarSearch from './components/BarSearch/BarSearch';
 
 function ContextTable(props) {
   const storageKey = CONTEXT_TABLE_CONFIG.replace('{name}', props.name);
@@ -85,7 +86,11 @@ function ContextTable(props) {
               setRowHeightMode={setRowHeightMode}
             />
           </div>
-          <div className='ContextTableBar__items ContextTableBar__items--right' />
+          <div className='ContextTableBar__items ContextTableBar__items--right'>
+            {props.handleSearch && (
+              <BarSearch handleSearch={props.handleSearch} />
+            )}
+          </div>
         </div>
       )}
       <div className='ContextTable__table'>
@@ -117,6 +122,7 @@ ContextTable.propTypes = {
   displaySort: PropTypes.bool,
   sortFields: PropTypes.array,
   setSortFields: PropTypes.func,
+  handleSearch: PropTypes.func,
 };
 
 export default ContextTable;

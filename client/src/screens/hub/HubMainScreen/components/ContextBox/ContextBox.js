@@ -34,6 +34,8 @@ function ContextBox(props) {
   });
   let paramKeys = useRef();
 
+  let [searchKey, setSearchKey] = useState('');
+
   let {
     runs,
     traceList,
@@ -175,6 +177,10 @@ function ContextBox(props) {
         },
       });
     }
+  }
+
+  function handleSearch(searchKey) {
+    setSearchKey(searchKey);
   }
 
   function _renderContentLoader() {
@@ -399,9 +405,11 @@ function ContextBox(props) {
     const focusedMetric = chart.focused.metric;
 
     traceList?.traces.forEach((traceModel) => {
-      (isExploreParamsModeEnabled()
-        ? _.uniqBy(traceModel.series, 'run.run_hash')
-        : traceModel.series
+      _.filter(
+        isExploreParamsModeEnabled()
+          ? _.uniqBy(traceModel.series, 'run.run_hash')
+          : traceModel.series,
+        (series) => series.run.experiment_name.includes(searchKey),
       ).forEach((series) => {
         const { run, metric, trace } = series;
         const contextHash = contextToHash(trace?.context);
@@ -1049,6 +1057,7 @@ function ContextBox(props) {
             displaySort
             sortFields={sortFields}
             setSortFields={setSortFields}
+            handleSearch={handleSearch}
           />
         </div>
       </div>
