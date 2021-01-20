@@ -198,6 +198,7 @@ function setRunsState(runsState, callback = null) {
         groupByStyle: [],
         groupByChart: [],
         aggregated: false,
+        seed: getState().contextFilter.seed,
       },
     }),
   });
