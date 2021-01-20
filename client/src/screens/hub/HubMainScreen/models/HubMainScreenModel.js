@@ -348,7 +348,11 @@ function setChartFocusedState(
   }
 }
 
-function setChartFocusedActiveState(focusedState, callback = null) {
+function setChartFocusedActiveState(
+  focusedState,
+  callback = null,
+  replaceUrl = false,
+) {
   emit(events.SET_CHART_FOCUSED_ACTIVE_STATE, {
     chart: {
       ...getState().chart,
@@ -357,6 +361,7 @@ function setChartFocusedActiveState(focusedState, callback = null) {
         ...focusedState,
       },
     },
+    replaceUrl,
   });
   if (callback !== null) {
     callback();

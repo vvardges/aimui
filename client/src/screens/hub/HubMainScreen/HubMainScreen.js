@@ -68,6 +68,7 @@ function HubMainScreen(props) {
     setContextFilter,
     setSearchState,
     setChartFocusedState,
+    setChartFocusedActiveState,
     setChartSettingsState,
     setTraceList,
   } = HubMainScreenModel.emitters;
@@ -187,7 +188,7 @@ function HubMainScreen(props) {
           () => {
             searchByQuery(state.chart.settings.persistent.pointsCount).then(
               () => {
-                setChartFocusedState(state.chart.focused, null, true);
+                setChartFocusedActiveState(state.chart.focused, null, true);
                 setChartSettingsState(state.chart.settings, setTraceList, true);
               },
             );

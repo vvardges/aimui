@@ -394,7 +394,9 @@ function ContextBox(props) {
 
     const data = traceList?.traces.length > 1 ? {} : [];
     const expanded = {};
-    const step = chart.focused.step;
+    const step = chart.focused.circle.active
+      ? chart.focused.circle.step
+      : chart.focused.step;
     const focusedCircle = chart.focused.circle;
     const focusedMetric = chart.focused.metric;
 
