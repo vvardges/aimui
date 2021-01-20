@@ -667,14 +667,16 @@ function PanelChart(props) {
         if (val !== null) {
           const y = chartOptions.current.yScale(val);
           const traceContext = contextToHash(trace?.context);
-          const noSelectedRun =
-            highlightMode === 'default' || !focusedLineAttr.runHash;
+          const shouldHighlightCircle =
+            highlightMode === 'default' ||
+            !focusedLineAttr.runHash ||
+            focusedLineAttr.runHash === run.run_hash;
           const circle = circles.current
             .append('circle')
             .attr(
               'class',
               `HoverCircle HoverCircle-${closestStep} ${
-                noSelectedRun ? '' : 'inactive'
+                shouldHighlightCircle ? '' : 'inactive'
               } HoverCircle-${traceToHash(
                 run.run_hash,
                 metric?.name,
