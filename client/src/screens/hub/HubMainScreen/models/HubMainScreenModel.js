@@ -281,7 +281,7 @@ function setTraceList() {
       traceList.addSeries(run, null, null, xAlignment, aggregate, seed);
     } else {
       run.metrics.forEach((metric) => {
-        metric.traces.forEach((trace) => {
+        metric?.traces.forEach((trace) => {
           traceList.addSeries(run, metric, trace, xAlignment, aggregate, seed);
         });
       });
@@ -631,8 +631,8 @@ function getAllContextKeys() {
   getState().traceList?.traces.forEach((trace) => {
     trace.series.forEach((series) => {
       series.metric?.traces?.forEach((metricTrace) => {
-        if (!!metricTrace.context) {
-          contextKeys.push(...Object.keys(metricTrace.context));
+        if (!!metricTrace?.context) {
+          contextKeys.push(...Object.keys(metricTrace?.context ?? {}));
         }
       });
     });
@@ -710,15 +710,15 @@ function getTraceData(runHash, metricName, context) {
       if (matchedTrace !== null) return;
       if (
         run.run_hash === runHash &&
-        metric.name === metricName &&
-        contextToHash(trace.context) === context
+        metric?.name === metricName &&
+        contextToHash(trace?.context) === context
       ) {
         if (matchedTrace === null) {
           matchedRun = run;
           matchedMetric = metric;
           matchedTrace = trace;
-          data = trace.data;
-          axisValues = trace.axisValues;
+          data = trace?.data ?? [];
+          axisValues = trace?.axisValues ?? [];
         }
       }
     });
