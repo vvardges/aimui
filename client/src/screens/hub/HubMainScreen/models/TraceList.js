@@ -371,13 +371,29 @@ export default class TraceList {
                 if (stepsInEpoch.length > epochSteps[epoch].length) {
                   if (epoch !== 'null' && +epoch > 0) {
                     const prevEpoch = +epoch - 1;
-                    if (epochSteps.hasOwnProperty(prevEpoch)) {
-                      const diff = stepsInEpoch[1] - stepsInEpoch[0];
-                      const prevLastValue =
+                    if (
+                      epochSteps.hasOwnProperty(prevEpoch) &&
+                      epochSteps[prevEpoch][epochSteps[prevEpoch].length - 1] >
+                        stepsInEpoch[0]
+                    ) {
+                      const prevEpochLastValue =
                         epochSteps[prevEpoch][epochSteps[prevEpoch].length - 1];
-                      epochSteps[epoch] = stepsInEpoch.map(
-                        (step, i) => prevLastValue + (i + 1) * diff,
-                      );
+                      let steps = [];
+                      let prevValue = prevEpochLastValue;
+                      stepsInEpoch.forEach((step, i) => {
+                        if (i === 0) {
+                          prevValue =
+                            prevValue +
+                            (prevValue -
+                              epochSteps[prevEpoch][
+                                epochSteps[prevEpoch].length - 2
+                              ]);
+                        } else {
+                          prevValue =
+                            prevValue + (stepsInEpoch[i] - stepsInEpoch[i - 1]);
+                        }
+                        steps.push(prevValue);
+                      });
                     } else {
                       epochSteps[epoch] = stepsInEpoch;
                     }
