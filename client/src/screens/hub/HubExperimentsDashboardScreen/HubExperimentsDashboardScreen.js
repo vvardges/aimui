@@ -78,6 +78,7 @@ class HubExperimentsDashboardScreen extends React.Component {
         const encodedState = search.substr(8);
         return JSON.parse(atob(encodedState));
       } catch (e) {
+        console.log(e);
         return null;
       }
     }

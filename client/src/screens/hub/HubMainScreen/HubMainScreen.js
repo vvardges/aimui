@@ -140,6 +140,7 @@ function HubMainScreen(props) {
         const encodedState = search.substr(8);
         return JSON.parse(atob(encodedState));
       } catch (e) {
+        console.log(e);
         return null;
       }
     }
