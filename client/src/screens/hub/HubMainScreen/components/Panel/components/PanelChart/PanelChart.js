@@ -667,10 +667,21 @@ function PanelChart(props) {
         if (val !== null) {
           const y = chartOptions.current.yScale(val);
           const traceContext = contextToHash(trace?.context);
-          const shouldHighlightCircle =
-            highlightMode === 'default' ||
-            !focusedLineAttr.runHash ||
-            focusedLineAttr.runHash === run.run_hash;
+
+          let shouldHighlightCircle;
+          if (highlightMode === 'default' || !focusedLineAttr.runHash) {
+            shouldHighlightCircle = true;
+          } else if (highlightMode === 'run') {
+            shouldHighlightCircle = focusedLineAttr.runHash === run.run_hash;
+          } else if (highlightMode === 'metric') {
+            shouldHighlightCircle =
+              focusedLineAttr.runHash === run.run_hash &&
+              focusedLineAttr.metricName === metric?.name &&
+              focusedLineAttr.traceContext === traceContext;
+          } else {
+            shouldHighlightCircle = false;
+          }
+
           const circle = circles.current
             .append('circle')
             .attr(
