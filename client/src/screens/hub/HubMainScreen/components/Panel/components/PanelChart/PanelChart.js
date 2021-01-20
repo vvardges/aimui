@@ -27,8 +27,8 @@ const d3 = require('d3');
 
 const popUpDefaultWidth = 250;
 const popUpDefaultHeight = 200;
-const circleRadius = 4;
-const circleActiveRadius = 7;
+const circleRadius = 3;
+const circleActiveRadius = 5;
 
 const curveOptions = [
   'curveLinear',
@@ -615,6 +615,7 @@ function PanelChart(props) {
 
   function drawHoverAttributes() {
     const { chart, traceList, contextFilter } = HubMainScreenModel.getState();
+    const highlightMode = chart.settings.highlightMode;
     const focused = chart.focused;
     if (focused.circle.runHash === null || focused.circle.active === false) {
       hideActionPopUps(false);
@@ -642,6 +643,8 @@ function PanelChart(props) {
     // Draw circles
     const focusedMetric = focused.metric;
     const focusedCircle = focused.circle;
+    const focusedLineAttr =
+      focusedCircle.runHash !== null ? focusedCircle : focusedMetric;
     let focusedCircleElem = null;
 
     circles.current = attributes.current.append('g');
@@ -664,11 +667,15 @@ function PanelChart(props) {
         if (val !== null) {
           const y = chartOptions.current.yScale(val);
           const traceContext = contextToHash(trace?.context);
+          const noSelectedRun =
+            highlightMode === 'default' || !focusedLineAttr.runHash;
           const circle = circles.current
             .append('circle')
             .attr(
               'class',
-              `HoverCircle HoverCircle-${closestStep} HoverCircle-${traceToHash(
+              `HoverCircle HoverCircle-${closestStep} ${
+                noSelectedRun ? '' : 'inactive'
+              } HoverCircle-${traceToHash(
                 run.run_hash,
                 metric?.name,
                 traceContext,
