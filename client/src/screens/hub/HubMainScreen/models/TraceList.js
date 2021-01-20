@@ -373,7 +373,7 @@ export default class TraceList {
                     const prevEpoch = +epoch - 1;
                     if (
                       epochSteps.hasOwnProperty(prevEpoch) &&
-                      epochSteps[prevEpoch][epochSteps[prevEpoch].length - 1] >
+                      epochSteps[prevEpoch][epochSteps[prevEpoch].length - 1] >=
                         stepsInEpoch[0]
                     ) {
                       const prevEpochLastValue =
