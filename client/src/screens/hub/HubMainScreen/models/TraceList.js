@@ -218,10 +218,9 @@ export default class TraceList {
         const configEntries = Object.keys(modelColorConfig)
           .sort()
           .map((key) => [key, modelColorConfig[key]]);
-        const configHash = btoa(JSON.stringify(configEntries)).replace(
-          /[\=\+\/]/g,
-          '',
-        );
+        const configHash = btoa(
+          encodeURIComponent(JSON.stringify(configEntries)),
+        ).replace(/[\=\+\/]/g, '');
         const index = configHash
           .split('')
           .map((c, i) => configHash.charCodeAt(i))
@@ -262,10 +261,9 @@ export default class TraceList {
         const configEntries = Object.keys(modelStrokeConfig)
           .sort()
           .map((key) => [key, modelStrokeConfig[key]]);
-        const configHash = btoa(JSON.stringify(configEntries)).replace(
-          /[\=\+\/]/g,
-          '',
-        );
+        const configHash = btoa(
+          encodeURIComponent(JSON.stringify(configEntries)),
+        ).replace(/[\=\+\/]/g, '');
         const index = configHash
           .split('')
           .map((c, i) => configHash.charCodeAt(i))
