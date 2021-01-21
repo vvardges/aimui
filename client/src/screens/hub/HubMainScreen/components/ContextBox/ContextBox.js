@@ -853,20 +853,10 @@ function ContextBox(props) {
                     </div>
                   ),
                   className: `value-${JSON.stringify(traceModel.config).replace(
-                    /\.|"|:|{|}|,/g,
+                    /\.|"|:|{|}|,|#|\*|\//g,
                     '_',
                   )}`,
                 },
-                // step: {
-                //   content:
-                //     stepData !== null && stepData[1] !== null
-                //       ? stepData[1]
-                //       : '-',
-                //   className: `step-${JSON.stringify(traceModel.config).replace(
-                //     /\.|"|:|{|}|,/g,
-                //     '_',
-                //   )}`,
-                // },
               },
               config: (
                 <>
@@ -947,7 +937,7 @@ function ContextBox(props) {
             data[JSON.stringify(traceModel.config)].data.step = {
               content: stepValue ?? '-',
               className: `step-${JSON.stringify(traceModel.config).replace(
-                /\.|"|:|{|}|,/g,
+                /\.|"|:|{|}|,|#|\*|\//g,
                 '_',
               )}`,
             };
@@ -955,7 +945,7 @@ function ContextBox(props) {
             data[JSON.stringify(traceModel.config)].data.epoch = {
               content: epochValue ?? '-',
               className: `epoch-${JSON.stringify(traceModel.config).replace(
-                /\.|"|:|{|}|,/g,
+                /\.|"|:|{|}|,|#|\*|\//g,
                 '_',
               )}`,
             };
@@ -1163,7 +1153,7 @@ function ContextBox(props) {
           });
           traceList?.traces.forEach((traceModel) => {
             const groupSelector = JSON.stringify(traceModel.config).replace(
-              /\.|"|:|{|}|,/g,
+              /\.|"|:|{|}|,|#|\*|\//g,
               '_',
             );
             (isExploreParamsModeEnabled()
