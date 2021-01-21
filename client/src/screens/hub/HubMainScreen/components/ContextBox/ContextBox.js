@@ -409,7 +409,10 @@ function ContextBox(props) {
         isExploreParamsModeEnabled()
           ? _.uniqBy(traceModel.series, 'run.run_hash')
           : traceModel.series,
-        (series) => series.run.experiment_name.includes(searchKey),
+        (series) =>
+          series.run.experiment_name
+            .toLowerCase()
+            .includes(searchKey.toLowerCase()),
       ).forEach((series) => {
         const { run, metric, trace } = series;
         const contextHash = contextToHash(trace?.context);
