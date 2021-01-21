@@ -71,7 +71,7 @@ class Runs extends React.Component {
     }
 
     const deepParamFields = this.getAllParamsPaths(this.state.runs, true, true);
-    const paramFields = this.getAllParamsPaths(this.state.runs, true, false);
+    const paramFields = this.getAllParamsPaths(this.state.runs, false, false);
     let metrics = this.getAllMetrics(this.state.runs);
 
     if (

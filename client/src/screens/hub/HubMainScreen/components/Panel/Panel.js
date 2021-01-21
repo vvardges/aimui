@@ -1,6 +1,6 @@
 import './Panel.less';
 
-import React, { useState, useEffect, useRef, Component } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import PanelChart from './components/PanelChart/PanelChart';

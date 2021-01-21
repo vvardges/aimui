@@ -27,8 +27,8 @@ const d3 = require('d3');
 
 const popUpDefaultWidth = 250;
 const popUpDefaultHeight = 200;
-const circleRadius = 4;
-const circleActiveRadius = 7;
+const circleRadius = 3;
+const circleActiveRadius = 5;
 
 const curveOptions = [
   'curveLinear',
@@ -301,10 +301,10 @@ function PanelChart(props) {
     let xSteps = [];
     let xTicks = [];
 
-    if (xAlignment === 'epoch' && traceList.epochSteps) {
-      xTicks = Object.keys(traceList.epochSteps).map((epoch) => {
+    if (xAlignment === 'epoch' && traceList.epochSteps[props.index]) {
+      xTicks = Object.keys(traceList.epochSteps[props.index]).map((epoch) => {
         return [
-          traceList.epochSteps[epoch][0],
+          traceList.epochSteps[props.index][epoch][0],
           epoch === 'null' ? null : epoch,
         ];
       });
@@ -615,6 +615,7 @@ function PanelChart(props) {
 
   function drawHoverAttributes() {
     const { chart, traceList, contextFilter } = HubMainScreenModel.getState();
+    const highlightMode = chart.settings.highlightMode;
     const focused = chart.focused;
     if (focused.circle.runHash === null || focused.circle.active === false) {
       hideActionPopUps(false);
@@ -642,6 +643,8 @@ function PanelChart(props) {
     // Draw circles
     const focusedMetric = focused.metric;
     const focusedCircle = focused.circle;
+    const focusedLineAttr =
+      focusedCircle.runHash !== null ? focusedCircle : focusedMetric;
     let focusedCircleElem = null;
 
     circles.current = attributes.current.append('g');
@@ -664,11 +667,28 @@ function PanelChart(props) {
         if (val !== null) {
           const y = chartOptions.current.yScale(val);
           const traceContext = contextToHash(trace?.context);
+
+          let shouldHighlightCircle;
+          if (highlightMode === 'default' || !focusedLineAttr.runHash) {
+            shouldHighlightCircle = true;
+          } else if (highlightMode === 'run') {
+            shouldHighlightCircle = focusedLineAttr.runHash === run.run_hash;
+          } else if (highlightMode === 'metric') {
+            shouldHighlightCircle =
+              focusedLineAttr.runHash === run.run_hash &&
+              focusedLineAttr.metricName === metric?.name &&
+              focusedLineAttr.traceContext === traceContext;
+          } else {
+            shouldHighlightCircle = false;
+          }
+
           const circle = circles.current
             .append('circle')
             .attr(
               'class',
-              `HoverCircle HoverCircle-${closestStep} HoverCircle-${traceToHash(
+              `HoverCircle HoverCircle-${closestStep} ${
+                shouldHighlightCircle ? '' : 'inactive'
+              } HoverCircle-${traceToHash(
                 run.run_hash,
                 metric?.name,
                 traceContext,

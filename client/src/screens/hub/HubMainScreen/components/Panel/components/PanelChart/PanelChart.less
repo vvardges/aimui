@@ -111,19 +111,30 @@
     transition: all 200ms ease;
     cursor: pointer;
 
+    &.inactive {
+      opacity: 0.5;
+    }
+
+    &:hover {
+      opacity: 1;
+    }
+
     &.active {
       stroke: var(--primary-light);
-      stroke-width: 5 !important;
+      stroke-width: 3 !important;
+      opacity: 1;
     }
 
     &:active {
       stroke: var(--primary);
-      stroke-width: 2 !important;
+      stroke-width: 1 !important;
+      opacity: 1;
     }
 
     &.focus {
       stroke: var(--primary) !important;
-      stroke-width: 3 !important;
+      stroke-width: 2 !important;
+      opacity: 1;
     }
   }
 

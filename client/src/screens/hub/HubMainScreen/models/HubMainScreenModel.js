@@ -198,6 +198,7 @@ function setRunsState(runsState, callback = null) {
         groupByStyle: [],
         groupByChart: [],
         aggregated: false,
+        seed: getState().contextFilter.seed,
       },
     }),
   });
@@ -280,7 +281,7 @@ function setTraceList() {
       traceList.addSeries(run, null, null, xAlignment, aggregate, seed);
     } else {
       run.metrics.forEach((metric) => {
-        metric.traces.forEach((trace) => {
+        metric?.traces.forEach((trace) => {
           traceList.addSeries(run, metric, trace, xAlignment, aggregate, seed);
         });
       });
@@ -347,7 +348,11 @@ function setChartFocusedState(
   }
 }
 
-function setChartFocusedActiveState(focusedState, callback = null) {
+function setChartFocusedActiveState(
+  focusedState,
+  callback = null,
+  replaceUrl = false,
+) {
   emit(events.SET_CHART_FOCUSED_ACTIVE_STATE, {
     chart: {
       ...getState().chart,
@@ -356,6 +361,7 @@ function setChartFocusedActiveState(focusedState, callback = null) {
         ...focusedState,
       },
     },
+    replaceUrl,
   });
   if (callback !== null) {
     callback();
@@ -630,8 +636,8 @@ function getAllContextKeys() {
   getState().traceList?.traces.forEach((trace) => {
     trace.series.forEach((series) => {
       series.metric?.traces?.forEach((metricTrace) => {
-        if (!!metricTrace.context) {
-          contextKeys.push(...Object.keys(metricTrace.context));
+        if (!!metricTrace?.context) {
+          contextKeys.push(...Object.keys(metricTrace?.context ?? {}));
         }
       });
     });
@@ -709,15 +715,15 @@ function getTraceData(runHash, metricName, context) {
       if (matchedTrace !== null) return;
       if (
         run.run_hash === runHash &&
-        metric.name === metricName &&
-        contextToHash(trace.context) === context
+        metric?.name === metricName &&
+        contextToHash(trace?.context) === context
       ) {
         if (matchedTrace === null) {
           matchedRun = run;
           matchedMetric = metric;
           matchedTrace = trace;
-          data = trace.data;
-          axisValues = trace.axisValues;
+          data = trace?.data ?? [];
+          axisValues = trace?.axisValues ?? [];
         }
       }
     });
