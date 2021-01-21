@@ -189,8 +189,12 @@ export function arraysIntersection(a, b) {
 
 export function removeOutliers(values, t = 2) {
   values.sort((a, b) => a - b);
+
   while (true) {
     if (!values.length) {
+      break;
+    }
+    if (values[0] === values[values.length-1]) {
       break;
     }
     const q1 = values[Math.floor(values.length / 4)];

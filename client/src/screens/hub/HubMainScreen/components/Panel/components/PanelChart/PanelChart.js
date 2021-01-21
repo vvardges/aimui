@@ -400,9 +400,14 @@ function PanelChart(props) {
 
     let yScaleBase;
     if (scaleOptions[chart.settings.yScale] === 'scaleLinear') {
-      const diff = yMax - yMin;
-      yMax += diff * 0.1;
-      yMin -= diff * 0.05;
+      if (yMax === yMin) {
+        yMax += 1;
+        yMin -= 1;
+      } else {
+        const diff = yMax - yMin;
+        yMax += diff * 0.1;
+        yMin -= diff * 0.05;
+      }
       yScaleBase = d3.scaleLinear();
     } else if (scaleOptions[chart.settings.yScale] === 'scaleLog') {
       yScaleBase = d3.scaleLog();
