@@ -115,7 +115,7 @@ function ControlsSidebarXAlignment(props) {
               <UI.RangeSlider
                 min={10}
                 max={500}
-                value={pointsCount}
+                value={pointsCount ?? 50}
                 onChange={setChartPointsCount}
                 ticks={{
                   10: 10,

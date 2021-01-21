@@ -265,7 +265,7 @@ function HubMainScreen(props) {
 
   function searchByQuery(
     pointsCount = HubMainScreenModel.getState().chart.settings.persistent
-      .pointsCount,
+      .pointsCount || 50,
   ) {
     return new Promise((resolve) => {
       const query = HubMainScreenModel.getState().search?.query?.trim();
