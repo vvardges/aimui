@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.3.1 Jan 22 2021
 - Fix Y axis scale for single value (roubkar)
 - Fix issue with setting undefined pointsCount from URL (roubkar)
 
