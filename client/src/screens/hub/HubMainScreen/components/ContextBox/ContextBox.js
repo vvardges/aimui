@@ -405,7 +405,7 @@ function ContextBox(props) {
     const focusedMetric = chart.focused.metric;
 
     traceList?.traces.forEach((traceModel) => {
-      _.filter(
+      const traceModelSeries = _.filter(
         isExploreParamsModeEnabled()
           ? _.uniqBy(traceModel.series, 'run.run_hash')
           : traceModel.series,
@@ -413,7 +413,8 @@ function ContextBox(props) {
           series.run.experiment_name
             .toLowerCase()
             .includes(searchKey.toLowerCase()),
-      ).forEach((series) => {
+      );
+      traceModelSeries.forEach((series) => {
         const { run, metric, trace } = series;
         const contextHash = contextToHash(trace?.context);
 
@@ -702,8 +703,7 @@ function ContextBox(props) {
               traceModel.aggregation.max.trace.data,
               step,
             )?.[0];
-            const runsCount = _.uniqBy(traceModel.series, 'run.run_hash')
-              .length;
+            const runsCount = _.uniqBy(traceModelSeries, 'run.run_hash').length;
             data[JSON.stringify(traceModel.config)] = {
               items: [],
               data: {
@@ -862,7 +862,7 @@ function ContextBox(props) {
                     </div>
                   ),
                   className: `value-${JSON.stringify(traceModel.config).replace(
-                    /\.|"|:|{|}|,/g,
+                    /\.|"|:|{|}|,|#|\*|\//g,
                     '_',
                   )}`,
                 },
@@ -872,7 +872,7 @@ function ContextBox(props) {
                       ? stepData[1]
                       : '-',
                   className: `step-${JSON.stringify(traceModel.config).replace(
-                    /\.|"|:|{|}|,/g,
+                    /\.|"|:|{|}|,|#|\*|\//g,
                     '_',
                   )}`,
                 },
@@ -881,7 +881,7 @@ function ContextBox(props) {
                 <>
                   <GroupConfigPopup
                     config={traceModel.config}
-                    rowsCount={traceModel.series.length}
+                    rowsCount={traceModelSeries.length}
                   />
                   {traceList?.grouping?.chart?.length > 0 && (
                     <UI.Tooltip tooltip='Group Chart ID'>
@@ -1011,8 +1011,8 @@ function ContextBox(props) {
                   ] = formatValue(traceModel.config[param]);
                 } else {
                   let value;
-                  for (let i = 0; i < traceModel.series.length; i++) {
-                    const series = traceModel.series[i];
+                  for (let i = 0; i < traceModelSeries.length; i++) {
+                    const series = traceModelSeries[i];
                     if (i === 0) {
                       value = _.get(series, param);
                     } else {
@@ -1134,13 +1134,19 @@ function ContextBox(props) {
           });
           traceList?.traces.forEach((traceModel) => {
             const groupSelector = JSON.stringify(traceModel.config).replace(
-              /\.|"|:|{|}|,/g,
+              /\.|"|:|{|}|,|#|\*|\//g,
               '_',
             );
-            (isExploreParamsModeEnabled()
-              ? _.uniqBy(traceModel.series, 'run.run_hash')
-              : traceModel.series
-            ).forEach((series) => {
+            const traceModelSeries = _.filter(
+              isExploreParamsModeEnabled()
+                ? _.uniqBy(traceModel.series, 'run.run_hash')
+                : traceModel.series,
+              (series) =>
+                series.run.experiment_name
+                  .toLowerCase()
+                  .includes(searchKey.toLowerCase()),
+            );
+            traceModelSeries.forEach((series) => {
               const { run, metric, trace } = series;
               const contextHash = contextToHash(trace?.context);
 
