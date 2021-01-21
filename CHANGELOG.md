@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.3.0 Jan 21 2021
 - Add ability to align X axis by epoch (roubkar)
 - Display experiment params with JSON tree inspector (gorarakelyan)
 - Display error message when an invalid AimQL query is made (gorarakelyan)
