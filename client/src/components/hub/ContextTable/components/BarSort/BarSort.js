@@ -183,9 +183,10 @@ function BarSort({ sortFields, setSortFields, maxHeight, fields }) {
                   />
                 </div>
                 <div className='BarSort__parameters__box'>
-                  {(!!paramFields || !!metricFields) &&
-                  (Object.keys(paramFields).length > 0 ||
-                    Object.keys(metricFields).length > 0) ? (
+                  {(
+                    (!!paramFields && Object.keys(paramFields).length > 0)
+                    || (!!metricFields && Object.keys(metricFields).length > 0)
+                  ) ? (
                     <>
                       {!!metricFields &&
                         Object.keys(metricFields).length > 0 && (
