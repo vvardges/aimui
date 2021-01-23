@@ -1,0 +1,1 @@
+{"data_version": "0", "compression": null, "data_chunks_num": 0, "indices": {"": {"indexed_records_num": 100, "keys": {}}, "K1cocBf6d14sstL2VQJNMQFEyH": {"indexed_records_num": 100, "keys": {"bar": "baz", "subset": "test"}}}, "buckets_num": 1, "records_num": 200, "record_offsets_bsize": 800, "bucket_offsets_bsize": 16, "data_file_bsize": [4596]}

@@ -1,0 +1,1 @@
+{"data_version": "0", "compression": null, "data_chunks_num": 0, "indices": {"2RmkWeSnxJoNtvcrmbj5L4WEDHU1": {"indexed_records_num": 100, "keys": {"foo": "baz", "subset": "train"}}}, "buckets_num": 1, "records_num": 100, "record_offsets_bsize": 400, "bucket_offsets_bsize": 16, "data_file_bsize": [2298]}
