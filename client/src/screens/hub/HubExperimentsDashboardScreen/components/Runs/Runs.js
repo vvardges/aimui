@@ -401,7 +401,8 @@ class Runs extends React.Component {
             for (let key in run.params[paramKey]) {
               if (
                 typeof run.params[paramKey][key] === 'object' &&
-                run.params[paramKey][key] !== null
+                run.params[paramKey][key] !== null &&
+                !Array.isArray(run.params[paramKey][key])
               ) {
                 if (
                   typeof paramPaths[paramKey][key] !== 'object' ||

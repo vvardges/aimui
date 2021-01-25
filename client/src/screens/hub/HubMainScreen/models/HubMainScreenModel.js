@@ -570,7 +570,8 @@ function getAllParamsPaths(deep = true, nested = false) {
             for (let key in series?.run.params[paramKey]) {
               if (
                 typeof series?.run.params[paramKey][key] === 'object' &&
-                series?.run.params[paramKey][key] !== null
+                series?.run.params[paramKey][key] !== null &&
+                !Array.isArray(series?.run.params[paramKey][key])
               ) {
                 if (
                   typeof paramPaths[paramKey][key] !== 'object' ||
