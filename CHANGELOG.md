@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.3.3 Jan 26 2021
 - Improve displaying params of array type in sort box (roubkar)
 
 ## 1.3.2 Jan 22 2021
