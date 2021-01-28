@@ -568,12 +568,26 @@ function ParallelCoordinatesChart(props) {
       `;
       });
 
-    axis.append('g').each(function (d) {
+    axis.append('g').each(function (d, i) {
+      let tickWidth =
+        i === 0
+          ? 40
+          : plotBox.current.width / (dimensions.current.length - 1) - 20;
       const renderAxis =
         'axis' in d
           ? d.axis.scale(d.scale) // Custom axis
           : d3.axisLeft().scale(d.scale); // Default axis
-      d3.select(this).call(renderAxis);
+      d3.select(this)
+        .call(renderAxis)
+        .selectAll('.tick')
+        .append('foreignObject')
+        .attr('x', -tickWidth - 10)
+        .attr('y', -6)
+        .attr('height', 12)
+        .attr('width', tickWidth)
+        .html((d) => {
+          return `<div style='width: ${tickWidth}px' class='xAxis__text' title='${d}'>${d}</div>`;
+        });
     });
 
     // Add and store a brush for each axis.
