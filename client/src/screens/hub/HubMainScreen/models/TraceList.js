@@ -378,38 +378,16 @@ export default class TraceList {
                     if (stepsInEpoch.length > epochSteps[chart][epoch].length) {
                       if (epoch !== 'null' && +epoch > 0) {
                         const prevEpoch = +epoch - 1;
-                        if (
-                          epochSteps[chart].hasOwnProperty(prevEpoch) &&
+                        const prevEpochLastValue =
                           epochSteps[chart][prevEpoch][
                             epochSteps[chart][prevEpoch].length - 1
-                          ] >= stepsInEpoch[0]
-                        ) {
-                          const prevEpochLastValue =
-                            epochSteps[chart][prevEpoch][
-                              epochSteps[chart][prevEpoch].length - 1
-                            ];
-                          let steps = [];
-                          let prevValue = prevEpochLastValue;
-                          stepsInEpoch.forEach((step, i) => {
-                            if (i === 0) {
-                              prevValue =
-                                prevValue +
-                                (prevValue -
-                                  epochSteps[chart][prevEpoch][
-                                    epochSteps[chart][prevEpoch].length - 2
-                                  ]);
-                            } else {
-                              prevValue =
-                                prevValue +
-                                (stepsInEpoch[i] - stepsInEpoch[i - 1]);
-                            }
-                            steps.push(prevValue);
-                          });
-                        } else {
-                          epochSteps[chart][epoch] = stepsInEpoch;
-                        }
+                          ];
+                        epochSteps[chart][epoch] = _.range(
+                          prevEpochLastValue + 1,
+                          prevEpochLastValue + 1 + stepsInEpoch.length,
+                        );
                       } else {
-                        epochSteps[chart][epoch] = stepsInEpoch;
+                        epochSteps[chart][epoch] = _.range(stepsInEpoch.length);
                       }
                     }
                   }

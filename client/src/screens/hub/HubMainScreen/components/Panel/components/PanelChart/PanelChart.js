@@ -277,6 +277,14 @@ function PanelChart(props) {
       .attr('height', height - margin.top - margin.bottom);
 
     attributes.current = plot.current.append('g');
+    attributes.current
+      .append('clipPath')
+      .attr('id', 'circles-rect-clip-' + props.index)
+      .append('rect')
+      .attr('x', -7)
+      .attr('y', 0)
+      .attr('width', width - margin.left - margin.right + 14)
+      .attr('height', height - margin.top - margin.bottom);
 
     if (chart.settings.zoomMode) {
       brush.current = d3
@@ -737,7 +745,7 @@ function PanelChart(props) {
             .attr('data-run-hash', run.run_hash)
             .attr('data-metric-name', metric?.name)
             .attr('data-trace-context-hash', contextToHash(trace?.context))
-            .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
+            .attr('clip-path', 'url(#circles-rect-clip-' + props.index + ')')
             .style(
               'fill',
               traceList?.grouping?.color?.length > 0
