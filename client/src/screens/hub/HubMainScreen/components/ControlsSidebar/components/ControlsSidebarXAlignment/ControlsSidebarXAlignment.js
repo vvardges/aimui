@@ -100,7 +100,7 @@ function ControlsSidebarXAlignment(props) {
                     key={type}
                     className={classNames({
                       ControlsSidebar__item__popup__list__item: true,
-                      active: xAlignment === type,
+                      active: (xAlignment || 'step') === type,
                     })}
                     onClick={() => changeXAlignment(type)}
                   >

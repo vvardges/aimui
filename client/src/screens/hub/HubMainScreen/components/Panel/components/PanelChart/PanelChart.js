@@ -453,9 +453,11 @@ function PanelChart(props) {
       .style('text-transform', 'capitalize')
       .style('fill', 'var(--grey)')
       .text(
-        `${xAlignment.replace('_', ' ')}${
-          xAlignment === 'step' || xAlignment === 'epoch' ? 's' : ''
-        }`,
+        xAlignment
+          ? `${xAlignment.replace('_', ' ')}${
+              xAlignment === 'step' || xAlignment === 'epoch' ? 's' : ''
+            }`
+          : 'steps',
       );
 
     axes.current.append('g').attr('class', 'y axis').call(d3.axisLeft(yScale));

@@ -118,6 +118,7 @@ const initialControls = {
         zoom: null,
         interpolate: false,
         indicator: true,
+        xAlignment: 'step',
         pointsCount: getState().chart.settings.persistent.pointsCount,
       },
     },
@@ -432,8 +433,8 @@ function setContextFilter(
 }
 
 function resetControls() {
-  setContextFilter(initialControls.contextFilter);
   setChartSettingsState(initialControls.chart.settings);
+  setContextFilter(initialControls.contextFilter);
   removeItem(USER_LAST_EXPLORE_CONFIG);
 }
 
