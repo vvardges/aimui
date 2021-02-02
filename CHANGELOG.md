@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.3.4 Feb 2 2021
 - Add ability to align X axis by relative time and absolute time (roubkar)
 
 ## 1.3.3 Jan 26 2021
