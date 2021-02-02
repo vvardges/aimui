@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.3.5 Feb 2 2021
 - Fix X axis epoch alignment issue (roubkar)
 
 ## 1.3.4 Feb 2 2021
