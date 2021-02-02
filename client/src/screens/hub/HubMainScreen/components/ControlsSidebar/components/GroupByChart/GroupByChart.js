@@ -99,9 +99,13 @@ function GroupByChart(props) {
                 const values = selectedItems
                   .filter((i) => !!i.value)
                   .map((i) => i.value.trim());
-                setContextFilter({
-                  groupByChart: values,
-                });
+                setContextFilter(
+                  {
+                    groupByChart: values,
+                  },
+                  null,
+                  true,
+                );
               }}
               isOpen
               multi

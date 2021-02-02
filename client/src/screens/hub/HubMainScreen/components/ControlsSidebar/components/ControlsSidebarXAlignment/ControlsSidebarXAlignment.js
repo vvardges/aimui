@@ -23,8 +23,11 @@ function ControlsSidebarXAlignment(props) {
     setChartSettingsState(
       {
         ...props.settings,
+        zoomMode: false,
+        zoomHistory: [],
         persistent: {
           ...props.settings.persistent,
+          zoom: null,
           xAlignment: type,
         },
       },
@@ -53,7 +56,11 @@ function ControlsSidebarXAlignment(props) {
           <UI.Text small italic>
             X
           </UI.Text>
-          <UI.Icon i='arrow_right_alt' scale={1.2} />
+          <UI.Icon
+            className='ControlsSidebarXAlignment__icon'
+            i='arrow_right_alt'
+            scale={1.2}
+          />
         </div>
       </UI.Tooltip>
       {opened && (
@@ -87,18 +94,20 @@ function ControlsSidebarXAlignment(props) {
               Align X-axis by:
             </UI.Text>
             <div className='ControlsSidebar__item__popup__list'>
-              {['step', 'epoch'].map((type) => (
-                <div
-                  key={type}
-                  className={classNames({
-                    ControlsSidebar__item__popup__list__item: true,
-                    active: xAlignment === type,
-                  })}
-                  onClick={() => changeXAlignment(type)}
-                >
-                  <UI.Text small>{type.replace('_', ' ')}</UI.Text>
-                </div>
-              ))}
+              {['step', 'epoch', 'relative_time', 'absolute_time'].map(
+                (type) => (
+                  <div
+                    key={type}
+                    className={classNames({
+                      ControlsSidebar__item__popup__list__item: true,
+                      active: xAlignment === type,
+                    })}
+                    onClick={() => changeXAlignment(type)}
+                  >
+                    <UI.Text small>{type.replace('_', ' ')}</UI.Text>
+                  </div>
+                ),
+              )}
             </div>
           </div>
           <UI.Line />

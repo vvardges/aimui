@@ -503,7 +503,7 @@ function ContextBox(props) {
                   commit_id: run.run_hash,
                 })}
               >
-                {moment(run.date * 1000).format('HH:mm · D MMM, YY')}
+                {moment.unix(run.date).format('HH:mm · D MMM, YY')}
               </Link>
             ),
             style: {
@@ -853,7 +853,7 @@ function ContextBox(props) {
                     </div>
                   ),
                   className: `value-${JSON.stringify(traceModel.config).replace(
-                    /\.|"|:|{|}|,|#|\*|\//g,
+                    /\.|"|:|{|}|,|#|\*|\/|\[|\]/g,
                     '_',
                   )}`,
                 },
@@ -937,7 +937,7 @@ function ContextBox(props) {
             data[JSON.stringify(traceModel.config)].data.step = {
               content: stepValue ?? '-',
               className: `step-${JSON.stringify(traceModel.config).replace(
-                /\.|"|:|{|}|,|#|\*|\//g,
+                /\.|"|:|{|}|,|#|\*|\/|\[|\]/g,
                 '_',
               )}`,
             };
@@ -945,7 +945,7 @@ function ContextBox(props) {
             data[JSON.stringify(traceModel.config)].data.epoch = {
               content: epochValue ?? '-',
               className: `epoch-${JSON.stringify(traceModel.config).replace(
-                /\.|"|:|{|}|,|#|\*|\//g,
+                /\.|"|:|{|}|,|#|\*|\/|\[|\]/g,
                 '_',
               )}`,
             };
@@ -1153,7 +1153,7 @@ function ContextBox(props) {
           });
           traceList?.traces.forEach((traceModel) => {
             const groupSelector = JSON.stringify(traceModel.config).replace(
-              /\.|"|:|{|}|,|#|\*|\//g,
+              /\.|"|:|{|}|,|#|\*|\/|\[|\]/g,
               '_',
             );
             (isExploreParamsModeEnabled()

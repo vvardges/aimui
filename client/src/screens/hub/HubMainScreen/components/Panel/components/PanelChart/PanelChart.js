@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Color from 'color';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 
 import * as classes from '../../../../../../../constants/classes';
 import * as storeUtils from '../../../../../../../storeUtils';
@@ -316,18 +317,17 @@ function PanelChart(props) {
           return;
         }
         const { run, metric, trace } = series;
-        const max = trace.axisValues[trace.axisValues.length - 1]; // xAlignment === 'step' || xAlignment === 'epoch' ? maxStep : xAlignment === 'absolute_time' ? maxTime : null;
-        const min = 0;
+        const max = trace.axisValues[trace.axisValues.length - 1];
+        const min = trace.axisValues[0];
         if (max > xMax) {
           xMax = max;
         }
         if (min < xMin) {
           xMin = min;
         }
-        if (trace.axisValues.length > xNum) {
-          xNum = trace.axisValues.length;
-          xSteps = trace.axisValues;
-        }
+
+        xSteps = _.uniq(xSteps.concat(trace.axisValues).sort((a, b) => a - b));
+        xNum = xSteps.length;
       });
     });
 
@@ -423,6 +423,13 @@ function PanelChart(props) {
       xAxisTicks
         .tickValues(xTicks.map((tick) => tick[0]))
         .tickFormat((d, i) => xTicks[i][1]);
+    } else if (xAlignment === 'relative_time') {
+      xAxisTicks.tickFormat((d, i) => `${d}s`);
+    } else if (xAlignment === 'absolute_time') {
+      const ticksCount = Math.floor(plotBox.current.width / 120);
+      xAxisTicks
+        .ticks(ticksCount > 1 ? ticksCount - 1 : 1)
+        .tickFormat((d, i) => moment.unix(d).format('HH:mm:ss D MMM, YY'));
     }
 
     axes.current
@@ -430,6 +437,26 @@ function PanelChart(props) {
       .attr('class', 'x axis')
       .attr('transform', `translate(0, ${plotBox.current.height})`)
       .call(xAxisTicks);
+
+    svg.current
+      .append('text')
+      .attr(
+        'transform',
+        `translate(
+        ${visBox.current.width - 20},
+        ${visBox.current.height - visBox.current.margin.bottom - 5}
+      )`,
+      )
+      .attr('text-anchor', 'end')
+      .attr('alignment-baseline', 'ideographic')
+      .style('font-size', '0.7em')
+      .style('text-transform', 'capitalize')
+      .style('fill', 'var(--grey)')
+      .text(
+        `${xAlignment.replace('_', ' ')}${
+          xAlignment === 'step' || xAlignment === 'epoch' ? 's' : ''
+        }`,
+      );
 
     axes.current.append('g').attr('class', 'y axis').call(d3.axisLeft(yScale));
 

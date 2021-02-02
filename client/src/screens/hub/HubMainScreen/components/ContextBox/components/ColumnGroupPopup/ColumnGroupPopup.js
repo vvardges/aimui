@@ -19,11 +19,15 @@ function ColumnGroupPopup(props) {
   }
 
   function toggleGrouping(filterName, groupFilter) {
-    setContextFilter({
-      [filterName]: filterIncludesParam(groupFilter)
-        ? groupFilter.filter((key) => key !== param)
-        : groupFilter.concat([param]),
-    });
+    setContextFilter(
+      {
+        [filterName]: filterIncludesParam(groupFilter)
+          ? groupFilter.filter((key) => key !== param)
+          : groupFilter.concat([param]),
+      },
+      null,
+      true,
+    );
   }
 
   return (

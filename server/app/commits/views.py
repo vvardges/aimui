@@ -214,9 +214,13 @@ class CommitMetricSearchApi(Resource):
                 if is_tf_run(run):
                     for metric in run['metrics']:
                         for trace in metric['traces']:
-                            trace_range = range(len(trace['data']))[steps.start:
-                                                                    steps.stop:
-                                                                    steps.step]
+                            trace_length = len(trace['data'])
+                            if trace_length < steps_num:
+                                trace_range = range(trace_length)
+                            else:
+                                trace_range = range(trace_length)[steps.start:
+                                                                  steps.stop:
+                                                                  steps.step]
                             trace_scaled_data = []
                             for i in trace_range:
                                 trace_scaled_data.append(trace['data'][i])
@@ -227,7 +231,11 @@ class CommitMetricSearchApi(Resource):
                         try:
                             # metric.open_artifact()
                             for trace in metric.traces:
-                                for r in trace.read_records(steps):
+                                if trace.num_records < steps_num:
+                                    trace_steps = slice(0, -1, 1)
+                                else:
+                                    trace_steps = steps
+                                for r in trace.read_records(trace_steps):
                                     base, metric_record = MetricRecord.deserialize(r)
                                     trace.append((
                                         metric_record.value,  # 0 => value

@@ -341,6 +341,10 @@ export default class TraceList {
             }
           });
         });
+
+        if (aggregate) {
+          this.aggregate(alignBy);
+        }
         break;
       case 'epoch':
         let epochSteps = {};
@@ -445,40 +449,282 @@ export default class TraceList {
             }
           });
         });
-        // Apply alignemnt to aggregated data
-        // TODO: improve overall aggregation logic (use it in single place)
+
         if (aggregate) {
-          this.traces.forEach((traceModel) => {
-            const valuesByStep = {};
-            traceModel.series.forEach((series) => {
-              const { trace } = series;
-              if (trace !== undefined && trace !== null) {
-                trace.data.forEach((point, index) => {
-                  const step = trace.axisValues[index];
-                  if (!valuesByStep.hasOwnProperty(step)) {
-                    valuesByStep[step] = [];
-                  }
-                  let value = point[0];
-                  valuesByStep[step].push(value);
-                });
-              }
-            });
-            if (!!traceModel.aggregation) {
-              traceModel.aggregation.max.trace.data = Object.keys(
-                valuesByStep,
-              ).map((step) => [_.max(valuesByStep[step]), +step]);
-              traceModel.aggregation.min.trace.data = Object.keys(
-                valuesByStep,
-              ).map((step) => [_.min(valuesByStep[step]), +step]);
-              traceModel.aggregation.avg.trace.data = Object.keys(
-                valuesByStep,
-              ).map((step) => [
-                _.sum(valuesByStep[step]) / valuesByStep[step].length,
-                +step,
-              ]);
+          this.aggregate(alignBy);
+        }
+        break;
+      case 'relative_time':
+        this.traces.forEach((traceModel) => {
+          traceModel.series.forEach((series) => {
+            const { trace } = series;
+            if (trace !== undefined && trace !== null) {
+              const timeSteps = {};
+              trace.data.forEach((point) => {
+                const time = point[3] ?? 0;
+                if (timeSteps.hasOwnProperty(time)) {
+                  timeSteps[time].push(point[1]);
+                } else {
+                  timeSteps[time] = [point[1]];
+                }
+                if (trace.firstDate === undefined || time < trace.firstDate) {
+                  trace.firstDate = time;
+                }
+              });
+              trace.timeSteps = timeSteps;
             }
           });
+        });
+
+        this.traces.forEach((traceModel) => {
+          traceModel.series.forEach((series) => {
+            const { trace } = series;
+            if (trace !== undefined && trace !== null) {
+              trace.axisValues = [];
+              trace.data.forEach((point) => {
+                const time = point[3] ?? 0;
+                trace.axisValues.push(
+                  time -
+                    trace.firstDate +
+                    (trace.timeSteps[time].length > 1
+                      ? (0.99 / (trace.timeSteps[time].length - 1)) *
+                        trace.timeSteps[time].indexOf(point[1])
+                      : 0),
+                );
+              });
+            }
+          });
+        });
+
+        if (aggregate) {
+          this.aggregate(alignBy);
         }
+        break;
+      case 'absolute_time':
+        this.traces.forEach((traceModel) => {
+          traceModel.series.forEach((series) => {
+            const { trace } = series;
+            if (trace !== undefined && trace !== null) {
+              trace.axisValues = [];
+              trace.data.forEach((point) => {
+                trace.axisValues.push(point[3]);
+              });
+            }
+          });
+        });
+
+        if (aggregate) {
+          this.aggregate(alignBy);
+        }
+        break;
+    }
+  };
+
+  aggregate = (alignBy) => {
+    switch (alignBy) {
+      case 'step':
+      case 'epoch':
+        this.traces.forEach((traceModel) => {
+          const valuesByStep = {};
+          traceModel.series.forEach((series) => {
+            const { trace } = series;
+            if (trace !== undefined && trace !== null) {
+              for (let i = 0; i < trace.axisValues.length - 1; i++) {
+                const step = trace.axisValues[i];
+                const point = trace.data[i];
+                const nextStep = trace.axisValues[i + 1];
+                const nextPoint = trace.data[i + 1];
+
+                const stepsInBetween = nextStep - step;
+
+                if (stepsInBetween === 1) {
+                  if (i === trace.axisValues.length - 2) {
+                    if (valuesByStep.hasOwnProperty(step)) {
+                      if (!valuesByStep[step].includes(point[0])) {
+                        valuesByStep[step].push(point[0]);
+                      }
+                    } else {
+                      valuesByStep[step] = [point[0]];
+                    }
+                    if (valuesByStep.hasOwnProperty(nextStep)) {
+                      if (!valuesByStep[nextStep].includes(nextPoint[0])) {
+                        valuesByStep[nextStep].push(nextPoint[0]);
+                      }
+                    } else {
+                      valuesByStep[nextStep] = [nextPoint[0]];
+                    }
+                  } else {
+                    if (valuesByStep.hasOwnProperty(step)) {
+                      if (!valuesByStep[step].includes(point[0])) {
+                        valuesByStep[step].push(point[0]);
+                      }
+                    } else {
+                      valuesByStep[step] = [point[0]];
+                    }
+                  }
+                } else {
+                  for (let x = 0; x <= stepsInBetween; x++) {
+                    let y;
+                    if (x === 0) {
+                      y = point[0];
+                    } else if (x === stepsInBetween) {
+                      y = nextPoint[0];
+                    } else {
+                      if (point[0] > nextPoint[0]) {
+                        y =
+                          point[0] -
+                          ((point[0] - nextPoint[0]) * x) / stepsInBetween;
+                      } else {
+                        y =
+                          ((nextPoint[0] - point[0]) * x) / stepsInBetween +
+                          point[0];
+                      }
+                    }
+                    if (valuesByStep.hasOwnProperty(step + x)) {
+                      if (!valuesByStep[step + x].includes(y)) {
+                        valuesByStep[step + x].push(y);
+                      }
+                    } else {
+                      valuesByStep[step + x] = [y];
+                    }
+                  }
+                }
+              }
+            }
+          });
+
+          if (!!traceModel.aggregation) {
+            const stepTicks = Object.keys(valuesByStep).sort((a, b) => a - b);
+            traceModel.aggregation.max.trace.data = stepTicks.map((step) => [
+              _.max(valuesByStep[step]),
+              +step,
+            ]);
+            traceModel.aggregation.min.trace.data = stepTicks.map((step) => [
+              _.min(valuesByStep[step]),
+              +step,
+            ]);
+            traceModel.aggregation.avg.trace.data = stepTicks.map((step) => [
+              _.sum(valuesByStep[step]) / valuesByStep[step].length,
+              +step,
+            ]);
+          }
+        });
+        break;
+      case 'relative_time':
+      case 'absolute_time':
+        let chartAxisValues = {};
+        this.traces.forEach((traceModel) => {
+          if (!chartAxisValues.hasOwnProperty(traceModel.chart)) {
+            chartAxisValues[traceModel.chart] = [];
+          }
+          traceModel.series.forEach((series) => {
+            const { trace } = series;
+            chartAxisValues[traceModel.chart] = _.uniq(
+              _.concat(chartAxisValues[traceModel.chart], trace.axisValues),
+            ).sort((a, b) => a - b);
+          });
+        });
+        this.traces.forEach((traceModel) => {
+          const valuesByTime = {};
+          traceModel.series.forEach((series) => {
+            const { trace } = series;
+            if (trace !== undefined && trace !== null) {
+              for (let i = 0; i < trace.axisValues.length - 1; i++) {
+                const time = trace.axisValues[i];
+                const point = trace.data[i];
+                const nextTime = trace.axisValues[i + 1];
+                const nextPoint = trace.data[i + 1];
+
+                const timeTicksInBetween = nextTime - time;
+
+                if (timeTicksInBetween <= 1) {
+                  if (i === trace.axisValues.length - 2) {
+                    if (valuesByTime.hasOwnProperty(time)) {
+                      if (!valuesByTime[time].includes(point[0])) {
+                        valuesByTime[time].push(point[0]);
+                      }
+                    } else {
+                      valuesByTime[time] = [point[0]];
+                    }
+                    if (valuesByTime.hasOwnProperty(nextTime)) {
+                      if (!valuesByTime[nextTime].includes(nextPoint[0])) {
+                        valuesByTime[nextTime].push(nextPoint[0]);
+                      }
+                    } else {
+                      valuesByTime[nextTime] = [nextPoint[0]];
+                    }
+                  } else {
+                    if (valuesByTime.hasOwnProperty(time)) {
+                      if (!valuesByTime[time].includes(point[0])) {
+                        valuesByTime[time].push(point[0]);
+                      }
+                    } else {
+                      valuesByTime[time] = [point[0]];
+                    }
+                  }
+                } else {
+                  const chartAggregationAxisValues = _.uniq(
+                    _.concat(
+                      chartAxisValues[traceModel.chart].slice(
+                        chartAxisValues[traceModel.chart].indexOf(time),
+                        chartAxisValues[traceModel.chart].indexOf(nextTime) + 1,
+                      ),
+                      _.range(Math.ceil(time), Math.floor(nextTime)),
+                    ),
+                  );
+                  for (
+                    let index = 0;
+                    index < chartAggregationAxisValues.length;
+                    index++
+                  ) {
+                    let x = chartAggregationAxisValues[index];
+                    let y;
+                    if (x === time) {
+                      y = point[0];
+                    } else if (x === nextTime) {
+                      y = nextPoint[0];
+                    } else {
+                      if (point[0] > nextPoint[0]) {
+                        y =
+                          point[0] -
+                          ((point[0] - nextPoint[0]) * (x - time)) /
+                            timeTicksInBetween;
+                      } else {
+                        y =
+                          ((nextPoint[0] - point[0]) * (x - time)) /
+                            timeTicksInBetween +
+                          point[0];
+                      }
+                    }
+                    if (valuesByTime.hasOwnProperty(x)) {
+                      if (!valuesByTime[x].includes(y)) {
+                        valuesByTime[x].push(y);
+                      }
+                    } else {
+                      valuesByTime[x] = [y];
+                    }
+                  }
+                }
+              }
+            }
+          });
+
+          if (!!traceModel.aggregation) {
+            const timeTicks = Object.keys(valuesByTime).sort((a, b) => a - b);
+            traceModel.aggregation.max.trace.data = timeTicks.map((time) => [
+              _.max(valuesByTime[time]),
+              +time,
+            ]);
+            traceModel.aggregation.min.trace.data = timeTicks.map((time) => [
+              _.min(valuesByTime[time]),
+              +time,
+            ]);
+            traceModel.aggregation.avg.trace.data = timeTicks.map((time) => [
+              _.sum(valuesByTime[time]) / valuesByTime[time].length,
+              +time,
+            ]);
+          }
+        });
         break;
     }
   };
