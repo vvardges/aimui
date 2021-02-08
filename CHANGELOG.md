@@ -1,5 +1,7 @@
 # Changelog
 
+- Improve X axis ticks labels format for relative time alignment (roubkar)
+
 ## 1.3.5 Feb 2 2021
 - Fix X axis epoch alignment issue (roubkar)
 

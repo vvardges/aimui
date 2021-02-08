@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import Color from 'color';
 import * as _ from 'lodash';
 import * as moment from 'moment';
+import humanizeDuration from 'humanize-duration';
 
 import * as classes from '../../../../../../../constants/classes';
 import * as storeUtils from '../../../../../../../storeUtils';
@@ -47,6 +48,25 @@ const curveOptions = [
 ];
 
 const scaleOptions = ['scaleLinear', 'scaleLog'];
+
+const shortEnglishHumanizer = humanizeDuration.humanizer({
+  language: 'shortEn',
+  languages: {
+    shortEn: {
+      y: () => 'y',
+      mo: () => 'mo',
+      w: () => 'w',
+      d: () => 'd',
+      h: () => 'h',
+      m: () => 'm',
+      s: () => 's',
+      ms: () => 'ms',
+    },
+  },
+  units: ['d', 'h', 'm', 's'],
+  spacer: '',
+  delimiter: ' ',
+});
 
 function PanelChart(props) {
   let visBox = useRef({
@@ -432,7 +452,10 @@ function PanelChart(props) {
         .tickValues(xTicks.map((tick) => tick[0]))
         .tickFormat((d, i) => xTicks[i][1]);
     } else if (xAlignment === 'relative_time') {
-      xAxisTicks.tickFormat((d, i) => `${d}s`);
+      const ticksCount = Math.floor(plotBox.current.width / 50);
+      xAxisTicks
+        .ticks(ticksCount > 1 ? ticksCount - 1 : 1)
+        .tickFormat((d, i) => shortEnglishHumanizer(+d * 1000));
     } else if (xAlignment === 'absolute_time') {
       const ticksCount = Math.floor(plotBox.current.width / 120);
       xAxisTicks
