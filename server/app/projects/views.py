@@ -248,7 +248,7 @@ class ProjectExperimentApi(Resource):
                     return make_response(jsonify({}), 501)
 
             if obj['type'] == 'metrics':
-                steps = 75
+                steps = 200
                 run = project.repo.select_run_metrics(experiment_name,
                                                       commit['hash'],
                                                       obj['name'])
@@ -263,10 +263,21 @@ class ProjectExperimentApi(Resource):
                         step = num // steps or 1
                         for r in trace.read_records(slice(0, num, step)):
                             base, metric_record = MetricRecord.deserialize(r)
+                            if r.value is None:
+                                continue
                             trace.append((
                                 base.step,  # 0 => step
                                 metric_record.value,  # 1 => value
                             ))
+                        if num - 1 % steps != 0:
+                            for r in trace.read_records(num-1):
+                                base, metric_record = MetricRecord.deserialize(r)
+                                if r.value is None:
+                                    continue
+                                trace.append((
+                                    base.step,  # 0 => step
+                                    metric_record.value,  # 1 => value
+                                ))
                         traces.append(trace.to_dict())
                     metric.close_artifact()
                     run.close_storage()

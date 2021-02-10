@@ -1,5 +1,6 @@
 # Changelog
 
+- Improve group aggregation calculation logic (roubkar)
 - Improve X axis ticks labels format for relative time alignment (roubkar)
 
 ## 1.3.5 Feb 2 2021

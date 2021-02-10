@@ -104,31 +104,31 @@ export default class Trace {
     run.experiment_name = _.uniq(experiment_name);
 
     // Aggregate data
-    let idx = 0;
-    while (true) {
-      const values = [];
-      let step = null;
-      let epoch = null;
-      let timestamp = null;
-      this.series.forEach((s) => {
-        if (s.trace !== null) {
-          const point = s.getPoint(idx);
-          if (point !== null) {
-            values.push(point[0]);
-            // TODO: Aggregate step(?) and relative time(!)
-            step = point[1];
-            epoch = point[2];
-            timestamp = point[3];
-          }
-        }
-      });
-      if (values.length > 0) {
-        trace.data.push([aggFunc(values), step, epoch, timestamp]);
-      } else {
-        break;
-      }
-      idx += 1;
-    }
+    // let idx = 0;
+    // while (true) {
+    //   const values = [];
+    //   let step = null;
+    //   let epoch = null;
+    //   let timestamp = null;
+    //   this.series.forEach((s) => {
+    //     if (s.trace !== null) {
+    //       const point = s.getPoint(idx);
+    //       if (point !== null) {
+    //         values.push(point[0]);
+    //         // TODO: Aggregate step(?) and relative time(!)
+    //         step = point[1];
+    //         epoch = point[2];
+    //         timestamp = point[3];
+    //       }
+    //     }
+    //   });
+    //   if (values.length > 0) {
+    //     trace.data.push([aggFunc(values), step, epoch, timestamp]);
+    //   } else {
+    //     break;
+    //   }
+    //   idx += 1;
+    // }
 
     if (trace.data.length) {
       trace.num_steps = trace.data[trace.data.length - 1][1];

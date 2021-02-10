@@ -183,70 +183,53 @@ class CommitMetricSearchApi(Resource):
                     response['meta']['tf_selected'] = True
 
         if retrieve_traces:
-            # Get the longest trace length
-            max_num_records = 0
             for run in runs:
                 if is_tf_run(run):
                     for metric in run['metrics']:
                         for trace in metric['traces']:
-                            if trace['num_steps'] > max_num_records:
-                                max_num_records = trace['num_steps']
+                            trace_scaled_data = []
+                            for i in range(0,
+                                           trace['num_steps'],
+                                           trace['num_steps'] // steps_num or 1
+                                           ):
+                                trace_scaled_data.append(trace['data'][i])
+                            trace['data'] = trace_scaled_data
                 else:
                     run.open_storage()
                     for metric in run.metrics.values():
                         try:
                             metric.open_artifact()
                             for trace in metric.traces:
-                                if trace.num_records > max_num_records:
-                                    max_num_records = trace.num_records
-                        except:
-                            pass
-                        finally:
-                            pass
-                            # metric.close_artifact()
-                    # run.close_storage()
-
-            # Scale all traces
-            steps = scale_trace_steps(max_num_records, steps_num)
-
-            # Retrieve records
-            for run in runs:
-                if is_tf_run(run):
-                    for metric in run['metrics']:
-                        for trace in metric['traces']:
-                            trace_length = len(trace['data'])
-                            if trace_length < steps_num:
-                                trace_range = range(trace_length)
-                            else:
-                                trace_range = range(trace_length)[steps.start:
-                                                                  steps.stop:
-                                                                  steps.step]
-                            trace_scaled_data = []
-                            for i in trace_range:
-                                trace_scaled_data.append(trace['data'][i])
-                            trace['data'] = trace_scaled_data
-                else:
-                    # run.open_storage()
-                    for metric in run.metrics.values():
-                        try:
-                            # metric.open_artifact()
-                            for trace in metric.traces:
-                                if trace.num_records < steps_num:
-                                    trace_steps = slice(0, -1, 1)
-                                else:
-                                    trace_steps = steps
+                                step = trace.num_records // steps_num or 1
+                                trace_steps = slice(0, trace.num_records, step)
                                 for r in trace.read_records(trace_steps):
                                     base, metric_record = MetricRecord.deserialize(r)
+                                    if metric_record.value is None:
+                                        continue
                                     trace.append((
-                                        metric_record.value,  # 0 => value
-                                        base.step,  # 1 => step
-                                        (base.epoch if base.has_epoch else None), # 2 => epoch
-                                        base.timestamp,  # 3 => time
+                                        metric_record.value,
+                                        base.step,
+                                        (base.epoch if base.has_epoch else None),
+                                        base.timestamp,
                                     ))
+                                if trace.num_records - 1 % step != 0:
+                                    for r in trace.read_records(trace.num_records-1):
+                                        base, metric_record = MetricRecord.deserialize(r)
+                                        if metric_record.value is None:
+                                            continue
+                                        trace.append((
+                                            metric_record.value,
+                                            base.step,
+                                            (base.epoch if base.has_epoch else None),
+                                            base.timestamp,
+                                        ))
                         except:
                             pass
-                        finally:
+
+                        try:
                             metric.close_artifact()
+                        except:
+                            pass
                     run.close_storage()
 
         if retrieve_agg_metrics:
