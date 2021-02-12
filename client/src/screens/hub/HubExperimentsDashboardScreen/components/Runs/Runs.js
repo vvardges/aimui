@@ -609,7 +609,7 @@ class Runs extends React.Component {
     Object.keys(this.metricKeys).forEach((metricName, metricKey) =>
       this.metricKeys[metricName].forEach((metricContext, contextKey) => {
         columns.push({
-          key: `${metricKey}-${contextKey}`,
+          key: `${metricName}-${JSON.stringify(metricContext)}`,
           content: (
             <>
               <div className='HubExperimentsDashboardScreen__runs__context__cell'>
@@ -853,6 +853,9 @@ class Runs extends React.Component {
           displaySort
           sortFields={this.state.sortFields}
           setSortFields={this.setSortFields}
+          alwaysVisibleColumns={[
+            'run',
+          ]}
         />
       </div>
     );

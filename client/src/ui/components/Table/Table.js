@@ -2,124 +2,49 @@ import './Table.less';
 
 import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 
 import { classNames } from '../../../utils';
 import UI from '../..';
-import { getItem, setItem } from '../../../services/storage';
-import { TABLE_COLUMNS } from '../../../config';
 
 function Table(props) {
-  let columnsOrder = JSON.parse(getItem(TABLE_COLUMNS))?.[props.name];
-
   const columns =
     !!props.excludedFields && props.excludedFields.length
       ? props.columns.filter((c) => props.excludedFields.indexOf(c.key) === -1)
       : props.columns;
 
-  let [leftCols, setLeftCols] = useState(
+  let leftCols =
+    props.columnsOrder?.left?.filter(
+      (colKey) => columns.findIndex((col) => colKey === col.key) > -1,
+    ) ?? columns.filter((col) => col.pin === 'left').map((col) => col.key);
+
+  let midCols =
+    props.columnsOrder?.middle?.filter(
+      (colKey) => columns.findIndex((col) => colKey === col.key) > -1,
+    ) ??
     columns
-      .filter((col) =>
-        props.forcePinnedColumns?.hasOwnProperty(col.key)
-          ? !!props.forcePinnedColumns?.[col.key]
-          : columnsOrder?.left?.includes(col.key) ?? col.pin === 'left',
-      )
-      .map((col) => col.key),
-  );
-  let [rightCols, setRightCols] = useState(
-    columns
-      .filter(
-        (col) => columnsOrder?.right?.includes(col.key) ?? col.pin === 'right',
-      )
-      .map((col) => col.key),
-  );
+      .filter((col) => col.pin !== 'left' && col.pin !== 'right')
+      .map((col) => col.key);
+
+  let rightCols =
+    props.columnsOrder?.right?.filter(
+      (colKey) => columns.findIndex((col) => colKey === col.key) > -1,
+    ) ?? columns.filter((col) => col.pin === 'right').map((col) => col.key);
+
   let [expanded, setExpanded] = useState({});
 
   let prevExpanded = useRef(props.expanded);
 
-  const leftPane = columns.filter((col) => leftCols.includes(col.key));
-  const middlePane = columns.filter(
-    (col) => !leftCols.includes(col.key) && !rightCols.includes(col.key),
-  );
-  const rightPane = columns.filter((col) => rightCols.includes(col.key));
+  const leftPane = columns
+    .filter((col) => leftCols.includes(col.key))
+    .sort((a, b) => leftCols.indexOf(a.key) - leftCols.indexOf(b.key));
+  const middlePane = columns
+    .filter((col) => midCols.includes(col.key))
+    .sort((a, b) => midCols.indexOf(a.key) - midCols.indexOf(b.key));
+  const rightPane = columns
+    .filter((col) => rightCols.includes(col.key))
+    .sort((a, b) => rightCols.indexOf(a.key) - rightCols.indexOf(b.key));
   const sortedColumns = [...leftPane, ...middlePane, ...rightPane];
-
-  useEffect(() => {
-    let tableColumns = JSON.parse(getItem(TABLE_COLUMNS)) ?? {};
-    let middleCols = middlePane.map((col) => col.key);
-    if (!tableColumns.hasOwnProperty(props.name)) {
-      tableColumns[props.name] = {
-        left: leftCols,
-        middle: middleCols,
-        right: rightCols,
-        forcePinned: props.forcePinnedColumns,
-      };
-    } else {
-      tableColumns[props.name].forcePinned = props.forcePinnedColumns;
-    }
-    setLeftCols(
-      columns
-        .filter((col) =>
-          props.forcePinnedColumns?.hasOwnProperty(col.key)
-            ? !!props.forcePinnedColumns?.[col.key]
-            : tableColumns[props.name].left?.includes(col.key) ??
-              col.pin === 'left',
-        )
-        .map((col) => col.key),
-    );
-    setItem(TABLE_COLUMNS, JSON.stringify(tableColumns));
-  }, [props.forcePinnedColumns]);
-
-  useEffect(() => {
-    let tableColumns = JSON.parse(getItem(TABLE_COLUMNS)) ?? {};
-    let middleCols = middlePane.map((col) => col.key);
-
-    if (!tableColumns.hasOwnProperty(props.name)) {
-      tableColumns[props.name] = {
-        left: leftCols,
-        middle: middleCols,
-        right: rightCols,
-        forcePinned: props.forcePinnedColumns,
-      };
-    } else {
-      leftCols.forEach((col) => {
-        if (!tableColumns[props.name].left.includes(col)) {
-          tableColumns[props.name].left.push(col);
-        }
-      });
-
-      middleCols.forEach((col) => {
-        if (!tableColumns[props.name].middle.includes(col)) {
-          tableColumns[props.name].middle.push(col);
-        }
-      });
-
-      rightCols.forEach((col) => {
-        if (!tableColumns[props.name].right.includes(col)) {
-          tableColumns[props.name].right.push(col);
-        }
-      });
-
-      tableColumns[props.name].left = tableColumns[props.name].left.filter(
-        (col) => {
-          return !middleCols.includes(col) && !rightCols.includes(col);
-        },
-      );
-
-      tableColumns[props.name].middle = tableColumns[props.name].middle.filter(
-        (col) => {
-          return !leftCols.includes(col) && !rightCols.includes(col);
-        },
-      );
-
-      tableColumns[props.name].right = tableColumns[props.name].right.filter(
-        (col) => {
-          return !leftCols.includes(col) && !middleCols.includes(col);
-        },
-      );
-    }
-
-    setItem(TABLE_COLUMNS, JSON.stringify(tableColumns));
-  }, [leftCols, rightCols]);
 
   useEffect(() => {
     if (props.expanded && props.groups) {
@@ -164,33 +89,65 @@ function Table(props) {
   }
 
   function togglePin(colKey, side) {
-    if (props?.forcePinnedColumns?.hasOwnProperty(colKey)) {
-      props.updateForcePinnedColumns(colKey, null);
-    }
-    setTimeout(() => {
-      if (side === 'left') {
-        if (leftCols.includes(colKey)) {
-          setLeftCols(leftCols.filter((key) => key !== colKey));
-        } else {
-          if (rightCols.includes(colKey)) {
-            setRightCols(rightCols.filter((key) => key !== colKey));
-          }
-          setLeftCols([...leftCols, colKey]);
-        }
-      } else if (side === 'right') {
-        if (rightCols.includes(colKey)) {
-          setRightCols(rightCols.filter((key) => key !== colKey));
-        } else {
-          if (leftCols.includes(colKey)) {
-            setLeftCols(leftCols.filter((key) => key !== colKey));
-          }
-          setRightCols([...rightCols, colKey]);
-        }
+    const columnsOrderClone = _.cloneDeep(props.columnsOrder);
+    if (side === 'left') {
+      if (columnsOrderClone.left.includes(colKey)) {
+        columnsOrderClone.left.splice(
+          columnsOrderClone.left.indexOf(colKey),
+          1,
+        );
+        columnsOrderClone.middle.unshift(colKey);
       } else {
-        setLeftCols(leftCols.filter((key) => key !== colKey));
-        setRightCols(rightCols.filter((key) => key !== colKey));
+        if (columnsOrderClone.right.includes(colKey)) {
+          columnsOrderClone.right.splice(
+            columnsOrderClone.right.indexOf(colKey),
+            1,
+          );
+        } else {
+          columnsOrderClone.middle.splice(
+            columnsOrderClone.middle.indexOf(colKey),
+            1,
+          );
+        }
+        columnsOrderClone.left.push(colKey);
       }
-    });
+    } else if (side === 'right') {
+      if (columnsOrderClone.right.includes(colKey)) {
+        columnsOrderClone.right.splice(
+          columnsOrderClone.right.indexOf(colKey),
+          1,
+        );
+        columnsOrderClone.middle.unshift(colKey);
+      } else {
+        if (columnsOrderClone.left.includes(colKey)) {
+          columnsOrderClone.left.splice(
+            columnsOrderClone.left.indexOf(colKey),
+            1,
+          );
+        } else {
+          columnsOrderClone.middle.splice(
+            columnsOrderClone.middle.indexOf(colKey),
+            1,
+          );
+        }
+        columnsOrderClone.right.push(colKey);
+      }
+    } else {
+      if (columnsOrderClone.left.includes(colKey)) {
+        columnsOrderClone.left.splice(
+          columnsOrderClone.left.indexOf(colKey),
+          1,
+        );
+      }
+      if (columnsOrderClone.right.includes(colKey)) {
+        columnsOrderClone.right.splice(
+          columnsOrderClone.right.indexOf(colKey),
+          1,
+        );
+      }
+      columnsOrderClone.middle.unshift(colKey);
+    }
+    props.updateColumns(columnsOrderClone);
   }
 
   return (

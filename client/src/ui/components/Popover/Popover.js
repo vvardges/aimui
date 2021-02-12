@@ -81,10 +81,19 @@ function Popover(props) {
       positions.top = containerRect.bottom + margin;
     }
 
-    if (containerRect.x - popupRect.width + containerRect.width <= 10) {
-      positions.left = margin;
+    if (props.alignBy === 'left') {
+      if (window.innerWidth - (containerRect.x + popupRect.width) <= 10) {
+        positions.left = window.innerWidth - popupRect.width - margin;
+      } else {
+        positions.left = containerRect.x;
+      }
     } else {
-      positions.left = containerRect.x - popupRect.width + containerRect.width;
+      if (containerRect.x - popupRect.width + containerRect.width <= 10) {
+        positions.left = margin;
+      } else {
+        positions.left =
+          containerRect.x - popupRect.width + containerRect.width;
+      }
     }
 
     setPosition((p) => ({

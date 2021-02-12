@@ -9,8 +9,10 @@ import BarFilter from './components/BarFilter/BarFilter';
 import BarRowHeightSelect from './components/BarRowHeightSelect/BarRowHeightSelect';
 import BarViewModes from '../BarViewModes/BarViewModes';
 import { setItem, getItem } from '../../../services/storage';
-import { CONTEXT_TABLE_CONFIG } from '../../../config';
+import { CONTEXT_TABLE_CONFIG, TABLE_COLUMNS } from '../../../config';
 import BarSort from './components/BarSort/BarSort';
+import BarReorder from './components/BarReorder/BarReorder';
+import { ContextTableModel } from './models/ContextTableModel';
 
 function ContextTable(props) {
   const storageKey = CONTEXT_TABLE_CONFIG.replace('{name}', props.name);
@@ -28,11 +30,48 @@ function ContextTable(props) {
   let [rowHeightMode, setRowHeightMode] = useState(
     storageVal?.rowHeightMode ?? 'medium',
   );
+  let [columnsOrder, setColumnsOrder] = useState({
+    left: [],
+    middle: [],
+    right: [],
+  });
+
+  function updateColumns(columns) {
+    const tableColumns = JSON.parse(getItem(TABLE_COLUMNS)) ?? {};
+    tableColumns[props.name] = columns;
+    setItem(TABLE_COLUMNS, JSON.stringify(tableColumns));
+    setColumnsOrder(columns);
+  }
 
   let contextTableRef = useRef();
 
   const height = contextTableRef.current?.getBoundingClientRect()?.height;
   const itemMaxHeight = !!height ? height - 50 : null;
+
+  useEffect(() => {
+    const subscription = ContextTableModel.subscribe(
+      ContextTableModel.events.SET_GROUPED_COLUMNS,
+      (data) => {
+        if (props.name === data.name) {
+          const columnsOrderClone = _.cloneDeep(columnsOrder);
+          data.columns.forEach((column) => {
+            if (columnsOrderClone.middle.includes(column)) {
+              columnsOrderClone.middle.splice(
+                columnsOrderClone.middle.indexOf(column),
+                1,
+              );
+              columnsOrderClone.middle.unshift(column);
+            }
+          });
+          updateColumns(columnsOrderClone);
+        }
+      },
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [columnsOrder]);
 
   useEffect(() => {
     setItem(
@@ -43,6 +82,48 @@ function ContextTable(props) {
       }),
     );
   }, [rowHeightMode, excludedFields]);
+
+  useEffect(() => {
+    const tableColumns = JSON.parse(getItem(TABLE_COLUMNS))?.[props.name];
+    const order = {
+      left: [],
+      middle: [],
+      right: [],
+    };
+    props.columns.forEach((col) => {
+      if (!!tableColumns && tableColumns.left.includes(col.key)) {
+        order.left.push(col.key);
+      } else if (!!tableColumns && tableColumns.middle.includes(col.key)) {
+        order.middle.push(col.key);
+      } else if (!!tableColumns && tableColumns.right.includes(col.key)) {
+        order.right.push(col.key);
+      } else {
+        if (col.pin === 'left') {
+          order.left.push(col.key);
+        } else if (col.pin === 'right') {
+          order.right.push(col.key);
+        } else {
+          order.middle.push(col.key);
+        }
+      }
+    });
+    order.left.sort((a, b) =>
+      !!tableColumns
+        ? tableColumns.left.indexOf(a) - tableColumns.left.indexOf(b)
+        : 0,
+    );
+    order.middle.sort((a, b) =>
+      !!tableColumns
+        ? tableColumns.middle.indexOf(a) - tableColumns.middle.indexOf(b)
+        : 0,
+    );
+    order.right.sort((a, b) =>
+      !!tableColumns
+        ? tableColumns.right.indexOf(a) - tableColumns.right.indexOf(b)
+        : 0,
+    );
+    setColumnsOrder(order);
+  }, [props.columns]);
 
   return (
     <div
@@ -66,11 +147,19 @@ function ContextTable(props) {
                 setViewMode={props.setViewMode}
               />
             )}
-            <BarFilter
+            {/* <BarFilter
               excludedFields={excludedFields}
               setExcludedFields={setExcludedFields}
               maxHeight={itemMaxHeight}
               fields={props.searchFields}
+            /> */}
+            <BarReorder
+              columns={props.columns}
+              columnsOrder={columnsOrder}
+              updateColumns={updateColumns}
+              excludedFields={excludedFields}
+              setExcludedFields={setExcludedFields}
+              alwaysVisibleColumns={props.alwaysVisibleColumns}
             />
             {props.displaySort && (
               <BarSort
@@ -92,6 +181,8 @@ function ContextTable(props) {
         <UI.Table
           excludedFields={excludedFields}
           rowHeightMode={rowHeightMode}
+          columnsOrder={columnsOrder}
+          updateColumns={updateColumns}
           {...props}
         />
       </div>
@@ -106,6 +197,7 @@ ContextTable.defaultProps = {
   setViewMode: null,
   displaySort: false,
   sortFields: [],
+  alwaysVisibleColumns: [],
 };
 
 ContextTable.propTypes = {
@@ -117,6 +209,7 @@ ContextTable.propTypes = {
   displaySort: PropTypes.bool,
   sortFields: PropTypes.array,
   setSortFields: PropTypes.func,
+  alwaysVisibleColumns: PropTypes.array,
 };
 
 export default ContextTable;

@@ -181,7 +181,7 @@ function HubMainScreen(props) {
         return;
       }
 
-      setContextFilter(state.contextFilter, null, false, true);
+      setContextFilter(state.contextFilter, null, false, true, false);
       if (!deepEqual(state.search, HubMainScreenModel.getState().search)) {
         setSearchState(
           state.search,

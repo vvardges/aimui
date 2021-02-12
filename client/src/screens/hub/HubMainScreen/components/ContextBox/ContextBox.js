@@ -20,14 +20,9 @@ import ContextTable from '../../../../../components/hub/ContextTable/ContextTabl
 import { HUB_PROJECT_EXPERIMENT } from '../../../../../constants/screens';
 import ColumnGroupPopup from './components/ColumnGroupPopup/ColumnGroupPopup';
 import GroupConfigPopup from './components/GroupConfigPopup/GroupConfigPopup';
-import { getItem } from '../../../../../services/storage';
-import { TABLE_COLUMNS } from '../../../../../config';
 import { HubMainScreenModel } from '../../models/HubMainScreenModel';
 
 function ContextBox(props) {
-  let [forcePinnedColumns, setForcePinnedColumns] = useState(
-    JSON.parse(getItem(TABLE_COLUMNS))?.context?.forcePinned,
-  );
   let [searchFields, setSearchFields] = useState({
     metrics: {},
     params: {},
@@ -66,22 +61,6 @@ function ContextBox(props) {
     getClosestStepData,
     getAllMetrics,
   } = HubMainScreenModel.helpers;
-
-  function updateForcePinnedColumns(columnKey, value) {
-    setForcePinnedColumns((fpc) => {
-      let newCols = {};
-      for (let key in fpc) {
-        if (key === columnKey) {
-          if (value !== undefined) {
-            newCols[key] = value;
-          }
-        } else {
-          newCols[key] = fpc[key];
-        }
-      }
-      return newCols;
-    });
-  }
 
   function handleRowMove(runHash, metricName, traceContext) {
     const focusedCircle = HubMainScreenModel.getState().chart.focused.circle;
@@ -1070,8 +1049,6 @@ function ContextBox(props) {
             data={data}
             groups={traceList?.traces.length > 1}
             expanded={expanded}
-            forcePinnedColumns={forcePinnedColumns}
-            updateForcePinnedColumns={updateForcePinnedColumns}
             searchFields={searchFields}
             displayViewModes
             viewMode={props.viewMode}
@@ -1079,6 +1056,16 @@ function ContextBox(props) {
             displaySort
             sortFields={sortFields}
             setSortFields={setSortFields}
+            alwaysVisibleColumns={[
+              'experiment',
+              'run',
+              'metric',
+              'context',
+              'value',
+              'step',
+              'epoch',
+              'time',
+            ]}
           />
         </div>
       </div>
@@ -1086,28 +1073,6 @@ function ContextBox(props) {
   }
 
   useEffect(() => {
-    const groupingFields = traceList?.groupingFields;
-    const forcePinnedColumnsClone = {
-      ...forcePinnedColumns,
-    };
-    for (let colKey in forcePinnedColumnsClone) {
-      if (groupingFields && !groupingFields.includes(colKey)) {
-        forcePinnedColumnsClone[colKey] =
-          forcePinnedColumnsClone[colKey] === null ? undefined : false;
-      }
-    }
-    groupingFields?.forEach((field) => {
-      if (forcePinnedColumnsClone?.[field] !== null) {
-        forcePinnedColumnsClone[field] = true;
-      }
-    });
-    const newForcePinnedColumns = JSON.parse(
-      JSON.stringify(forcePinnedColumnsClone),
-    );
-    if (!_.isEqual(newForcePinnedColumns, forcePinnedColumns)) {
-      setForcePinnedColumns(newForcePinnedColumns);
-    }
-
     const paramFields = getAllParamsPaths(false);
     const deepParamFields = getAllParamsPaths(true, true);
     const metrics = isExploreParamsModeEnabled() ? getAllMetrics() : null;
@@ -1126,7 +1091,7 @@ function ContextBox(props) {
   });
 
   useEffect(() => {
-    const subscription = HubMainScreenModel.subscribe(
+    const focusedStateChangeSubscription = HubMainScreenModel.subscribe(
       HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
       () => {
         window.requestAnimationFrame(() => {
@@ -1347,7 +1312,7 @@ function ContextBox(props) {
     );
 
     return () => {
-      subscription.unsubscribe();
+      focusedStateChangeSubscription.unsubscribe();
     };
   }, []);
 

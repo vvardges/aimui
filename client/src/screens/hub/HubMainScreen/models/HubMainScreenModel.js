@@ -12,6 +12,7 @@ import { flattenObject, sortOnKeys } from '../../../../utils';
 import Color from 'color';
 import { COLORS } from '../../../../constants/colors';
 import TraceList from './TraceList';
+import { ContextTableModel } from '../../../../components/hub/ContextTable/models/ContextTableModel';
 
 // Events
 
@@ -374,6 +375,7 @@ function setContextFilter(
   callback = null,
   resetZoom,
   replaceUrl = false,
+  updateColumnsOrder = true,
 ) {
   let stateUpdate = {
     contextFilter: {
@@ -423,6 +425,23 @@ function setContextFilter(
     };
   }
 
+  if (updateColumnsOrder) {
+    ContextTableModel.emit(ContextTableModel.events.SET_GROUPED_COLUMNS, {
+      name: 'context',
+      columns: _.difference(
+        _.concat(
+          contextFilterUpdate.groupByColor ?? [],
+          contextFilterUpdate.groupByStyle ?? [],
+          contextFilterUpdate.groupByChart ?? [],
+        ),
+        _.concat(
+          getState().contextFilter.groupByColor,
+          getState().contextFilter.groupByStyle,
+          getState().contextFilter.groupByChart,
+        ),
+      ),
+    });
+  }
   emit(events.SET_CONTEXT_FILTER, stateUpdate);
 
   setTraceList();
