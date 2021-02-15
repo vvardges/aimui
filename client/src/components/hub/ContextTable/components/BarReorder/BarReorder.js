@@ -18,8 +18,10 @@ function BarReorder({
 }) {
   let [searchKey, setSearchKey] = useState('');
 
-  const columnsKeys = columns.map(c => c.key);
-  const hiddenFields = excludedFields.filter(field => columnsKeys.includes(field));
+  const columnsKeys = columns.map((c) => c.key);
+  const hiddenFields = excludedFields.filter((field) =>
+    columnsKeys.includes(field),
+  );
 
   return (
     <div className='ContextTableBar__item__wrapper'>
@@ -31,11 +33,17 @@ function BarReorder({
             <span className='ContextTableBar__item__label__text'>
               Manage Columns
             </span>
-            {!!hiddenFields?.length &&
-              <UI.Text className='ContextTableBar__item__label__subtext' inline small bold>
-                ({hiddenFields.length} hidden field{hiddenFields.length > 1 ? 's' : ''})
+            {!!hiddenFields?.length && (
+              <UI.Text
+                className='ContextTableBar__item__label__subtext'
+                inline
+                small
+                bold
+              >
+                ({hiddenFields.length} hidden field
+                {hiddenFields.length > 1 ? 's' : ''})
               </UI.Text>
-            }
+            )}
           </>
         }
         targetClassName={(opened) =>
@@ -213,13 +221,14 @@ function Panes({
               })}
               {...provided.droppableProps}
             >
-              {(!el || el.length === 0) &&
+              {(!el || el.length === 0) && (
                 <div className='BarReorder__list__emptyMessage'>
                   <UI.Text type='grey-dark' small center>
-                    Drag and drop columns here to pin to the {ind === 0 && 'left'} {ind === 2 && 'right'}
+                    Drag and drop columns here to pin to the{' '}
+                    {ind === 0 && 'left'} {ind === 2 && 'right'}
                   </UI.Text>
                 </div>
-              }
+              )}
               {el.map((item, index) => {
                 const textContent = item
                   .replaceAll('-', ' ')
@@ -263,7 +272,9 @@ function Panes({
                                 )}
                               </div>
                             )}
-                            <UI.Text type='grey-dark' small>{textContent}</UI.Text>
+                            <UI.Text type='grey-dark' small>
+                              {textContent}
+                            </UI.Text>
                           </div>
                           <div
                             className='BarReorder__list__item__dragHandler'

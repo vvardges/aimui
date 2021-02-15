@@ -853,9 +853,7 @@ class Runs extends React.Component {
           displaySort
           sortFields={this.state.sortFields}
           setSortFields={this.setSortFields}
-          alwaysVisibleColumns={[
-            'run',
-          ]}
+          alwaysVisibleColumns={['run']}
         />
       </div>
     );

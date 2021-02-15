@@ -452,7 +452,7 @@ function PanelChart(props) {
         .tickValues(xTicks.map((tick) => tick[0]))
         .tickFormat((d, i) => xTicks[i][1]);
     } else if (xAlignment === 'relative_time') {
-      const ticksCount = Math.floor(plotBox.current.width / 50);
+      const ticksCount = Math.floor(plotBox.current.width / 85);
       xAxisTicks
         .ticks(ticksCount > 1 ? ticksCount - 1 : 1)
         .tickFormat((d, i) => shortEnglishHumanizer(+d * 1000));
