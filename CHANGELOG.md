@@ -1,5 +1,6 @@
 # Changelog
 
+- Improve group color selection (roubkar)
 - Add ability to reorder table columns (roubkar)
 
 ## 1.3.6 Feb 11 2021

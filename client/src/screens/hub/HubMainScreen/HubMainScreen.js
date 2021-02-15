@@ -369,6 +369,7 @@ function HubMainScreen(props) {
         HubMainScreenModel.events.SET_CONTEXT_FILTER,
         HubMainScreenModel.events.SET_SEARCH_STATE,
         HubMainScreenModel.events.SET_SEED,
+        HubMainScreenModel.events.TOGGLE_PERSISTENCE,
       ],
       updateURL,
     );

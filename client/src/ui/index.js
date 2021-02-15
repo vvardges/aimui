@@ -25,6 +25,7 @@ import Table from './components/Table/Table';
 import Tooltip from './components/Tooltip/Tooltip';
 import Popover from './components/Popover/Popover';
 import CalendarHeatmap from './components/CalendarHeatmap/CalendarHeatmap';
+import Radio from './components/Radio/Radio';
 
 export default {
   Button,
@@ -55,4 +56,5 @@ export default {
   Tooltip,
   Popover,
   CalendarHeatmap,
+  Radio,
 };

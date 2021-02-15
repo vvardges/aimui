@@ -147,7 +147,9 @@ export default class TraceList {
     trace = null,
     alignBy = 'step',
     aggregate = false,
+    persist,
     seed,
+    colorPalette = 0,
   ) => {
     let subGroup = this.groups;
     this.groupingFields.forEach((g) => {
@@ -209,24 +211,41 @@ export default class TraceList {
         }
       });
       if (color === null) {
-        // Get new color
+        if (persist.color) {
+          const configEntries = Object.keys(modelColorConfig)
+            .sort()
+            .map((key) => modelColorConfig[key]);
+          const configHash = btoa(
+            encodeURIComponent(JSON.stringify(configEntries)),
+          ).replace(/[\=\+\/]/g, '');
+          let index = BigInt(0);
+          for (let i = 0; i < configHash.length; i++) {
+            const charCode = configHash.charCodeAt(i);
+            if (charCode > 47 && charCode < 58) {
+              index += BigInt(
+                (charCode - 48) * Math.ceil(Math.pow(62, i) / seed.color),
+              );
+            } else if (charCode > 64 && charCode < 91) {
+              index += BigInt(
+                (charCode - 55) * Math.ceil(Math.pow(62, i) / seed.color),
+              );
+            } else if (charCode > 96 && charCode < 122) {
+              index += BigInt(
+                (charCode - 61) * Math.ceil(Math.pow(62, i) / seed.color),
+              );
+            }
+          }
 
-        // const groupsCount = this.groupingConfigMap.colors.map(
-        //   (colorGroup) => colorGroup.value,
-        // )?.length;
+          color =
+            COLORS[colorPalette][
+              Number(index % BigInt(COLORS[colorPalette].length))
+            ];
+        } else {
+          const groupsCount = this.groupingConfigMap.colors?.length;
+          color =
+            COLORS[colorPalette][groupsCount % COLORS[colorPalette].length];
+        }
 
-        const configEntries = Object.keys(modelColorConfig)
-          .sort()
-          .map((key) => [key, modelColorConfig[key]]);
-        const configHash = btoa(
-          encodeURIComponent(JSON.stringify(configEntries)),
-        ).replace(/[\=\+\/]/g, '');
-        const index = configHash
-          .split('')
-          .map((c, i) => configHash.charCodeAt(i))
-          .reduce((a, b) => (a % seed.color) + b);
-
-        color = COLORS[index % COLORS.length];
         this.groupingConfigMap.colors.push({
           config: modelColorConfig,
           value: color,
@@ -252,24 +271,37 @@ export default class TraceList {
         }
       });
       if (stroke === null) {
-        // Get new stroke style
+        if (persist.style) {
+          const configEntries = Object.keys(modelStrokeConfig)
+            .sort()
+            .map((key) => modelStrokeConfig[key]);
+          const configHash = btoa(
+            encodeURIComponent(JSON.stringify(configEntries)),
+          ).replace(/[\=\+\/]/g, '');
+          let index = BigInt(0);
+          for (let i = 0; i < configHash.length; i++) {
+            const charCode = configHash.charCodeAt(i);
+            if (charCode > 47 && charCode < 58) {
+              index += BigInt(
+                (charCode - 48) * Math.ceil(Math.pow(62, i) / seed.style),
+              );
+            } else if (charCode > 64 && charCode < 91) {
+              index += BigInt(
+                (charCode - 55) * Math.ceil(Math.pow(62, i) / seed.style),
+              );
+            } else if (charCode > 96 && charCode < 122) {
+              index += BigInt(
+                (charCode - 61) * Math.ceil(Math.pow(62, i) / seed.style),
+              );
+            }
+          }
 
-        // const groupsCount = this.groupingConfigMap.strokes.map(
-        //   (strGroup) => strGroup.value,
-        // )?.length;
+          stroke = STROKES[Number(index % BigInt(STROKES.length))];
+        } else {
+          const groupsCount = this.groupingConfigMap.strokes?.length;
+          stroke = STROKES[groupsCount % STROKES.length];
+        }
 
-        const configEntries = Object.keys(modelStrokeConfig)
-          .sort()
-          .map((key) => [key, modelStrokeConfig[key]]);
-        const configHash = btoa(
-          encodeURIComponent(JSON.stringify(configEntries)),
-        ).replace(/[\=\+\/]/g, '');
-        const index = configHash
-          .split('')
-          .map((c, i) => configHash.charCodeAt(i))
-          .reduce((a, b) => (a % seed.style) + b);
-
-        stroke = STROKES[index % STROKES.length];
         this.groupingConfigMap.strokes.push({
           config: modelStrokeConfig,
           value: stroke,

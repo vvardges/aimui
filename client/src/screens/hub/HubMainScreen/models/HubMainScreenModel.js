@@ -6,6 +6,7 @@ import {
   EXPLORE_METRIC_HIGHLIGHT_MODE,
   USER_LAST_EXPLORE_CONFIG,
   EXPLORE_PANEL_SORT_FIELDS,
+  EXPLORE_PANEL_COLOR_PALETTE,
 } from '../../../../config';
 import { getItem, removeItem, setItem } from '../../../../services/storage';
 import { flattenObject, sortOnKeys } from '../../../../utils';
@@ -28,6 +29,8 @@ const events = {
   SET_SEARCH_INPUT_STATE: 'SET_SEARCH_INPUT_STATE',
   SET_SORT_FIELDS: 'SET_SORT_FIELDS',
   SET_SEED: 'SET_SEED',
+  TOGGLE_PERSISTENCE: 'TOGGLE_PERSISTENCE',
+  SET_COLOR_PALETTE: 'SET_COLOR_PALETTE',
 };
 
 // State
@@ -97,6 +100,10 @@ const state = {
       color: 10,
       style: 10,
     },
+    persist: {
+      color: false,
+      style: false,
+    },
   },
 
   // Sort fields
@@ -104,6 +111,11 @@ const state = {
 
   // Trace list
   traceList: null,
+
+  // Color palette
+  colorPalette: !!getItem(EXPLORE_PANEL_COLOR_PALETTE)
+    ? +getItem(EXPLORE_PANEL_COLOR_PALETTE)
+    : 0,
 };
 
 // initial controls
@@ -130,6 +142,7 @@ const initialControls = {
     groupByChart: [],
     aggregated: false,
     seed: getState().contextFilter.seed,
+    persist: getState().contextFilter.persist,
   },
 };
 
@@ -201,6 +214,7 @@ function setRunsState(runsState, callback = null) {
         groupByChart: [],
         aggregated: false,
         seed: getState().contextFilter.seed,
+        persist: getState().contextFilter.persist,
       },
     }),
   });
@@ -243,6 +257,8 @@ function setTraceList() {
   }
 
   const seed = getState().contextFilter.seed;
+  const persist = getState().contextFilter.persist;
+  const colorPalette = getState().colorPalette;
   const grouping = {
     color: getState().contextFilter.groupByColor,
     stroke: getState().contextFilter.groupByStyle,
@@ -280,11 +296,29 @@ function setTraceList() {
     sortFields.map((field) => field[1]),
   ).forEach((run) => {
     if (!run.metrics?.length) {
-      traceList.addSeries(run, null, null, xAlignment, aggregate, seed);
+      traceList.addSeries(
+        run,
+        null,
+        null,
+        xAlignment,
+        aggregate,
+        persist,
+        seed,
+        colorPalette,
+      );
     } else {
       run.metrics.forEach((metric) => {
         metric?.traces.forEach((trace) => {
-          traceList.addSeries(run, metric, trace, xAlignment, aggregate, seed);
+          traceList.addSeries(
+            run,
+            metric,
+            trace,
+            xAlignment,
+            aggregate,
+            persist,
+            seed,
+            colorPalette,
+          );
         });
       });
     }
@@ -546,6 +580,30 @@ function setSeed(seed, type) {
   setTraceList();
 }
 
+function togglePersistence(type) {
+  emit(events.TOGGLE_PERSISTENCE, {
+    contextFilter: {
+      ...getState().contextFilter,
+      persist: {
+        ...getState().contextFilter.persist,
+        [type]: !getState().contextFilter.persist[type],
+      },
+    },
+  });
+
+  setTraceList();
+}
+
+function setColorPalette(paletteIndex) {
+  emit(events.SET_COLOR_PALETTE, {
+    colorPalette: paletteIndex,
+  });
+
+  setTraceList();
+
+  setItem(EXPLORE_PANEL_COLOR_PALETTE, paletteIndex);
+}
+
 // helpers
 
 function isExploreMetricsModeEnabled() {
@@ -780,7 +838,11 @@ function hashToColor(hash, alpha = 1) {
     .split('')
     .map((c, i) => hash.charCodeAt(i))
     .reduce((a, b) => a + b);
-  const color = Color(COLORS[index % COLORS.length]).alpha(alpha);
+  const color = Color(
+    COLORS[getState().colorPalette][
+      index % COLORS[getState().colorPalette].length
+    ],
+  ).alpha(alpha);
   return color.toString();
 }
 
@@ -869,6 +931,8 @@ export const HubMainScreenModel = {
     setSearchInputState,
     setSortFields,
     setSeed,
+    togglePersistence,
+    setColorPalette,
   },
   helpers: {
     isExploreMetricsModeEnabled,

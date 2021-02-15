@@ -7,13 +7,18 @@ import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 function GroupByStyle(props) {
   let [opened, setOpened] = useState(false);
+  let [advanceOpened, setAdvanceOpened] = useState(false);
 
-  const { groupByStyle, seed } = props;
+  const { groupByStyle, seed, persist } = props;
 
   let popupRef = useRef();
   let dropdownRef = useRef();
 
-  let { setContextFilter, setSeed } = HubMainScreenModel.emitters;
+  let {
+    setContextFilter,
+    setSeed,
+    togglePersistence,
+  } = HubMainScreenModel.emitters;
 
   let {
     getAllParamsPaths,
@@ -106,15 +111,73 @@ function GroupByStyle(props) {
               isOpen
               multi
             />
-            <UI.Line />
-            <div className='ControlsSidebar__item__popup__body__action'>
-              <UI.Button
-                size='tiny'
-                disabled={groupByStyle.length === 0}
-                onClick={(evt) => setSeed(seed + 1, 'style')}
+            <div className='ControlsSidebar__item__popup__body__actionContainer'>
+              <UI.Tooltip
+                tooltip={
+                  advanceOpened
+                    ? 'Hide advanced options'
+                    : 'Show advanced options'
+                }
               >
-                Shuffle groups stroke styles
-              </UI.Button>
+                <div
+                  className={classNames({
+                    ControlsSidebar__item__popup__body__actionCollapse: true,
+                    collapsed: advanceOpened,
+                  })}
+                  onClick={() => setAdvanceOpened((opened) => !opened)}
+                >
+                  <span className='ControlsSidebar__item__popup__body__toggle__action'>
+                    <UI.Icon
+                      i={advanceOpened ? 'unfold_less' : 'unfold_more'}
+                      scale={1}
+                    />
+                  </span>
+                  <UI.Text type='grey-dark' small>
+                    Advanced options
+                  </UI.Text>
+                </div>
+              </UI.Tooltip>
+              {advanceOpened && (
+                <div className='ControlsSidebar__item__popup__body__action'>
+                  <UI.Text overline bold type='primary'>
+                    Stroke style persistence:
+                  </UI.Text>
+                  <UI.Text small spacingTop spacing>
+                    Enable persistent mode for stroke styles so that each group
+                    always has the same stroke style regardless of its order.
+                  </UI.Text>
+                  <div className='ControlsSidebar__item__popup__body__action__row ControlsSidebar__item__popup__body__action__row--persistence'>
+                    <div
+                      className='ControlsSidebar__item__popup__body__action__row__persistenceSwitch'
+                      onClick={() => togglePersistence('style')}
+                    >
+                      <span
+                        className={classNames({
+                          ControlsSidebar__item__popup__toggle: true,
+                          on: persist,
+                        })}
+                      >
+                        <UI.Icon
+                          i={`toggle_${persist ? 'on' : 'off'}`}
+                          scale={1.5}
+                        />
+                      </span>
+                      <UI.Text type={persist ? 'primary' : 'grey-dark'} small>
+                        {persist ? 'Enabled' : 'Disabled'}
+                      </UI.Text>
+                    </div>
+                    {persist && (
+                      <UI.Button
+                        size='tiny'
+                        disabled={groupByStyle.length === 0}
+                        onClick={(evt) => setSeed(seed + 1, 'style')}
+                      >
+                        Shuffle
+                      </UI.Button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -126,6 +189,7 @@ function GroupByStyle(props) {
 GroupByStyle.propTypes = {
   groupByStyle: PropTypes.arrayOf(PropTypes.string),
   seed: PropTypes.number,
+  persist: PropTypes.bool,
 };
 
 export default GroupByStyle;

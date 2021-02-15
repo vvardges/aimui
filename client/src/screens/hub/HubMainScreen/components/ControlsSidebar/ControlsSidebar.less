@@ -129,10 +129,84 @@
   margin-right: var(--component-spacing-xs);
 }
 
-.ControlsSidebar__item__popup__body__action {
+.ControlsSidebar__item__popup__body__actionContainer {
+  margin-top: 8px;
+  border: var(--border);
+  border-radius: var(--border-radius);
+}
+
+.ControlsSidebar__item__popup__body__actionCollapse {
   display: flex;
   align-items: center;
+  user-select: none;
+  padding: var(--space-xxs);
+  cursor: pointer;
+}
+
+.ControlsSidebar__item__popup__body__toggle__action {
+  display: flex;
   justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  width: 23px;
+  height: 23px;
+  margin-right: var(--component-spacing-xs);
+  border-radius: 50%;
+  transition: background-color ease 110ms;
+  user-select: none;
+  color: var(--grey-dark);
+
+  &:hover {
+    background-color: var(--grey-lighter);
+  }
+
+  &:active {
+    background-color: var(--grey-light-xx);
+    color: var(--grey-darker);
+  }
+}
+
+.ControlsSidebar__item__popup__body__action {
+  padding: var(--component-spacing-xs);
+  border-top: var(--border);
+}
+
+.ControlsSidebar__item__popup__body__action__text {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.ControlsSidebar__item__popup__body__action__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &.ControlsSidebar__item__popup__body__action__row--persistence {
+    height: 30px;
+  }
+
+  & > div {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.ControlsSidebar__item__popup__body__action__row__persistenceSwitch {
+  cursor: pointer;
+  user-select: none;
+}
+
+.ControlsSidebar__item__popup__toggle {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  cursor: pointer;
+  color: var(--grey-dark);
+
+  &.on {
+    color: var(--primary);
+  }
 }
 
 .ControlsSidebar__item__popup__list {
