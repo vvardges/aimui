@@ -444,7 +444,7 @@ function ContextBox(props) {
         let style = {};
         if (active) {
           style = {
-            backgroundColor: colorObj.lightness(96.5).hsl().string(),
+            backgroundColor: colorObj.lightness(97).hsl().string(),
           };
         }
 
@@ -462,8 +462,8 @@ function ContextBox(props) {
           experiment: {
             content: run.experiment_name,
             style: {
-              color: active ? '#FFF' : color,
-              backgroundColor: active ? color : '#FAFAFA',
+              color: color,
+              backgroundColor: active ? style.backgroundColor : '#FAFAFA',
             },
             className: `metric ${cellClassName}`,
             props: {
@@ -486,8 +486,8 @@ function ContextBox(props) {
               </Link>
             ),
             style: {
-              color: active ? '#FFF' : color,
-              backgroundColor: active ? color : '#FAFAFA',
+              color: color,
+              backgroundColor: active ? style.backgroundColor : '#FAFAFA',
             },
             className: `metric ${cellClassName}`,
             props: {
@@ -503,8 +503,8 @@ function ContextBox(props) {
           metric: {
             content: metric?.name ?? '-',
             style: {
-              color: active ? '#FFF' : color,
-              backgroundColor: active ? color : '#FAFAFA',
+              color: color,
+              backgroundColor: active ? style.backgroundColor : '#FAFAFA',
             },
             className: `metric ${cellClassName}`,
             props: {
@@ -543,7 +543,7 @@ function ContextBox(props) {
               '-'
             ),
             style: {
-              backgroundColor: active ? color : '#FAFAFA',
+              backgroundColor: active ? style.backgroundColor : '#FAFAFA',
             },
             className: `metric ${cellClassName}`,
             props: {
@@ -1110,7 +1110,7 @@ function ContextBox(props) {
           currentActiveRow?.forEach((cell) => {
             cell.classList.remove('active');
             cell.style.color = cell.classList.contains('metric')
-              ? cell.style.backgroundColor
+              ? Color(cell.style.backgroundColor).darken(0.6).hsl().string()
               : '';
             cell.style.backgroundColor = cell.classList.contains('metric')
               ? '#FAFAFA'
@@ -1187,11 +1187,12 @@ function ContextBox(props) {
                 );
                 activeRow.forEach((cell) => {
                   cell.classList.add('active');
-                  cell.style.backgroundColor = cell.classList.contains('metric')
-                    ? color
-                    : colorObj.lightness(96.5).hsl().string();
+                  cell.style.backgroundColor = colorObj
+                    .lightness(97)
+                    .hsl()
+                    .string();
                   cell.style.color = cell.classList.contains('metric')
-                    ? '#FFF'
+                    ? color
                     : '';
                 });
               }

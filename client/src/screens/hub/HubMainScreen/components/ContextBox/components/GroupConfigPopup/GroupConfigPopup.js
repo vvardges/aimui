@@ -11,16 +11,14 @@ function GroupConfigPopup(props) {
     <>
       <UI.Popover
         target={
-          <>
-            <UI.Button
-              className='GroupConfigPopup__container-button'
-              size='tiny'
-              type='secondary'
-            >
-              {props.rowsCount} items grouped by {configKeys.length} field
-              {configKeys.length > 1 ? 's' : ''}
-            </UI.Button>
-          </>
+          <UI.Button
+            className='GroupConfigPopup__container-button'
+            size='tiny'
+            type='secondary'
+          >
+            {props.rowsCount} items grouped by {configKeys.length} field
+            {configKeys.length > 1 ? 's' : ''}
+          </UI.Button>
         }
         tooltip={configKeys.join(', ')}
         content={
