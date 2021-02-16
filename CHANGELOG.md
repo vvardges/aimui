@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.3.7 Feb 17 2021
 - Use first column for table group config instead of top row (roubkar)
 - Improve group color selection (roubkar)
 - Add ability to reorder table columns (roubkar)
