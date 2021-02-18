@@ -846,10 +846,20 @@ function hashToColor(hash, alpha = 1) {
   return color.toString();
 }
 
-function getMetricColor(run, metric, trace, alpha = 1) {
+function getMetricColor(run, metric, trace, index, alpha = 1) {
   // TODO: Add conditional coloring
-  const hash = traceToHash(run?.run_hash, metric?.name, trace?.context);
-  return hashToColor(hash, alpha);
+
+  if (index === undefined || getState().contextFilter.persist.color) {
+    const hash = traceToHash(run?.run_hash, metric?.name, trace?.context);
+    return hashToColor(hash, alpha);
+  } else {
+    const color = Color(
+      COLORS[getState().colorPalette][
+        index % COLORS[getState().colorPalette].length
+      ],
+    ).alpha(alpha);
+    return color.toString();
+  }
 }
 
 function getClosestStepData(step, data, axisValues) {

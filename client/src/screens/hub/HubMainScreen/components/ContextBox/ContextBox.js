@@ -378,6 +378,7 @@ function ContextBox(props) {
       : chart.focused.step;
     const focusedCircle = chart.focused.circle;
     const focusedMetric = chart.focused.metric;
+    let runIndex = 0;
 
     traceList?.traces.forEach((traceModel) => {
       (isExploreParamsModeEnabled()
@@ -402,8 +403,11 @@ function ContextBox(props) {
               run,
               isExploreParamsModeEnabled() ? null : line?.metric,
               isExploreParamsModeEnabled() ? null : line?.trace,
+              runIndex,
             );
         const colorObj = Color(color);
+
+        runIndex++;
 
         let active = false;
 
@@ -1116,6 +1120,7 @@ function ContextBox(props) {
               ? '#FAFAFA'
               : 'inherit';
           });
+          let runIndex = 0;
           traceList?.traces.forEach((traceModel) => {
             const groupSelector = JSON.stringify(traceModel.config).replace(
               /\.|"|:|{|}|,|#|\*|\/|\[|\]/g,
@@ -1176,8 +1181,10 @@ function ContextBox(props) {
                       run,
                       isExploreParamsModeEnabled() ? null : line?.metric,
                       isExploreParamsModeEnabled() ? null : line?.trace,
+                      runIndex,
                     );
                 const colorObj = Color(color);
+
                 const activeRow = document.querySelectorAll(
                   `.cell-${traceToHash(
                     run.run_hash,
@@ -1196,6 +1203,8 @@ function ContextBox(props) {
                     : '';
                 });
               }
+
+              runIndex++;
 
               if (isExploreMetricsModeEnabled()) {
                 const valueCell = document.querySelector(

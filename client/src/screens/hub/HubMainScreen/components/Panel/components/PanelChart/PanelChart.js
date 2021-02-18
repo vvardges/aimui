@@ -515,6 +515,8 @@ function PanelChart(props) {
     const noSelectedRun =
       highlightMode === 'default' || !focusedLineAttr.runHash;
 
+    let runIndex = 0;
+
     traceList?.traces.forEach((traceModel) =>
       traceModel.series.forEach((series) => {
         if (traceModel.chart !== props.index) {
@@ -558,7 +560,7 @@ function PanelChart(props) {
             'stroke',
             traceList?.grouping?.color?.length > 0
               ? traceModel.color
-              : getMetricColor(run, metric, trace),
+              : getMetricColor(run, metric, trace, runIndex),
           )
           .style(
             'stroke-dasharray',
@@ -570,6 +572,8 @@ function PanelChart(props) {
           .on('click', function () {
             handleLineClick(d3.mouse(this));
           });
+
+        runIndex++;
       }),
     );
   }
@@ -714,6 +718,8 @@ function PanelChart(props) {
 
     circles.current = attributes.current.append('g');
 
+    let runIndex = 0;
+
     traceList?.traces.forEach((traceModel) =>
       traceModel.series.forEach((series) => {
         if (traceModel.chart !== props.index) {
@@ -773,7 +779,7 @@ function PanelChart(props) {
               'fill',
               traceList?.grouping?.color?.length > 0
                 ? traceModel.color
-                : getMetricColor(run, metric, trace),
+                : getMetricColor(run, metric, trace, runIndex),
             )
             .on('click', function () {
               handlePointClick(
@@ -783,6 +789,8 @@ function PanelChart(props) {
                 traceContext,
               );
             });
+
+          runIndex++;
 
           if (
             focusedCircle.active === true &&

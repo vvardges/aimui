@@ -11,7 +11,7 @@ function Radio(props) {
         className={`Radio ${!!props.className ? props.className : ''}`.trim()}
         onChange={props.onChange ? props.onChange : () => null}
       />
-      <label for={props.id} />
+      <label htmlFor={props.id} />
     </>
   );
 }

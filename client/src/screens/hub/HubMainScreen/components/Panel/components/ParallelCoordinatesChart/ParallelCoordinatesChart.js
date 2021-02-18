@@ -708,6 +708,8 @@ function ParallelCoordinatesChart(props) {
         .attr('fill', `url(#ParCoordsGradient-${props.index})`);
     }
 
+    let runIndex = 0;
+
     traces.current.forEach((traceModel) =>
       traceModel.series.forEach((series) => {
         const params = series.getParamsFlatDict();
@@ -746,7 +748,9 @@ function ParallelCoordinatesChart(props) {
             : '#999999'
           : traceList?.grouping?.color?.length > 0
             ? traceModel.color
-            : getMetricColor(series.run, null, null);
+            : getMetricColor(series.run, null, null, runIndex);
+
+        runIndex++;
 
         const strokeDashArray =
           traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0';

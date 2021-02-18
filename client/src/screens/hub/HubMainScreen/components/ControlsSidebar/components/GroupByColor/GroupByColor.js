@@ -53,7 +53,7 @@ function GroupByColor(props) {
             ? `Colored by ${groupByColor.length} field${
                 groupByColor.length > 1 ? 's' : ''
               }`
-            : 'Group by color'
+            : 'Run color settings'
         }
       >
         <div
@@ -84,10 +84,19 @@ function GroupByColor(props) {
         >
           <div className='ControlsSidebar__item__popup__header'>
             <UI.Text overline bold>
-              Select fields for grouping by color
+              Run color settings
             </UI.Text>
           </div>
           <div className='ControlsSidebar__item__popup__body'>
+            <UI.Text
+              overline
+              spacing
+              bold
+              type='primary'
+              className='GroupByColor__title'
+            >
+              Select fields for grouping by color
+            </UI.Text>
             <UI.Dropdown
               className='ControlsSidebar__groupingDropdown'
               options={options}
@@ -148,7 +157,7 @@ function GroupByColor(props) {
                       Colors persistence:
                     </UI.Text>
                     <UI.Text small spacingTop spacing>
-                      Enable persistent coloring mode so that each group always
+                      Enable persistent coloring mode so that each item always
                       has the same color regardless of its order.
                     </UI.Text>
                     <div className='ControlsSidebar__item__popup__body__action__row ControlsSidebar__item__popup__body__action__row--persistence'>
