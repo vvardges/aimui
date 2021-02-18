@@ -130,6 +130,7 @@ function Popover(props) {
             tabIndex={0}
             ref={popupRef}
             style={position}
+            onClick={(evt) => evt.stopPropagation()}
             onBlur={(evt) => {
               const currentTarget = evt.currentTarget;
               if (opened) {

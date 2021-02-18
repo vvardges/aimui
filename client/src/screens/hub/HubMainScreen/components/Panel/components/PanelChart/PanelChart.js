@@ -1035,7 +1035,10 @@ function PanelChart(props) {
   }
 
   function handleVisAreaMouseOut(mouse) {
-    unsetHoveredLine(mouse);
+    const { circle } = HubMainScreenModel.getState().chart.focused;
+    if (!circle.active) {
+      unsetHoveredLine(mouse);
+    }
   }
 
   function handleBgRectClick(mouse) {
