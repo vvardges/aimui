@@ -107,21 +107,42 @@ function ContextTable(props) {
         }
       }
     });
-    order.left.sort((a, b) =>
-      !!tableColumns
-        ? tableColumns.left.indexOf(a) - tableColumns.left.indexOf(b)
-        : 0,
-    );
-    order.middle.sort((a, b) =>
-      !!tableColumns
-        ? tableColumns.middle.indexOf(a) - tableColumns.middle.indexOf(b)
-        : 0,
-    );
-    order.right.sort((a, b) =>
-      !!tableColumns
-        ? tableColumns.right.indexOf(a) - tableColumns.right.indexOf(b)
-        : 0,
-    );
+    order.left.sort((a, b) => {
+      if (!!tableColumns) {
+        if (tableColumns.left.indexOf(b) === -1) {
+          return -1;
+        }
+        if (tableColumns.left.indexOf(a) === -1) {
+          return 1;
+        }
+        return tableColumns.left.indexOf(a) - tableColumns.left.indexOf(b);
+      }
+      return 0;
+    });
+    order.middle.sort((a, b) => {
+      if (!!tableColumns) {
+        if (tableColumns.middle.indexOf(b) === -1) {
+          return -1;
+        }
+        if (tableColumns.middle.indexOf(a) === -1) {
+          return 1;
+        }
+        return tableColumns.middle.indexOf(a) - tableColumns.middle.indexOf(b);
+      }
+      return 0;
+    });
+    order.right.sort((a, b) => {
+      if (!!tableColumns) {
+        if (tableColumns.right.indexOf(b) === -1) {
+          return -1;
+        }
+        if (tableColumns.right.indexOf(a) === -1) {
+          return 1;
+        }
+        return tableColumns.right.indexOf(a) - tableColumns.right.indexOf(b);
+      }
+      return 0;
+    });
     setColumnsOrder(order);
   }, [props.columns]);
 
