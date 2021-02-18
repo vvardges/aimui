@@ -89,7 +89,6 @@ function ParallelCoordinatesChart(props) {
   function renderData() {
     clearLines();
     clearCircles();
-    clearIndicator();
 
     drawData();
   }
@@ -679,7 +678,7 @@ function ParallelCoordinatesChart(props) {
 
     // Draw color
     if (displayParamsIndicator()) {
-      const lg = plot.current
+      const lg = circles.current
         .append('linearGradient')
         .attr('id', `ParCoordsGradient-${props.index}`)
         .attr('class', 'ParCoordsGradient')
@@ -696,7 +695,7 @@ function ParallelCoordinatesChart(props) {
         .attr('offset', '100%')
         .attr('stop-color', gradientStartColor);
 
-      plot.current
+      circles.current
         .append('rect')
         .attr('class', 'ParCoordsGradient__rect')
         .attr('x', plotBox.current.width)
@@ -895,11 +894,6 @@ function ParallelCoordinatesChart(props) {
 
   function clearCircles() {
     circles.current?.selectAll('*')?.remove();
-  }
-
-  function clearIndicator() {
-    plot.current?.selectAll('.ParCoordsGradient')?.remove();
-    plot.current?.selectAll('.ParCoordsGradient__rect')?.remove();
   }
 
   function displayParamsIndicator() {
