@@ -108,7 +108,7 @@ function BarSort({ sortFields, setSortFields, maxHeight, fields }) {
             }
           }}
         >
-          {paramFieldsPaths.length || metricFields.length ? (
+          {paramFieldsPaths.length || metricFieldsPaths.length ? (
             <div className='BarSort__content'>
               <div className='BarSort__body'>
                 {sortFields.length > 0 && (
