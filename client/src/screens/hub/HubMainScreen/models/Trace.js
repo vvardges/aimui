@@ -141,6 +141,17 @@ export default class Trace {
     return deepEqual(config, this.config);
   };
 
+  hasRunWithRunHash = (run_hash) => {
+    for (let i = 0; i < this.series.length; i++) {
+      let series = this.series[i];
+      if (series?.run?.run_hash === run_hash) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   hasRun = (run_hash, metricName, traceContext) => {
     for (let i = 0; i < this.series.length; i++) {
       let series = this.series[i];

@@ -99,10 +99,7 @@ function ControlsSidebar() {
                 disabled={runs.isLoading || runs.isEmpty}
                 settings={chart.settings}
               />
-              <ControlsSidebarHighlightMode
-                disabled={contextFilter.aggregated === true}
-                settings={chart.settings}
-              />
+              <ControlsSidebarHighlightMode settings={chart.settings} />
               <UI.Line />
               <ControlsSidebarZoom settings={chart.settings} />
             </>

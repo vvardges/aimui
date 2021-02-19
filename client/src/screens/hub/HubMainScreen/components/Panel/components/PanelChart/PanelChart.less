@@ -164,10 +164,14 @@
   }
 
   .PlotArea {
-    opacity: 0.2;
+    opacity: 1;
+
+    &.inactive {
+      opacity: 0.2;
+    }
 
     &.active {
-      opacity: 1 !important;
+      opacity: 1;
     }
   }
 

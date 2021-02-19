@@ -1,5 +1,6 @@
 # Changelog
 
+- Draw the selected metric line inside its aggregated area (roubkar)
 - Apply color persistency mode switch for runs colors (roubkar)
 
 ## 1.3.7 Feb 17 2021

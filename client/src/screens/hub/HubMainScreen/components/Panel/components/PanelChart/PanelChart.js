@@ -582,6 +582,7 @@ function PanelChart(props) {
     const { traceList, chart } = HubMainScreenModel.getState();
     const focusedMetric = chart.focused.metric;
     const focusedCircle = chart.focused.circle;
+    const highlightMode = chart.settings.highlightMode;
     const focusedLineAttr =
       focusedCircle?.runHash !== null
         ? focusedCircle
@@ -616,15 +617,26 @@ function PanelChart(props) {
         .y1((d, i) => chartOptions.current.yScale(traceMin.data[i][0]))
         .curve(d3[curveOptions[chart.settings.persistent.interpolate ? 5 : 0]]);
 
-      const active = traceModel.hasRun(
-        focusedLineAttr?.runHash,
-        focusedLineAttr?.metricName,
-        focusedLineAttr?.traceContext,
-      );
+      const noSelectedRun =
+        highlightMode === 'default' || !focusedLineAttr?.runHash;
+
+      const active =
+        highlightMode === 'run'
+          ? traceModel.hasRunWithRunHash(focusedLineAttr?.runHash)
+          : traceModel.hasRun(
+              focusedLineAttr?.runHash,
+              focusedLineAttr?.metricName,
+              focusedLineAttr?.traceContext,
+          );
 
       lines.current
         .append('path')
-        .attr('class', `PlotArea ${active ? 'active' : ''}`)
+        .attr(
+          'class',
+          `PlotArea ${noSelectedRun ? '' : 'inactive'} ${
+            active ? 'active' : ''
+          }`,
+        )
         .datum(traceMax.data)
         .attr('d', area)
         .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
@@ -643,7 +655,7 @@ function PanelChart(props) {
           handleLineClick(d3.mouse(this));
         });
 
-      const line = d3
+      const avgLine = d3
         .line()
         .x((d) => chartOptions.current.xScale(d[1]))
         .y((d) => chartOptions.current.yScale(d[0]))
@@ -657,10 +669,10 @@ function PanelChart(props) {
             runAvg.run_hash,
             metricAvg.name,
             traceAvg.context,
-          )} ${active ? 'current' : ''}`,
+          )} ${active ? '' : 'inactive'}`,
         )
         .datum(traceAvg.data)
-        .attr('d', line)
+        .attr('d', avgLine)
         .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
         .style('fill', 'none')
         .style(
@@ -679,6 +691,67 @@ function PanelChart(props) {
         .on('click', function () {
           handleLineClick(d3.mouse(this));
         });
+
+      if (!noSelectedRun) {
+        traceModel.series.forEach((series) => {
+          if (traceModel.chart !== props.index) {
+            return;
+          }
+          const { run, metric, trace } = series;
+          const traceContext = contextToHash(trace?.context);
+          let activeRun =
+            highlightMode === 'run'
+              ? focusedLineAttr.runHash === run.run_hash
+              : false;
+          const current =
+            focusedLineAttr.runHash === run.run_hash &&
+            focusedLineAttr.metricName === metric?.name &&
+            focusedLineAttr.traceContext === traceContext;
+          if (!current && !activeRun) {
+            return;
+          }
+          const focusedLine = d3
+            .line()
+            .x((d, i) => chartOptions.current.xScale(trace.axisValues[i]))
+            .y((d) => chartOptions.current.yScale(d[0]))
+            .curve(
+              d3[curveOptions[chart.settings.persistent.interpolate ? 5 : 0]],
+            );
+
+          lines.current
+            .append('path')
+            .attr(
+              'class',
+              `PlotLine PlotLine-${
+                focusedLineAttr?.runHash
+              } PlotLine-${traceToHash(
+                focusedLineAttr?.runHash,
+                focusedLineAttr?.metricName,
+                focusedLineAttr?.traceContext,
+              )} ${activeRun ? 'active' : ''} ${current ? 'current' : ''}`,
+            )
+            .datum(trace?.data ?? [])
+            .attr('d', focusedLine)
+            .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
+            .style('fill', 'none')
+            .style(
+              'stroke',
+              traceList?.grouping?.color?.length > 0
+                ? traceModel.color
+                : getMetricColor(run, metric, trace),
+            )
+            .style(
+              'stroke-dasharray',
+              traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0',
+            )
+            .attr('data-run-hash', run.run_hash)
+            .attr('data-metric-name', metric?.name)
+            .attr('data-trace-context-hash', traceContext)
+            .on('click', function () {
+              handleLineClick(d3.mouse(this));
+            });
+        });
+      }
     });
   }
 

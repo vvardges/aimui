@@ -834,15 +834,12 @@ function traceToHash(runHash, metricName, traceContext) {
 }
 
 function hashToColor(hash, alpha = 1) {
+  const colors = COLORS[getState().colorPalette];
   const index = hash
     .split('')
     .map((c, i) => hash.charCodeAt(i))
     .reduce((a, b) => a + b);
-  const color = Color(
-    COLORS[getState().colorPalette][
-      index % COLORS[getState().colorPalette].length
-    ],
-  ).alpha(alpha);
+  const color = Color(colors[index % colors.length]).alpha(alpha);
   return color.toString();
 }
 
