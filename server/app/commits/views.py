@@ -200,7 +200,7 @@ class CommitMetricSearchApi(Resource):
                         try:
                             metric.open_artifact()
                             for trace in metric.traces:
-                                step = trace.num_records // steps_num or 1
+                                step = (trace.num_records // steps_num) or 1
                                 trace_steps = slice(0, trace.num_records, step)
                                 for r in trace.read_records(trace_steps):
                                     base, metric_record = MetricRecord.deserialize(r)
@@ -212,7 +212,7 @@ class CommitMetricSearchApi(Resource):
                                         (base.epoch if base.has_epoch else None),
                                         base.timestamp,
                                     ))
-                                if trace.num_records - 1 % step != 0:
+                                if (trace.num_records - 1) % step != 0:
                                     for r in trace.read_records(trace.num_records-1):
                                         base, metric_record = MetricRecord.deserialize(r)
                                         if metric_record.value is None:

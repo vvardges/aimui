@@ -260,7 +260,7 @@ class ProjectExperimentApi(Resource):
                     traces = []
                     for trace in metric.traces:
                         num = trace.num_records
-                        step = num // steps or 1
+                        step = (num // steps) or 1
                         for r in trace.read_records(slice(0, num, step)):
                             base, metric_record = MetricRecord.deserialize(r)
                             if metric_record.value is None:
@@ -269,7 +269,7 @@ class ProjectExperimentApi(Resource):
                                 base.step,  # 0 => step
                                 metric_record.value,  # 1 => value
                             ))
-                        if num - 1 % steps != 0:
+                        if (num - 1) % steps != 0:
                             for r in trace.read_records(num-1):
                                 base, metric_record = MetricRecord.deserialize(r)
                                 if metric_record.value is None:
