@@ -448,9 +448,13 @@ function PanelChart(props) {
     let xAxisTicks = d3.axisBottom(xScale);
 
     if (xAlignment === 'epoch') {
+      const ticksCount = Math.floor(plotBox.current.width / 50);
+      const delta = Math.floor(xTicks.length / ticksCount);
+      const ticks =
+        delta > 1 ? xTicks.filter((_, i) => i % delta === 0) : xTicks;
       xAxisTicks
-        .tickValues(xTicks.map((tick) => tick[0]))
-        .tickFormat((d, i) => xTicks[i][1]);
+        .tickValues(ticks.map((tick) => tick[0]))
+        .tickFormat((d, i) => ticks[i][1]);
     } else if (xAlignment === 'relative_time') {
       const ticksCount = Math.floor(plotBox.current.width / 85);
       xAxisTicks

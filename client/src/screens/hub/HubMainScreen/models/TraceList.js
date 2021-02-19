@@ -423,7 +423,10 @@ export default class TraceList {
         this.chartSteps = chartSteps;
 
         for (let chart in epochSteps) {
-          for (let epoch in epochSteps[chart]) {
+          const epochStepsInChart = Object.keys(epochSteps[chart]).sort(
+            (a, b) => +a - +b,
+          );
+          epochStepsInChart.forEach((epoch, epochIndex) => {
             this.traces.forEach((traceModel) => {
               if (traceModel.chart === +chart) {
                 traceModel.series.forEach((series) => {
@@ -433,8 +436,8 @@ export default class TraceList {
                       .filter((point) => `${point[2]}` === epoch)
                       .map((point) => point[1]);
                     if (stepsInEpoch.length > epochSteps[chart][epoch].length) {
-                      if (epoch !== 'null' && +epoch > 0) {
-                        const prevEpoch = +epoch - 1;
+                      if (epoch !== 'null' && epochIndex > 0) {
+                        const prevEpoch = epochStepsInChart[epochIndex - 1];
                         const prevEpochLastValue =
                           epochSteps[chart][prevEpoch][
                             epochSteps[chart][prevEpoch].length - 1
@@ -451,7 +454,7 @@ export default class TraceList {
                 });
               }
             });
-          }
+          });
         }
 
         this.epochSteps = epochSteps;
