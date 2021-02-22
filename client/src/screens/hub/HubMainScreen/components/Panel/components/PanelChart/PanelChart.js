@@ -495,7 +495,11 @@ function PanelChart(props) {
           : 'steps',
       );
 
-    axes.current.append('g').attr('class', 'y axis').call(d3.axisLeft(yScale));
+    const yAxisTicks = d3.axisLeft(yScale);
+    const ticksCount = Math.floor(plotBox.current.height / 20);
+    yAxisTicks.ticks(ticksCount > 3 ? (ticksCount < 20 ? ticksCount : 20) : 3);
+
+    axes.current.append('g').attr('class', 'y axis').call(yAxisTicks);
 
     chartOptions.current = {
       ...chartOptions.current,
