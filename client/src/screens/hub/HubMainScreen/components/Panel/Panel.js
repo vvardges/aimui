@@ -7,6 +7,7 @@ import PanelChart from './components/PanelChart/PanelChart';
 import ParallelCoordinatesChart from './components/ParallelCoordinatesChart/ParallelCoordinatesChart';
 import UI from '../../../../../ui';
 import { HubMainScreenModel } from '../../models/HubMainScreenModel';
+import PanelPopUps from './components/PopUp/PanelPopUps';
 
 const gridSize = 12;
 const templateGridCellsMaxCount = 9;
@@ -181,6 +182,7 @@ function Panel(props) {
             )}
           </div>
         ))}
+        <PanelPopUps panelWidth={state.width} panelHeight={state.height} />
       </>
     );
   }

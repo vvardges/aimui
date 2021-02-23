@@ -1,5 +1,6 @@
 # Changelog
 
+- Improve UI/UX for panel chart popups (roubkar)
 - Draw the selected metric line inside its aggregated area (roubkar)
 - Apply color persistency mode switch for runs colors (roubkar)
 

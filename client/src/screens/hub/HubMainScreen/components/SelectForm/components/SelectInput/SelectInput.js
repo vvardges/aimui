@@ -107,6 +107,7 @@ function SelectInput(props) {
       ...s,
       dropdownIsOpen: true,
     }));
+    props.setFocused(true);
   }
 
   function handleInputBlur(evt) {
@@ -115,6 +116,7 @@ function SelectInput(props) {
         ...s,
         dropdownIsOpen: false,
       }));
+      props.setFocused(false);
     }
   }
 

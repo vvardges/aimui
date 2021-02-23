@@ -53,7 +53,7 @@ export function getWithState(caseName, caseClass) {
         ...state.project,
       });
       break;
-    case classes.PANEL_CHART:
+    case classes.PANEL_POPUPS:
       Object.assign(mapDispatch2Props, {
         getCommitTags: commitActions.getCommitTags,
         getCommitInfo: commitActions.getCommitInfo,

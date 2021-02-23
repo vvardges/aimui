@@ -1,6 +1,6 @@
 import './SelectForm.less';
 
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ import { HubMainScreenModel } from '../../models/HubMainScreenModel';
 
 function SelectForm(props) {
   let history = useHistory();
+  let [focused, setFocused] = useState(false);
   let { runs, searchInput } = HubMainScreenModel.useHubMainScreenState([
     HubMainScreenModel.events.SET_RUNS_STATE,
     HubMainScreenModel.events.SET_SEARCH_INPUT_STATE,
@@ -40,12 +41,17 @@ function SelectForm(props) {
     );
   }
   return (
-    <div className='SelectForm'>
+    <div
+      className={classNames({
+        SelectForm: true,
+        focused: focused,
+      })}
+    >
       <div className='SelectForm__body'>
         <div className='SelectForm__form'>
           <div className='SelectForm__form__row'>
             <div className='SelectForm__form__row__title'>Select</div>
-            <SelectInput search={search} />
+            <SelectInput search={search} setFocused={setFocused} />
           </div>
           <div className='SelectForm__form__row'>
             <div className='SelectForm__form__row__title'>If</div>
@@ -65,6 +71,8 @@ function SelectForm(props) {
                   search();
                 }
               }}
+              onFocus={(evt) => setFocused(true)}
+              onBlur={(evt) => setFocused(false)}
             />
           </div>
         </div>
