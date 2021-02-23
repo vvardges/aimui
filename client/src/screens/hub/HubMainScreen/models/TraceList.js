@@ -405,22 +405,14 @@ export default class TraceList {
             const { trace } = series;
             if (trace !== undefined && trace !== null) {
               trace.data.forEach((point) => {
-                const step = point[1];
                 const epoch = point[2];
                 if (!epochSteps[traceModel.chart].hasOwnProperty(epoch)) {
                   epochSteps[traceModel.chart][epoch] = [];
                 }
-                if (!chartSteps[traceModel.chart].includes(step)) {
-                  chartSteps[traceModel.chart].push(step);
-                }
               });
             }
           });
-
-          chartSteps[traceModel.chart].sort((a, b) => a - b);
         });
-
-        this.chartSteps = chartSteps;
 
         for (let chart in epochSteps) {
           const epochStepsInChart = Object.keys(epochSteps[chart]).sort(
@@ -442,22 +434,39 @@ export default class TraceList {
                           epochSteps[chart][prevEpoch][
                             epochSteps[chart][prevEpoch].length - 1
                           ];
-                        epochSteps[chart][epoch] = _.range(
-                          prevEpochLastValue + 1,
-                          prevEpochLastValue + 1 + stepsInEpoch.length,
-                        );
+                        if (prevEpochLastValue >= stepsInEpoch[0]) {
+                          epochSteps[chart][epoch] = stepsInEpoch.map(
+                            (step, i) => {
+                              if (i === 0) {
+                                return prevEpochLastValue + 1;
+                              }
+                              return (
+                                prevEpochLastValue +
+                                1 +
+                                (step - stepsInEpoch[i - 1]) * i
+                              );
+                            },
+                          );
+                        } else {
+                          epochSteps[chart][epoch] = stepsInEpoch;
+                        }
                       } else {
-                        epochSteps[chart][epoch] = _.range(stepsInEpoch.length);
+                        epochSteps[chart][epoch] = stepsInEpoch;
                       }
                     }
                   }
                 });
               }
             });
+            chartSteps[chart] = chartSteps[chart].concat(
+              epochSteps[chart][epoch],
+            );
           });
+          chartSteps[chart] = _.uniq(chartSteps[chart]).sort((a, b) => a - b);
         }
 
         this.epochSteps = epochSteps;
+        this.chartSteps = chartSteps;
 
         this.traces.forEach((traceModel) => {
           traceModel.series.forEach((series) => {
@@ -598,61 +607,34 @@ export default class TraceList {
 
                 const stepsInBetween = nextStep - step;
 
-                if (stepsInBetween === 1) {
-                  if (i === trace.axisValues.length - 2) {
-                    if (valuesByStep.hasOwnProperty(step)) {
-                      if (!valuesByStep[step].includes(point[0])) {
-                        valuesByStep[step].push(point[0]);
-                      }
-                    } else {
-                      valuesByStep[step] = [point[0]];
-                    }
-                    if (valuesByStep.hasOwnProperty(nextStep)) {
-                      if (!valuesByStep[nextStep].includes(nextPoint[0])) {
-                        valuesByStep[nextStep].push(nextPoint[0]);
-                      }
-                    } else {
-                      valuesByStep[nextStep] = [nextPoint[0]];
-                    }
+                const axisValues = this.chartSteps[traceModel.chart];
+                for (let value of axisValues.slice(
+                  axisValues.indexOf(step),
+                  axisValues.indexOf(nextStep) + 1,
+                )) {
+                  let y;
+                  let x = value - step;
+                  if (x === 0) {
+                    y = point[0];
+                  } else if (x === stepsInBetween) {
+                    y = nextPoint[0];
                   } else {
-                    if (valuesByStep.hasOwnProperty(step)) {
-                      if (!valuesByStep[step].includes(point[0])) {
-                        valuesByStep[step].push(point[0]);
-                      }
+                    if (point[0] > nextPoint[0]) {
+                      y =
+                        point[0] -
+                        ((point[0] - nextPoint[0]) * x) / stepsInBetween;
                     } else {
-                      valuesByStep[step] = [point[0]];
+                      y =
+                        ((nextPoint[0] - point[0]) * x) / stepsInBetween +
+                        point[0];
                     }
                   }
-                } else {
-                  const axisValues = this.chartSteps[traceModel.chart];
-                  for (let value of axisValues.slice(
-                    axisValues.indexOf(step),
-                    axisValues.indexOf(nextStep) + 1,
-                  )) {
-                    let y;
-                    let x = value - step;
-                    if (x === 0) {
-                      y = point[0];
-                    } else if (x === stepsInBetween) {
-                      y = nextPoint[0];
-                    } else {
-                      if (point[0] > nextPoint[0]) {
-                        y =
-                          point[0] -
-                          ((point[0] - nextPoint[0]) * x) / stepsInBetween;
-                      } else {
-                        y =
-                          ((nextPoint[0] - point[0]) * x) / stepsInBetween +
-                          point[0];
-                      }
+                  if (valuesByStep.hasOwnProperty(value)) {
+                    if (!valuesByStep[value].includes(y)) {
+                      valuesByStep[value].push(y);
                     }
-                    if (valuesByStep.hasOwnProperty(value)) {
-                      if (!valuesByStep[value].includes(y)) {
-                        valuesByStep[value].push(y);
-                      }
-                    } else {
-                      valuesByStep[value] = [y];
-                    }
+                  } else {
+                    valuesByStep[value] = [y];
                   }
                 }
               }
@@ -703,103 +685,35 @@ export default class TraceList {
 
                 const timeTicksInBetween = nextTime - time;
 
-                if (timeTicksInBetween <= 1) {
-                  if (i === trace.axisValues.length - 2) {
-                    if (valuesByTime.hasOwnProperty(time)) {
-                      if (!valuesByTime[time].includes(point[0])) {
-                        valuesByTime[time].push(point[0]);
-                      }
+                const axisValues = this.chartSteps[traceModel.chart];
+                for (let value of axisValues.slice(
+                  axisValues.indexOf(time),
+                  axisValues.indexOf(nextTime) + 1,
+                )) {
+                  let y;
+                  let x = value - time;
+                  if (x === 0) {
+                    y = point[0];
+                  } else if (x === timeTicksInBetween) {
+                    y = nextPoint[0];
+                  } else {
+                    if (point[0] > nextPoint[0]) {
+                      y =
+                        point[0] -
+                        ((point[0] - nextPoint[0]) * x) / timeTicksInBetween;
                     } else {
-                      valuesByTime[time] = [point[0]];
+                      y =
+                        ((nextPoint[0] - point[0]) * x) / timeTicksInBetween +
+                        point[0];
                     }
-                    if (valuesByTime.hasOwnProperty(nextTime)) {
-                      if (!valuesByTime[nextTime].includes(nextPoint[0])) {
-                        valuesByTime[nextTime].push(nextPoint[0]);
-                      }
-                    } else {
-                      valuesByTime[nextTime] = [nextPoint[0]];
+                  }
+                  if (valuesByTime.hasOwnProperty(value)) {
+                    if (!valuesByTime[value].includes(y)) {
+                      valuesByTime[value].push(y);
                     }
                   } else {
-                    if (valuesByTime.hasOwnProperty(time)) {
-                      if (!valuesByTime[time].includes(point[0])) {
-                        valuesByTime[time].push(point[0]);
-                      }
-                    } else {
-                      valuesByTime[time] = [point[0]];
-                    }
+                    valuesByTime[value] = [y];
                   }
-                } else {
-                  const axisValues = this.chartSteps[traceModel.chart];
-                  for (let value of axisValues.slice(
-                    axisValues.indexOf(time),
-                    axisValues.indexOf(nextTime) + 1,
-                  )) {
-                    let y;
-                    let x = value - time;
-                    if (x === 0) {
-                      y = point[0];
-                    } else if (x === timeTicksInBetween) {
-                      y = nextPoint[0];
-                    } else {
-                      if (point[0] > nextPoint[0]) {
-                        y =
-                          point[0] -
-                          ((point[0] - nextPoint[0]) * x) / timeTicksInBetween;
-                      } else {
-                        y =
-                          ((nextPoint[0] - point[0]) * x) / timeTicksInBetween +
-                          point[0];
-                      }
-                    }
-                    if (valuesByTime.hasOwnProperty(value)) {
-                      if (!valuesByTime[value].includes(y)) {
-                        valuesByTime[value].push(y);
-                      }
-                    } else {
-                      valuesByTime[value] = [y];
-                    }
-                  }
-                  // const chartAggregationAxisValues = _.uniq(
-                  //   _.concat(
-                  //     chartAxisValues[traceModel.chart].slice(
-                  //       chartAxisValues[traceModel.chart].indexOf(time),
-                  //       chartAxisValues[traceModel.chart].indexOf(nextTime) + 1,
-                  //     ),
-                  //     _.range(Math.ceil(time), Math.floor(nextTime)),
-                  //   ),
-                  // );
-                  // for (
-                  //   let index = 0;
-                  //   index < chartAggregationAxisValues.length;
-                  //   index++
-                  // ) {
-                  //   let x = chartAggregationAxisValues[index];
-                  //   let y;
-                  //   if (x === time) {
-                  //     y = point[0];
-                  //   } else if (x === nextTime) {
-                  //     y = nextPoint[0];
-                  //   } else {
-                  //     if (point[0] > nextPoint[0]) {
-                  //       y =
-                  //         point[0] -
-                  //         ((point[0] - nextPoint[0]) * (x - time)) /
-                  //           timeTicksInBetween;
-                  //     } else {
-                  //       y =
-                  //         ((nextPoint[0] - point[0]) * (x - time)) /
-                  //           timeTicksInBetween +
-                  //         point[0];
-                  //     }
-                  //   }
-                  //   if (valuesByTime.hasOwnProperty(x)) {
-                  //     if (!valuesByTime[x].includes(y)) {
-                  //       valuesByTime[x].push(y);
-                  //     }
-                  //   } else {
-                  //     valuesByTime[x] = [y];
-                  //   }
-                  // }
                 }
               }
             }
