@@ -710,7 +710,7 @@ function ParallelCoordinatesChart(props) {
     let runIndex = 0;
 
     traces.current.forEach((traceModel) =>
-      traceModel.series.forEach((series) => {
+      _.uniqBy(traceModel.series, 'run.run_hash').forEach((series) => {
         const params = series.getParamsFlatDict();
 
         const coords = dimensions.current.map((p, i) => {

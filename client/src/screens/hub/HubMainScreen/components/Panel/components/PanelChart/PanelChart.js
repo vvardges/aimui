@@ -480,6 +480,7 @@ function PanelChart(props) {
     traceList?.traces.forEach((traceModel) =>
       traceModel.series.forEach((series) => {
         if (traceModel.chart !== props.index) {
+          runIndex++;
           return;
         }
         const { run, metric, trace } = series;
@@ -653,8 +654,10 @@ function PanelChart(props) {
         });
 
       if (!noSelectedRun) {
+        let runIndex = 0;
         traceModel.series.forEach((series) => {
           if (traceModel.chart !== props.index) {
+            runIndex++;
             return;
           }
           const { run, metric, trace } = series;
@@ -668,6 +671,7 @@ function PanelChart(props) {
             focusedLineAttr.metricName === metric?.name &&
             focusedLineAttr.traceContext === traceContext;
           if (!current && !activeRun) {
+            runIndex++;
             return;
           }
           const focusedLine = d3
@@ -698,7 +702,7 @@ function PanelChart(props) {
               'stroke',
               traceList?.grouping?.color?.length > 0
                 ? traceModel.color
-                : getMetricColor(run, metric, trace),
+                : getMetricColor(run, metric, trace, runIndex),
             )
             .style(
               'stroke-dasharray',
@@ -710,6 +714,7 @@ function PanelChart(props) {
             .on('click', function () {
               handleLineClick(d3.mouse(this));
             });
+          runIndex++;
         });
       }
     });
@@ -753,6 +758,7 @@ function PanelChart(props) {
     traceList?.traces.forEach((traceModel) =>
       traceModel.series.forEach((series) => {
         if (traceModel.chart !== props.index) {
+          runIndex++;
           return;
         }
         const { run, metric, trace } = series;
