@@ -45,9 +45,13 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    analytics.init();
     setTimeout(() => this.props.completeProgress(), 150);
     this.props.getProject().then(() => {
+      if (this.props.project?.telemetry_enabled === '1') {
+        analytics.init();
+      } else {
+        window.analytics = false;
+      }
       this.props.incProgress();
     });
   }

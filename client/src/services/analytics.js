@@ -2,7 +2,7 @@ import { isDev } from '../utils';
 import { SEGMENT_WRITE_KEY, SEGMENT_DEMO_WRITE_KEY } from '../config';
 
 const enabled = () => {
-  return !isDev(); //!isDev() && cookies.getCookie(configs.USER_ANALYTICS_COOKIE_NAME) == 1;
+  return !isDev() && window.analytics !== false; //!isDev() && cookies.getCookie(configs.USER_ANALYTICS_COOKIE_NAME) == 1;
 };
 
 const init = () => {
