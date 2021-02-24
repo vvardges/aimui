@@ -196,9 +196,9 @@ function PanelChart(props) {
           const title =
             traceList?.grouping.chart.length > 0
               ? `${traceList?.grouping.chart
-                  .map((key) => {
-                    return (
-                      key +
+                .map((key) => {
+                  return (
+                    key +
                       '=' +
                       formatValue(
                         traceList.traces.find(
@@ -206,9 +206,9 @@ function PanelChart(props) {
                         )?.config[key],
                         false,
                       )
-                    );
-                  })
-                  .join(', ')}`
+                  );
+                })
+                .join(', ')}`
               : '';
           const index = props.index + 1;
 
@@ -663,73 +663,77 @@ function PanelChart(props) {
 
       if (!noSelectedRun) {
         let runIndex = 0;
-        traceModel.series.forEach((series) => {
-          if (traceModel.chart !== props.index) {
-            runIndex++;
-            return;
-          }
-          const { run, metric, trace } = series;
-          const traceContext = contextToHash(trace?.context);
-          let activeRun =
-            highlightMode === 'run'
-              ? focusedLineAttr.runHash === run.run_hash
-              : false;
-          const current =
-            focusedLineAttr.runHash === run.run_hash &&
-            focusedLineAttr.metricName === metric?.name &&
-            focusedLineAttr.traceContext === traceContext;
-          if (!current && !activeRun) {
-            runIndex++;
-            return;
-          }
-          const focusedLine = d3
-            .line()
-            .x((d, i) => chartOptions.current.xScale(trace.axisValues[i]))
-            .y((d) => chartOptions.current.yScale(d[0]))
-            .curve(
-              d3[
-                curveOptions[
-                  chart.settings.persistent.interpolate &&
-                  !contextFilter.aggregated
-                    ? 5
-                    : 0
-                ]
-              ],
-            );
+        traceList?.traces.forEach((traceModel) => {
+          traceModel.series.forEach((series) => {
+            if (traceModel.chart !== props.index) {
+              runIndex++;
+              return;
+            }
+            const { run, metric, trace } = series;
+            const traceContext = contextToHash(trace?.context);
+            let activeRun =
+              highlightMode === 'run'
+                ? focusedLineAttr.runHash === run.run_hash
+                : false;
+            const current =
+              focusedLineAttr.runHash === run.run_hash &&
+              focusedLineAttr.metricName === metric?.name &&
+              focusedLineAttr.traceContext === traceContext;
+            if (!current && !activeRun) {
+              runIndex++;
+              return;
+            }
+            const focusedLine = d3
+              .line()
+              .x((d, i) => chartOptions.current.xScale(trace.axisValues[i]))
+              .y((d) => chartOptions.current.yScale(d[0]))
+              .curve(
+                d3[
+                  curveOptions[
+                    chart.settings.persistent.interpolate &&
+                    !contextFilter.aggregated
+                      ? 5
+                      : 0
+                  ]
+                ],
+              );
 
-          lines.current
-            .append('path')
-            .attr(
-              'class',
-              `PlotLine PlotLine-${
-                focusedLineAttr?.runHash
-              } PlotLine-${traceToHash(
-                focusedLineAttr?.runHash,
-                focusedLineAttr?.metricName,
-                focusedLineAttr?.traceContext,
-              )} ${activeRun ? 'active' : ''} ${current ? 'current' : ''}`,
-            )
-            .datum(trace?.data ?? [])
-            .attr('d', focusedLine)
-            .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
-            .style('fill', 'none')
-            .style(
-              'stroke',
-              traceList?.grouping?.color?.length > 0
-                ? traceModel.color
-                : getMetricColor(run, metric, trace, runIndex),
-            )
-            .style(
-              'stroke-dasharray',
-              traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0',
-            )
-            .attr('data-run-hash', run.run_hash)
-            .attr('data-metric-name', metric?.name)
-            .attr('data-trace-context-hash', traceContext)
-            .on('click', function () {
-              handleLineClick(d3.mouse(this));
-            });
-          runIndex++;
+            lines.current
+              .append('path')
+              .attr(
+                'class',
+                `PlotLine PlotLine-${
+                  focusedLineAttr?.runHash
+                } PlotLine-${traceToHash(
+                  focusedLineAttr?.runHash,
+                  focusedLineAttr?.metricName,
+                  focusedLineAttr?.traceContext,
+                )} ${activeRun ? 'active' : ''} ${current ? 'current' : ''}`,
+              )
+              .datum(trace?.data ?? [])
+              .attr('d', focusedLine)
+              .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
+              .style('fill', 'none')
+              .style(
+                'stroke',
+                traceList?.grouping?.color?.length > 0
+                  ? traceModel.color
+                  : getMetricColor(run, metric, trace, runIndex),
+              )
+              .style(
+                'stroke-dasharray',
+                traceList?.grouping?.stroke?.length > 0
+                  ? traceModel.stroke
+                  : '0',
+              )
+              .attr('data-run-hash', run.run_hash)
+              .attr('data-metric-name', metric?.name)
+              .attr('data-trace-context-hash', traceContext)
+              .on('click', function () {
+                handleLineClick(d3.mouse(this));
+              });
+            runIndex++;
+          });
         });
       }
     });

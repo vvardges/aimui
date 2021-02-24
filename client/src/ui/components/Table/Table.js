@@ -3,6 +3,7 @@ import './Table.less';
 import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
+import ReactJson from 'react-json-view';
 
 import { classNames } from '../../../utils';
 import UI from '../..';
@@ -164,7 +165,13 @@ function Table(props) {
         })}
       >
         {(props.groups || leftPane.length > 0) && (
-          <div className='Table__pane Table__pane--left'>
+          <div
+            className={classNames({
+              Table__pane: true,
+              'Table__pane--left': true,
+              onlyGroupColumn: leftPane.length === 0,
+            })}
+          >
             {props.groups && (
               <ConfigColumn
                 data={props.data}
@@ -191,6 +198,7 @@ function Table(props) {
                 expand={expand}
                 togglePin={togglePin}
                 pinnedTo='left'
+                firstColumn={index === 0}
               />
             ))}
           </div>
@@ -217,6 +225,7 @@ function Table(props) {
               expand={expand}
               togglePin={togglePin}
               pinnedTo={null}
+              firstColumn={index === 0 && leftPane.length === 0}
             />
           ))}
         </div>
@@ -251,6 +260,11 @@ function Table(props) {
                 expand={expand}
                 togglePin={togglePin}
                 pinnedTo='right'
+                firstColumn={
+                  index === 0 &&
+                  leftPane.length === 0 &&
+                  middlePane.length === 0
+                }
               />
             ))}
           </div>
@@ -281,9 +295,10 @@ function Column({
   expand,
   togglePin,
   pinnedTo,
+  firstColumn,
 }) {
   return (
-    <div className='Table__column'>
+    <div className='Table__column Table__column--data'>
       {topHeader && (
         <div
           className='Table__cell Table__cell--header Table__cell--topHeader'
@@ -375,18 +390,28 @@ function Column({
             />
             {expanded[groupKey] &&
                 data[groupKey].items.map((item, i) => (
-                  <Cell key={col.key + i} col={col} item={item[col.key]} />
+                  <Cell
+                    key={col.key + i}
+                    col={col}
+                    item={item[col.key]}
+                    metadata={firstColumn ? item.rowMeta : null}
+                  />
                 ))}
           </div>
         ))
         : data.map((item, i) => (
-          <Cell key={col.key + i} col={col} item={item[col.key]} />
+          <Cell
+            key={col.key + i}
+            col={col}
+            item={item[col.key]}
+            metadata={firstColumn ? item.rowMeta : null}
+          />
         ))}
     </div>
   );
 }
 
-function Cell({ item, className, isConfigColumn }) {
+function Cell({ item, className, isConfigColumn, groupLength, metadata }) {
   return (
     <div
       className={classNames({
@@ -404,9 +429,13 @@ function Cell({ item, className, isConfigColumn }) {
         ...(typeof item === 'object' &&
           item.hasOwnProperty('style') &&
           item.style),
+        ...(isConfigColumn && {
+          height: `calc(${groupLength} * var(--cell-height))`,
+        }),
       }}
       {...(typeof item === 'object' && item.props)}
     >
+      {metadata && <div className='Table__cell__rowMeta'>{metadata}</div>}
       {isConfigColumn
         ? ''
         : typeof item === 'object' && item.hasOwnProperty('content')
@@ -418,7 +447,7 @@ function Cell({ item, className, isConfigColumn }) {
 
 function ConfigColumn({ data, expand, expanded }) {
   return (
-    <div className='Table__column'>
+    <div className='Table__column Table__column--config'>
       <div className='Table__cell Table__cell--header Table__cell--topHeader'>
         <UI.Text>Groups</UI.Text>
       </div>
@@ -441,10 +470,27 @@ function ConfigColumn({ data, expand, expanded }) {
               groupKey={groupKey}
             />
           </div>
-          {expanded[groupKey] &&
-            data[groupKey].items.map((item, i) => (
-              <Cell key={i} isConfigColumn />
-            ))}
+          {expanded[groupKey] && (
+            <Cell
+              isConfigColumn
+              groupLength={data[groupKey].items.length}
+              metadata={
+                <div className='Table__group__config__meta'>
+                  <ReactJson
+                    name={null}
+                    theme='bright:inverted'
+                    src={data[groupKey].meta}
+                    collapsed
+                    enableClipboard={false}
+                    indentWidth={2}
+                    style={{
+                      backgroundColor: '#fafafa',
+                    }}
+                  />
+                </div>
+              }
+            />
+          )}
         </div>
       ))}
     </div>

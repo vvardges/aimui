@@ -2,6 +2,7 @@
 
 @border-color-dark: #ccc;
 @header-cell-bg-color: #eee;
+@cell-color-dark: #fafafa;
 
 .Table__container {
   height: 100%;
@@ -45,18 +46,24 @@
   z-index: 0;
 }
 
-.Table__pane--left {
+.Table__pane--left,
+.Table__pane--right {
   position: sticky;
-  left: 0;
   z-index: 1;
-  box-shadow: 1px 0 0 0 @border-color-dark;
+
+  .Table__cell:not(.Table__cell--header) {
+    //background-color: @cell-color-dark;
+  }
+}
+
+.Table__pane--left {
+  left: 0;
+  box-shadow: 1px 0 3px 0 #aaa;
 }
 
 .Table__pane--right {
-  position: sticky;
   right: 0;
-  z-index: 1;
-  box-shadow: -1px 0 0 0 @border-color-dark;
+  box-shadow: -1px 0 3px 0 #aaa;
 }
 
 .Table__column {
@@ -83,7 +90,7 @@
   background-color: var(--grey-bg);
   border-right: 1px solid @border-color-dark;
   height: var(--cell-height);
-  padding: 0 5px 2px 0;
+  padding: 0 5px 1px 0;
   box-shadow: inset 0px -1px 0 0 @border-color-dark;
   box-sizing: border-box;
   z-index: 2;
@@ -157,7 +164,6 @@
 .Table__cell {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   font-size: var(--text-sm);
   color: var(--grey);
   padding: 0 var(--space-sm);
@@ -173,7 +179,7 @@
 
   &.Table__group__header__cell {
     position: relative;
-    background-color: #fafafa;
+    background-color: @cell-color-dark;
     border-color: @border-color-dark;
     z-index: 1;
     transition: background-color 0.2s ease-out;
@@ -192,6 +198,21 @@
     background-color: var(--grey-bg);
     border-right: 1px solid @border-color-dark;
     border-bottom: none;
+    padding: 0;
+
+    .Table__cell__rowMeta {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      overflow-y: auto;
+      margin-right: 0;
+      margin-left: var(--space-xs);
+      box-sizing: border-box;
+
+      .Table__group__config__meta {
+        max-height: 100%;
+      }
+    }
   }
 
   &.active {
@@ -316,4 +337,8 @@
       }
     }
   }
+}
+
+.Table__cell__rowMeta {
+  margin-right: var(--space-sm);
 }

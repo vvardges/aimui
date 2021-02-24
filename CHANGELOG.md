@@ -1,5 +1,6 @@
 # Changelog
 
+- Improve UI/UX of explore screen context table (roubkar) 
 - Format long titles of charts (gorarakelyan)
 - Add ability to opt out telemetry (gorarakelyan)
 - Improve UI/UX for panel chart popups (roubkar)

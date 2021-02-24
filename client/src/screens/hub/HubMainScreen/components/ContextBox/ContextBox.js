@@ -448,7 +448,7 @@ function ContextBox(props) {
         let style = {};
         if (active) {
           style = {
-            backgroundColor: colorObj.lightness(97).hsl().string(),
+            // boxShadow: `0 2px 0 0 ${colorObj.hsl().string()}`,
           };
         }
 
@@ -463,12 +463,20 @@ function ContextBox(props) {
         // }
 
         const row = {
+          rowMeta: (
+            <UI.Tooltip tooltip='Metric Color'>
+              <div
+                className='ContextBox__table__metric-indicator__color'
+                style={{
+                  backgroundColor: colorObj.hsl().string(),
+                  borderColor: colorObj.hsl().string(),
+                }}
+              />
+            </UI.Tooltip>
+          ),
           experiment: {
             content: run.experiment_name,
-            style: {
-              color: color,
-              backgroundColor: active ? style.backgroundColor : '#FAFAFA',
-            },
+            style: style,
             className: `metric ${cellClassName}`,
             props: {
               onClick: () =>
@@ -489,10 +497,7 @@ function ContextBox(props) {
                 {moment.unix(run.date).format('HH:mm · D MMM, YY')}
               </Link>
             ),
-            style: {
-              color: color,
-              backgroundColor: active ? style.backgroundColor : '#FAFAFA',
-            },
+            style: style,
             className: `metric ${cellClassName}`,
             props: {
               onClick: (evt) => {
@@ -506,10 +511,7 @@ function ContextBox(props) {
           },
           metric: {
             content: metric?.name ?? '-',
-            style: {
-              color: color,
-              backgroundColor: active ? style.backgroundColor : '#FAFAFA',
-            },
+            style: style,
             className: `metric ${cellClassName}`,
             props: {
               onClick: () =>
@@ -546,9 +548,7 @@ function ContextBox(props) {
             ) : (
               '-'
             ),
-            style: {
-              backgroundColor: active ? style.backgroundColor : '#FAFAFA',
-            },
+            style: style,
             className: `metric ${cellClassName}`,
             props: {
               onClick: () =>
@@ -682,35 +682,26 @@ function ContextBox(props) {
               items: [],
               data: {
                 experiment: {
-                  content: (
-                    <UI.Label
-                      className='ContextBox__table__item-aggregated_label'
-                      color={
-                        traceList?.grouping?.color?.length > 0
-                          ? color
-                          : '#3b5896'
-                      }
-                    >
-                      {traceModel.experiments.length === 1 ? (
-                        traceModel.experiments[0]
-                      ) : (
-                        <UI.Tooltip tooltip={traceModel.experiments.join(', ')}>
+                  content:
+                    traceModel.experiments.length === 1 ? (
+                      <UI.Text>{traceModel.experiments[0]}</UI.Text>
+                    ) : (
+                      <UI.Tooltip tooltip={traceModel.experiments.join(', ')}>
+                        <UI.Label
+                          className='ContextBox__table__item-aggregated_label'
+                          outline
+                        >
                           {traceModel.experiments.length} experiments
-                        </UI.Tooltip>
-                      )}
-                    </UI.Label>
-                  ),
+                        </UI.Label>
+                      </UI.Tooltip>
+                    ),
                   expandable: true,
                 },
                 run: {
                   content: (
                     <UI.Label
                       className='ContextBox__table__item-aggregated_label'
-                      color={
-                        traceList?.grouping?.color?.length > 0
-                          ? color
-                          : '#3b5896'
-                      }
+                      outline
                     >
                       {runsCount} run{runsCount > 1 ? 's' : ''}
                     </UI.Label>
@@ -718,24 +709,19 @@ function ContextBox(props) {
                   expandable: true,
                 },
                 metric: {
-                  content: (
-                    <UI.Label
-                      className='ContextBox__table__item-aggregated_label'
-                      color={
-                        traceList?.grouping?.color?.length > 0
-                          ? color
-                          : '#3b5896'
-                      }
-                    >
-                      {traceModel.metrics.length === 1 ? (
-                        traceModel.metrics[0]
-                      ) : (
-                        <UI.Tooltip tooltip={traceModel.metrics.join(', ')}>
+                  content:
+                    traceModel.metrics.length === 1 ? (
+                      <UI.Text>{traceModel.metrics[0]}</UI.Text>
+                    ) : (
+                      <UI.Tooltip tooltip={traceModel.metrics.join(', ')}>
+                        <UI.Label
+                          className='ContextBox__table__item-aggregated_label'
+                          outline
+                        >
                           {traceModel.metrics.length} metrics
-                        </UI.Tooltip>
-                      )}
-                    </UI.Label>
-                  ),
+                        </UI.Label>
+                      </UI.Tooltip>
+                    ),
                   expandable: true,
                 },
                 context: {
@@ -744,11 +730,7 @@ function ContextBox(props) {
                       {!!traceModel.contexts?.length ? (
                         <UI.Label
                           className='ContextBox__table__item-aggregated_label'
-                          color={
-                            traceList?.grouping?.color?.length > 0
-                              ? color
-                              : '#3b5896'
-                          }
+                          outline
                         >
                           {traceModel.contexts[0]}
                         </UI.Label>
@@ -758,11 +740,7 @@ function ContextBox(props) {
                       {traceModel.contexts?.length > 1 && (
                         <UI.Label
                           className='ContextBox__table__item-aggregated_label'
-                          color={
-                            traceList?.grouping?.color?.length > 0
-                              ? color
-                              : '#3b5896'
-                          }
+                          outline
                           rounded
                         >
                           <UI.Tooltip
@@ -893,6 +871,7 @@ function ContextBox(props) {
                   )}
                 </>
               ),
+              meta: traceModel.config,
             };
 
             let stepValue;
@@ -1012,21 +991,29 @@ function ContextBox(props) {
                     param
                   ] = formatValue(traceModel.config[param]);
                 } else {
-                  let value;
+                  let values = [];
                   for (let i = 0; i < traceModel.series.length; i++) {
                     const series = traceModel.series[i];
-                    if (i === 0) {
-                      value = _.get(series, param);
-                    } else {
-                      if (value !== _.get(series, param)) {
-                        value = undefined;
-                        break;
-                      }
+                    const value = formatValue(_.get(series, param));
+                    if (!values.includes(value)) {
+                      values.push(value);
                     }
                   }
-                  data[JSON.stringify(traceModel.config)].data[
-                    param
-                  ] = formatValue(value);
+                  data[JSON.stringify(traceModel.config)].data[param] = {
+                    content:
+                      values.length === 1 ? (
+                        values[0]
+                      ) : (
+                        <UI.Tooltip tooltip={values.join(', ')}>
+                          <UI.Label
+                            className='ContextBox__table__item-aggregated_label'
+                            outline
+                          >
+                            {values.length} values
+                          </UI.Label>
+                        </UI.Tooltip>
+                      ),
+                  };
                 }
               }),
             );
@@ -1113,12 +1100,6 @@ function ContextBox(props) {
           );
           currentActiveRow?.forEach((cell) => {
             cell.classList.remove('active');
-            cell.style.color = cell.classList.contains('metric')
-              ? Color(cell.style.backgroundColor).darken(0.6).hsl().string()
-              : '';
-            cell.style.backgroundColor = cell.classList.contains('metric')
-              ? '#FAFAFA'
-              : 'inherit';
           });
           let runIndex = 0;
           traceList?.traces.forEach((traceModel) => {
@@ -1194,13 +1175,13 @@ function ContextBox(props) {
                 );
                 activeRow.forEach((cell) => {
                   cell.classList.add('active');
-                  cell.style.backgroundColor = colorObj
-                    .lightness(97)
-                    .hsl()
-                    .string();
-                  cell.style.color = cell.classList.contains('metric')
-                    ? color
-                    : '';
+                  // cell.style.backgroundColor = colorObj
+                  //   .alpha(0.2)
+                  //   .hsl()
+                  //   .string();
+                  // cell.style.color = cell.classList.contains('metric')
+                  //   ? color
+                  //   : '';
                 });
               }
 
