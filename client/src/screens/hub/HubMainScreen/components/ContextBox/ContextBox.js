@@ -695,7 +695,6 @@ function ContextBox(props) {
                         </UI.Label>
                       </UI.Tooltip>
                     ),
-                  expandable: true,
                 },
                 run: {
                   content: (
@@ -706,7 +705,6 @@ function ContextBox(props) {
                       {runsCount} run{runsCount > 1 ? 's' : ''}
                     </UI.Label>
                   ),
-                  expandable: true,
                 },
                 metric: {
                   content:
@@ -722,7 +720,6 @@ function ContextBox(props) {
                         </UI.Label>
                       </UI.Tooltip>
                     ),
-                  expandable: true,
                 },
                 context: {
                   content: (
@@ -752,7 +749,6 @@ function ContextBox(props) {
                       )}
                     </div>
                   ),
-                  expandable: true,
                 },
                 value: {
                   content: (

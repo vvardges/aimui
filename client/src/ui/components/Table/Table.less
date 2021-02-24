@@ -202,15 +202,19 @@
 
     .Table__cell__rowMeta {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       height: 100%;
-      overflow-y: auto;
-      margin-right: 0;
-      margin-left: var(--space-xs);
+      max-width: 25vw;
+      overflow: auto;
       box-sizing: border-box;
+      margin: 0;
 
       .Table__group__config__meta {
         max-height: 100%;
+
+        .react-json-view {
+          padding: var(--space-xs) !important;
+        }
       }
     }
   }

@@ -480,11 +480,10 @@ function ConfigColumn({ data, expand, expanded }) {
                     name={null}
                     theme='bright:inverted'
                     src={data[groupKey].meta}
-                    collapsed
                     enableClipboard={false}
                     indentWidth={2}
                     style={{
-                      backgroundColor: '#fafafa',
+                      backgroundColor: 'transparent',
                     }}
                   />
                 </div>
