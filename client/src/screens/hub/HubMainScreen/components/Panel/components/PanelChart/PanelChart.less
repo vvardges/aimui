@@ -100,11 +100,44 @@
   rect {
     cursor: crosshair;
   }
+
   .brush {
     rect {
       cursor: zoom-in;
     }
   }
+
+  .ChartTitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 var(--component-spacing-sm);
+  }
+
+  .ChartTitle__index {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--component-spacing-xs);
+    padding: 2px;
+    box-shadow: inset 0 0 0 1px var(--grey-light);
+    border-radius: var(--border-radius);
+    font-size: 10px;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .ChartTitle__text {
+    font-size: var(--text-xs);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--grey-dark);
+  }
+
   .HoverCircle {
     stroke: var(--primary);
     stroke-width: 1 !important;

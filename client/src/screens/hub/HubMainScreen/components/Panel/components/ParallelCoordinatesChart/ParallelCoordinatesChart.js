@@ -365,49 +365,45 @@ function ParallelCoordinatesChart(props) {
       .on('click', handleBgRectClick);
 
     if (traceList?.grouping.chart) {
+      const titleMarginTop = 2;
+      const titleHeight = 15;
       svg.current
-        .append('text')
-        .attr('x', width / 2)
-        .attr('y', 15)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '0.7em')
-        .text(
-          traceList?.grouping.chart.length > 0
-            ? `#${props.index + 1} ${traceList?.grouping.chart
-              .map((key) => {
-                return (
-                  key +
-                    '=' +
-                    formatValue(
-                      traceList.traces.find(
-                        (elem) => elem.chart === props.index,
-                      )?.config[key],
-                      false,
-                    )
-                );
-              })
-              .join(', ')}`
-            : '',
-        )
-        .append('svg:title')
-        .text(
-          traceList?.grouping.chart.length > 0
-            ? `#${props.index + 1} ${traceList?.grouping.chart
-              .map((key) => {
-                return (
-                  key +
-                    '=' +
-                    formatValue(
-                      traceList.traces.find(
-                        (elem) => elem.chart === props.index,
-                      )?.config[key],
-                      false,
-                    )
-                );
-              })
-              .join(', ')}`
-            : '',
-        );
+        .append('foreignObject')
+        .attr('x', 0)
+        .attr('y', titleMarginTop)
+        .attr('height', titleHeight)
+        .attr('width', width)
+        .html((d) => {
+          const title =
+            traceList?.grouping.chart.length > 0
+              ? `${traceList?.grouping.chart
+                  .map((key) => {
+                    return (
+                      key +
+                      '=' +
+                      formatValue(
+                        traceList.traces.find(
+                          (elem) => elem.chart === props.index,
+                        )?.config[key],
+                        false,
+                      )
+                    );
+                  })
+                  .join(', ')}`
+              : '';
+          const index = props.index + 1;
+
+          if (!traceList?.grouping.chart.length) {
+            return '';
+          }
+
+          return `
+            <div class='ParCoordsChartTitle' title='#${index} ${title}'>
+              <div style='width: ${titleHeight}px; height: ${titleHeight}px;' class='ParCoordsChartTitle__index'>${index}</div>
+              <div class='ParCoordsChartTitle__text'>${title}</div>
+            </div>`;
+        })
+        .moveToFront();
     }
 
     plot.current = svg.current
@@ -937,8 +933,8 @@ function ParallelCoordinatesChart(props) {
       .filter(function (d) {
         return currentBrushSelection
           ? currentBrushSelection?.find(
-            (selection) => selection?.dimension.key === d.key,
-          )?.extent
+              (selection) => selection?.dimension.key === d.key,
+            )?.extent
           : d3.brushSelection(this);
       })
       .each(function (d) {
@@ -946,8 +942,8 @@ function ParallelCoordinatesChart(props) {
           dimension: d,
           extent: currentBrushSelection
             ? currentBrushSelection?.find(
-              (selection) => selection?.dimension.key === d.key,
-            )?.extent
+                (selection) => selection?.dimension.key === d.key,
+              )?.extent
             : d3.brushSelection(this),
         });
       });

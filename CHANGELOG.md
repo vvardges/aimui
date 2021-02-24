@@ -1,5 +1,6 @@
 # Changelog
 
+- Format long titles of charts (gorarakelyan)
 - Add ability to opt out telemetry (gorarakelyan)
 - Improve UI/UX for panel chart popups (roubkar)
 - Draw the selected metric line inside its aggregated area (roubkar)

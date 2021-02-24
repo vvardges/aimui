@@ -7,7 +7,11 @@ import * as _ from 'lodash';
 import * as moment from 'moment';
 import humanizeDuration from 'humanize-duration';
 
-import { removeOutliers, formatValue } from '../../../../../../../utils';
+import {
+  removeOutliers,
+  formatValue,
+  classNames,
+} from '../../../../../../../utils';
 import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 const d3 = require('d3');
@@ -54,7 +58,7 @@ const shortEnglishHumanizer = humanizeDuration.humanizer({
 function PanelChart(props) {
   let visBox = useRef({
     margin: {
-      top: 20,
+      top: 24,
       right: 20,
       bottom: 30,
       left: 60,
@@ -179,49 +183,46 @@ function PanelChart(props) {
       .attr('xmlns', 'http://www.w3.org/2000/svg'); // .attr('id', 'panel_svg');
 
     if (traceList?.grouping.chart) {
+      const titleMarginTop = 5;
+      const titleMarginBottom = 2;
+      const titleHeight = margin.top - titleMarginTop - titleMarginBottom;
       svg.current
-        .append('text')
-        .attr('x', width / 2)
-        .attr('y', margin.top)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '0.7em')
-        .text(
-          traceList?.grouping.chart.length > 0
-            ? `#${props.index + 1} ${traceList?.grouping.chart
-              .map((key) => {
-                return (
-                  key +
-                    '=' +
-                    formatValue(
-                      traceList.traces.find(
-                        (elem) => elem.chart === props.index,
-                      )?.config[key],
-                      false,
-                    )
-                );
-              })
-              .join(', ')}`
-            : '',
-        )
-        .append('svg:title')
-        .text(
-          traceList?.grouping.chart.length > 0
-            ? `#${props.index + 1} ${traceList?.grouping.chart
-              .map((key) => {
-                return (
-                  key +
-                    '=' +
-                    formatValue(
-                      traceList.traces.find(
-                        (elem) => elem.chart === props.index,
-                      )?.config[key],
-                      false,
-                    )
-                );
-              })
-              .join(', ')}`
-            : '',
-        );
+        .append('foreignObject')
+        .attr('x', 0)
+        .attr('y', titleMarginTop)
+        .attr('height', titleHeight)
+        .attr('width', width)
+        .html((d) => {
+          const title =
+            traceList?.grouping.chart.length > 0
+              ? `${traceList?.grouping.chart
+                  .map((key) => {
+                    return (
+                      key +
+                      '=' +
+                      formatValue(
+                        traceList.traces.find(
+                          (elem) => elem.chart === props.index,
+                        )?.config[key],
+                        false,
+                      )
+                    );
+                  })
+                  .join(', ')}`
+              : '';
+          const index = props.index + 1;
+
+          if (!traceList?.grouping.chart.length) {
+            return '';
+          }
+
+          return `
+            <div class='ChartTitle' title='#${index} ${title}'>
+              <div style='width: ${titleHeight}px; height: ${titleHeight}px;' class='ChartTitle__index'>${index}</div>
+              <div class='ChartTitle__text'>${title}</div>
+            </div>`;
+        })
+        .moveToFront();
     }
 
     bgRect.current = svg.current
@@ -489,7 +490,14 @@ function PanelChart(props) {
           .x((d, i) => chartOptions.current.xScale(trace.axisValues[i]))
           .y((d) => chartOptions.current.yScale(d[0]))
           .curve(
-            d3[curveOptions[chart.settings.persistent.interpolate && !contextFilter.aggregated ? 5 : 0]],
+            d3[
+              curveOptions[
+                chart.settings.persistent.interpolate &&
+                !contextFilter.aggregated
+                  ? 5
+                  : 0
+              ]
+            ],
           );
 
         const traceContext = contextToHash(trace?.context);
@@ -679,7 +687,14 @@ function PanelChart(props) {
             .x((d, i) => chartOptions.current.xScale(trace.axisValues[i]))
             .y((d) => chartOptions.current.yScale(d[0]))
             .curve(
-              d3[curveOptions[chart.settings.persistent.interpolate && !contextFilter.aggregated ? 5 : 0]],
+              d3[
+                curveOptions[
+                  chart.settings.persistent.interpolate &&
+                  !contextFilter.aggregated
+                    ? 5
+                    : 0
+                ]
+              ],
             );
 
           lines.current
