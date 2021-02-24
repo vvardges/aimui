@@ -92,7 +92,7 @@ function ControlsSidebar() {
                 settings={chart.settings}
               />
               <ControlsSidebarToggleInterpolation
-                disabled={runs.isLoading || runs.isEmpty}
+                disabled={runs.isLoading || runs.isEmpty || aggregated}
                 settings={chart.settings}
               />
               <ControlsSidebarXAlignment

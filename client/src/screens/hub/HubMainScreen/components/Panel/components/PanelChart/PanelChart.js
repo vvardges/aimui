@@ -464,7 +464,7 @@ function PanelChart(props) {
   }
 
   function drawLines() {
-    const { traceList, chart } = HubMainScreenModel.getState();
+    const { traceList, chart, contextFilter } = HubMainScreenModel.getState();
     const highlightMode = chart.settings.highlightMode;
 
     const focusedMetric = chart.focused.metric;
@@ -489,7 +489,7 @@ function PanelChart(props) {
           .x((d, i) => chartOptions.current.xScale(trace.axisValues[i]))
           .y((d) => chartOptions.current.yScale(d[0]))
           .curve(
-            d3[curveOptions[chart.settings.persistent.interpolate ? 5 : 0]],
+            d3[curveOptions[chart.settings.persistent.interpolate && !contextFilter.aggregated ? 5 : 0]],
           );
 
         const traceContext = contextToHash(trace?.context);
@@ -540,7 +540,7 @@ function PanelChart(props) {
   }
 
   function drawAggregatedLines() {
-    const { traceList, chart } = HubMainScreenModel.getState();
+    const { traceList, chart, contextFilter } = HubMainScreenModel.getState();
     const focusedMetric = chart.focused.metric;
     const focusedCircle = chart.focused.circle;
     const highlightMode = chart.settings.highlightMode;
@@ -576,7 +576,7 @@ function PanelChart(props) {
         .x((d, i) => chartOptions.current.xScale(d[1]))
         .y0((d, i) => chartOptions.current.yScale(d[0]))
         .y1((d, i) => chartOptions.current.yScale(traceMin.data[i][0]))
-        .curve(d3[curveOptions[chart.settings.persistent.interpolate ? 5 : 0]]);
+        .curve(d3[curveOptions[0]]);
 
       const noSelectedRun =
         highlightMode === 'default' || !focusedLineAttr?.runHash;
@@ -620,7 +620,7 @@ function PanelChart(props) {
         .line()
         .x((d) => chartOptions.current.xScale(d[1]))
         .y((d) => chartOptions.current.yScale(d[0]))
-        .curve(d3[curveOptions[chart.settings.persistent.interpolate ? 5 : 0]]);
+        .curve(d3[curveOptions[0]]);
 
       lines.current
         .append('path')
@@ -679,7 +679,7 @@ function PanelChart(props) {
             .x((d, i) => chartOptions.current.xScale(trace.axisValues[i]))
             .y((d) => chartOptions.current.yScale(d[0]))
             .curve(
-              d3[curveOptions[chart.settings.persistent.interpolate ? 5 : 0]],
+              d3[curveOptions[chart.settings.persistent.interpolate && !contextFilter.aggregated ? 5 : 0]],
             );
 
           lines.current

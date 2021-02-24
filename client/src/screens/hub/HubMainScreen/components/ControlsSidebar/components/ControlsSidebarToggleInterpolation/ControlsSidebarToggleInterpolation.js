@@ -21,7 +21,7 @@ function ControlsSidebarToggleInterpolation(props) {
         className={classNames({
           ControlsSidebar__item: true,
           disabled: props.disabled,
-          active: props.settings.persistent.interpolate,
+          active: !props.disabled && props.settings.persistent.interpolate,
         })}
         onClick={(evt) =>
           !props.disabled &&
