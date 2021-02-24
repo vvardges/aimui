@@ -26,6 +26,8 @@ function ControlsSidebarZoom(props) {
   useEffect(() => {
     if (opened && popupRef.current) {
       popupRef.current.focus();
+      const { top } = popupRef.current.getBoundingClientRect();
+      popupRef.current.style.maxHeight = `${window.innerHeight - top - 10}px`;
     }
   }, [opened]);
 

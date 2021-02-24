@@ -86,11 +86,13 @@
   background-color: #fff;
   outline: 0;
   width: 400px;
+  max-height: 0;
   overflow-y: auto;
   border: 1px solid var(--primary-lighter);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   z-index: 9999;
+  background-origin: border-box;
 
   &.list {
     width: 250px;
@@ -98,6 +100,7 @@
 }
 
 .ControlsSidebar__item__popup-sidebar {
+  max-height: unset !important;
   right: 35px;
 }
 

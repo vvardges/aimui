@@ -33,7 +33,11 @@ function GroupByColor(props) {
 
   useEffect(() => {
     if (opened) {
-      popupRef.current?.focus();
+      if (popupRef.current) {
+        popupRef.current.focus();
+        const { top } = popupRef.current.getBoundingClientRect();
+        popupRef.current.style.maxHeight = `${window.innerHeight - top - 10}px`;
+      }
       dropdownRef.current?.selectRef?.current?.focus();
     }
   }, [opened]);
