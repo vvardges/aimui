@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.3.9 Feb 25 2021
 - Fix chart popup positioning issue (roubkar)
 
 ## 1.3.8 Feb 25 2021
