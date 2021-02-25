@@ -1,5 +1,7 @@
 # Changelog
 
+- Fix chart popup positioning issue (roubkar)
+
 ## 1.3.8 Feb 25 2021
 - Improve controls sidebar popovers positioning (roubkar)
 - Improve UI/UX of explore screen context table (roubkar) 

@@ -282,12 +282,8 @@ function PanelPopUps(props) {
           const activeCircle = document.querySelector('circle.focus');
           if (activeCircle) {
             const circleRect = activeCircle.getBoundingClientRect();
-            const clipPath = activeCircle
-              .getAttribute('clip-path')
-              .replace('url', '')
-              .replace('(', '')
-              .replace(')', '');
-            const clipPathElement = document.querySelector(clipPath);
+            const topContainer = activeCircle.closest('svg');
+            const clipPathElement = topContainer.querySelector('rect');
             const clipPathRect = clipPathElement.getBoundingClientRect();
             const { left, top } = getPositionBasedOnOverflow(
               circleRect,
@@ -328,12 +324,8 @@ function PanelPopUps(props) {
           const activeCircle = document.querySelector('circle.focus');
           if (activeCircle) {
             const circleRect = activeCircle.getBoundingClientRect();
-            const clipPath = activeCircle
-              .getAttribute('clip-path')
-              .replace('url', '')
-              .replace('(', '')
-              .replace(')', '');
-            const clipPathElement = document.querySelector(clipPath);
+            const topContainer = activeCircle.closest('svg');
+            const clipPathElement = topContainer.querySelector('rect');
             const clipPathRect = clipPathElement.getBoundingClientRect();
             const { left, top } = getPositionBasedOnOverflow(
               circleRect,
