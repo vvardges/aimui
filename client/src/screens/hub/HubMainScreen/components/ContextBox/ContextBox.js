@@ -265,7 +265,6 @@ function ContextBox(props) {
           </>
         ),
         topHeader: 'Metrics',
-        pin: 'left',
       },
     ];
 
@@ -284,13 +283,11 @@ function ContextBox(props) {
             </>
           ),
           topHeader: 'Metrics',
-          pin: 'left',
         },
         {
           key: 'context',
           content: <UI.Text overline>Context</UI.Text>,
           topHeader: 'Metrics',
-          pin: 'left',
         },
         {
           key: 'value',
