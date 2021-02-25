@@ -370,7 +370,7 @@ function Column({
               col={col}
               item={
                 typeof data[groupKey].data[col.key] === 'object' &&
-                  data[groupKey].data[col.key].expandable
+                  data[groupKey].data[col.key].hasOwnProperty('content')
                   ? {
                     ...data[groupKey].data[col.key],
                     props: {
@@ -378,14 +378,17 @@ function Column({
                       onClick: (e) => expand(groupKey),
                     },
                   }
-                  : data[groupKey].data[col.key]
+                  : {
+                    content: data[groupKey].data[col.key],
+                    props: {
+                      onClick: (e) => expand(groupKey),
+                    },
+                  }
               }
               className={classNames({
                 Table__group__header__cell: true,
                 expanded: expanded[groupKey],
-                expandable:
-                    typeof data[groupKey].data[col.key] === 'object' &&
-                    data[groupKey].data[col.key].expandable,
+                expandable: true,
               })}
             />
             {expanded[groupKey] &&
