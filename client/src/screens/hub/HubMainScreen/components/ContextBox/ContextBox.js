@@ -1309,6 +1309,15 @@ function ContextBox(props) {
       style={{
         width: `${props.width}px`,
       }}
+      onMouseLeave={(evt) =>
+        setChartFocusedState({
+          metric: {
+            runHash: null,
+            metricName: null,
+            traceContext: null,
+          },
+        })
+      }
     >
       {runs.isLoading ? _renderContentLoader() : _renderContent()}
     </div>
