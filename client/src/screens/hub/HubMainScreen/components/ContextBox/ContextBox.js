@@ -87,6 +87,16 @@ function ContextBox(props) {
     });
   }
 
+  function shortenConfigKeys(config) {
+    const newConfig = {};
+    for (let key in config) {
+      newConfig[key.startsWith('params.') ? key.substring(7) : key] =
+        config[key];
+    }
+
+    return newConfig;
+  }
+
   function handleRowClick(runHash, metricName, traceContext) {
     const focusedCircle = HubMainScreenModel.getState().chart.focused.circle;
     let step = HubMainScreenModel.getState().chart.focused.step;
@@ -815,7 +825,7 @@ function ContextBox(props) {
               config: (
                 <>
                   <GroupConfigPopup
-                    config={traceModel.config}
+                    config={shortenConfigKeys(traceModel.config)}
                     rowsCount={traceModel.series.length}
                   />
                   {traceList?.grouping?.chart?.length > 0 && (
@@ -864,7 +874,7 @@ function ContextBox(props) {
                   )}
                 </>
               ),
-              meta: traceModel.config,
+              meta: shortenConfigKeys(traceModel.config),
             };
 
             let stepValue;

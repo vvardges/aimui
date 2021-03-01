@@ -38,7 +38,7 @@ function BarSort({ sortFields, setSortFields, maxHeight, fields }) {
     });
     searchNestedObject(paramFields, searchInput.split('.'));
     sortFields
-      .map((f) => f[0].replace('params.', ''))
+      .map((f) => (f[0].startsWith('params.') ? f[0].substring(7) : f[0]))
       .forEach((paramPath) => {
         _.set(paramFields, paramPath, false);
       });
@@ -55,7 +55,9 @@ function BarSort({ sortFields, setSortFields, maxHeight, fields }) {
     });
     searchNestedObject(metricFields, searchInput.split('.'));
     sortFields
-      .map((f) => f[0].replace('params.metrics.', ''))
+      .map((f) =>
+        f[0].startsWith('params.metrics.') ? f[0].substring(15) : f[0],
+      )
       .forEach((metricPath) => {
         _.set(metricFields, metricPath, false);
       });

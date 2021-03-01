@@ -230,7 +230,10 @@ function Panes({
                 </div>
               )}
               {el.map((item, index) => {
-                const textContent = item
+                const textContent = (item.startsWith('params.')
+                  ? item.substring(7)
+                  : item
+                )
                   .replaceAll('-', ' ')
                   .replaceAll('{', '')
                   .replaceAll('}', '')
