@@ -1,5 +1,6 @@
 import * as actionTypes from '../actionTypes';
 import callApi from '../../services/api';
+import { SERVER_API_HOST } from '../../config';
 
 export function getRunsByQuery(query) {
   return (dispatch) => {
@@ -17,19 +18,76 @@ export function getRunsByQuery(query) {
 
 export function getCommitsMetricsByQuery(query, numPoints) {
   return (dispatch) => {
+    // return new Promise((resolve, reject) => {
+    //   callApi('Commit.getCommitsMetricsByQuery', {
+    //     query,
+    //     num_points: numPoints,
+    //   })
+    //     .then((data) => {
+    //       resolve(data);
+    //     })
+    //     .catch((err) => {
+    //       reject(err);
+    //     });
+    // });
     return new Promise((resolve, reject) => {
-      callApi('Commit.getCommitsMetricsByQuery', {
-        query,
-        num_points: numPoints,
-      })
-        .then((data) => {
-          resolve(data);
+      let runsResult = {};
+      fetch(`${SERVER_API_HOST}/commits/search/metric?p=${numPoints}&q=${encodeURI(query)}`)
+        .then(response => response.body)
+        .then(rb => {
+          const reader = rb.getReader();
+
+          return new ReadableStream({
+            start(controller) {
+              function push() {
+                reader.read().then(({done, value}) => {
+                  if (done) {
+                    controller.close();
+                    resolve(runsResult);
+                    return;
+                  }
+
+                  controller.enqueue(value);
+                  let i = 0;
+                  let cursor = 0;
+
+                  while (true) {
+                    if (i === value.length) {
+                      break;
+                    }
+
+                    if (value[i] === 10) {
+                      try {
+                        const decodedValue = JSON.parse(new TextDecoder().decode(value.slice(cursor, i)));
+                        if (decodedValue.hasOwnProperty('header')) {
+                          runsResult = decodedValue['header'];
+                        } else if (decodedValue.hasOwnProperty('run')) {
+                          runsResult?.['runs']?.push(decodedValue['run'])
+                        }
+                      } catch (e) {}
+                      cursor = i;
+                    }
+
+                    i += 1;
+                  }
+
+                  push();
+                })
+              }
+
+              push();
+            }
+          });
         })
-        .catch((err) => {
-          reject(err);
+        .then(stream => {
+          // Respond with our stream
+          // return new Response(stream, { headers: { 'Content-Type': 'text/html' } }).text();
+        })
+        .then(result => {
+
         });
     });
-  };
+  }
 }
 
 export function getCommitsDictionariesByQuery(query) {

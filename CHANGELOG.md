@@ -1,5 +1,7 @@
 # Changelog
 
+- Enable search response streaming to the client (gorarakelyan)
+
 ## 1.3.9 Feb 25 2021
 - Fix chart popup positioning issue (roubkar)
 

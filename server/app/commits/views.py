@@ -3,7 +3,7 @@ import os
 import time
 
 from flask import Blueprint, jsonify, request, \
-    abort, make_response, send_from_directory
+    abort, make_response, send_from_directory, Response
 from flask_restful import Api, Resource
 
 from pyrser.error import Diagnostic, Severity, Notification
@@ -236,16 +236,22 @@ class CommitMetricSearchApi(Resource):
             # TODO: Retrieve and return aggregated metrics
             pass
 
-        runs_list = []
-        for run in runs:
-            if not is_tf_run(run):
-                runs_list.append(run.to_dict(include_only_selected_agg_metrics=True))
-            else:
-                runs_list.append(run)
+        def runs_resp_generator():
+            with App.api.app_context():
+                yield json.dumps({
+                    'header': response,
+                }).encode() + '\n'.encode()
+                for run in runs:
+                    if not is_tf_run(run):
+                        yield json.dumps({
+                            'run': run.to_dict(include_only_selected_agg_metrics=True),
+                        }).encode() + '\n'.encode()
+                    else:
+                        yield json.dumps({
+                            'run': run,
+                        }).encode() + '\n'.encode()
 
-        response['runs'] = runs_list
-
-        return response
+        return Response(runs_resp_generator(), mimetype='application/json')
 
 
 @commits_api.resource('/search/dictionary')
