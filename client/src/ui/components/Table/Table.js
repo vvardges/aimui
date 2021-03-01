@@ -348,6 +348,16 @@ function Column({
     setMaxWidth(undefined);
   }
 
+  function calcPlaceHolderSize(configKeysLength, itemsLength) {
+    if (itemsLength > 4 || itemsLength > configKeysLength) {
+      return 0;
+    } else if (configKeysLength > 3) {
+      return 4 - itemsLength;
+    } else {
+      return configKeysLength + 1 - itemsLength;
+    }
+  }
+
   useEffect(() => {
     return () => {
       document.removeEventListener('mousemove', resize);
@@ -473,15 +483,30 @@ function Column({
                 expandable: true,
               })}
             />
-            {expanded[groupKey] &&
-                data[groupKey].items.map((item, i) => (
-                  <Cell
-                    key={col.key + i}
-                    col={col}
-                    item={item[col.key]}
-                    metadata={firstColumn ? item.rowMeta : null}
-                  />
-                ))}
+            {expanded[groupKey] && (
+                <>
+                  {data[groupKey].items.map((item, i) => (
+                    <Cell
+                      key={col.key + i}
+                      col={col}
+                      item={item[col.key]}
+                      metadata={firstColumn ? item.rowMeta : null}
+                    />
+                  ))}
+                  {calcPlaceHolderSize(
+                    Object.keys(data[groupKey].meta).length,
+                    data[groupKey].items.length,
+                  ) > 0 && (
+                    <Cell
+                      placeholder
+                      groupLength={calcPlaceHolderSize(
+                        Object.keys(data[groupKey].meta).length,
+                        data[groupKey].items.length,
+                      )}
+                    />
+                  )}
+                </>
+            )}
           </div>
         ))
         : data.map((item, i) => (
@@ -496,7 +521,14 @@ function Column({
   );
 }
 
-function Cell({ item, className, isConfigColumn, groupLength, metadata }) {
+function Cell({
+  item,
+  className,
+  isConfigColumn,
+  groupLength,
+  metadata,
+  placeholder,
+}) {
   return (
     <div
       className={classNames({
@@ -505,6 +537,7 @@ function Cell({ item, className, isConfigColumn, groupLength, metadata }) {
         [className]: !!className,
         Table__group__config__column__cell: isConfigColumn,
         clickable: typeof item === 'object' && !!item.props?.onClick,
+        placeholder: !!placeholder,
       })}
       style={{
         cursor:
@@ -514,14 +547,14 @@ function Cell({ item, className, isConfigColumn, groupLength, metadata }) {
         ...(typeof item === 'object' &&
           item.hasOwnProperty('style') &&
           item.style),
-        ...(isConfigColumn && {
+        ...((isConfigColumn || placeholder) && {
           height: `calc(${groupLength} * var(--cell-height))`,
         }),
       }}
       {...(typeof item === 'object' && item.props)}
     >
       {metadata && <div className='Table__cell__rowMeta'>{metadata}</div>}
-      {isConfigColumn
+      {isConfigColumn || placeholder
         ? ''
         : typeof item === 'object' && item.hasOwnProperty('content')
           ? item.content
@@ -531,6 +564,15 @@ function Cell({ item, className, isConfigColumn, groupLength, metadata }) {
 }
 
 function ConfigColumn({ data, expand, expanded }) {
+  function calcGroupHeightSize(configKeysLength, itemsLength) {
+    if (itemsLength > 4 || itemsLength > configKeysLength) {
+      return itemsLength;
+    } else if (configKeysLength > 3) {
+      return 4;
+    } else {
+      return configKeysLength + 1;
+    }
+  }
   return (
     <div className='Table__column Table__column--config'>
       <div className='Table__cell Table__cell--header Table__cell--topHeader'>
@@ -558,7 +600,10 @@ function ConfigColumn({ data, expand, expanded }) {
           {expanded[groupKey] && (
             <Cell
               isConfigColumn
-              groupLength={data[groupKey].items.length}
+              groupLength={calcGroupHeightSize(
+                Object.keys(data[groupKey].meta).length,
+                data[groupKey].items.length,
+              )}
               metadata={
                 <div className='Table__group__config__meta'>
                   <ReactJson
