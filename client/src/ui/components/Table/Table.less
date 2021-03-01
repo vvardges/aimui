@@ -247,6 +247,29 @@
   }
 }
 
+.Table__column__resizeHandler {
+  position: absolute;
+  right: -1px;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background-color: var(--primary);
+  z-index: 10;
+  cursor: col-resize;
+  opacity: 0;
+  transition: opacity 110ms ease;
+
+  &.leftResize {
+    right: unset;
+    left: -1px;
+  }
+
+  &.isResizing,
+  &:hover {
+    opacity: 1;
+  }
+}
+
 .Table__cell--topHeader {
   top: 0;
   background-color: var(--grey-bg);

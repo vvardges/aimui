@@ -9,7 +9,11 @@ import BarFilter from './components/BarFilter/BarFilter';
 import BarRowHeightSelect from './components/BarRowHeightSelect/BarRowHeightSelect';
 import BarViewModes from '../BarViewModes/BarViewModes';
 import { setItem, getItem } from '../../../services/storage';
-import { CONTEXT_TABLE_CONFIG, TABLE_COLUMNS } from '../../../config';
+import {
+  CONTEXT_TABLE_CONFIG,
+  TABLE_COLUMNS,
+  TABLE_COLUMNS_WIDTHS,
+} from '../../../config';
 import BarSort from './components/BarSort/BarSort';
 import BarReorder from './components/BarReorder/BarReorder';
 import { ContextTableModel } from './models/ContextTableModel';
@@ -35,12 +39,29 @@ function ContextTable(props) {
     middle: [],
     right: [],
   });
+  let [columnsWidth, setColumnsWidth] = useState(
+    JSON.parse(getItem(TABLE_COLUMNS_WIDTHS))?.[props.name] ?? {},
+  );
 
   function updateColumns(columns) {
     const tableColumns = JSON.parse(getItem(TABLE_COLUMNS)) ?? {};
     tableColumns[props.name] = columns;
     setItem(TABLE_COLUMNS, JSON.stringify(tableColumns));
     setColumnsOrder(columns);
+  }
+
+  function updateColumnsWidth(colKey, width, reset = false) {
+    const tableColumnsWidths = JSON.parse(getItem(TABLE_COLUMNS_WIDTHS)) ?? {};
+    let columnsWidthClone;
+    if (reset) {
+      columnsWidthClone = _.omit(columnsWidth, [colKey]);
+    } else {
+      columnsWidthClone = _.clone(columnsWidth);
+      columnsWidthClone[colKey] = width;
+    }
+    tableColumnsWidths[props.name] = columnsWidthClone;
+    setItem(TABLE_COLUMNS_WIDTHS, JSON.stringify(tableColumnsWidths));
+    setColumnsWidth(columnsWidthClone);
   }
 
   let contextTableRef = useRef();
@@ -204,6 +225,8 @@ function ContextTable(props) {
           rowHeightMode={rowHeightMode}
           columnsOrder={columnsOrder}
           updateColumns={updateColumns}
+          columnsWidth={columnsWidth}
+          updateColumnsWidth={updateColumnsWidth}
           {...props}
         />
       </div>

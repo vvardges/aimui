@@ -303,7 +303,6 @@ function ContextBox(props) {
           key: 'value',
           content: <UI.Text overline>Value</UI.Text>,
           topHeader: 'Metrics',
-          minWidth: 100,
         },
         {
           key: 'step',
@@ -319,7 +318,6 @@ function ContextBox(props) {
           key: 'time',
           content: <UI.Text overline>Time</UI.Text>,
           topHeader: 'Metrics',
-          minWidth: 150,
         },
       ]);
     }

@@ -1,5 +1,6 @@
 # Changelog
 
+- Add ability to resize table columns (roubkar)
 - Enable search response streaming to the client (gorarakelyan)
 
 ## 1.3.9 Feb 25 2021

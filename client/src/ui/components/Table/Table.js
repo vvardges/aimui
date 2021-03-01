@@ -199,6 +199,8 @@ function Table(props) {
                 togglePin={togglePin}
                 pinnedTo='left'
                 firstColumn={index === 0}
+                width={props.columnsWidth[col.key]}
+                updateColumnWidth={props.updateColumnsWidth}
               />
             ))}
           </div>
@@ -226,6 +228,8 @@ function Table(props) {
               togglePin={togglePin}
               pinnedTo={null}
               firstColumn={index === 0 && leftPane.length === 0}
+              width={props.columnsWidth[col.key]}
+              updateColumnWidth={props.updateColumnsWidth}
             />
           ))}
         </div>
@@ -265,6 +269,8 @@ function Table(props) {
                   leftPane.length === 0 &&
                   middlePane.length === 0
                 }
+                width={props.columnsWidth[col.key]}
+                updateColumnWidth={props.updateColumnsWidth}
               />
             ))}
           </div>
@@ -296,9 +302,66 @@ function Column({
   togglePin,
   pinnedTo,
   firstColumn,
+  width,
+  updateColumnWidth,
 }) {
+  const [maxWidth, setMaxWidth] = useState(width);
+  const [isResizing, setIsResizing] = useState(false);
+  const widthClone = useRef(width);
+  const startingPoint = useRef(null);
+  function resizeStart({ target }) {
+    setIsResizing(true);
+    if (pinnedTo === 'right') {
+      startingPoint.current = target.parentNode.getBoundingClientRect().right;
+    } else {
+      startingPoint.current = target.parentNode.getBoundingClientRect().left;
+    }
+    document.addEventListener('mousemove', resize);
+    document.addEventListener('mouseup', resizeEnd);
+  }
+  function resize(evt) {
+    let newWidth;
+    if (pinnedTo === 'right') {
+      newWidth = startingPoint.current - evt.pageX;
+    } else {
+      newWidth = evt.pageX - startingPoint.current;
+    }
+    if (newWidth > 85) {
+      widthClone.current = newWidth;
+      setMaxWidth(newWidth);
+    }
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  }
+  function resizeEnd() {
+    setIsResizing(false);
+    document.removeEventListener('mousemove', resize);
+    document.removeEventListener('mouseup', resizeEnd);
+    document.body.style.userSelect = 'unset';
+    document.body.style.cursor = 'unset';
+    setTimeout(() => {
+      updateColumnWidth(col.key, widthClone.current);
+    }, 100);
+  }
+  function resetWidth() {
+    updateColumnWidth(col.key, widthClone.current, true);
+    setMaxWidth(undefined);
+  }
+
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', resize);
+      document.removeEventListener('mouseup', resizeEnd);
+    };
+  }, []);
   return (
-    <div className='Table__column Table__column--data'>
+    <div
+      className='Table__column Table__column--data'
+      style={{
+        minWidth: maxWidth,
+        maxWidth,
+      }}
+    >
       {topHeader && (
         <div
           className='Table__cell Table__cell--header Table__cell--topHeader'
@@ -358,9 +421,28 @@ function Column({
                   <UI.Text small>Pin to right</UI.Text>
                 </div>
               )}
+              {width !== undefined && (
+                <div
+                  className='Table__action__popup__item'
+                  onClick={(evt) => {
+                    resetWidth();
+                    setOpened(false);
+                  }}
+                >
+                  <UI.Text small>Reset width</UI.Text>
+                </div>
+              )}
             </div>
           )}
           popupClassName='Table__action__popup'
+        />
+        <div
+          className={classNames({
+            Table__column__resizeHandler: true,
+            leftResize: pinnedTo === 'right',
+            isResizing: isResizing,
+          })}
+          onMouseDown={resizeStart}
         />
       </div>
       {groups

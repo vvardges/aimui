@@ -601,7 +601,6 @@ class Runs extends React.Component {
         ) : (
           <UI.Text overline>Runs</UI.Text>
         ),
-        minWidth: 200,
         pin: 'left',
       },
     ];
@@ -718,7 +717,6 @@ class Runs extends React.Component {
             </>
           ),
           topHeader: metricName,
-          minWidth: 180,
         });
       }),
     );
@@ -766,7 +764,6 @@ class Runs extends React.Component {
             </>
           ),
           topHeader: paramKey,
-          minWidth: 150,
         });
       }),
     );
