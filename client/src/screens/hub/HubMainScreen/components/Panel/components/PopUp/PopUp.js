@@ -18,6 +18,7 @@ class PopUp extends Component {
         style={{
           left: this.props.left,
           top: this.props.top,
+          bottom: this.props.bottom,
           width: this.props.width,
         }}
       >
@@ -45,6 +46,7 @@ class PopUp extends Component {
 PopUp.defaultProps = {
   left: 0,
   top: 0,
+  bottom: null,
   width: 250,
   height: 200,
   xGap: false,
@@ -56,6 +58,7 @@ PopUp.defaultProps = {
 PopUp.propTypes = {
   left: PropTypes.number,
   top: PropTypes.number,
+  bottom: PropTypes.number,
   width: PropTypes.number,
   height: PropTypes.number,
   xGap: PropTypes.bool,

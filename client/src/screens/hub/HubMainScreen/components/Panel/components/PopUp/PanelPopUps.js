@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
@@ -23,6 +23,7 @@ function PanelPopUps(props) {
     display: false,
     left: 0,
     top: 0,
+    bottom: null,
     width: popUpDefaultWidth,
     height: popUpDefaultHeight,
     selectedTags: [],
@@ -37,6 +38,7 @@ function PanelPopUps(props) {
     isLoading: false,
     left: 0,
     top: 0,
+    bottom: null,
     tags: [],
   });
   let [commitPopUp, setCommitPopUp] = useState({
@@ -44,12 +46,14 @@ function PanelPopUps(props) {
     isLoading: false,
     left: 0,
     top: 0,
+    bottom: null,
     data: null,
     processKillBtn: {
       loading: false,
       disabled: false,
     },
   });
+  let tagsWrapper = useRef();
 
   const { chart } = HubMainScreenModel.useHubMainScreenState([
     HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
@@ -75,9 +79,10 @@ function PanelPopUps(props) {
     const leftOverflow = (x) => popUpWidth + x > width;
     const topOverflow = (y) => popUpHeight + y > height;
 
-    let left = 0,
-      top = 0,
-      chainArrow = null;
+    let left = 0;
+    let top = 0;
+    let bottom = null;
+    let chainArrow = null;
 
     if (chained !== null) {
       if (chained.left + 2 * popUpWidth > width) {
@@ -87,7 +92,15 @@ function PanelPopUps(props) {
         left = x;
         chainArrow = 'left';
       }
-      top = chained.top;
+      const tagsWrapperRect = tagsWrapper.current.getBoundingClientRect();
+      if (tagsWrapperRect.top > height - 100) {
+        const chartPopUpRect = tagsWrapper.current.parentNode.parentNode.getBoundingClientRect();
+        top = null;
+        bottom = height - chartPopUpRect.bottom;
+      } else {
+        top = tagsWrapperRect.top;
+        bottom = null;
+      }
     } else {
       if (leftOverflow(x)) {
         left = x - popUpWidth + margin;
@@ -107,6 +120,7 @@ function PanelPopUps(props) {
     return {
       left,
       top,
+      bottom,
       width: popUpWidth,
       height: popUpHeight,
       chainArrow,
@@ -222,6 +236,7 @@ function PanelPopUps(props) {
         display: true,
         left: pos.left,
         top: pos.top,
+        bottom: pos.bottom,
         width: pos.width,
         height: pos.height,
         chainArrow: pos.chainArrow,
@@ -294,6 +309,7 @@ function PanelPopUps(props) {
               ...cp,
               left: pos.left,
               top: pos.top,
+              bottom: pos.bottom,
               width: pos.width,
               height: pos.height,
             }));
@@ -336,6 +352,7 @@ function PanelPopUps(props) {
               ...cp,
               left: pos.left,
               top: pos.top,
+              bottom: pos.bottom,
               width: pos.width,
               height: pos.height,
               display: true,
@@ -387,37 +404,6 @@ function PanelPopUps(props) {
           xGap={true}
         >
           <div>
-            {!chartPopUp.selectedTagsLoading ? (
-              <div className='PanelChart__popup__tags__wrapper'>
-                <UI.Text overline type='grey-darker'>
-                  tag
-                </UI.Text>
-                <div className='PanelChart__popup__tags'>
-                  {chartPopUp.selectedTags.length ? (
-                    <>
-                      {chartPopUp.selectedTags.map((tagItem, i) => (
-                        <UI.Label key={i} color={tagItem.color}>
-                          {tagItem.name}
-                        </UI.Label>
-                      ))}
-                    </>
-                  ) : (
-                    <UI.Label>No attached tag</UI.Label>
-                  )}
-                  <div
-                    className='PanelChart__popup__tags__update'
-                    onClick={handleAttachTagClick}
-                  >
-                    <UI.Icon i='edit' />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <UI.Text type='grey' center spacingTop spacing>
-                Loading..
-              </UI.Text>
-            )}
-            <UI.Line />
             {isAimRun(chartPopUp.run) && (
               <div>
                 <UI.Text type='grey-dark'>
@@ -457,6 +443,40 @@ function PanelPopUps(props) {
                 </UI.Text>
               </>
             )}
+            <UI.Line />
+            {!chartPopUp.selectedTagsLoading ? (
+              <div
+                className='PanelChart__popup__tags__wrapper'
+                ref={tagsWrapper}
+              >
+                <UI.Text overline type='grey-darker'>
+                  tag
+                </UI.Text>
+                <div className='PanelChart__popup__tags'>
+                  {chartPopUp.selectedTags.length ? (
+                    <>
+                      {chartPopUp.selectedTags.map((tagItem, i) => (
+                        <UI.Label key={i} color={tagItem.color}>
+                          {tagItem.name}
+                        </UI.Label>
+                      ))}
+                    </>
+                  ) : (
+                    <UI.Label>No attached tag</UI.Label>
+                  )}
+                  <div
+                    className='PanelChart__popup__tags__update'
+                    onClick={handleAttachTagClick}
+                  >
+                    <UI.Icon i='edit' />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <UI.Text type='grey' center spacingTop spacing>
+                Loading..
+              </UI.Text>
+            )}
             {isTFSummaryScalar(chartPopUp.run) && (
               <>
                 <div className='PanelChart__popup__tags__wrapper'>
@@ -484,6 +504,7 @@ function PanelPopUps(props) {
           className='TagPopUp'
           left={tagPopUp.left}
           top={tagPopUp.top}
+          bottom={tagPopUp.bottom}
           chainArrow={tagPopUp.chainArrow}
           xGap={true}
         >
