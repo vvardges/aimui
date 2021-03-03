@@ -14,6 +14,7 @@ import {
   sortOnKeys,
   formatValue,
   roundValue,
+  getCSSSelectorFromString,
 } from '../../../../../utils';
 import UI from '../../../../../ui';
 import ContextTable from '../../../../../components/hub/ContextTable/ContextTable';
@@ -385,7 +386,7 @@ function ContextBox(props) {
     const focusedMetric = chart.focused.metric;
     let runIndex = 0;
 
-    traceList?.traces.forEach((traceModel) => {
+    traceList?.traces.forEach((traceModel, traceModelIndex) => {
       (isExploreParamsModeEnabled()
         ? _.uniqBy(traceModel.series, 'run.run_hash')
         : traceModel.series
@@ -814,9 +815,8 @@ function ContextBox(props) {
                       </UI.Label>
                     </div>
                   ),
-                  className: `value-${JSON.stringify(traceModel.config).replace(
-                    /\.|"|:|{|}|,|#|\*|\/|\[|\]/g,
-                    '_',
+                  className: `value-${getCSSSelectorFromString(
+                    `${JSON.stringify(traceModel.config)}_${traceModelIndex}`,
                   )}`,
                 },
               },
@@ -897,20 +897,18 @@ function ContextBox(props) {
               }
             }
 
+            const groupConfigKey = getCSSSelectorFromString(
+              `${JSON.stringify(traceModel.config)}_${traceModelIndex}`,
+            );
+
             data[JSON.stringify(traceModel.config)].data.step = {
               content: stepValue ?? '-',
-              className: `step-${JSON.stringify(traceModel.config).replace(
-                /\.|"|:|{|}|,|#|\*|\/|\[|\]/g,
-                '_',
-              )}`,
+              className: `step-${groupConfigKey}`,
             };
 
             data[JSON.stringify(traceModel.config)].data.epoch = {
               content: epochValue ?? '-',
-              className: `epoch-${JSON.stringify(traceModel.config).replace(
-                /\.|"|:|{|}|,|#|\*|\/|\[|\]/g,
-                '_',
-              )}`,
+              className: `epoch-${groupConfigKey}`,
             };
 
             for (let metricKey in runs?.aggMetrics) {
@@ -1103,10 +1101,9 @@ function ContextBox(props) {
             cell.classList.remove('active');
           });
           let runIndex = 0;
-          traceList?.traces.forEach((traceModel) => {
-            const groupSelector = JSON.stringify(traceModel.config).replace(
-              /\.|"|:|{|}|,|#|\*|\/|\[|\]/g,
-              '_',
+          traceList?.traces.forEach((traceModel, traceModelIndex) => {
+            const groupSelector = getCSSSelectorFromString(
+              `${JSON.stringify(traceModel.config)}_${traceModelIndex}`,
             );
             (isExploreParamsModeEnabled()
               ? _.uniqBy(traceModel.series, 'run.run_hash')

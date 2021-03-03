@@ -463,3 +463,14 @@ export function shiftDate(date, numDays) {
   newDate.setDate(newDate.getDate() + numDays);
   return newDate;
 }
+
+export function getCSSSelectorFromString(str) {
+  // Make alphanumeric (removes all other characters)
+  let selector = str.replace(/[^a-z0-9_\s-]/g, '_');
+  // Clean up multiple dashes or whitespaces
+  selector = selector.replace(/[\s-]+/g, ' ');
+  // Convert whitespaces to underscore
+  selector = selector.replace(/[\s]/g, '_');
+
+  return selector;
+}
