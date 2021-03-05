@@ -1,5 +1,6 @@
 # Changelog
 
+- Add Hide All/Show All options to manage columns popup (roubkar)
 - Fix wrong css selector issue for table groups (roubkar)
 - Add ability to resize table columns (roubkar)
 - Enable search response streaming to the client (gorarakelyan)

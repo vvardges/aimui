@@ -22,6 +22,9 @@ function BarReorder({
   const hiddenFields = excludedFields.filter((field) =>
     columnsKeys.includes(field),
   );
+  const availableColumnsForHiding = columnsKeys.filter(
+    (col) => !alwaysVisibleColumns.includes(col),
+  );
 
   return (
     <div className='ContextTableBar__item__wrapper'>
@@ -90,6 +93,30 @@ function BarReorder({
                   alwaysVisibleColumns={alwaysVisibleColumns}
                   searchKey={searchKey}
                 />
+              </div>
+              <div className='BarReorder__footer'>
+                <div className='BarReorder__actions'>
+                  <UI.Button
+                    className='BarReorder__action'
+                    type='positive'
+                    size='tiny'
+                    disabled={hiddenFields.length === 0}
+                    onClick={() => setExcludedFields([])}
+                  >
+                    Show all
+                  </UI.Button>
+                  <UI.Button
+                    className='BarReorder__action'
+                    type='negative'
+                    size='tiny'
+                    disabled={
+                      hiddenFields.length === availableColumnsForHiding.length
+                    }
+                    onClick={() => setExcludedFields(availableColumnsForHiding)}
+                  >
+                    Hide all
+                  </UI.Button>
+                </div>
               </div>
             </div>
           </>
