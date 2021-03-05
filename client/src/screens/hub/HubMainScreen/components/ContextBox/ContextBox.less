@@ -149,15 +149,15 @@
   align-items: center;
   justify-content: flex-start;
   padding: 1px;
+
+  & > *:last-of-type .ContextBox__table__item-aggregated_label {
+    margin-right: 0;
+  }
 }
 
 .ContextBox__table__item-aggregated_label {
   text-shadow: none;
   margin-right: var(--space-xxs);
-
-  &:last-of-type {
-    margin-right: 0;
-  }
 
   &.outline {
     color: inherit;

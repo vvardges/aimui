@@ -1,4 +1,4 @@
-import { deepEqual, formatValue } from '../../../../utils';
+import { deepEqual, formatValue, getValuesMedian } from '../../../../utils';
 import Series from './Series';
 import _ from 'lodash';
 
@@ -59,6 +59,9 @@ export default class Trace {
     this.aggregation.max = this.aggregateSeries((values) => _.max(values));
     this.aggregation.avg = this.aggregateSeries(
       (values) => _.sum(values) / values.length,
+    );
+    this.aggregation.med = this.aggregateSeries((values) =>
+      getValuesMedian(values),
     );
   };
 
@@ -195,11 +198,14 @@ export default class Trace {
     let result = {
       min: undefined,
       avg: undefined,
+      med: undefined,
       max: undefined,
     };
     let lastValuesSum;
+    let values = [];
     this.series.forEach((series) => {
       let seriesMetricValue = series.getAggregatedMetricValue(metric, context);
+      values.push(seriesMetricValue);
       if (result.min === undefined || seriesMetricValue < result.min) {
         result.min = seriesMetricValue;
       }
@@ -218,6 +224,7 @@ export default class Trace {
       lastValuesSum === undefined
         ? undefined
         : lastValuesSum / this.series.length;
+    result.med = getValuesMedian(values);
     return result;
   };
 }

@@ -569,6 +569,11 @@ function PanelChart(props) {
         trace: traceAvg,
       } = traceModel.aggregation.avg;
       const {
+        run: runMed,
+        metric: metricMed,
+        trace: traceMed,
+      } = traceModel.aggregation.med;
+      const {
         run: runMin,
         metric: metricMin,
         trace: traceMin,
@@ -578,13 +583,6 @@ function PanelChart(props) {
         metric: metricMax,
         trace: traceMax,
       } = traceModel.aggregation.max;
-
-      const area = d3
-        .area()
-        .x((d, i) => chartOptions.current.xScale(d[1]))
-        .y0((d, i) => chartOptions.current.yScale(d[0]))
-        .y1((d, i) => chartOptions.current.yScale(traceMin.data[i][0]))
-        .curve(d3[curveOptions[0]]);
 
       const noSelectedRun =
         highlightMode === 'default' || !focusedLineAttr?.runHash;
@@ -598,65 +596,98 @@ function PanelChart(props) {
               focusedLineAttr?.traceContext,
           );
 
-      lines.current
-        .append('path')
-        .attr(
-          'class',
-          `PlotArea ${noSelectedRun ? '' : 'inactive'} ${
-            active ? 'active' : ''
-          }`,
-        )
-        .datum(traceMax.data)
-        .attr('d', area)
-        .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
-        .attr(
-          'fill',
-          Color(
-            traceList?.grouping?.color?.length > 0
-              ? traceModel.color
-              : getMetricColor(runAvg, metricAvg, traceAvg),
-          )
-            .alpha(0.3)
-            .hsl()
-            .string(),
-        )
-        .on('click', function () {
-          handleLineClick(d3.mouse(this));
-        });
+      if (contextFilter.aggregatedArea !== 'none') {
+        const area = d3
+          .area()
+          .x((d, i) => chartOptions.current.xScale(d[1]))
+          .y0((d, i) => chartOptions.current.yScale(d[0]))
+          .y1((d, i) => chartOptions.current.yScale(traceMin.data[i][0]))
+          .curve(d3[curveOptions[0]]);
 
-      const avgLine = d3
+        lines.current
+          .append('path')
+          .attr(
+            'class',
+            `PlotArea ${noSelectedRun ? '' : 'inactive'} ${
+              active ? 'active' : ''
+            }`,
+          )
+          .datum(traceMax.data)
+          .attr('d', area)
+          .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
+          .attr(
+            'fill',
+            Color(
+              traceList?.grouping?.color?.length > 0
+                ? traceModel.color
+                : getMetricColor(runAvg, metricAvg, traceAvg),
+            )
+              .alpha(0.3)
+              .hsl()
+              .string(),
+          )
+          .on('click', function () {
+            handleLineClick(d3.mouse(this));
+          });
+      }
+
+      const aggLineFunc = d3
         .line()
         .x((d) => chartOptions.current.xScale(d[1]))
         .y((d) => chartOptions.current.yScale(d[0]))
         .curve(d3[curveOptions[0]]);
+
+      let aggLine = {};
+      switch (contextFilter.aggregatedLine) {
+        case 'avg':
+          aggLine.run = runAvg;
+          aggLine.metric = metricAvg;
+          aggLine.trace = traceAvg;
+          break;
+        case 'median':
+          aggLine.run = runMed;
+          aggLine.metric = metricMed;
+          aggLine.trace = traceMed;
+          break;
+        case 'min':
+          aggLine.run = runMin;
+          aggLine.metric = metricMin;
+          aggLine.trace = traceMin;
+          break;
+        case 'max':
+          aggLine.run = runMax;
+          aggLine.metric = metricMax;
+          aggLine.trace = traceMax;
+          break;
+      }
 
       lines.current
         .append('path')
         .attr(
           'class',
           `PlotLine PlotLine-${traceToHash(
-            runAvg.run_hash,
-            metricAvg.name,
-            traceAvg.context,
-          )} ${active ? '' : 'inactive'}`,
+            aggLine.run.run_hash,
+            aggLine.metric.name,
+            aggLine.trace.context,
+          )} active`,
         )
-        .datum(traceAvg.data)
-        .attr('d', avgLine)
+        .datum(aggLine.trace.data)
+        .attr('d', aggLineFunc)
         .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
         .style('fill', 'none')
         .style(
           'stroke',
           traceList?.grouping?.color?.length > 0
             ? traceModel.color
-            : getMetricColor(runAvg, metricAvg, traceAvg),
+            : getMetricColor(aggLine.run, aggLine.metric, aggLine.trace),
         )
         .style(
           'stroke-dasharray',
           traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0',
         )
-        .attr('data-run-hash', runAvg.run_hash)
-        .attr('data-metric-name', metricAvg.name)
-        .attr('data-trace-context-hash', contextToHash(traceAvg.context))
+        .attr('data-run-hash', aggLine.run.run_hash)
+        .attr('data-metric-name', aggLine.metric.name)
+        .attr('data-trace-context-hash', contextToHash(aggLine.trace.context))
         .on('click', function () {
           handleLineClick(d3.mouse(this));
         });

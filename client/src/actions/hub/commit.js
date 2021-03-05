@@ -32,15 +32,19 @@ export function getCommitsMetricsByQuery(query, numPoints) {
     // });
     return new Promise((resolve, reject) => {
       let runsResult = {};
-      fetch(`${SERVER_API_HOST}/commits/search/metric?p=${numPoints}&q=${encodeURI(query)}`)
-        .then(response => response.body)
-        .then(rb => {
+      fetch(
+        `${SERVER_API_HOST}/commits/search/metric?p=${numPoints}&q=${encodeURI(
+          query,
+        )}`,
+      )
+        .then((response) => response.body)
+        .then((rb) => {
           const reader = rb.getReader();
 
           return new ReadableStream({
             start(controller) {
               function push() {
-                reader.read().then(({done, value}) => {
+                reader.read().then(({ done, value }) => {
                   if (done) {
                     controller.close();
                     resolve(runsResult);
@@ -58,11 +62,13 @@ export function getCommitsMetricsByQuery(query, numPoints) {
 
                     if (value[i] === 10) {
                       try {
-                        const decodedValue = JSON.parse(new TextDecoder().decode(value.slice(cursor, i)));
+                        const decodedValue = JSON.parse(
+                          new TextDecoder().decode(value.slice(cursor, i)),
+                        );
                         if (decodedValue.hasOwnProperty('header')) {
                           runsResult = decodedValue['header'];
                         } else if (decodedValue.hasOwnProperty('run')) {
-                          runsResult?.['runs']?.push(decodedValue['run'])
+                          runsResult?.['runs']?.push(decodedValue['run']);
                         }
                       } catch (e) {}
                       cursor = i;
@@ -72,22 +78,20 @@ export function getCommitsMetricsByQuery(query, numPoints) {
                   }
 
                   push();
-                })
+                });
               }
 
               push();
-            }
+            },
           });
         })
-        .then(stream => {
+        .then((stream) => {
           // Respond with our stream
           // return new Response(stream, { headers: { 'Content-Type': 'text/html' } }).text();
         })
-        .then(result => {
-
-        });
+        .then((result) => {});
     });
-  }
+  };
 }
 
 export function getCommitsDictionariesByQuery(query) {

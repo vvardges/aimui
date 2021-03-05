@@ -96,6 +96,8 @@ const state = {
     groupByStyle: [],
     groupByChart: [],
     aggregated: false,
+    aggregatedArea: 'min_max',
+    aggregatedLine: 'avg',
     seed: {
       color: 10,
       style: 10,
@@ -141,6 +143,8 @@ const initialControls = {
     groupByStyle: [],
     groupByChart: [],
     aggregated: false,
+    aggregatedArea: 'min_max',
+    aggregatedLine: 'avg',
     seed: getState().contextFilter.seed,
     persist: getState().contextFilter.persist,
   },

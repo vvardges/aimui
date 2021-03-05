@@ -674,14 +674,19 @@ function ContextBox(props) {
               traceModel.aggregation.min.trace.data,
               step,
             )?.[0];
-            const avg = getMetricStepDataByStepIdx(
-              traceModel.aggregation.avg.trace.data,
-              step,
-            )?.[0];
             const max = getMetricStepDataByStepIdx(
               traceModel.aggregation.max.trace.data,
               step,
             )?.[0];
+            const avg = getMetricStepDataByStepIdx(
+              traceModel.aggregation.avg.trace.data,
+              step,
+            )?.[0];
+            const med = getMetricStepDataByStepIdx(
+              traceModel.aggregation.med.trace.data,
+              step,
+            )?.[0];
+            const aggregatedLine = contextFilter.aggregatedLine;
             const runsCount = _.uniqBy(traceModel.series, 'run.run_hash')
               .length;
             data[JSON.stringify(traceModel.config)] = {
@@ -761,51 +766,41 @@ function ContextBox(props) {
                     <div className='ContextBox__table__item-aggregated_labels'>
                       <UI.Label
                         className='ContextBox__table__item-aggregated_label min'
-                        iconLeft={
-                          <UI.Tooltip tooltip={'Minimum value'}>
-                            <UI.Icon
-                              i='vertical_align_bottom'
-                              className='ContextBox__table__item-aggregated_icon'
-                              scale={1.2}
-                            />
-                          </UI.Tooltip>
-                        }
-                        rounded
+                        iconLeft='min'
                         outline
+                        rounded
                       >
                         {min !== null && min !== undefined
                           ? roundValue(min)
                           : '-'}
                       </UI.Label>
-                      <UI.Label
-                        className='ContextBox__table__item-aggregated_label avg'
-                        iconLeft={
-                          <UI.Tooltip tooltip={'Average value'}>
-                            <UI.Icon
-                              i='vertical_align_center'
-                              className='ContextBox__table__item-aggregated_icon'
-                              scale={1.2}
-                            />
-                          </UI.Tooltip>
-                        }
-                        outline
-                        rounded
-                      >
-                        {avg !== null && avg !== undefined
-                          ? roundValue(avg)
-                          : '-'}
-                      </UI.Label>
+                      {aggregatedLine === 'avg' && (
+                        <UI.Label
+                          className='ContextBox__table__item-aggregated_label avg'
+                          iconLeft='mean'
+                          outline
+                          rounded
+                        >
+                          {avg !== null && avg !== undefined
+                            ? roundValue(avg)
+                            : '-'}
+                        </UI.Label>
+                      )}
+                      {aggregatedLine === 'median' && (
+                        <UI.Label
+                          className='ContextBox__table__item-aggregated_label avg'
+                          iconLeft='median'
+                          outline
+                          rounded
+                        >
+                          {med !== null && med !== undefined
+                            ? roundValue(med)
+                            : '-'}
+                        </UI.Label>
+                      )}
                       <UI.Label
                         className='ContextBox__table__item-aggregated_label max'
-                        iconLeft={
-                          <UI.Tooltip tooltip={'Maximum value'}>
-                            <UI.Icon
-                              i='vertical_align_top'
-                              className='ContextBox__table__item-aggregated_icon'
-                              scale={1.2}
-                            />
-                          </UI.Tooltip>
-                        }
+                        iconLeft='max'
                         outline
                         rounded
                       >
@@ -913,7 +908,12 @@ function ContextBox(props) {
 
             for (let metricKey in runs?.aggMetrics) {
               runs?.aggMetrics[metricKey].forEach((metricContext) => {
-                const { min, avg, max } = traceModel.getAggregatedMetricMinMax(
+                const {
+                  min,
+                  avg,
+                  med,
+                  max,
+                } = traceModel.getAggregatedMetricMinMax(
                   metricKey,
                   metricContext,
                 );
@@ -923,52 +923,42 @@ function ContextBox(props) {
                   content: (
                     <div className='ContextBox__table__item-aggregated_labels'>
                       <UI.Label
-                        className='ContextBox__table__item-aggregated_label'
-                        iconLeft={
-                          <UI.Tooltip tooltip={'Minimum value'}>
-                            <UI.Icon
-                              i='vertical_align_bottom'
-                              className='ContextBox__table__item-aggregated_icon'
-                              scale={1.2}
-                            />
-                          </UI.Tooltip>
-                        }
-                        rounded
+                        className='ContextBox__table__item-aggregated_label min'
+                        iconLeft='min'
                         outline
+                        rounded
                       >
                         {min !== null && min !== undefined
                           ? roundValue(min)
                           : '-'}
                       </UI.Label>
+                      {aggregatedLine === 'avg' && (
+                        <UI.Label
+                          className='ContextBox__table__item-aggregated_label avg'
+                          iconLeft='mean'
+                          outline
+                          rounded
+                        >
+                          {avg !== null && avg !== undefined
+                            ? roundValue(avg)
+                            : '-'}
+                        </UI.Label>
+                      )}
+                      {aggregatedLine === 'median' && (
+                        <UI.Label
+                          className='ContextBox__table__item-aggregated_label avg'
+                          iconLeft='median'
+                          outline
+                          rounded
+                        >
+                          {med !== null && med !== undefined
+                            ? roundValue(med)
+                            : '-'}
+                        </UI.Label>
+                      )}
                       <UI.Label
-                        className='ContextBox__table__item-aggregated_label'
-                        iconLeft={
-                          <UI.Tooltip tooltip={'Average value'}>
-                            <UI.Icon
-                              i='vertical_align_center'
-                              className='ContextBox__table__item-aggregated_icon'
-                              scale={1.2}
-                            />
-                          </UI.Tooltip>
-                        }
-                        rounded
-                        outline
-                      >
-                        {avg !== null && avg !== undefined
-                          ? roundValue(avg)
-                          : '-'}
-                      </UI.Label>
-                      <UI.Label
-                        className='ContextBox__table__item-aggregated_label'
-                        iconLeft={
-                          <UI.Tooltip tooltip={'Maximum value'}>
-                            <UI.Icon
-                              i='vertical_align_top'
-                              className='ContextBox__table__item-aggregated_icon'
-                              scale={1.2}
-                            />
-                          </UI.Tooltip>
-                        }
+                        className='ContextBox__table__item-aggregated_label max'
+                        iconLeft='max'
                         outline
                         rounded
                       >
@@ -1085,7 +1075,11 @@ function ContextBox(props) {
       HubMainScreenModel.events.SET_CHART_FOCUSED_STATE,
       () => {
         window.requestAnimationFrame(() => {
-          const { traceList, chart } = HubMainScreenModel.getState();
+          const {
+            traceList,
+            chart,
+            contextFilter,
+          } = HubMainScreenModel.getState();
 
           const step = chart.focused.step;
           const focusedCircle = chart.focused.circle;
@@ -1262,14 +1256,19 @@ function ContextBox(props) {
                 traceModel.aggregation.min.trace.data,
                 step,
               )?.[0];
-              const avg = getMetricStepDataByStepIdx(
-                traceModel.aggregation.avg.trace.data,
-                step,
-              )?.[0];
               const max = getMetricStepDataByStepIdx(
                 traceModel.aggregation.max.trace.data,
                 step,
               )?.[0];
+              const avg = getMetricStepDataByStepIdx(
+                traceModel.aggregation.avg.trace.data,
+                step,
+              )?.[0];
+              const med = getMetricStepDataByStepIdx(
+                traceModel.aggregation.med.trace.data,
+                step,
+              )?.[0];
+              const aggregatedLine = contextFilter.aggregatedLine;
 
               const groupValueCellMin = document.querySelector(
                 `.value-${groupSelector} .min .Label__content`,
@@ -1279,12 +1278,19 @@ function ContextBox(props) {
                   min !== null && min !== undefined ? roundValue(min) : '-';
               }
 
-              const groupValueCellAvg = document.querySelector(
-                `.value-${groupSelector} .avg .Label__content`,
-              );
-              if (!!groupValueCellAvg) {
-                groupValueCellAvg.textContent =
-                  avg !== null && avg !== undefined ? roundValue(avg) : '-';
+              if (aggregatedLine === 'avg' || aggregatedLine === 'median') {
+                const groupValueCellAvg = document.querySelector(
+                  `.value-${groupSelector} .avg .Label__content`,
+                );
+                if (!!groupValueCellAvg) {
+                  if (aggregatedLine === 'avg') {
+                    groupValueCellAvg.textContent =
+                      avg !== null && avg !== undefined ? roundValue(avg) : '-';
+                  } else {
+                    groupValueCellAvg.textContent =
+                      med !== null && med !== undefined ? roundValue(med) : '-';
+                  }
+                }
               }
 
               const groupValueCellMax = document.querySelector(

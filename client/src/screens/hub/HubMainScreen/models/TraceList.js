@@ -3,6 +3,7 @@ import {
   deepEqual,
   getObjectValueByPath,
   arraysIntersection,
+  getValuesMedian,
 } from '../../../../utils';
 import { COLORS } from '../../../../constants/colors';
 import { STROKES } from '../../../../constants/strokes';
@@ -655,6 +656,10 @@ export default class TraceList {
               _.sum(valuesByStep[step]) / valuesByStep[step].length,
               +step,
             ]);
+            traceModel.aggregation.med.trace.data = stepTicks.map((step) => [
+              getValuesMedian(valuesByStep[step]),
+              +step,
+            ]);
           }
         });
         break;
@@ -731,6 +736,10 @@ export default class TraceList {
             ]);
             traceModel.aggregation.avg.trace.data = timeTicks.map((time) => [
               _.sum(valuesByTime[time]) / valuesByTime[time].length,
+              +time,
+            ]);
+            traceModel.aggregation.med.trace.data = timeTicks.map((time) => [
+              getValuesMedian(valuesByTime[time]),
               +time,
             ]);
           }

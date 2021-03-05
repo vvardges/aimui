@@ -43,6 +43,8 @@ function ControlsSidebar() {
     groupByStyle,
     groupByChart,
     aggregated,
+    aggregatedArea,
+    aggregatedLine,
     seed,
     persist,
   } = contextFilter;
@@ -80,6 +82,8 @@ function ControlsSidebar() {
             <>
               <Aggregate
                 aggregated={aggregated}
+                aggregatedArea={aggregatedArea}
+                aggregatedLine={aggregatedLine}
                 disabled={
                   groupByColor.length === 0 &&
                   groupByStyle.length === 0 &&
