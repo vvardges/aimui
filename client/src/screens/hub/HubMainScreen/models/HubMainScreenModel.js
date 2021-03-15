@@ -64,6 +64,8 @@ const state = {
         interpolate: false,
         indicator: true,
         xAlignment: 'step',
+        xScale: 0,
+        yScale: 1,
         pointsCount: 50,
       },
     },
@@ -125,7 +127,6 @@ const state = {
 const initialControls = {
   chart: {
     settings: {
-      yScale: 0,
       zoomMode: false,
       zoomHistory: [],
       persistent: {
@@ -134,6 +135,8 @@ const initialControls = {
         interpolate: false,
         indicator: true,
         xAlignment: 'step',
+        xScale: 0,
+        yScale: 1,
         pointsCount: getState().chart.settings.persistent.pointsCount,
       },
     },
@@ -269,6 +272,10 @@ function setTraceList() {
     chart: getState().contextFilter.groupByChart,
   };
   const xAlignment = getState().chart.settings.persistent.xAlignment;
+  const scale = {
+    xScale: getState().chart.settings.persistent.xScale,
+    yScale: getState().chart.settings.persistent.yScale,
+  };
 
   const traceList = new TraceList(grouping);
   const aggregate = traceList.groupingFields.length > 0;
@@ -306,6 +313,7 @@ function setTraceList() {
         null,
         xAlignment,
         aggregate,
+        scale,
         persist,
         seed,
         colorPalette,
@@ -319,6 +327,7 @@ function setTraceList() {
             trace,
             xAlignment,
             aggregate,
+            scale,
             persist,
             seed,
             colorPalette,

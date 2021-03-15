@@ -148,6 +148,7 @@ export default class TraceList {
     trace = null,
     alignBy = 'step',
     aggregate = false,
+    scale,
     persist,
     seed,
     colorPalette = 0,
@@ -353,14 +354,14 @@ export default class TraceList {
       alignment = 'step';
     }
     traceModel.addSeries(seriesModel, aggregate, alignment);
-    this.setAxisValues(alignBy, aggregate);
+    this.setAxisValues(alignBy, aggregate, scale);
   };
 
   getChartsNumber = () => {
     return this.groupingConfigMap.charts.length;
   };
 
-  setAxisValues = (alignBy, aggregate) => {
+  setAxisValues = (alignBy, aggregate, scale) => {
     let chartSteps;
     switch (alignBy) {
       case 'step':
@@ -389,7 +390,7 @@ export default class TraceList {
         this.chartSteps = chartSteps;
 
         if (aggregate) {
-          this.aggregate(alignBy);
+          this.aggregate(alignBy, scale);
         }
         break;
       case 'epoch':
@@ -499,7 +500,7 @@ export default class TraceList {
         });
 
         if (aggregate) {
-          this.aggregate(alignBy);
+          this.aggregate(alignBy, scale);
         }
         break;
       case 'relative_time':
@@ -556,7 +557,7 @@ export default class TraceList {
         this.chartSteps = chartSteps;
 
         if (aggregate) {
-          this.aggregate(alignBy);
+          this.aggregate(alignBy, scale);
         }
         break;
       case 'absolute_time':
@@ -585,18 +586,19 @@ export default class TraceList {
         this.chartSteps = chartSteps;
 
         if (aggregate) {
-          this.aggregate(alignBy);
+          this.aggregate(alignBy, scale);
         }
         break;
     }
   };
 
-  aggregate = (alignBy) => {
+  aggregate = (alignBy, scale = { xScale: 0, yScale: 0 }) => {
     switch (alignBy) {
       case 'step':
       case 'epoch':
         this.traces.forEach((traceModel) => {
           const valuesByStep = {};
+          const axisValues = this.chartSteps[traceModel.chart];
           traceModel.series.forEach((series) => {
             const { trace } = series;
             if (trace !== undefined && trace !== null) {
@@ -607,35 +609,50 @@ export default class TraceList {
                 const nextPoint = trace.data[i + 1];
 
                 const stepsInBetween = nextStep - step;
-
-                const axisValues = this.chartSteps[traceModel.chart];
                 for (let value of axisValues.slice(
                   axisValues.indexOf(step),
                   axisValues.indexOf(nextStep) + 1,
                 )) {
                   let y;
-                  let x = value - step;
-                  if (x === 0) {
-                    y = point[0];
-                  } else if (x === stepsInBetween) {
-                    y = nextPoint[0];
+                  let x0 = value - step;
+                  let x2 = stepsInBetween;
+                  let point1 = point[0];
+                  let point2 = nextPoint[0];
+
+                  if (x0 === 0) {
+                    y = point1;
+                  } else if (x0 === x2) {
+                    y = point2;
                   } else {
-                    if (point[0] > nextPoint[0]) {
-                      y =
-                        point[0] -
-                        ((point[0] - nextPoint[0]) * x) / stepsInBetween;
+                    if (scale.xScale === 1) {
+                      x0 = Math.log(value) - Math.log(step);
+                      x2 = Math.log(nextStep) - Math.log(step);
+                    }
+                    if (scale.yScale === 1) {
+                      point1 = Math.log(point1);
+                      point2 = Math.log(point2);
+                    }
+                    if (point1 > point2) {
+                      y = point1 - ((point1 - point2) * x0) / x2;
                     } else {
-                      y =
-                        ((nextPoint[0] - point[0]) * x) / stepsInBetween +
-                        point[0];
+                      y = ((point2 - point1) * x0) / x2 + point1;
+                    }
+                    if (scale.yScale === 1) {
+                      y = Math.exp(y);
                     }
                   }
-                  if (valuesByStep.hasOwnProperty(value)) {
-                    if (!valuesByStep[value].includes(y)) {
-                      valuesByStep[value].push(y);
+                  if (
+                    (scale.xScale === 0 ||
+                      (value !== 0 && step !== 0 && nextStep !== 0)) &&
+                    (scale.yScale === 0 || y > 0)
+                  ) {
+                    if (valuesByStep.hasOwnProperty(value)) {
+                      if (!valuesByStep[value].includes(y)) {
+                        valuesByStep[value].push(y);
+                      }
+                    } else {
+                      valuesByStep[value] = [y];
                     }
-                  } else {
-                    valuesByStep[value] = [y];
                   }
                 }
               }
@@ -696,28 +713,44 @@ export default class TraceList {
                   axisValues.indexOf(nextTime) + 1,
                 )) {
                   let y;
-                  let x = value - time;
-                  if (x === 0) {
-                    y = point[0];
-                  } else if (x === timeTicksInBetween) {
-                    y = nextPoint[0];
+                  let x0 = value - time;
+                  let x2 = timeTicksInBetween;
+                  let point1 = point[0];
+                  let point2 = nextPoint[0];
+                  if (x0 === 0) {
+                    y = point1;
+                  } else if (x0 === x2) {
+                    y = point2;
                   } else {
-                    if (point[0] > nextPoint[0]) {
-                      y =
-                        point[0] -
-                        ((point[0] - nextPoint[0]) * x) / timeTicksInBetween;
+                    if (scale.xScale === 1) {
+                      x0 = Math.log(value) - Math.log(time);
+                      x2 = Math.log(nextTime) - Math.log(time);
+                    }
+                    if (scale.yScale === 1) {
+                      point1 = Math.log(point1);
+                      point2 = Math.log(point2);
+                    }
+                    if (point1 > point2) {
+                      y = point1 - ((point1 - point2) * x0) / x2;
                     } else {
-                      y =
-                        ((nextPoint[0] - point[0]) * x) / timeTicksInBetween +
-                        point[0];
+                      y = ((point2 - point1) * x0) / x2 + point1;
+                    }
+                    if (scale.yScale === 1) {
+                      y = Math.exp(y);
                     }
                   }
-                  if (valuesByTime.hasOwnProperty(value)) {
-                    if (!valuesByTime[value].includes(y)) {
-                      valuesByTime[value].push(y);
+                  if (
+                    (scale.xScale === 0 ||
+                      (value !== 0 && time !== 0 && nextTime !== 0)) &&
+                    (scale.yScale === 0 || y > 0)
+                  ) {
+                    if (valuesByTime.hasOwnProperty(value)) {
+                      if (!valuesByTime[value].includes(y)) {
+                        valuesByTime[value].push(y);
+                      }
+                    } else {
+                      valuesByTime[value] = [y];
                     }
-                  } else {
-                    valuesByTime[value] = [y];
                   }
                 }
               }

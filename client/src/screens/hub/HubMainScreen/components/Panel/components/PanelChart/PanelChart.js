@@ -34,7 +34,7 @@ const curveOptions = [
   'curveBasisClosed',
 ];
 
-const scaleOptions = ['scaleLinear', 'scaleLog'];
+const scaleOptions = ['linear', 'log'];
 
 const shortEnglishHumanizer = humanizeDuration.humanizer({
   language: 'shortEn',
@@ -53,6 +53,7 @@ const shortEnglishHumanizer = humanizeDuration.humanizer({
   units: ['d', 'h', 'm', 's'],
   spacer: '',
   delimiter: ' ',
+  largest: 1,
 });
 
 function PanelChart(props) {
@@ -304,7 +305,11 @@ function PanelChart(props) {
           xMax = max;
         }
         if (min < xMin) {
-          xMin = min;
+          if (scaleOptions[chart.settings.persistent.xScale] === 'log') {
+            xMin = min === 0 ? 1 : min;
+          } else {
+            xMin = min;
+          }
         }
 
         xSteps = _.uniq(xSteps.concat(trace.axisValues).sort((a, b) => a - b));
@@ -312,8 +317,14 @@ function PanelChart(props) {
       });
     });
 
-    const xScale = d3
-      .scaleLinear()
+    let xScaleBase;
+    if (scaleOptions[chart.settings.persistent.xScale || 0] === 'linear') {
+      xScaleBase = d3.scaleLinear();
+    } else if (scaleOptions[chart.settings.persistent.xScale] === 'log') {
+      xScaleBase = d3.scaleLog();
+    }
+
+    const xScale = xScaleBase
       .domain(chart.settings.persistent.zoom?.[props.index]?.x ?? [xMin, xMax])
       .range([0, width - margin.left - margin.right]);
 
@@ -339,7 +350,7 @@ function PanelChart(props) {
             yMax = traceMax;
           }
           if (yMin == null || traceMin < yMin) {
-            yMin = traceMin;
+            yMin = traceMin === 0 ? 1 : traceMin;
           }
         }),
       );
@@ -375,12 +386,12 @@ function PanelChart(props) {
       maxData = maxData.map((e) => Math.max(...e));
       maxData = removeOutliers(maxData, 4);
 
-      yMin = minData[0];
+      yMin = minData[0] === 0 ? 1 : minData[0];
       yMax = maxData[maxData.length - 1];
     }
 
     let yScaleBase;
-    if (scaleOptions[chart.settings.yScale] === 'scaleLinear') {
+    if (scaleOptions[chart.settings.persistent.yScale || 0] === 'linear') {
       if (yMax === yMin) {
         yMax += 1;
         yMin -= 1;
@@ -390,7 +401,7 @@ function PanelChart(props) {
         yMin -= diff * 0.05;
       }
       yScaleBase = d3.scaleLinear();
-    } else if (scaleOptions[chart.settings.yScale] === 'scaleLog') {
+    } else if (scaleOptions[chart.settings.persistent.yScale] === 'log') {
       yScaleBase = d3.scaleLog();
     }
 
@@ -409,10 +420,56 @@ function PanelChart(props) {
         .tickValues(ticks.map((tick) => tick[0]))
         .tickFormat((d, i) => ticks[i][1]);
     } else if (xAlignment === 'relative_time') {
-      const ticksCount = Math.floor(plotBox.current.width / 85);
+      let ticksCount = Math.floor(plotBox.current.width / 85);
+      ticksCount = ticksCount > 1 ? ticksCount - 1 : 1;
+      const minute = 60;
+      const hour = 60 * minute;
+      const day = 24 * hour;
+      const week = 7 * day;
+      const [first, last] = xScale.domain();
+      const diff = Math.ceil(last - first);
+      let unit;
+      let formatUnit;
+      if (diff / week > 4) {
+        unit = week;
+        formatUnit = 'w';
+      } else if (diff / day > 3) {
+        unit = day;
+        formatUnit = 'd';
+      } else if (diff / hour > 3) {
+        unit = hour;
+        formatUnit = 'h';
+      } else if (diff / minute > 4) {
+        unit = minute;
+        formatUnit = 'm';
+      } else {
+        unit = null;
+        formatUnit = 's';
+      }
+      let tickValues =
+        unit === null
+          ? null
+          : _.range(Math.ceil(first), Math.ceil(last) + 1).filter(
+            (t) => t % unit === 0,
+          );
+      if (unit !== null && ticksCount < tickValues.length) {
+        tickValues = tickValues.filter((v, i) => {
+          if (i === 0 || i === tickValues.length - 1) {
+            return true;
+          }
+          const interval = Math.floor(
+            (tickValues.length - 2) / (ticksCount - 2),
+          );
+          return i % interval === 0 && tickValues.length - interval > i;
+        });
+      }
+
       xAxisTicks
-        .ticks(ticksCount > 1 ? ticksCount - 1 : 1)
-        .tickFormat((d, i) => shortEnglishHumanizer(+d * 1000));
+        .ticks(ticksCount)
+        .tickValues(tickValues)
+        .tickFormat((d, i) =>
+          shortEnglishHumanizer(+d * 1000, { units: [formatUnit] }),
+        );
     } else if (xAlignment === 'absolute_time') {
       const ticksCount = Math.floor(plotBox.current.width / 120);
       xAxisTicks
@@ -485,9 +542,26 @@ function PanelChart(props) {
           return;
         }
         const { run, metric, trace } = series;
+        const traceData = [];
+        const axisValues = trace.axisValues.filter((xVal, i) => {
+          const isXLogScale =
+            scaleOptions[chart.settings.persistent.xScale] === 'log';
+          const isYLogScale =
+            scaleOptions[chart.settings.persistent.yScale] === 'log';
+          if (
+            (isXLogScale && xVal <= 0) ||
+            (isYLogScale && trace?.data[i]?.[0] <= 0)
+          ) {
+            return false;
+          }
+          if (!!trace?.data) {
+            traceData.push(trace?.data[i]);
+          }
+          return true;
+        });
         const line = d3
           .line()
-          .x((d, i) => chartOptions.current.xScale(trace.axisValues[i]))
+          .x((d, i) => chartOptions.current.xScale(axisValues[i]))
           .y((d) => chartOptions.current.yScale(d[0]))
           .curve(
             d3[
@@ -521,7 +595,7 @@ function PanelChart(props) {
               current ? 'current' : ''
             }`,
           )
-          .datum(trace?.data ?? [])
+          .datum(traceData)
           .attr('d', line)
           .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
           .style('fill', 'none')
@@ -597,11 +671,17 @@ function PanelChart(props) {
           );
 
       if (contextFilter.aggregatedArea !== 'none') {
+        const traceMaxData = traceMax.data.filter(
+          (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+        );
+        const traceMinData = traceMin.data.filter(
+          (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+        );
         const area = d3
           .area()
           .x((d, i) => chartOptions.current.xScale(d[1]))
           .y0((d, i) => chartOptions.current.yScale(d[0]))
-          .y1((d, i) => chartOptions.current.yScale(traceMin.data[i][0]))
+          .y1((d, i) => chartOptions.current.yScale(traceMinData[i][0]))
           .curve(d3[curveOptions[0]]);
 
         lines.current
@@ -612,7 +692,7 @@ function PanelChart(props) {
               active ? 'active' : ''
             }`,
           )
-          .datum(traceMax.data)
+          .datum(traceMaxData)
           .attr('d', area)
           .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
           .attr(
@@ -671,7 +751,11 @@ function PanelChart(props) {
             aggLine.trace.context,
           )} active`,
         )
-        .datum(aggLine.trace.data)
+        .datum(
+          aggLine.trace.data.filter(
+            (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+          ),
+        )
         .attr('d', aggLineFunc)
         .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
         .style('fill', 'none')
@@ -714,9 +798,26 @@ function PanelChart(props) {
               runIndex++;
               return;
             }
+            const traceData = [];
+            const axisValues = trace.axisValues.filter((xVal, i) => {
+              const isXLogScale =
+                scaleOptions[chart.settings.persistent.xScale] === 'log';
+              const isYLogScale =
+                scaleOptions[chart.settings.persistent.yScale] === 'log';
+              if (
+                (isXLogScale && xVal <= 0) ||
+                (isYLogScale && trace?.data[i]?.[0] <= 0)
+              ) {
+                return false;
+              }
+              if (!!trace?.data) {
+                traceData.push(trace.data[i]);
+              }
+              return true;
+            });
             const focusedLine = d3
               .line()
-              .x((d, i) => chartOptions.current.xScale(trace.axisValues[i]))
+              .x((d, i) => chartOptions.current.xScale(axisValues[i]))
               .y((d) => chartOptions.current.yScale(d[0]))
               .curve(
                 d3[
@@ -741,7 +842,7 @@ function PanelChart(props) {
                   focusedLineAttr?.traceContext,
                 )} ${activeRun ? 'active' : ''} ${current ? 'current' : ''}`,
               )
-              .datum(trace?.data ?? [])
+              .datum(traceData)
               .attr('d', focusedLine)
               .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
               .style('fill', 'none')
@@ -780,19 +881,26 @@ function PanelChart(props) {
     }
 
     let x = chartOptions.current.xScale(step);
-    const { height } = plotBox.current;
 
-    // Draw hover line
-    hoverLine.current = attributes.current
-      .append('line')
-      .attr('x1', x)
-      .attr('y1', 0)
-      .attr('x2', x)
-      .attr('y2', height)
-      .attr('class', 'HoverLine')
-      .style('stroke-width', 1)
-      .style('stroke-dasharray', '4 2')
-      .style('fill', 'none');
+    const { height } = plotBox.current;
+    const isXLogScale =
+      scaleOptions[chart.settings.persistent.xScale] === 'log';
+    const isYLogScale =
+      scaleOptions[chart.settings.persistent.yScale] === 'log';
+
+    if (!isXLogScale || step > 0) {
+      // Draw hover line
+      hoverLine.current = attributes.current
+        .append('line')
+        .attr('x1', x)
+        .attr('y1', 0)
+        .attr('x2', x)
+        .attr('y2', height)
+        .attr('class', 'HoverLine')
+        .style('stroke-width', 1)
+        .style('stroke-dasharray', '4 2')
+        .style('fill', 'none');
+    }
 
     // Draw circles
     const focusedMetric = focused.metric;
@@ -819,9 +927,14 @@ function PanelChart(props) {
         );
 
         let val = stepData?.[0] ?? null;
-        x = chartOptions.current.xScale(closestStep);
+
+        if ((isXLogScale && closestStep <= 0) || (isYLogScale && val <= 0)) {
+          runIndex++;
+          return;
+        }
 
         if (val !== null) {
+          x = chartOptions.current.xScale(closestStep);
           const y = chartOptions.current.yScale(val);
           const traceContext = contextToHash(trace?.context);
 
@@ -931,7 +1044,7 @@ function PanelChart(props) {
           .attr('r', circleActiveRadius)
           .moveToFront();
       } else {
-        const focusedCircleX = chartoptions.current.xScale(focusedCircle.step);
+        const focusedCircleX = chartOptions.current.xScale(focusedCircle.step);
         const line = getTraceData(
           focusedCircle.runHash,
           focusedCircle.metricName,
@@ -957,7 +1070,7 @@ function PanelChart(props) {
               .attr('r', circleActiveRadius)
               .attr('data-x', focusedCircleX)
               .attr('data-y', focusedCircleY)
-              .attr('data-step', closestStep)
+              .attr('data-step', focusedCircle.step)
               .attr('data-run-hash', focusedCircle.runHash)
               .attr('data-metric-name', focusedCircle.metricName)
               .attr('data-trace-context-hash', focusedCircle.traceContext)
@@ -965,7 +1078,7 @@ function PanelChart(props) {
               .style('fill', getMetricColor(line.run, line.metric, line.trace))
               .on('click', function () {
                 handlePointClick(
-                  closestStep,
+                  focusedCircle.step,
                   focusedCircle.runHash,
                   focusedCircle.metricName,
                   focusedCircle.traceContext,

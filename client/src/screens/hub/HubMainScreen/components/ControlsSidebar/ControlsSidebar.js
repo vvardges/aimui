@@ -15,7 +15,7 @@ import ControlsSidebarToggleInterpolation from './components/ControlsSidebarTogg
 import ControlsSidebarExport from './components/ControlsSidebarExport/ControlsSidebarExport';
 import ControlsSidebarHighlightMode from './components/ControlsSidebarHighlightMode/ControlsSidebarHighlightMode';
 import { HubMainScreenModel } from '../../models/HubMainScreenModel';
-import ControlsSidebarXAlignment from './components/ControlsSidebarXAlignment/ControlsSidebarXAlignment';
+import ControlsSidebarAxesProperties from './components/ControlsSidebarAxesProperties/ControlsSidebarAxesProperties';
 
 function ControlsSidebar() {
   let {
@@ -99,7 +99,7 @@ function ControlsSidebar() {
                 disabled={runs.isLoading || runs.isEmpty || aggregated}
                 settings={chart.settings}
               />
-              <ControlsSidebarXAlignment
+              <ControlsSidebarAxesProperties
                 disabled={runs.isLoading || runs.isEmpty}
                 settings={chart.settings}
               />
