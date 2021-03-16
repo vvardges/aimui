@@ -500,6 +500,35 @@ class Runs extends React.Component {
     );
   };
 
+  getParamsWithSameValue = (columns) => {
+    const columnValues = {};
+    this.state.runs.forEach((run) => {
+      Object.keys(run.params).forEach((paramKey) => {
+        if (paramKey === '__METRICS__') {
+          return;
+        }
+        Object.keys(this.paramKeys).forEach((paramKey) =>
+          this.paramKeys[paramKey].forEach((key) => {
+            const columnKey = `params.${paramKey}.${key}`;
+            if (columns.includes(columnKey)) {
+              const value = formatValue(run.params?.[paramKey]?.[key]);
+              if (columnValues.hasOwnProperty(columnKey)) {
+                if (columnValues[columnKey] !== value) {
+                  columnValues[columnKey] = 'aim_values_differ';
+                }
+              } else {
+                columnValues[columnKey] = value;
+              }
+            }
+          }),
+        );
+      });
+    });
+    return Object.keys(columnValues).filter(
+      (colKey) => columnValues[colKey] !== 'aim_values_differ',
+    );
+  };
+
   _renderExperiments = () => {
     if (this.props.isLoading) {
       return (
@@ -850,6 +879,7 @@ class Runs extends React.Component {
           displaySort
           sortFields={this.state.sortFields}
           setSortFields={this.setSortFields}
+          getParamsWithSameValue={this.getParamsWithSameValue}
           alwaysVisibleColumns={['run']}
         />
       </div>

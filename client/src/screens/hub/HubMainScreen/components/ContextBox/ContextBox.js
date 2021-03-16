@@ -167,6 +167,33 @@ function ContextBox(props) {
     }
   }
 
+  function getParamsWithSameValue(columns) {
+    const columnValues = {};
+    traceList?.traces.forEach((trace) => {
+      trace.series.forEach((series) => {
+        const { run } = series;
+        Object.keys(paramKeys.current).forEach((paramKey) =>
+          paramKeys.current[paramKey].forEach((key) => {
+            const columnKey = `params.${paramKey}.${key}`;
+            if (columns.includes(columnKey)) {
+              const value = formatValue(run.params?.[paramKey]?.[key]);
+              if (columnValues.hasOwnProperty(columnKey)) {
+                if (columnValues[columnKey] !== value) {
+                  columnValues[columnKey] = 'aim_values_differ';
+                }
+              } else {
+                columnValues[columnKey] = value;
+              }
+            }
+          }),
+        );
+      });
+    });
+    return Object.keys(columnValues).filter(
+      (colKey) => columnValues[colKey] !== 'aim_values_differ',
+    );
+  }
+
   function _renderContentLoader() {
     const cellHeight = 25,
       cellWidth = 35,
@@ -1036,6 +1063,7 @@ function ContextBox(props) {
             displaySort
             sortFields={sortFields}
             setSortFields={setSortFields}
+            getParamsWithSameValue={getParamsWithSameValue}
             alwaysVisibleColumns={[
               'experiment',
               'run',

@@ -91,10 +91,7 @@ function Tooltip(props) {
       className='Tooltip__container'
       onMouseOver={(evt) => toggleVisibility(true)}
       onMouseLeave={(evt) => toggleVisibility(false)}
-      onClick={(evt) => {
-        evt.stopPropagation();
-        toggleVisibility(false);
-      }}
+      onClick={(evt) => toggleVisibility(false)}
       ref={containerRef}
     >
       {props.children}

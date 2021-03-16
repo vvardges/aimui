@@ -15,6 +15,7 @@ function BarReorder({
   excludedFields,
   setExcludedFields,
   alwaysVisibleColumns,
+  getParamsWithSameValue,
 }) {
   let [searchKey, setSearchKey] = useState('');
 
@@ -98,7 +99,22 @@ function BarReorder({
                 <div className='BarReorder__actions'>
                   <UI.Button
                     className='BarReorder__action'
-                    type='positive'
+                    type='secondary'
+                    size='tiny'
+                    onClick={() =>
+                      setExcludedFields(
+                        getParamsWithSameValue(availableColumnsForHiding),
+                      )
+                    }
+                  >
+                    <UI.Tooltip tooltip='Hide params columns which have the same value'>
+                      Show table diff
+                    </UI.Tooltip>
+                  </UI.Button>
+                  <div className='BarReorder__actionSeparator' />
+                  <UI.Button
+                    className='BarReorder__action'
+                    type='secondary'
                     size='tiny'
                     disabled={hiddenFields.length === 0}
                     onClick={() => setExcludedFields([])}
@@ -107,7 +123,7 @@ function BarReorder({
                   </UI.Button>
                   <UI.Button
                     className='BarReorder__action'
-                    type='negative'
+                    type='secondary'
                     size='tiny'
                     disabled={
                       hiddenFields.length === availableColumnsForHiding.length

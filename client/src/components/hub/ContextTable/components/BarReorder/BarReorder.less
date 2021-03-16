@@ -159,17 +159,23 @@
 
 .BarReorder__actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   height: 100%;
-  width: 230px;
   margin: auto;
 }
 
 .BarReorder__action {
-  width: 46%;
-
+  margin-left: var(--space-xs);
   .Button__content {
     padding: 0.45em 0.9em;
   }
+}
+
+.BarReorder__actionSeparator {
+  width: 1px;
+  height: 15px;
+  margin-left: var(--space-xxs);
+  background-color: #ccc;
+  box-sizing: border-box;
 }

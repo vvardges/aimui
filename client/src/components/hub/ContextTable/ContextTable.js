@@ -202,6 +202,7 @@ function ContextTable(props) {
               excludedFields={excludedFields}
               setExcludedFields={setExcludedFields}
               alwaysVisibleColumns={props.alwaysVisibleColumns}
+              getParamsWithSameValue={props.getParamsWithSameValue}
             />
             {props.displaySort && (
               <BarSort
@@ -254,6 +255,7 @@ ContextTable.propTypes = {
   sortFields: PropTypes.array,
   setSortFields: PropTypes.func,
   alwaysVisibleColumns: PropTypes.array,
+  getParamsWithSameValue: PropTypes.func,
 };
 
 export default ContextTable;

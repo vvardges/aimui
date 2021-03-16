@@ -1,5 +1,6 @@
 # Changelog
 
+- Add ability to hide columns which values are all the same (roubkar)
 - Add ability to change both axes scale option (roubkar)
 - Add ability to change aggregation method (roubkar)
 - Add Hide All/Show All options to manage columns popup (roubkar)
