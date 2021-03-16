@@ -41,6 +41,7 @@ function ContextBox(props) {
     HubMainScreenModel.events.SET_TRACE_LIST,
     HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
     HubMainScreenModel.events.SET_SORT_FIELDS,
+    HubMainScreenModel.events.SET_CHART_HIDDEN_METRICS,
   ]);
 
   let {
@@ -48,6 +49,7 @@ function ContextBox(props) {
     setChartFocusedActiveState,
     setContextFilter,
     setSortFields,
+    setHiddenMetrics,
   } = HubMainScreenModel.emitters;
 
   let {
@@ -468,9 +470,12 @@ function ContextBox(props) {
           expanded[JSON.stringify(traceModel.config)] = true;
         }
 
+        const metricKey = `${run.run_hash}/${metric?.name}/${contextHash}`;
+
         const cellClassName = classNames({
           ContextBox__table__cell: true,
           active: active,
+          metricIsHidden: run.metricIsHidden,
           [`cell-${traceToHash(
             run.run_hash,
             isExploreParamsModeEnabled() ? null : metric?.name,
@@ -478,45 +483,46 @@ function ContextBox(props) {
           )}`]: true,
         });
 
-        let style = {};
-        if (active) {
-          style = {
-            // boxShadow: `0 2px 0 0 ${colorObj.hsl().string()}`,
-          };
-        }
-
-        // const highlightColumn = (evt) => {
-        //   handleRowMove(run.run_hash, metric?.name, contextHash);
-        //   evt.currentTarget.parentNode.style.backgroundColor =
-        //     style.backgroundColor;
-        // };
-
-        // function removeColumnHighlighting(evt) {
-        //   evt.currentTarget.parentNode.style.backgroundColor = '#FFF';
-        // }
-
         const row = {
           rowMeta: (
-            <UI.Tooltip tooltip='Metric Color'>
+            <>
               <div
-                className='ContextBox__table__metric-indicator__color'
-                style={{
-                  backgroundColor: colorObj.hsl().string(),
-                  borderColor: colorObj.hsl().string(),
+                className={classNames({
+                  'ContextBox__table__visibility-indicator': true,
+                  metricIsHidden: run.metricIsHidden,
+                })}
+                onClick={(evt) => {
+                  evt.stopPropagation();
+                  setHiddenMetrics(metricKey);
                 }}
-              />
-            </UI.Tooltip>
+              >
+                <UI.Icon
+                  i={`visibility${run.metricIsHidden ? '_off' : ''}`}
+                  scale={1.4}
+                />
+              </div>
+              <UI.Tooltip tooltip='Metric Color'>
+                <div
+                  className='ContextBox__table__metric-indicator__color'
+                  style={{
+                    backgroundColor: colorObj.hsl().string(),
+                    borderColor: colorObj.hsl().string(),
+                  }}
+                />
+              </UI.Tooltip>
+            </>
           ),
           experiment: {
             content: run.experiment_name,
-            style: style,
             className: `metric ${cellClassName}`,
-            props: {
-              onClick: () =>
-                handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: () =>
-                handleRowMove(run.run_hash, metric?.name, contextHash),
-            },
+            props: run.metricIsHidden
+              ? {}
+              : {
+                onClick: () =>
+                  handleRowClick(run.run_hash, metric?.name, contextHash),
+                onMouseMove: () =>
+                  handleRowMove(run.run_hash, metric?.name, contextHash),
+              },
           },
           run: {
             content: (
@@ -530,28 +536,30 @@ function ContextBox(props) {
                 {moment.unix(run.date).format('HH:mm · D MMM, YY')}
               </Link>
             ),
-            style: style,
             className: `metric ${cellClassName}`,
-            props: {
-              onClick: (evt) => {
-                if (evt.target === evt.currentTarget) {
-                  handleRowClick(run.run_hash, metric?.name, contextHash);
-                }
+            props: run.metricIsHidden
+              ? {}
+              : {
+                onClick: (evt) => {
+                  if (evt.target === evt.currentTarget) {
+                    handleRowClick(run.run_hash, metric?.name, contextHash);
+                  }
+                },
+                onMouseMove: () =>
+                  handleRowMove(run.run_hash, metric?.name, contextHash),
               },
-              onMouseMove: () =>
-                handleRowMove(run.run_hash, metric?.name, contextHash),
-            },
           },
           metric: {
             content: metric?.name ?? '-',
-            style: style,
             className: `metric ${cellClassName}`,
-            props: {
-              onClick: () =>
-                handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: () =>
-                handleRowMove(run.run_hash, metric?.name, contextHash),
-            },
+            props: run.metricIsHidden
+              ? {}
+              : {
+                onClick: () =>
+                  handleRowClick(run.run_hash, metric?.name, contextHash),
+                onMouseMove: () =>
+                  handleRowMove(run.run_hash, metric?.name, contextHash),
+              },
           },
           context: {
             content: !!trace?.context ? (
@@ -581,82 +589,87 @@ function ContextBox(props) {
             ) : (
               '-'
             ),
-            style: style,
             className: `metric ${cellClassName}`,
-            props: {
-              onClick: () =>
-                handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: () =>
-                handleRowMove(run.run_hash, metric?.name, contextHash),
-            },
+            props: run.metricIsHidden
+              ? {}
+              : {
+                onClick: () =>
+                  handleRowClick(run.run_hash, metric?.name, contextHash),
+                onMouseMove: () =>
+                  handleRowMove(run.run_hash, metric?.name, contextHash),
+              },
           },
           value: {
             content:
               stepData !== null && stepData[0] !== null
                 ? roundValue(stepData[0])
                 : '-',
-            style: style,
             className: `value-${traceToHash(
               run.run_hash,
               metric?.name,
               contextHash,
             )} ${cellClassName}`,
-            props: {
-              onClick: () =>
-                handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: () =>
-                handleRowMove(run.run_hash, metric?.name, contextHash),
-            },
+            props: run.metricIsHidden
+              ? {}
+              : {
+                onClick: () =>
+                  handleRowClick(run.run_hash, metric?.name, contextHash),
+                onMouseMove: () =>
+                  handleRowMove(run.run_hash, metric?.name, contextHash),
+              },
           },
           step: {
             content:
               stepData !== null && stepData[1] !== null ? stepData[1] : '-',
-            style: style,
             className: `step-${traceToHash(
               run.run_hash,
               metric?.name,
               contextHash,
             )} ${cellClassName}`,
-            props: {
-              onClick: () =>
-                handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: () =>
-                handleRowMove(run.run_hash, metric?.name, contextHash),
-            },
+            props: run.metricIsHidden
+              ? {}
+              : {
+                onClick: () =>
+                  handleRowClick(run.run_hash, metric?.name, contextHash),
+                onMouseMove: () =>
+                  handleRowMove(run.run_hash, metric?.name, contextHash),
+              },
           },
           epoch: {
             content:
               stepData !== null && stepData[2] !== null ? stepData[2] : '-',
-            style: style,
             className: `epoch-${traceToHash(
               run.run_hash,
               metric?.name,
               contextHash,
             )} ${cellClassName}`,
-            props: {
-              onClick: () =>
-                handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: () =>
-                handleRowMove(run.run_hash, metric?.name, contextHash),
-            },
+            props: run.metricIsHidden
+              ? {}
+              : {
+                onClick: () =>
+                  handleRowClick(run.run_hash, metric?.name, contextHash),
+                onMouseMove: () =>
+                  handleRowMove(run.run_hash, metric?.name, contextHash),
+              },
           },
           time: {
             content:
               stepData !== null && stepData[3] !== null
                 ? moment.unix(stepData[3]).format('HH:mm:ss · D MMM, YY')
                 : '-',
-            style: style,
             className: `time-${traceToHash(
               run.run_hash,
               metric?.name,
               contextHash,
             )} ${cellClassName}`,
-            props: {
-              onClick: () =>
-                handleRowClick(run.run_hash, metric?.name, contextHash),
-              onMouseMove: () =>
-                handleRowMove(run.run_hash, metric?.name, contextHash),
-            },
+            props: run.metricIsHidden
+              ? {}
+              : {
+                onClick: () =>
+                  handleRowClick(run.run_hash, metric?.name, contextHash),
+                onMouseMove: () =>
+                  handleRowMove(run.run_hash, metric?.name, contextHash),
+              },
           },
         };
 
@@ -667,14 +680,15 @@ function ContextBox(props) {
                 series.getAggregatedMetricValue(metricKey, metricContext),
                 true,
               ),
-              style: style,
               className: cellClassName,
-              props: {
-                onClick: () =>
-                  handleRowClick(run.run_hash, metric?.name, contextHash),
-                onMouseMove: () =>
-                  handleRowMove(run.run_hash, metric?.name, contextHash),
-              },
+              props: run.metricIsHidden
+                ? {}
+                : {
+                  onClick: () =>
+                    handleRowClick(run.run_hash, metric?.name, contextHash),
+                  onMouseMove: () =>
+                    handleRowMove(run.run_hash, metric?.name, contextHash),
+                },
             };
           });
         }
@@ -683,14 +697,15 @@ function ContextBox(props) {
           paramKeys.current[paramKey].forEach((key) => {
             row[`params.${paramKey}.${key}`] = {
               content: formatValue(run.params?.[paramKey]?.[key]),
-              style: style,
               className: cellClassName,
-              props: {
-                onClick: () =>
-                  handleRowClick(run.run_hash, metric?.name, contextHash),
-                onMouseMove: () =>
-                  handleRowMove(run.run_hash, metric?.name, contextHash),
-              },
+              props: run.metricIsHidden
+                ? {}
+                : {
+                  onClick: () =>
+                    handleRowClick(run.run_hash, metric?.name, contextHash),
+                  onMouseMove: () =>
+                    handleRowMove(run.run_hash, metric?.name, contextHash),
+                },
             };
           }),
         );
@@ -1063,6 +1078,8 @@ function ContextBox(props) {
             displaySort
             sortFields={sortFields}
             setSortFields={setSortFields}
+            setHiddenMetrics={setHiddenMetrics}
+            hiddenMetrics={chart.hiddenMetrics}
             getParamsWithSameValue={getParamsWithSameValue}
             alwaysVisibleColumns={[
               'experiment',

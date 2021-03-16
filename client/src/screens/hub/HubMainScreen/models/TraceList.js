@@ -152,6 +152,7 @@ export default class TraceList {
     persist,
     seed,
     colorPalette = 0,
+    isHidden,
   ) => {
     let subGroup = this.groups;
     this.groupingFields.forEach((g) => {
@@ -346,7 +347,8 @@ export default class TraceList {
     }
 
     // Add series to trace
-    const seriesModel = new Series(run, metric, trace);
+    run.metricIsHidden = isHidden;
+    const seriesModel = new Series(run, metric, trace, isHidden);
 
     let alignment = alignBy;
 
@@ -600,8 +602,8 @@ export default class TraceList {
           const valuesByStep = {};
           const axisValues = this.chartSteps[traceModel.chart];
           traceModel.series.forEach((series) => {
-            const { trace } = series;
-            if (trace !== undefined && trace !== null) {
+            const { run, trace } = series;
+            if (trace !== undefined && trace !== null && !run.metricIsHidden) {
               for (let i = 0; i < trace.axisValues.length - 1; i++) {
                 const step = trace.axisValues[i];
                 const point = trace.data[i];
@@ -697,8 +699,8 @@ export default class TraceList {
         this.traces.forEach((traceModel) => {
           const valuesByTime = {};
           traceModel.series.forEach((series) => {
-            const { trace } = series;
-            if (trace !== undefined && trace !== null) {
+            const { run, trace } = series;
+            if (trace !== undefined && trace !== null && !run.metricIsHidden) {
               for (let i = 0; i < trace.axisValues.length - 1; i++) {
                 const time = trace.axisValues[i];
                 const point = trace.data[i];

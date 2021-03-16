@@ -201,6 +201,7 @@ function Table(props) {
                 firstColumn={index === 0}
                 width={props.columnsWidth[col.key]}
                 updateColumnWidth={props.updateColumnsWidth}
+                headerMeta={props.headerMeta}
               />
             ))}
           </div>
@@ -230,6 +231,7 @@ function Table(props) {
               firstColumn={index === 0 && leftPane.length === 0}
               width={props.columnsWidth[col.key]}
               updateColumnWidth={props.updateColumnsWidth}
+              headerMeta={props.headerMeta}
             />
           ))}
         </div>
@@ -271,6 +273,7 @@ function Table(props) {
                 }
                 width={props.columnsWidth[col.key]}
                 updateColumnWidth={props.updateColumnsWidth}
+                headerMeta={props.headerMeta}
               />
             ))}
           </div>
@@ -304,6 +307,7 @@ function Column({
   firstColumn,
   width,
   updateColumnWidth,
+  headerMeta,
 }) {
   const [maxWidth, setMaxWidth] = useState(width);
   const [isResizing, setIsResizing] = useState(false);
@@ -391,6 +395,7 @@ function Column({
           minWidth: col.minWidth,
         }}
       >
+        {firstColumn ? headerMeta : null}
         {col.content}
         <UI.Popover
           target={<UI.Icon i='more_vert' scale={1} />}

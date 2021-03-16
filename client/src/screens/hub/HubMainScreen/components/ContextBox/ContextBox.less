@@ -48,8 +48,13 @@
   }
 }
 
-.ContextBox__table__cell.active {
-  background-color: var(--primary-lighter) !important;
+.ContextBox__table__cell {
+  &.active {
+    background-color: var(--primary-lighter) !important;
+  }
+  &.metricIsHidden {
+    background-color: var(--grey-bg) !important;
+  }
 }
 
 .ContextBox__table__row {
@@ -180,4 +185,33 @@
   &:last-child {
     margin-right: 0 !important;
   }
+}
+
+.ContextBox__table__visibility-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space-xs);
+  color: var(--primary);
+  cursor: pointer;
+  user-select: none;
+
+  &.metricIsHidden {
+    color: var(--grey);
+  }
+}
+
+.ContextBox__table__visibility-indicator--header {
+  flex: none !important;
+  margin: 0 var(--space-xs) 0 -4px !important;
+  font-size: var(--text-sm);
+
+  & + * {
+    flex: 1;
+  }
+}
+
+.ContextBox__table__visibility-indicator__icon {
+  display: flex;
+  align-items: center;
 }

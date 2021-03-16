@@ -711,6 +711,11 @@ function ParallelCoordinatesChart(props) {
           runIndex++;
           return;
         }
+        const { run } = series;
+        if (run.metricIsHidden) {
+          runIndex++;
+          return;
+        }
         const params = series.getParamsFlatDict();
 
         const coords = dimensions.current.map((p, i) => {
@@ -764,8 +769,6 @@ function ParallelCoordinatesChart(props) {
 
         let lines = [[]];
         let lineIndex = 0;
-
-        const { run } = series;
 
         coords.forEach((p, i) => {
           const prev = coords[i - 1];

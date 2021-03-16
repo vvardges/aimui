@@ -542,6 +542,12 @@ function PanelChart(props) {
           return;
         }
         const { run, metric, trace } = series;
+
+        if (run.metricIsHidden) {
+          runIndex++;
+          return;
+        }
+
         const traceData = [];
         const axisValues = trace.axisValues.filter((xVal, i) => {
           const isXLogScale =
@@ -785,6 +791,12 @@ function PanelChart(props) {
               return;
             }
             const { run, metric, trace } = series;
+
+            if (run.metricIsHidden) {
+              runIndex++;
+              return;
+            }
+
             const traceContext = contextToHash(trace?.context);
             let activeRun =
               highlightMode === 'run'
@@ -920,6 +932,12 @@ function PanelChart(props) {
           return;
         }
         const { run, metric, trace } = series;
+
+        if (run.metricIsHidden) {
+          runIndex++;
+          return;
+        }
+
         let { closestStep, stepData } = getClosestStepData(
           step,
           trace?.data,
@@ -1387,6 +1405,7 @@ function PanelChart(props) {
         HubMainScreenModel.events.SET_TRACE_LIST,
         HubMainScreenModel.events.SET_CHART_SETTINGS_STATE,
         HubMainScreenModel.events.SET_CHART_FOCUSED_ACTIVE_STATE,
+        HubMainScreenModel.events.SET_CHART_HIDDEN_METRICS,
       ],
       animatedRender,
     );

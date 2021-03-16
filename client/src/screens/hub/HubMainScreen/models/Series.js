@@ -1,8 +1,11 @@
 import { flattenObject, formatValue } from '../../../../utils';
 
 export default class Series {
-  constructor(run, metric, trace) {
-    this.run = run;
+  constructor(run, metric, trace, isHidden) {
+    this.run = {
+      ...run,
+      metricIsHidden: isHidden,
+    };
     this.metric = metric;
     this.trace = trace;
   }

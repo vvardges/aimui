@@ -16,6 +16,7 @@ import {
 } from '../../../config';
 import BarSort from './components/BarSort/BarSort';
 import BarReorder from './components/BarReorder/BarReorder';
+import BarRowVisualization from './components/BarRowVisualization/BarRowVisualization';
 import { ContextTableModel } from './models/ContextTableModel';
 
 function ContextTable(props) {
@@ -204,6 +205,12 @@ function ContextTable(props) {
               alwaysVisibleColumns={props.alwaysVisibleColumns}
               getParamsWithSameValue={props.getParamsWithSameValue}
             />
+            {props.hiddenMetrics && (
+              <BarRowVisualization
+                hiddenMetrics={props.hiddenMetrics}
+                setHiddenMetrics={props.setHiddenMetrics}
+              />
+            )}
             {props.displaySort && (
               <BarSort
                 sortFields={props.sortFields}
@@ -243,6 +250,7 @@ ContextTable.defaultProps = {
   displaySort: false,
   sortFields: [],
   alwaysVisibleColumns: [],
+  hiddenMetrics: null,
 };
 
 ContextTable.propTypes = {
@@ -255,6 +263,8 @@ ContextTable.propTypes = {
   sortFields: PropTypes.array,
   setSortFields: PropTypes.func,
   alwaysVisibleColumns: PropTypes.array,
+  hiddenMetrics: PropTypes.array,
+  setHiddenMetrics: PropTypes.func,
   getParamsWithSameValue: PropTypes.func,
 };
 

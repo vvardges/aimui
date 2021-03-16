@@ -7,6 +7,7 @@ import {
   USER_LAST_EXPLORE_CONFIG,
   EXPLORE_PANEL_SORT_FIELDS,
   EXPLORE_PANEL_COLOR_PALETTE,
+  EXPLORE_PANEL_HIDDEN_METRICS,
 } from '../../../../config';
 import { getItem, removeItem, setItem } from '../../../../services/storage';
 import { flattenObject, sortOnKeys } from '../../../../utils';
@@ -24,6 +25,7 @@ const events = {
   SET_CHART_FOCUSED_ACTIVE_STATE: 'SET_CHART_FOCUSED_ACTIVE_STATE',
   SET_CHART_SETTINGS_STATE: 'SET_CHART_SETTINGS_STATE',
   SET_CHART_POINTS_COUNT: 'SET_CHART_POINTS_COUNT',
+  SET_CHART_HIDDEN_METRICS: 'SET_CHART_HIDDEN_METRICS',
   SET_CONTEXT_FILTER: 'SET_CONTEXT_FILTER',
   SET_SEARCH_STATE: 'SET_SEARCH_STATE',
   SET_SEARCH_INPUT_STATE: 'SET_SEARCH_INPUT_STATE',
@@ -69,6 +71,7 @@ const state = {
         pointsCount: 50,
       },
     },
+    hiddenMetrics: JSON.parse(getItem(EXPLORE_PANEL_HIDDEN_METRICS)) ?? [],
   },
 
   // Chart data - runs
@@ -129,6 +132,7 @@ const initialControls = {
     settings: {
       zoomMode: false,
       zoomHistory: [],
+      highlightMode: getItem(EXPLORE_METRIC_HIGHLIGHT_MODE) ?? 'run',
       persistent: {
         displayOutliers: false,
         zoom: null,
@@ -280,6 +284,7 @@ function setTraceList() {
   const traceList = new TraceList(grouping);
   const aggregate = traceList.groupingFields.length > 0;
   const sortFields = getState().sortFields;
+  const hiddenMetrics = getState().chart.hiddenMetrics;
 
   _.orderBy(
     runs,
@@ -307,6 +312,8 @@ function setTraceList() {
     sortFields.map((field) => field[1]),
   ).forEach((run) => {
     if (!run.metrics?.length) {
+      const metricKey = `${run.run_hash}/undefined/${contextToHash(undefined)}`;
+      const isHidden = hiddenMetrics.includes(metricKey);
       traceList.addSeries(
         run,
         null,
@@ -317,10 +324,15 @@ function setTraceList() {
         persist,
         seed,
         colorPalette,
+        isHidden,
       );
     } else {
       run.metrics.forEach((metric) => {
         metric?.traces.forEach((trace) => {
+          const metricKey = `${run.run_hash}/${metric?.name}/${contextToHash(
+            trace?.context,
+          )}`;
+          const isHidden = hiddenMetrics.includes(metricKey);
           traceList.addSeries(
             run,
             metric,
@@ -331,6 +343,7 @@ function setTraceList() {
             persist,
             seed,
             colorPalette,
+            isHidden,
           );
         });
       });
@@ -375,6 +388,63 @@ function setChartPointsCount(count) {
       },
     },
   });
+}
+
+function setHiddenMetrics(metricKey) {
+  let hiddenMetricsClone;
+  if (metricKey === 'show_all_metrics') {
+    hiddenMetricsClone = [];
+  } else if (metricKey === 'hide_all_metrics') {
+    hiddenMetricsClone = [];
+    getState().traceList?.traces.forEach((trace) => {
+      (isExploreParamsModeEnabled()
+        ? _.uniqBy(trace.series, 'run.run_hash')
+        : trace.series
+      ).forEach((series) => {
+        const { run, metric, trace } = series;
+        const contextHash = contextToHash(trace?.context);
+        const currentMetricKey = `${run.run_hash}/${metric?.name}/${contextHash}`;
+        hiddenMetricsClone.push(currentMetricKey);
+      });
+    });
+  } else {
+    hiddenMetricsClone = getState().chart.hiddenMetrics.slice();
+    if (hiddenMetricsClone.includes(metricKey)) {
+      hiddenMetricsClone.splice(hiddenMetricsClone.indexOf(metricKey), 1);
+    } else {
+      const {
+        runHash,
+        metricName,
+        traceContext,
+      } = getState().chart.focused.circle;
+      if (runHash !== null) {
+        const activeMetricKey = `${runHash}/${metricName}/${traceContext}`;
+        if (activeMetricKey === metricKey) {
+          setChartFocusedActiveState({
+            circle: {
+              active: false,
+              runHash: null,
+              metricName: null,
+              traceContext: null,
+              step: null,
+            },
+          });
+        }
+      }
+      hiddenMetricsClone.push(metricKey);
+    }
+  }
+
+  emit(events.SET_CHART_HIDDEN_METRICS, {
+    chart: {
+      ...getState().chart,
+      hiddenMetrics: hiddenMetricsClone,
+    },
+  });
+
+  setTraceList();
+
+  setItem(EXPLORE_PANEL_HIDDEN_METRICS, JSON.stringify(hiddenMetricsClone));
 }
 
 function setChartFocusedState(
@@ -507,7 +577,7 @@ function resetControls() {
 function setSearchState(
   searchState,
   callback = null,
-  resetZoom = true,
+  resetZoomAndHiddenMetrics = true,
   replaceUrl = false,
 ) {
   const searchQuery = searchState.query || getState().searchInput?.value;
@@ -536,7 +606,7 @@ function setSearchState(
       selectInput,
       selectConditionInput,
     },
-    ...(resetZoom && {
+    ...(resetZoomAndHiddenMetrics && {
       chart: {
         ...getState().chart,
         settings: {
@@ -548,10 +618,14 @@ function setSearchState(
             zoom: null,
           },
         },
+        hiddenMetrics: [],
       },
     }),
     replaceUrl,
   });
+  if (resetZoomAndHiddenMetrics) {
+    removeItem(EXPLORE_PANEL_HIDDEN_METRICS);
+  }
   if (callback !== null) {
     callback();
   }
@@ -942,6 +1016,7 @@ export const HubMainScreenModel = {
     setRunsState,
     setTraceList,
     setChartSettingsState,
+    setHiddenMetrics,
     setChartPointsCount,
     setChartFocusedState,
     setChartFocusedActiveState,
