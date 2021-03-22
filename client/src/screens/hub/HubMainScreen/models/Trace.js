@@ -160,9 +160,11 @@ export default class Trace {
       let series = this.series[i];
       if (
         series?.run?.run_hash === run_hash &&
-        series.metric?.name === metricName &&
-        btoa(JSON.stringify(series.trace.context)).replace(/[\=\+\/]/g, '') ===
-          traceContext
+        series?.metric?.name === metricName &&
+        btoa(JSON.stringify(series?.trace?.context)).replace(
+          /[\=\+\/]/g,
+          '',
+        ) === traceContext
       ) {
         return true;
       }

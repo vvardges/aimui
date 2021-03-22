@@ -71,7 +71,11 @@ function ParallelCoordinatesChart(props) {
     setChartFocusedActiveState,
   } = HubMainScreenModel.emitters;
 
-  let { getMetricColor, traceToHash } = HubMainScreenModel.helpers;
+  let {
+    getMetricColor,
+    traceToHash,
+    contextToHash,
+  } = HubMainScreenModel.helpers;
 
   function initD3() {
     d3.selection.prototype.moveToFront = function () {
@@ -705,13 +709,28 @@ function ParallelCoordinatesChart(props) {
 
     let runIndex = 0;
 
-    traces.current.forEach((traceModel) => {
+    traceList?.traces.forEach((traceModel) => {
       _.uniqBy(traceModel.series, 'run.run_hash').forEach((series) => {
         if (traceModel.chart !== props.index) {
           runIndex++;
           return;
         }
-        const { run } = series;
+        const { run, metric, trace } = series;
+
+        if (
+          traces.current.every(
+            (filteredTrace) =>
+              !filteredTrace.hasRun(
+                run.run_hash,
+                metric?.name,
+                contextToHash(trace?.context),
+              ),
+          )
+        ) {
+          runIndex++;
+          return;
+        }
+
         if (run.metricIsHidden) {
           runIndex++;
           return;
