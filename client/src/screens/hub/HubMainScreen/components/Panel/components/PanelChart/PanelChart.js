@@ -164,6 +164,9 @@ function PanelChart(props) {
     const width = parentWidth;
     const height = parentHeight;
 
+    const isXLogScale =
+      scaleOptions[chart.settings.persistent.xScale] === 'log';
+
     visBox.current = {
       ...visBox.current,
       width,
@@ -172,7 +175,7 @@ function PanelChart(props) {
     plotBox.current = {
       ...plotBox.current,
       width: width - margin.left - margin.right,
-      height: height - margin.top - margin.bottom,
+      height: height - margin.top - (margin.bottom + (isXLogScale ? 5 : 0)),
     };
 
     visArea.style('width', `${width}px`).style('height', `${height}px`);
@@ -231,7 +234,10 @@ function PanelChart(props) {
       .attr('x', margin.left)
       .attr('y', margin.top)
       .attr('width', width - margin.left - margin.right)
-      .attr('height', height - margin.top - margin.bottom)
+      .attr(
+        'height',
+        height - margin.top - (margin.bottom + (isXLogScale ? 5 : 0)),
+      )
       .style('fill', 'transparent');
 
     plot.current = svg.current
@@ -248,7 +254,10 @@ function PanelChart(props) {
       .attr('x', 0)
       .attr('y', 0)
       .attr('width', width - margin.left - margin.right)
-      .attr('height', height - margin.top - margin.bottom);
+      .attr(
+        'height',
+        height - margin.top - (margin.bottom + (isXLogScale ? 5 : 0)),
+      );
 
     attributes.current = plot.current.append('g');
     attributes.current
@@ -258,14 +267,20 @@ function PanelChart(props) {
       .attr('x', -7)
       .attr('y', 0)
       .attr('width', width - margin.left - margin.right + 14)
-      .attr('height', height - margin.top - margin.bottom);
+      .attr(
+        'height',
+        height - margin.top - (margin.bottom + (isXLogScale ? 5 : 0)),
+      );
 
     if (chart.settings.zoomMode) {
       brush.current = d3
         .brush()
         .extent([
           [margin.left, margin.top],
-          [width - margin.right, height - margin.bottom],
+          [
+            width - margin.right,
+            height - (margin.bottom + (isXLogScale ? 5 : 0)),
+          ],
         ])
         .on('end', handleZoomChange);
 
@@ -405,9 +420,15 @@ function PanelChart(props) {
       yScaleBase = d3.scaleLog();
     }
 
+    const isXLogScale =
+      scaleOptions[chart.settings.persistent.xScale] === 'log';
+
     const yScale = yScaleBase
       .domain(chart.settings.persistent.zoom?.[props.index]?.y ?? [yMin, yMax])
-      .range([height - margin.top - margin.bottom, 0]);
+      .range([
+        height - margin.top - (margin.bottom + (isXLogScale ? 5 : 0)),
+        0,
+      ]);
 
     let xAxisTicks = d3.axisBottom(xScale);
 
@@ -471,17 +492,57 @@ function PanelChart(props) {
           shortEnglishHumanizer(+d * 1000, { units: [formatUnit] }),
         );
     } else if (xAlignment === 'absolute_time') {
-      const ticksCount = Math.floor(plotBox.current.width / 120);
+      let ticksCount = Math.floor(plotBox.current.width / 120);
+      ticksCount = ticksCount > 1 ? ticksCount - 1 : 1;
+      const tickValues = _.range(...xScale.domain());
+
       xAxisTicks
         .ticks(ticksCount > 1 ? ticksCount - 1 : 1)
+        .tickValues(
+          tickValues.filter((v, i) => {
+            if (i === 0 || i === tickValues.length - 1) {
+              return true;
+            }
+            const interval = Math.floor(
+              (tickValues.length - 2) / (ticksCount - 2),
+            );
+            return i % interval === 0 && tickValues.length - interval > i;
+          }),
+        )
         .tickFormat((d, i) => moment.unix(d).format('HH:mm:ss D MMM, YY'));
     }
 
-    axes.current
+    const xAxis = axes.current
       .append('g')
       .attr('class', 'x axis')
       .attr('transform', `translate(0, ${plotBox.current.height})`)
       .call(xAxisTicks);
+
+    const initialTicks = axes.current.selectAll('.tick');
+    const ticksPositions = [];
+    initialTicks.each((data) => {
+      ticksPositions.push(xScale(data));
+    });
+
+    for (let i = ticksPositions.length - 1; i > 0; i--) {
+      let currentTickPos = ticksPositions[i];
+      let prevTickPos = ticksPositions[i - 1];
+      if (currentTickPos - prevTickPos < 10) {
+        xAxis.select(`.tick:nth-of-type(${i})`).attr('hidden', true);
+      }
+    }
+
+    if (isXLogScale) {
+      xAxis
+        .selectAll('text')
+        .style('text-anchor', 'middle')
+        .attr('dx', '-0.7em')
+        .attr('dy', '0.7em')
+        .attr(
+          'transform',
+          `rotate(${xAlignment === 'absolute_time' ? -10 : -40})`,
+        );
+    }
 
     svg.current
       .append('text')
@@ -489,7 +550,11 @@ function PanelChart(props) {
         'transform',
         `translate(
         ${visBox.current.width - 20},
-        ${visBox.current.height - visBox.current.margin.bottom - 5}
+        ${
+          visBox.current.height -
+          (visBox.current.margin.bottom + (isXLogScale ? 5 : 0)) -
+          5
+        }
       )`,
       )
       .attr('text-anchor', 'end')
@@ -1385,14 +1450,17 @@ function PanelChart(props) {
   }
 
   function isMouseInVisArea(mouse) {
+    const { chart } = HubMainScreenModel.getState();
     const { width, height, margin } = visBox.current;
     const padding = 5;
+    const isXLogScale =
+      scaleOptions[chart.settings.persistent.xScale] === 'log';
 
     return (
       mouse[0] > margin.left - padding &&
       mouse[0] < width - margin.right + padding &&
       mouse[1] > margin.top - padding &&
-      mouse[1] < height - margin.bottom + padding
+      mouse[1] < height - (margin.bottom + (isXLogScale ? 5 : 0)) + padding
     );
   }
 
