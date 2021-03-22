@@ -1,3 +1,6 @@
+import _ from 'lodash';
+import md5 from 'md5';
+
 import Trace from './Trace';
 import {
   deepEqual,
@@ -7,7 +10,6 @@ import {
 } from '../../../../utils';
 import { COLORS } from '../../../../constants/colors';
 import { STROKES } from '../../../../constants/strokes';
-import _ from 'lodash';
 import Series from './Series';
 
 export default class TraceList {
@@ -218,23 +220,17 @@ export default class TraceList {
           const configEntries = Object.keys(modelColorConfig)
             .sort()
             .map((key) => modelColorConfig[key]);
-          const configHash = btoa(
-            encodeURIComponent(JSON.stringify(configEntries)),
-          ).replace(/[\=\+\/]/g, '');
+          const configHash = md5(JSON.stringify(configEntries));
           let index = BigInt(0);
           for (let i = 0; i < configHash.length; i++) {
             const charCode = configHash.charCodeAt(i);
             if (charCode > 47 && charCode < 58) {
               index += BigInt(
-                (charCode - 48) * Math.ceil(Math.pow(62, i) / seed.color),
+                (charCode - 48) * Math.ceil(Math.pow(16, i) / seed.color),
               );
-            } else if (charCode > 64 && charCode < 91) {
+            } else if (charCode > 96 && charCode < 103) {
               index += BigInt(
-                (charCode - 55) * Math.ceil(Math.pow(62, i) / seed.color),
-              );
-            } else if (charCode > 96 && charCode < 122) {
-              index += BigInt(
-                (charCode - 61) * Math.ceil(Math.pow(62, i) / seed.color),
+                (charCode - 87) * Math.ceil(Math.pow(16, i) / seed.color),
               );
             }
           }
@@ -278,23 +274,17 @@ export default class TraceList {
           const configEntries = Object.keys(modelStrokeConfig)
             .sort()
             .map((key) => modelStrokeConfig[key]);
-          const configHash = btoa(
-            encodeURIComponent(JSON.stringify(configEntries)),
-          ).replace(/[\=\+\/]/g, '');
+          const configHash = md5(JSON.stringify(configEntries));
           let index = BigInt(0);
           for (let i = 0; i < configHash.length; i++) {
             const charCode = configHash.charCodeAt(i);
             if (charCode > 47 && charCode < 58) {
               index += BigInt(
-                (charCode - 48) * Math.ceil(Math.pow(62, i) / seed.style),
+                (charCode - 48) * Math.ceil(Math.pow(16, i) / seed.style),
               );
-            } else if (charCode > 64 && charCode < 91) {
+            } else if (charCode > 96 && charCode < 103) {
               index += BigInt(
-                (charCode - 55) * Math.ceil(Math.pow(62, i) / seed.style),
-              );
-            } else if (charCode > 96 && charCode < 122) {
-              index += BigInt(
-                (charCode - 61) * Math.ceil(Math.pow(62, i) / seed.style),
+                (charCode - 87) * Math.ceil(Math.pow(16, i) / seed.style),
               );
             }
           }
