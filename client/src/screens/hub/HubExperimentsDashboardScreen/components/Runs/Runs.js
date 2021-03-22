@@ -836,7 +836,7 @@ class Runs extends React.Component {
               'last',
             ])
           ]?.[metricValue];
-          item[`${metricKey}-${contextKey}`] = {
+          item[`${metricName}-${JSON.stringify(metricContext)}`] = {
             content: formatValue(
               typeof metricValue === 'number'
                 ? roundValue(metricValue)
