@@ -67,7 +67,7 @@ const state = {
         indicator: true,
         xAlignment: 'step',
         xScale: 0,
-        yScale: 1,
+        yScale: 0,
         pointsCount: 50,
       },
     },
@@ -140,7 +140,7 @@ const initialControls = {
         indicator: true,
         xAlignment: 'step',
         xScale: 0,
-        yScale: 1,
+        yScale: 0,
         pointsCount: getState().chart.settings.persistent.pointsCount,
       },
     },
@@ -277,8 +277,8 @@ function setTraceList() {
   };
   const xAlignment = getState().chart.settings.persistent.xAlignment;
   const scale = {
-    xScale: getState().chart.settings.persistent.xScale,
-    yScale: getState().chart.settings.persistent.yScale,
+    xScale: getState().chart.settings.persistent.xScale ?? 0,
+    yScale: getState().chart.settings.persistent.yScale ?? 0,
   };
 
   const traceList = new TraceList(grouping);
