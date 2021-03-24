@@ -681,9 +681,11 @@ export default class TraceList {
           }
           traceModel.series.forEach((series) => {
             const { trace } = series;
-            chartAxisValues[traceModel.chart] = _.uniq(
-              _.concat(chartAxisValues[traceModel.chart], trace.axisValues),
-            ).sort((a, b) => a - b);
+            if (trace !== undefined && trace !== null) {
+              chartAxisValues[traceModel.chart] = _.uniq(
+                _.concat(chartAxisValues[traceModel.chart], trace.axisValues),
+              ).sort((a, b) => a - b);
+            }
           });
         });
         this.traces.forEach((traceModel) => {

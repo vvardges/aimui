@@ -315,7 +315,13 @@ function PanelChart(props) {
         }
         const { run, metric, trace } = series;
         const max = trace.axisValues[trace.axisValues.length - 1];
-        const min = trace.axisValues[0];
+        let min = trace.axisValues[0];
+        if (
+          scaleOptions[chart.settings.persistent.xScale] === 'log' &&
+          min === 0
+        ) {
+          min = trace.axisValues[1] ?? min;
+        }
         if (max > xMax) {
           xMax = max;
         }
@@ -489,7 +495,7 @@ function PanelChart(props) {
         .ticks(ticksCount)
         .tickValues(tickValues)
         .tickFormat((d, i) =>
-          shortEnglishHumanizer(+d * 1000, { units: [formatUnit] }),
+          shortEnglishHumanizer(Math.round(+d * 1000), { units: [formatUnit] }),
         );
     } else if (xAlignment === 'absolute_time') {
       let ticksCount = Math.floor(plotBox.current.width / 120);
