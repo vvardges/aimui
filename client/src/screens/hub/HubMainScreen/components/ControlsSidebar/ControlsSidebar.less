@@ -311,3 +311,54 @@
 .ControlsSidebar__item__popup__overline--align {
   padding-top: var(--component-spacing-sm);
 }
+
+.ControlsSidebar__item__popup__range__wrapper {
+  padding: 0 var(--component-spacing-sm) var(--component-spacing-xs);
+  user-select: none;
+}
+
+.ControlsSidebar__item__popup__container {
+  padding-bottom: var(--component-spacing-sm);
+}
+
+.ControlsSidebar__item__popup__option__switchContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--component-spacing-sm);
+  margin-top: var(--component-spacing-xs);
+}
+
+.ControlsSidebar__item__popup__option__switch {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 2px;
+  background-color: var(--grey-lighter);
+  border-radius: var(--border-radius);
+  user-select: none;
+
+  &.disabled {
+    opacity: 0.65;
+    pointer-events: none;
+  }
+}
+
+.ControlsSidebar__item__popup__option__switch__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-width: 60px;
+  padding: 1px var(--component-spacing-xs);
+  text-transform: uppercase;
+  border-radius: var(--border-radius);
+  color: var(--primary-dark);
+  box-sizing: border-box;
+  cursor: pointer;
+
+  &.active {
+    background-color: var(--primary);
+    color: #fff;
+  }
+}

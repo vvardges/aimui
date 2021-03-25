@@ -11,7 +11,7 @@ import GroupByChart from './components/GroupByChart/GroupByChart';
 import Aggregate from './components/Aggregate/Aggregate';
 import ControlsSidebarZoom from './components/ControlsSidebarZoom/ControlsSidebarZoom';
 import ToggleParPlotIndicator from './components/ToggleParPlotIndicator/ToggleParPlotIndicator';
-import ControlsSidebarToggleInterpolation from './components/ControlsSidebarToggleInterpolation/ControlsSidebarToggleInterpolation';
+import ControlsSidebarSmoothingOptions from './components/ControlsSidebarSmoothingOptions/ControlsSidebarSmoothingOptions';
 import ControlsSidebarExport from './components/ControlsSidebarExport/ControlsSidebarExport';
 import ControlsSidebarHighlightMode from './components/ControlsSidebarHighlightMode/ControlsSidebarHighlightMode';
 import { HubMainScreenModel } from '../../models/HubMainScreenModel';
@@ -91,15 +91,18 @@ function ControlsSidebar() {
                 }
               />
               <UI.Line />
-              <ControlsSidebarToggleOutliers
+              <ControlsSidebarAxesProperties
                 disabled={runs.isLoading || runs.isEmpty}
                 settings={chart.settings}
               />
-              <ControlsSidebarToggleInterpolation
-                disabled={runs.isLoading || runs.isEmpty || aggregated}
+              <ControlsSidebarSmoothingOptions
                 settings={chart.settings}
+                interpolationDisabled={
+                  runs.isLoading || runs.isEmpty || aggregated
+                }
+                smoothingDisabled={false}
               />
-              <ControlsSidebarAxesProperties
+              <ControlsSidebarToggleOutliers
                 disabled={runs.isLoading || runs.isEmpty}
                 settings={chart.settings}
               />
@@ -111,9 +114,12 @@ function ControlsSidebar() {
           {isExploreParamsModeEnabled() && (
             <>
               <UI.Line />
-              <ControlsSidebarToggleInterpolation
-                disabled={runs.isLoading || runs.isEmpty}
+              <ControlsSidebarSmoothingOptions
                 settings={chart.settings}
+                interpolationDisabled={
+                  runs.isLoading || runs.isEmpty || aggregated
+                }
+                smoothingDisabled
               />
               <ToggleParPlotIndicator
                 disabled={

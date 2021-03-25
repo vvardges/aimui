@@ -69,6 +69,8 @@ const state = {
         xScale: 0,
         yScale: 0,
         pointsCount: 50,
+        smoothingAlgorithm: 'ema',
+        smoothFactor: 0,
       },
     },
     hiddenMetrics: JSON.parse(getItem(EXPLORE_PANEL_HIDDEN_METRICS)) ?? [],
@@ -142,6 +144,8 @@ const initialControls = {
         xScale: 0,
         yScale: 0,
         pointsCount: getState().chart.settings.persistent.pointsCount,
+        smoothingAlgorithm: 'ema',
+        smoothFactor: 0,
       },
     },
   },
@@ -280,6 +284,9 @@ function setTraceList() {
     xScale: getState().chart.settings.persistent.xScale ?? 0,
     yScale: getState().chart.settings.persistent.yScale ?? 0,
   };
+  const smoothingAlgorithm = getState().chart.settings.persistent
+    .smoothingAlgorithm;
+  const smoothFactor = getState().chart.settings.persistent.smoothFactor;
 
   const traceList = new TraceList(grouping);
   const aggregate = traceList.groupingFields.length > 0;
@@ -325,6 +332,8 @@ function setTraceList() {
         seed,
         colorPalette,
         isHidden,
+        smoothingAlgorithm,
+        smoothFactor,
       );
     } else {
       run.metrics.forEach((metric) => {
@@ -344,6 +353,8 @@ function setTraceList() {
             seed,
             colorPalette,
             isHidden,
+            smoothingAlgorithm,
+            smoothFactor,
           );
         });
       });

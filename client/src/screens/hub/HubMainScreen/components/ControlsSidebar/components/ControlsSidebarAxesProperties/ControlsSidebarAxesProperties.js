@@ -1,5 +1,3 @@
-import './ControlsSidebarAxesProperties.less';
-
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
@@ -52,6 +50,33 @@ function ControlsSidebarAxesProperties(props) {
     );
   }
 
+  function changeSmoothingAlgorithm(algorithm) {
+    setChartSettingsState(
+      {
+        ...props.settings,
+        persistent: {
+          ...props.settings.persistent,
+          smoothingAlgorithm: algorithm,
+          smoothFactor: algorithm === 'ema' ? 0 : 1,
+        },
+      },
+      setTraceList,
+    );
+  }
+
+  function changeSmoothFactor(factor) {
+    setChartSettingsState(
+      {
+        ...props.settings,
+        persistent: {
+          ...props.settings.persistent,
+          smoothFactor: +factor,
+        },
+      },
+      setTraceList,
+    );
+  }
+
   useEffect(() => {
     if (opened && popupRef.current) {
       popupRef.current.focus();
@@ -67,7 +92,6 @@ function ControlsSidebarAxesProperties(props) {
           className={classNames({
             ControlsSidebar__item: true,
             active: opened,
-            column: true,
           })}
           onClick={(evt) => setOpened(!opened)}
         >
@@ -97,21 +121,21 @@ function ControlsSidebarAxesProperties(props) {
           </div>
           <div>
             <UI.Text
-              className='ControlsSidebarAxesProperties__overline ControlsSidebarAxesProperties__overline--align'
+              className='ControlsSidebar__item__popup__overline ControlsSidebar__item__popup__overline--align'
               type='primary'
               overline
               bold
             >
               Select axes scale:
             </UI.Text>
-            <div className='ControlsSidebarAxesProperties__scale__option'>
+            <div className='ControlsSidebar__item__popup__option__switchContainer'>
               <UI.Text type='primary' small>
                 X-axis scale
               </UI.Text>
-              <div className='ControlsSidebarAxesProperties__scale__option__switch'>
+              <div className='ControlsSidebar__item__popup__option__switch'>
                 <span
                   className={classNames({
-                    ControlsSidebarAxesProperties__scale__option__switch__item: true,
+                    ControlsSidebar__item__popup__option__switch__item: true,
                     active: (xScale || 0) === 0,
                   })}
                   onClick={
@@ -124,7 +148,7 @@ function ControlsSidebarAxesProperties(props) {
                 </span>
                 <span
                   className={classNames({
-                    ControlsSidebarAxesProperties__scale__option__switch__item: true,
+                    ControlsSidebar__item__popup__option__switch__item: true,
                     active: xScale === 1,
                   })}
                   onClick={
@@ -137,14 +161,14 @@ function ControlsSidebarAxesProperties(props) {
                 </span>
               </div>
             </div>
-            <div className='ControlsSidebarAxesProperties__scale__option'>
+            <div className='ControlsSidebar__item__popup__option__switchContainer'>
               <UI.Text type='primary' small>
                 Y-axis scale
               </UI.Text>
-              <div className='ControlsSidebarAxesProperties__scale__option__switch'>
+              <div className='ControlsSidebar__item__popup__option__switch'>
                 <span
                   className={classNames({
-                    ControlsSidebarAxesProperties__scale__option__switch__item: true,
+                    ControlsSidebar__item__popup__option__switch__item: true,
                     active: (yScale || 0) === 0,
                   })}
                   onClick={
@@ -157,7 +181,7 @@ function ControlsSidebarAxesProperties(props) {
                 </span>
                 <span
                   className={classNames({
-                    ControlsSidebarAxesProperties__scale__option__switch__item: true,
+                    ControlsSidebar__item__popup__option__switch__item: true,
                     active: yScale === 1,
                   })}
                   onClick={
@@ -174,7 +198,7 @@ function ControlsSidebarAxesProperties(props) {
           <UI.Line />
           <div>
             <UI.Text
-              className='ControlsSidebarAxesProperties__overline ControlsSidebarAxesProperties__overline--align'
+              className='ControlsSidebar__item__popup__overline ControlsSidebar__item__popup__overline--align'
               type='primary'
               overline
               bold
@@ -201,14 +225,14 @@ function ControlsSidebarAxesProperties(props) {
           <UI.Line />
           <div>
             <UI.Text
-              className='ControlsSidebarAxesProperties__overline'
+              className='ControlsSidebar__item__popup__overline'
               type='primary'
               overline
               bold
             >
               Number of steps:
             </UI.Text>
-            <div className='ControlsSidebarAxesProperties__range__wrapper'>
+            <div className='ControlsSidebar__item__popup__range__wrapper'>
               <UI.RangeSlider
                 min={10}
                 max={500}

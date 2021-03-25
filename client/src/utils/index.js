@@ -1,4 +1,5 @@
 import { useState, useLayoutEffect } from 'react';
+import _ from 'lodash';
 
 export function classNames() {
   let result = [];
@@ -483,4 +484,33 @@ export function getValuesMedian(values) {
   }
 
   return values[(length - 1) / 2];
+}
+
+export function calculateExponentianlMovingAvergae(data, smoothFactor) {
+  let smoothedData = [data[0]];
+  for (let i = 1; i < data.length; i++) {
+    smoothedData.push(
+      smoothedData[i - 1] * smoothFactor + data[i] * (1 - smoothFactor),
+    );
+  }
+  return smoothedData;
+}
+
+export function calculateCentralMovingAverage(data, smoothFactor) {
+  let smoothedData = [];
+  const len = data.length;
+  let windowSize = (smoothFactor - 1) / 2;
+
+  for (let i = 0; i < len; i++) {
+    const start = i - windowSize;
+    const end = i + windowSize + 1;
+    const currentWindow = data.slice(
+      start < 0 ? 0 : start,
+      end > len + 1 ? len + 1 : end,
+    );
+    const windowAvergae = _.sum(currentWindow) / currentWindow.length;
+    smoothedData.push(windowAvergae);
+  }
+
+  return smoothedData;
 }

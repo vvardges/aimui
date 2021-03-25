@@ -7,6 +7,8 @@ import {
   getObjectValueByPath,
   arraysIntersection,
   getValuesMedian,
+  calculateExponentianlMovingAvergae,
+  calculateCentralMovingAverage,
 } from '../../../../utils';
 import { COLORS } from '../../../../constants/colors';
 import { STROKES } from '../../../../constants/strokes';
@@ -155,6 +157,8 @@ export default class TraceList {
     seed,
     colorPalette = 0,
     isHidden,
+    smoothingAlgorithm,
+    smoothFactor,
   ) => {
     let subGroup = this.groups;
     this.groupingFields.forEach((g) => {
@@ -336,16 +340,37 @@ export default class TraceList {
       traceModel.chart = chart;
     }
 
+    let traceClone = _.cloneDeep(trace);
+    if (!isHidden) {
+      // Apply smoothing
+      if ((smoothingAlgorithm || 'ema') === 'ema' && smoothFactor > 0) {
+        const data = traceClone.data.map((p) => p[0]);
+        const smoothedData = calculateExponentianlMovingAvergae(
+          data,
+          smoothFactor,
+        );
+        traceClone.data = traceClone.data.map((p, i) => {
+          let [value, ...rest] = p;
+          return [smoothedData[i], ...rest];
+        });
+      } else if (smoothingAlgorithm === 'cma' && smoothFactor > 1) {
+        const data = traceClone.data.map((p) => p[0]);
+        const smoothedData = calculateCentralMovingAverage(data, smoothFactor);
+        traceClone.data = traceClone.data.map((p, i) => {
+          let [value, ...rest] = p;
+          return [smoothedData[i], ...rest];
+        });
+      }
+    }
     // Add series to trace
-    run.metricIsHidden = isHidden;
-    const seriesModel = new Series(run, metric, trace, isHidden);
+    const seriesModel = new Series(run, metric, traceClone, isHidden);
 
     let alignment = alignBy;
 
     if (alignBy === 'epoch' && this.grouping.chart.includes('context.subset')) {
       alignment = 'step';
     }
-    traceModel.addSeries(seriesModel, aggregate, alignment);
+    traceModel.addSeries(seriesModel, aggregate);
     this.setAxisValues(alignBy, aggregate, scale);
   };
 

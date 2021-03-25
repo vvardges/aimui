@@ -18,8 +18,9 @@ class RangeSlider extends React.Component {
   }
 
   handleChange = (value) => {
-    this.value = value;
-    this.setState({ value });
+    const { step } = this.props;
+    this.value = step >= 1 ? value : +value.toFixed(`${step}`.slice(2).length);
+    this.setState({ value: this.value });
   };
 
   handleChangeComplete = () => {
@@ -54,6 +55,7 @@ class RangeSlider extends React.Component {
           className={className}
           min={this.props.min}
           max={this.props.max}
+          step={this.props.step}
           value={this.state.value}
           handleLabel={`${this.state.value}`}
           labels={ticks}
@@ -71,6 +73,7 @@ RangeSlider.defaultProps = {
   max: 100,
   value: 50,
   ticks: null,
+  step: 1,
 };
 
 RangeSlider.propTypes = {
@@ -79,6 +82,7 @@ RangeSlider.propTypes = {
   value: PropTypes.number,
   ticks: PropTypes.object,
   onChange: PropTypes.func,
+  step: PropTypes.number,
 };
 
 export default RangeSlider;
