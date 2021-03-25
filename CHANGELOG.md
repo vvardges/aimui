@@ -1,5 +1,6 @@
 # Changelog
 
+- Add std dev and std err aggregation modes (roubkar)
 - Add ability to apply smoothing on line charts (roubkar)
 
 ## 1.4.0 Mar 24 2021

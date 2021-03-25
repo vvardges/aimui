@@ -734,6 +734,26 @@ function PanelChart(props) {
         metric: metricMax,
         trace: traceMax,
       } = traceModel.aggregation.max;
+      const {
+        run: runStdDevMin,
+        metric: metricStdDevMin,
+        trace: traceStdDevMin,
+      } = traceModel.aggregation.stdDevMin;
+      const {
+        run: runStdDevMax,
+        metric: metricStdDevMax,
+        trace: traceStdDevMax,
+      } = traceModel.aggregation.stdDevMax;
+      const {
+        run: runStdErrMin,
+        metric: metricStdErrMin,
+        trace: traceStdErrMin,
+      } = traceModel.aggregation.stdErrMin;
+      const {
+        run: runStdErrMax,
+        metric: metricStdErrMax,
+        trace: traceStdErrMax,
+      } = traceModel.aggregation.stdErrMax;
 
       const noSelectedRun =
         highlightMode === 'default' || !focusedLineAttr?.runHash;
@@ -748,12 +768,34 @@ function PanelChart(props) {
           );
 
       if (contextFilter.aggregatedArea !== 'none') {
-        const traceMaxData = traceMax.data.filter(
-          (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
-        );
-        const traceMinData = traceMin.data.filter(
-          (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
-        );
+        let traceMinData;
+        let traceMaxData;
+        switch (contextFilter.aggregatedArea) {
+          case 'min_max':
+            traceMinData = traceMin.data.filter(
+              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+            );
+            traceMaxData = traceMax.data.filter(
+              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+            );
+            break;
+          case 'std_dev':
+            traceMinData = traceStdDevMin.data.filter(
+              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+            );
+            traceMaxData = traceStdDevMax.data.filter(
+              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+            );
+            break;
+          case 'std_err':
+            traceMinData = traceStdErrMin.data.filter(
+              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+            );
+            traceMaxData = traceStdErrMax.data.filter(
+              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+            );
+            break;
+        }
         const area = d3
           .area()
           .x((d, i) => chartOptions.current.xScale(d[1]))

@@ -728,6 +728,23 @@ function ContextBox(props) {
               traceModel.aggregation.med.trace.data,
               step,
             )?.[0];
+            const stdDevMin = getMetricStepDataByStepIdx(
+              traceModel.aggregation.stdDevMin.trace.data,
+              step,
+            )?.[0];
+            const stdDevMax = getMetricStepDataByStepIdx(
+              traceModel.aggregation.stdDevMax.trace.data,
+              step,
+            )?.[0];
+            const stdErrMin = getMetricStepDataByStepIdx(
+              traceModel.aggregation.stdErrMin.trace.data,
+              step,
+            )?.[0];
+            const stdErrMax = getMetricStepDataByStepIdx(
+              traceModel.aggregation.stdErrMax.trace.data,
+              step,
+            )?.[0];
+            const aggregatedArea = contextFilter.aggregatedArea;
             const aggregatedLine = contextFilter.aggregatedLine;
             const runsCount = _.uniqBy(traceModel.series, 'run.run_hash')
               .length;
@@ -807,18 +824,66 @@ function ContextBox(props) {
                   content: (
                     <div className='ContextBox__table__item-aggregated_labels'>
                       <UI.Label
-                        className='ContextBox__table__item-aggregated_label min'
-                        iconLeft='min'
+                        className='ContextBox__table__item-aggregated_label'
+                        iconLeft={<div>area</div>}
                         outline
                         rounded
                       >
-                        {min !== null && min !== undefined
-                          ? roundValue(min)
-                          : '-'}
+                        <span className='ContextBox__table__item-aggregated_label_item min'>
+                          {aggregatedArea === 'std_dev'
+                            ? stdDevMin !== null && stdDevMin !== undefined
+                              ? roundValue(stdDevMin)
+                              : '-'
+                            : aggregatedArea === 'std_err'
+                              ? stdErrMin !== null && stdErrMin !== undefined
+                                ? roundValue(stdErrMin)
+                                : '-'
+                              : min !== null && min !== undefined
+                                ? roundValue(min)
+                                : '-'}
+                        </span>
+                        {':'}
+                        <span className='ContextBox__table__item-aggregated_label_item max'>
+                          {aggregatedArea === 'std_dev'
+                            ? stdDevMax !== null && stdDevMax !== undefined
+                              ? roundValue(stdDevMax)
+                              : '-'
+                            : aggregatedArea === 'std_err'
+                              ? stdErrMax !== null && stdErrMax !== undefined
+                                ? roundValue(stdErrMax)
+                                : '-'
+                              : max !== null && max !== undefined
+                                ? roundValue(max)
+                                : '-'}
+                        </span>
                       </UI.Label>
+                      {aggregatedLine === 'min' && (
+                        <UI.Label
+                          className='ContextBox__table__item-aggregated_label aggLine'
+                          iconLeft='min'
+                          outline
+                          rounded
+                        >
+                          {min !== null && min !== undefined
+                            ? roundValue(min)
+                            : '-'}
+                        </UI.Label>
+                      )}
+                      {aggregatedLine === 'max' && (
+                        <UI.Label
+                          className='ContextBox__table__item-aggregated_label aggLine'
+                          iconLeft='max'
+                          outline
+                          rounded
+                        >
+                          {max !== null && max !== undefined
+                            ? roundValue(max)
+                            : '-'}
+                        </UI.Label>
+                      )}
                       {aggregatedLine === 'avg' && (
                         <UI.Label
-                          className='ContextBox__table__item-aggregated_label avg'
+                          className='ContextBox__table__item-aggregated_label aggLine'
                           iconLeft='mean'
                           outline
                           rounded
@@ -830,7 +895,7 @@ function ContextBox(props) {
                       )}
                       {aggregatedLine === 'median' && (
                         <UI.Label
-                          className='ContextBox__table__item-aggregated_label avg'
+                          className='ContextBox__table__item-aggregated_label aggLine'
                           iconLeft='median'
                           outline
                           rounded
@@ -840,16 +905,6 @@ function ContextBox(props) {
                             : '-'}
                         </UI.Label>
                       )}
-                      <UI.Label
-                        className='ContextBox__table__item-aggregated_label max'
-                        iconLeft='max'
-                        outline
-                        rounded
-                      >
-                        {max !== null && max !== undefined
-                          ? roundValue(max)
-                          : '-'}
-                      </UI.Label>
                     </div>
                   ),
                   className: `value-${getCSSSelectorFromString(
@@ -1297,53 +1352,116 @@ function ContextBox(props) {
                   groupEpochData[groupSelector] ?? '-';
               }
 
-              const min = getMetricStepDataByStepIdx(
-                traceModel.aggregation.min.trace.data,
-                step,
-              )?.[0];
-              const max = getMetricStepDataByStepIdx(
-                traceModel.aggregation.max.trace.data,
-                step,
-              )?.[0];
-              const avg = getMetricStepDataByStepIdx(
-                traceModel.aggregation.avg.trace.data,
-                step,
-              )?.[0];
-              const med = getMetricStepDataByStepIdx(
-                traceModel.aggregation.med.trace.data,
-                step,
-              )?.[0];
+              const aggregatedArea = contextFilter.aggregatedArea;
               const aggregatedLine = contextFilter.aggregatedLine;
 
               const groupValueCellMin = document.querySelector(
-                `.value-${groupSelector} .min .Label__content`,
+                `.value-${groupSelector} .min`,
               );
               if (!!groupValueCellMin) {
-                groupValueCellMin.textContent =
-                  min !== null && min !== undefined ? roundValue(min) : '-';
-              }
-
-              if (aggregatedLine === 'avg' || aggregatedLine === 'median') {
-                const groupValueCellAvg = document.querySelector(
-                  `.value-${groupSelector} .avg .Label__content`,
-                );
-                if (!!groupValueCellAvg) {
-                  if (aggregatedLine === 'avg') {
-                    groupValueCellAvg.textContent =
-                      avg !== null && avg !== undefined ? roundValue(avg) : '-';
-                  } else {
-                    groupValueCellAvg.textContent =
-                      med !== null && med !== undefined ? roundValue(med) : '-';
-                  }
+                switch (aggregatedArea) {
+                  case 'std_dev':
+                    const stdDevMin = getMetricStepDataByStepIdx(
+                      traceModel.aggregation.stdDevMin.trace.data,
+                      step,
+                    )?.[0];
+                    groupValueCellMin.textContent =
+                      stdDevMin !== null && stdDevMin !== undefined
+                        ? roundValue(stdDevMin)
+                        : '-';
+                    break;
+                  case 'std_err':
+                    const stdErrMin = getMetricStepDataByStepIdx(
+                      traceModel.aggregation.stdErrMin.trace.data,
+                      step,
+                    )?.[0];
+                    groupValueCellMin.textContent =
+                      stdErrMin !== null && stdErrMin !== undefined
+                        ? roundValue(stdErrMin)
+                        : '-';
+                    break;
+                  default:
+                    const min = getMetricStepDataByStepIdx(
+                      traceModel.aggregation.min.trace.data,
+                      step,
+                    )?.[0];
+                    groupValueCellMin.textContent =
+                      min !== null && min !== undefined ? roundValue(min) : '-';
                 }
               }
 
               const groupValueCellMax = document.querySelector(
-                `.value-${groupSelector} .max .Label__content`,
+                `.value-${groupSelector} .max`,
               );
               if (!!groupValueCellMax) {
-                groupValueCellMax.textContent =
-                  max !== null && max !== undefined ? roundValue(max) : '-';
+                switch (aggregatedArea) {
+                  case 'std_dev':
+                    const stdDevMax = getMetricStepDataByStepIdx(
+                      traceModel.aggregation.stdDevMax.trace.data,
+                      step,
+                    )?.[0];
+                    groupValueCellMax.textContent =
+                      stdDevMax !== null && stdDevMax !== undefined
+                        ? roundValue(stdDevMax)
+                        : '-';
+                    break;
+                  case 'std_err':
+                    const stdErrMax = getMetricStepDataByStepIdx(
+                      traceModel.aggregation.stdErrMax.trace.data,
+                      step,
+                    )?.[0];
+                    groupValueCellMax.textContent =
+                      stdErrMax !== null && stdErrMax !== undefined
+                        ? roundValue(stdErrMax)
+                        : '-';
+                    break;
+                  default:
+                    const max = getMetricStepDataByStepIdx(
+                      traceModel.aggregation.max.trace.data,
+                      step,
+                    )?.[0];
+                    groupValueCellMax.textContent =
+                      max !== null && max !== undefined ? roundValue(max) : '-';
+                }
+              }
+              const groupValueCellAggLine = document.querySelector(
+                `.value-${groupSelector} .aggLine .Label__content`,
+              );
+              if (!!groupValueCellAggLine) {
+                switch (aggregatedLine) {
+                  case 'avg':
+                    const avg = getMetricStepDataByStepIdx(
+                      traceModel.aggregation.avg.trace.data,
+                      step,
+                    )?.[0];
+                    groupValueCellAggLine.textContent =
+                      avg !== null && avg !== undefined ? roundValue(avg) : '-';
+                    break;
+                  case 'median':
+                    const med = getMetricStepDataByStepIdx(
+                      traceModel.aggregation.med.trace.data,
+                      step,
+                    )?.[0];
+                    groupValueCellAggLine.textContent =
+                      med !== null && med !== undefined ? roundValue(med) : '-';
+                    break;
+                  case 'min':
+                    const min = getMetricStepDataByStepIdx(
+                      traceModel.aggregation.min.trace.data,
+                      step,
+                    )?.[0];
+                    groupValueCellAggLine.textContent =
+                      min !== null && min !== undefined ? roundValue(min) : '-';
+                    break;
+                  case 'max':
+                    const max = getMetricStepDataByStepIdx(
+                      traceModel.aggregation.max.trace.data,
+                      step,
+                    )?.[0];
+                    groupValueCellAggLine.textContent =
+                      max !== null && max !== undefined ? roundValue(max) : '-';
+                    break;
+                }
               }
             }
           });

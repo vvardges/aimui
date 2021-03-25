@@ -160,12 +160,29 @@
   }
 }
 
+.ContextBox__table__item-aggregated_labels__separator {
+  margin-right: var(--space-xxs);
+  width: 1px;
+  height: 18px;
+  border-right: 1px solid var(--grey-light-x);
+}
+
 .ContextBox__table__item-aggregated_label {
   text-shadow: none;
   margin-right: var(--space-xxs);
 
   &.outline {
     color: inherit;
+  }
+}
+
+.ContextBox__table__item-aggregated_label_item {
+  &.min {
+    margin-right: 5px;
+  }
+
+  &.max {
+    margin-left: 5px;
   }
 }
 

@@ -55,17 +55,17 @@ export default class Trace {
   };
 
   aggregate = () => {
-    this.aggregation.min = this.aggregateSeries((values) => _.min(values));
-    this.aggregation.max = this.aggregateSeries((values) => _.max(values));
-    this.aggregation.avg = this.aggregateSeries(
-      (values) => _.sum(values) / values.length,
-    );
-    this.aggregation.med = this.aggregateSeries((values) =>
-      getValuesMedian(values),
-    );
+    this.aggregation.min = this.aggregateSeries();
+    this.aggregation.max = this.aggregateSeries();
+    this.aggregation.avg = this.aggregateSeries();
+    this.aggregation.med = this.aggregateSeries();
+    this.aggregation.stdDevMin = this.aggregateSeries();
+    this.aggregation.stdDevMax = this.aggregateSeries();
+    this.aggregation.stdErrMin = this.aggregateSeries();
+    this.aggregation.stdErrMax = this.aggregateSeries();
   };
 
-  aggregateSeries = (aggFunc) => {
+  aggregateSeries = () => {
     const trace = {
       data: [],
       num_steps: 0,
@@ -105,33 +105,6 @@ export default class Trace {
     metric.name = _.uniq(name);
     run.run_hash = _.uniq(run_hash);
     run.experiment_name = _.uniq(experiment_name);
-
-    // Aggregate data
-    // let idx = 0;
-    // while (true) {
-    //   const values = [];
-    //   let step = null;
-    //   let epoch = null;
-    //   let timestamp = null;
-    //   this.series.forEach((s) => {
-    //     if (s.trace !== null) {
-    //       const point = s.getPoint(idx);
-    //       if (point !== null) {
-    //         values.push(point[0]);
-    //         // TODO: Aggregate step(?) and relative time(!)
-    //         step = point[1];
-    //         epoch = point[2];
-    //         timestamp = point[3];
-    //       }
-    //     }
-    //   });
-    //   if (values.length > 0) {
-    //     trace.data.push([aggFunc(values), step, epoch, timestamp]);
-    //   } else {
-    //     break;
-    //   }
-    //   idx += 1;
-    // }
 
     if (trace.data.length) {
       trace.num_steps = trace.data[trace.data.length - 1][1];

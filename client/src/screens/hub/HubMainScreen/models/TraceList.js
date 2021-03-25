@@ -678,12 +678,12 @@ export default class TraceList {
 
           if (!!traceModel.aggregation) {
             const stepTicks = Object.keys(valuesByStep).sort((a, b) => a - b);
-            traceModel.aggregation.max.trace.data = stepTicks.map((step) => [
-              _.max(valuesByStep[step]),
-              +step,
-            ]);
             traceModel.aggregation.min.trace.data = stepTicks.map((step) => [
               _.min(valuesByStep[step]),
+              +step,
+            ]);
+            traceModel.aggregation.max.trace.data = stepTicks.map((step) => [
+              _.max(valuesByStep[step]),
               +step,
             ]);
             traceModel.aggregation.avg.trace.data = stepTicks.map((step) => [
@@ -694,6 +694,48 @@ export default class TraceList {
               getValuesMedian(valuesByStep[step]),
               +step,
             ]);
+            let stdDev = {};
+            let stdErr = {};
+            stepTicks.forEach((step) => {
+              const avg = _.sum(valuesByStep[step]) / valuesByStep[step].length;
+              const distancesFromAvg = valuesByStep[step].map((value) =>
+                Math.pow(avg - value, 2),
+              );
+              const sum = _.sum(distancesFromAvg);
+              const stdDevValue = Math.sqrt(
+                sum / (valuesByStep[step].length - 1 || 1),
+              );
+              const stdErrValue =
+                stdDevValue / Math.sqrt(valuesByStep[step].length);
+              stdDev[step] = {
+                min: avg - stdDevValue,
+                max: avg + stdDevValue,
+              };
+              stdErr[step] = {
+                min: avg - stdErrValue,
+                max: avg + stdErrValue,
+              };
+            });
+            traceModel.aggregation.stdDevMin.trace.data = stepTicks.map(
+              (step) => {
+                return [stdDev[step].min, +step];
+              },
+            );
+            traceModel.aggregation.stdDevMax.trace.data = stepTicks.map(
+              (step) => {
+                return [stdDev[step].max, +step];
+              },
+            );
+            traceModel.aggregation.stdErrMin.trace.data = stepTicks.map(
+              (step) => {
+                return [stdErr[step].min, +step];
+              },
+            );
+            traceModel.aggregation.stdErrMax.trace.data = stepTicks.map(
+              (step) => {
+                return [stdErr[step].max, +step];
+              },
+            );
           }
         });
         break;
@@ -778,12 +820,12 @@ export default class TraceList {
 
           if (!!traceModel.aggregation) {
             const timeTicks = Object.keys(valuesByTime).sort((a, b) => a - b);
-            traceModel.aggregation.max.trace.data = timeTicks.map((time) => [
-              _.max(valuesByTime[time]),
-              +time,
-            ]);
             traceModel.aggregation.min.trace.data = timeTicks.map((time) => [
               _.min(valuesByTime[time]),
+              +time,
+            ]);
+            traceModel.aggregation.max.trace.data = timeTicks.map((time) => [
+              _.max(valuesByTime[time]),
               +time,
             ]);
             traceModel.aggregation.avg.trace.data = timeTicks.map((time) => [
@@ -794,6 +836,48 @@ export default class TraceList {
               getValuesMedian(valuesByTime[time]),
               +time,
             ]);
+            let stdDev = {};
+            let stdErr = {};
+            timeTicks.forEach((time) => {
+              const avg = _.sum(valuesByTime[time]) / valuesByTime[time].length;
+              const distancesFromAvg = valuesByTime[time].map((value) =>
+                Math.pow(avg - value, 2),
+              );
+              const sum = _.sum(distancesFromAvg);
+              const stdDevValue = Math.sqrt(
+                sum / (valuesByTime[time].length - 1 || 1),
+              );
+              const stdErrValue =
+                stdDevValue / Math.sqrt(valuesByTime[time].length);
+              stdDev[time] = {
+                min: avg - stdDevValue,
+                max: avg + stdDevValue,
+              };
+              stdErr[time] = {
+                min: avg - stdErrValue,
+                max: avg + stdErrValue,
+              };
+            });
+            traceModel.aggregation.stdDevMin.trace.data = timeTicks.map(
+              (time) => {
+                return [stdDev[time].min, +time];
+              },
+            );
+            traceModel.aggregation.stdDevMax.trace.data = timeTicks.map(
+              (time) => {
+                return [stdDev[time].max, +time];
+              },
+            );
+            traceModel.aggregation.stdErrMin.trace.data = timeTicks.map(
+              (time) => {
+                return [stdErr[time].min, +time];
+              },
+            );
+            traceModel.aggregation.stdErrMax.trace.data = timeTicks.map(
+              (time) => {
+                return [stdErr[time].max, +time];
+              },
+            );
           }
         });
         break;

@@ -123,6 +123,8 @@ function Aggregate(props) {
               {[
                 { key: 'none', name: 'None' },
                 { key: 'min_max', name: 'Min/Max' },
+                { key: 'std_dev', name: 'Mean ± Standard Deviation' },
+                { key: 'std_err', name: 'Mean ± Standard Error' },
               ].map((method) => (
                 <div
                   key={method.key}
