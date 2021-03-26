@@ -44,11 +44,30 @@ function ContextTable(props) {
     JSON.parse(getItem(TABLE_COLUMNS_WIDTHS))?.[props.name] ?? {},
   );
 
-  function updateColumns(columns) {
+  function updateColumns(columns, reset = false) {
+    let order;
     const tableColumns = JSON.parse(getItem(TABLE_COLUMNS)) ?? {};
-    tableColumns[props.name] = columns;
+    if (reset) {
+      order = {
+        left: [],
+        middle: [],
+        right: [],
+      };
+      props.columns.forEach((col) => {
+        if (col.pin === 'left') {
+          order.left.push(col.key);
+        } else if (col.pin === 'right') {
+          order.right.push(col.key);
+        } else {
+          order.middle.push(col.key);
+        }
+      });
+    } else {
+      order = columns;
+    }
+    tableColumns[props.name] = order;
+    setColumnsOrder(order);
     setItem(TABLE_COLUMNS, JSON.stringify(tableColumns));
-    setColumnsOrder(columns);
   }
 
   function updateColumnsWidth(colKey, width, reset = false) {

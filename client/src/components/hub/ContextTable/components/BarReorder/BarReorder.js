@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import _ from 'lodash';
+import md5 from 'md5';
 
 import UI from '../../../../../ui';
 import { classNames } from '../../../../../utils';
@@ -18,6 +19,8 @@ function BarReorder({
   getParamsWithSameValue,
 }) {
   let [searchKey, setSearchKey] = useState('');
+  let [panesKey, setPanesKey] = useState('');
+  let keySeed = useRef(0);
 
   const columnsKeys = columns.map((c) => c.key);
   const hiddenFields = excludedFields.filter((field) =>
@@ -26,6 +29,11 @@ function BarReorder({
   const availableColumnsForHiding = columnsKeys.filter(
     (col) => !alwaysVisibleColumns.includes(col),
   );
+
+  function resetColumnsOrder() {
+    updateColumns(undefined, true);
+    setPanesKey(md5(++keySeed.current));
+  }
 
   return (
     <div className='ContextTableBar__item__wrapper'>
@@ -87,6 +95,7 @@ function BarReorder({
               </div>
               <div className='BarReorder__board'>
                 <Panes
+                  key={panesKey}
                   columnsOrder={columnsOrder}
                   updateColumns={updateColumns}
                   excludedFields={excludedFields}
@@ -97,6 +106,14 @@ function BarReorder({
               </div>
               <div className='BarReorder__footer'>
                 <div className='BarReorder__actions'>
+                  <UI.Button
+                    className='BarReorder__action'
+                    type='secondary'
+                    size='tiny'
+                    onClick={resetColumnsOrder}
+                  >
+                    Reset columns order
+                  </UI.Button>
                   <UI.Button
                     className='BarReorder__action'
                     type='secondary'
