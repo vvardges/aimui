@@ -43,7 +43,6 @@ function ControlsSidebar() {
     groupByStyle,
     groupByChart,
     groupAgainst,
-    aggregated,
     aggregatedArea,
     aggregatedLine,
     seed,
@@ -87,7 +86,7 @@ function ControlsSidebar() {
           {isExploreMetricsModeEnabled() && (
             <>
               <Aggregate
-                aggregated={aggregated}
+                settings={chart.settings}
                 aggregatedArea={aggregatedArea}
                 aggregatedLine={aggregatedLine}
                 disabled={
@@ -104,7 +103,9 @@ function ControlsSidebar() {
               <ControlsSidebarSmoothingOptions
                 settings={chart.settings}
                 interpolationDisabled={
-                  runs.isLoading || runs.isEmpty || aggregated
+                  runs.isLoading ||
+                  runs.isEmpty ||
+                  chart.settings.persistent.aggregated
                 }
                 smoothingDisabled={false}
               />
@@ -123,7 +124,9 @@ function ControlsSidebar() {
               <ControlsSidebarSmoothingOptions
                 settings={chart.settings}
                 interpolationDisabled={
-                  runs.isLoading || runs.isEmpty || aggregated
+                  runs.isLoading ||
+                  runs.isEmpty ||
+                  chart.settings.persistent.aggregated
                 }
                 smoothingDisabled
               />

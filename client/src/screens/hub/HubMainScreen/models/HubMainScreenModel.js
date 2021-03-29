@@ -72,6 +72,7 @@ const state = {
         pointsCount: 50,
         smoothingAlgorithm: 'ema',
         smoothFactor: 0,
+        aggregated: false,
       },
     },
     hiddenMetrics: JSON.parse(getItem(EXPLORE_PANEL_HIDDEN_METRICS)) ?? [],
@@ -108,7 +109,6 @@ const state = {
       style: false,
       chart: false,
     },
-    aggregated: false,
     aggregatedArea: 'min_max',
     aggregatedLine: 'avg',
     seed: {
@@ -152,6 +152,7 @@ const initialControls = {
         pointsCount: getState().chart.settings.persistent.pointsCount,
         smoothingAlgorithm: 'ema',
         smoothFactor: 0,
+        aggregated: false,
       },
     },
   },
@@ -164,7 +165,6 @@ const initialControls = {
       style: false,
       chart: false,
     },
-    aggregated: false,
     aggregatedArea: 'min_max',
     aggregatedLine: 'avg',
     seed: getState().contextFilter.seed,
@@ -234,11 +234,20 @@ function setRunsState(runsState, callback = null) {
       ...runsState,
     },
     ...(chartTypeChanged && {
+      chart: {
+        ...getState().chart,
+        settings: {
+          ...getState().chart.settings,
+          persistent: {
+            ...getState().chart.settings.persistent,
+            aggregated: false,
+          },
+        },
+      },
       contextFilter: {
         groupByColor: [],
         groupByStyle: [],
         groupByChart: [],
-        aggregated: false,
         seed: getState().contextFilter.seed,
         persist: getState().contextFilter.persist,
       },
@@ -340,6 +349,8 @@ function setTraceList() {
 
   const traceList = new TraceList(grouping);
   const aggregate = traceList.groupingFields.length > 0;
+  const aggregatedArea = getState().contextFilter.aggregatedArea;
+  const aggregatedLine = getState().contextFilter.aggregatedLine;
   const sortFields = getState().sortFields;
   const hiddenMetrics = getState().chart.hiddenMetrics;
 
@@ -384,6 +395,8 @@ function setTraceList() {
         isHidden,
         smoothingAlgorithm,
         smoothFactor,
+        aggregatedLine,
+        aggregatedArea,
       );
     } else {
       run.metrics.forEach((metric) => {
@@ -405,6 +418,8 @@ function setTraceList() {
             isHidden,
             smoothingAlgorithm,
             smoothFactor,
+            aggregatedLine,
+            aggregatedArea,
           );
         });
       });
@@ -566,15 +581,6 @@ function setContextFilter(
     stateUpdate.replaceUrl = true;
   }
 
-  if (
-    stateUpdate.contextFilter.aggregated &&
-    stateUpdate.contextFilter.groupByColor.length === 0 &&
-    stateUpdate.contextFilter.groupByStyle.length === 0 &&
-    stateUpdate.contextFilter.groupByChart.length === 0
-  ) {
-    stateUpdate.contextFilter.aggregated = false;
-  }
-
   if (resetZoom && contextFilterUpdate.hasOwnProperty('groupByChart')) {
     stateUpdate.chart = {
       ...getState().chart,
@@ -598,6 +604,24 @@ function setContextFilter(
         persistent: {
           ...getState().chart.settings.persistent,
           indicator: false,
+        },
+      },
+    };
+  }
+
+  if (
+    getState().chart.settings.persistent.aggregated &&
+    stateUpdate.contextFilter.groupByColor.length === 0 &&
+    stateUpdate.contextFilter.groupByStyle.length === 0 &&
+    stateUpdate.contextFilter.groupByChart.length === 0
+  ) {
+    stateUpdate.chart = {
+      ...getState().chart,
+      settings: {
+        ...getState().chart.settings,
+        persistent: {
+          ...getState().chart.settings.persistent,
+          aggregated: false,
         },
       },
     };

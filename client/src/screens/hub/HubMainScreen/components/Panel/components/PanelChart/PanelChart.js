@@ -143,8 +143,8 @@ function PanelChart(props) {
   }
 
   function drawData() {
-    const { contextFilter } = HubMainScreenModel.getState();
-    if (contextFilter.aggregated) {
+    const { chart } = HubMainScreenModel.getState();
+    if (chart.settings.persistent.aggregated) {
       drawAggregatedLines();
     } else {
       drawLines();
@@ -593,7 +593,7 @@ function PanelChart(props) {
   }
 
   function drawLines() {
-    const { traceList, chart, contextFilter } = HubMainScreenModel.getState();
+    const { traceList, chart } = HubMainScreenModel.getState();
     const highlightMode = chart.settings.highlightMode;
 
     const focusedMetric = chart.focused.metric;
@@ -644,7 +644,7 @@ function PanelChart(props) {
             d3[
               curveOptions[
                 chart.settings.persistent.interpolate &&
-                !contextFilter.aggregated
+                !chart.settings.persistent.aggregated
                   ? 5
                   : 0
               ]
@@ -714,46 +714,39 @@ function PanelChart(props) {
         return;
       }
 
-      const {
-        run: runAvg,
-        metric: metricAvg,
-        trace: traceAvg,
-      } = traceModel.aggregation.avg;
-      const {
-        run: runMed,
-        metric: metricMed,
-        trace: traceMed,
-      } = traceModel.aggregation.med;
-      const {
-        run: runMin,
-        metric: metricMin,
-        trace: traceMin,
-      } = traceModel.aggregation.min;
-      const {
-        run: runMax,
-        metric: metricMax,
-        trace: traceMax,
-      } = traceModel.aggregation.max;
-      const {
-        run: runStdDevMin,
-        metric: metricStdDevMin,
-        trace: traceStdDevMin,
-      } = traceModel.aggregation.stdDevMin;
-      const {
-        run: runStdDevMax,
-        metric: metricStdDevMax,
-        trace: traceStdDevMax,
-      } = traceModel.aggregation.stdDevMax;
-      const {
-        run: runStdErrMin,
-        metric: metricStdErrMin,
-        trace: traceStdErrMin,
-      } = traceModel.aggregation.stdErrMin;
-      const {
-        run: runStdErrMax,
-        metric: metricStdErrMax,
-        trace: traceStdErrMax,
-      } = traceModel.aggregation.stdErrMax;
+      let areaTraceMin;
+      let areaTraceMax;
+      let lineTrace;
+
+      switch (contextFilter.aggregatedArea) {
+        case 'min_max':
+          areaTraceMin = traceModel.aggregation.min;
+          areaTraceMax = traceModel.aggregation.max;
+          break;
+        case 'std_dev':
+          areaTraceMin = traceModel.aggregation.stdDevMin;
+          areaTraceMax = traceModel.aggregation.stdDevMax;
+          break;
+        case 'std_err':
+          areaTraceMin = traceModel.aggregation.stdErrMin;
+          areaTraceMax = traceModel.aggregation.stdErrMax;
+          break;
+      }
+
+      switch (contextFilter.aggregatedLine) {
+        case 'avg':
+          lineTrace = traceModel.aggregation.avg;
+          break;
+        case 'median':
+          lineTrace = traceModel.aggregation.med;
+          break;
+        case 'min':
+          lineTrace = traceModel.aggregation.min;
+          break;
+        case 'max':
+          lineTrace = traceModel.aggregation.max;
+          break;
+      }
 
       const noSelectedRun =
         highlightMode === 'default' || !focusedLineAttr?.runHash;
@@ -770,32 +763,12 @@ function PanelChart(props) {
       if (contextFilter.aggregatedArea !== 'none') {
         let traceMinData;
         let traceMaxData;
-        switch (contextFilter.aggregatedArea) {
-          case 'min_max':
-            traceMinData = traceMin.data.filter(
-              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
-            );
-            traceMaxData = traceMax.data.filter(
-              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
-            );
-            break;
-          case 'std_dev':
-            traceMinData = traceStdDevMin.data.filter(
-              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
-            );
-            traceMaxData = traceStdDevMax.data.filter(
-              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
-            );
-            break;
-          case 'std_err':
-            traceMinData = traceStdErrMin.data.filter(
-              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
-            );
-            traceMaxData = traceStdErrMax.data.filter(
-              (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
-            );
-            break;
-        }
+        traceMinData = areaTraceMin?.trace.data.filter(
+          (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+        );
+        traceMaxData = areaTraceMax?.trace.data.filter(
+          (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+        );
         const area = d3
           .area()
           .x((d, i) => chartOptions.current.xScale(d[1]))
@@ -819,7 +792,11 @@ function PanelChart(props) {
             Color(
               traceList?.grouping?.color?.length > 0
                 ? traceModel.color
-                : getMetricColor(runAvg, metricAvg, traceAvg),
+                : getMetricColor(
+                  lineTrace.run,
+                  lineTrace.metric,
+                    lineTrace?.trace,
+                ),
             )
               .alpha(0.3)
               .hsl()
@@ -836,42 +813,18 @@ function PanelChart(props) {
         .y((d) => chartOptions.current.yScale(d[0]))
         .curve(d3[curveOptions[0]]);
 
-      let aggLine = {};
-      switch (contextFilter.aggregatedLine) {
-        case 'avg':
-          aggLine.run = runAvg;
-          aggLine.metric = metricAvg;
-          aggLine.trace = traceAvg;
-          break;
-        case 'median':
-          aggLine.run = runMed;
-          aggLine.metric = metricMed;
-          aggLine.trace = traceMed;
-          break;
-        case 'min':
-          aggLine.run = runMin;
-          aggLine.metric = metricMin;
-          aggLine.trace = traceMin;
-          break;
-        case 'max':
-          aggLine.run = runMax;
-          aggLine.metric = metricMax;
-          aggLine.trace = traceMax;
-          break;
-      }
-
       lines.current
         .append('path')
         .attr(
           'class',
           `PlotLine PlotLine-${traceToHash(
-            aggLine.run.run_hash,
-            aggLine.metric.name,
-            aggLine.trace.context,
+            lineTrace.run.run_hash,
+            lineTrace.metric.name,
+            lineTrace.trace.context,
           )} active`,
         )
         .datum(
-          aggLine.trace.data.filter(
+          lineTrace.trace.data.filter(
             (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
           ),
         )
@@ -882,15 +835,15 @@ function PanelChart(props) {
           'stroke',
           traceList?.grouping?.color?.length > 0
             ? traceModel.color
-            : getMetricColor(aggLine.run, aggLine.metric, aggLine.trace),
+            : getMetricColor(lineTrace.run, lineTrace.metric, lineTrace.trace),
         )
         .style(
           'stroke-dasharray',
           traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0',
         )
-        .attr('data-run-hash', aggLine.run.run_hash)
-        .attr('data-metric-name', aggLine.metric.name)
-        .attr('data-trace-context-hash', contextToHash(aggLine.trace.context))
+        .attr('data-run-hash', lineTrace.run.run_hash)
+        .attr('data-metric-name', lineTrace.metric.name)
+        .attr('data-trace-context-hash', contextToHash(lineTrace.trace.context))
         .on('click', function () {
           handleLineClick(d3.mouse(this));
         });
@@ -948,7 +901,7 @@ function PanelChart(props) {
                 d3[
                   curveOptions[
                     chart.settings.persistent.interpolate &&
-                    !contextFilter.aggregated
+                    !chart.settings.persistent.aggregated
                       ? 5
                       : 0
                   ]

@@ -712,40 +712,78 @@ function ContextBox(props) {
 
         if (traceList?.traces.length > 1) {
           if (!data[JSON.stringify(traceModel.config)]) {
-            const min = getMetricStepDataByStepIdx(
-              traceModel.aggregation.min.trace.data,
-              step,
-            )?.[0];
-            const max = getMetricStepDataByStepIdx(
-              traceModel.aggregation.max.trace.data,
-              step,
-            )?.[0];
-            const avg = getMetricStepDataByStepIdx(
-              traceModel.aggregation.avg.trace.data,
-              step,
-            )?.[0];
-            const med = getMetricStepDataByStepIdx(
-              traceModel.aggregation.med.trace.data,
-              step,
-            )?.[0];
-            const stdDevMin = getMetricStepDataByStepIdx(
-              traceModel.aggregation.stdDevMin.trace.data,
-              step,
-            )?.[0];
-            const stdDevMax = getMetricStepDataByStepIdx(
-              traceModel.aggregation.stdDevMax.trace.data,
-              step,
-            )?.[0];
-            const stdErrMin = getMetricStepDataByStepIdx(
-              traceModel.aggregation.stdErrMin.trace.data,
-              step,
-            )?.[0];
-            const stdErrMax = getMetricStepDataByStepIdx(
-              traceModel.aggregation.stdErrMax.trace.data,
-              step,
-            )?.[0];
             const aggregatedArea = contextFilter.aggregatedArea;
             const aggregatedLine = contextFilter.aggregatedLine;
+            let aggAreaMin;
+            let aggAreaMax;
+            let aggLine;
+            let aggLineLabel;
+
+            if (isExploreMetricsModeEnabled()) {
+              switch (aggregatedArea) {
+                case 'std_dev':
+                  aggAreaMin = getMetricStepDataByStepIdx(
+                    traceModel.aggregation.stdDevMin.trace.data,
+                    step,
+                  )?.[0];
+                  aggAreaMax = getMetricStepDataByStepIdx(
+                    traceModel.aggregation.stdDevMax.trace.data,
+                    step,
+                  )?.[0];
+                  break;
+                case 'std_err':
+                  aggAreaMin = getMetricStepDataByStepIdx(
+                    traceModel.aggregation.stdErrMin.trace.data,
+                    step,
+                  )?.[0];
+                  aggAreaMax = getMetricStepDataByStepIdx(
+                    traceModel.aggregation.stdErrMax.trace.data,
+                    step,
+                  )?.[0];
+                  break;
+                default:
+                  aggAreaMin = getMetricStepDataByStepIdx(
+                    traceModel.aggregation.min.trace.data,
+                    step,
+                  )?.[0];
+                  aggAreaMax = getMetricStepDataByStepIdx(
+                    traceModel.aggregation.max.trace.data,
+                    step,
+                  )?.[0];
+              }
+
+              switch (aggregatedLine) {
+                case 'min':
+                  aggLine = getMetricStepDataByStepIdx(
+                    traceModel.aggregation.min.trace.data,
+                    step,
+                  )?.[0];
+                  aggLineLabel = 'min';
+                  break;
+                case 'max':
+                  aggLine = getMetricStepDataByStepIdx(
+                    traceModel.aggregation.max.trace.data,
+                    step,
+                  )?.[0];
+                  aggLineLabel = 'max';
+                  break;
+                case 'avg':
+                  aggLine = getMetricStepDataByStepIdx(
+                    traceModel.aggregation.avg.trace.data,
+                    step,
+                  )?.[0];
+                  aggLineLabel = 'mean';
+                  break;
+                case 'median':
+                  aggLine = getMetricStepDataByStepIdx(
+                    traceModel.aggregation.med.trace.data,
+                    step,
+                  )?.[0];
+                  aggLineLabel = 'median';
+                  break;
+              }
+            }
+
             const runsCount = _.uniqBy(traceModel.series, 'run.run_hash')
               .length;
             data[JSON.stringify(traceModel.config)] = {
@@ -830,81 +868,27 @@ function ContextBox(props) {
                         rounded
                       >
                         <span className='ContextBox__table__item-aggregated_label_item min'>
-                          {aggregatedArea === 'std_dev'
-                            ? stdDevMin !== null && stdDevMin !== undefined
-                              ? roundValue(stdDevMin)
-                              : '-'
-                            : aggregatedArea === 'std_err'
-                              ? stdErrMin !== null && stdErrMin !== undefined
-                                ? roundValue(stdErrMin)
-                                : '-'
-                              : min !== null && min !== undefined
-                                ? roundValue(min)
-                                : '-'}
+                          {aggAreaMin !== null && aggAreaMin !== undefined
+                            ? roundValue(aggAreaMin)
+                            : '-'}
                         </span>
                         {':'}
                         <span className='ContextBox__table__item-aggregated_label_item max'>
-                          {aggregatedArea === 'std_dev'
-                            ? stdDevMax !== null && stdDevMax !== undefined
-                              ? roundValue(stdDevMax)
-                              : '-'
-                            : aggregatedArea === 'std_err'
-                              ? stdErrMax !== null && stdErrMax !== undefined
-                                ? roundValue(stdErrMax)
-                                : '-'
-                              : max !== null && max !== undefined
-                                ? roundValue(max)
-                                : '-'}
+                          {aggAreaMax !== null && aggAreaMax !== undefined
+                            ? roundValue(aggAreaMax)
+                            : '-'}
                         </span>
                       </UI.Label>
-                      {aggregatedLine === 'min' && (
-                        <UI.Label
-                          className='ContextBox__table__item-aggregated_label aggLine'
-                          iconLeft='min'
-                          outline
-                          rounded
-                        >
-                          {min !== null && min !== undefined
-                            ? roundValue(min)
-                            : '-'}
-                        </UI.Label>
-                      )}
-                      {aggregatedLine === 'max' && (
-                        <UI.Label
-                          className='ContextBox__table__item-aggregated_label aggLine'
-                          iconLeft='max'
-                          outline
-                          rounded
-                        >
-                          {max !== null && max !== undefined
-                            ? roundValue(max)
-                            : '-'}
-                        </UI.Label>
-                      )}
-                      {aggregatedLine === 'avg' && (
-                        <UI.Label
-                          className='ContextBox__table__item-aggregated_label aggLine'
-                          iconLeft='mean'
-                          outline
-                          rounded
-                        >
-                          {avg !== null && avg !== undefined
-                            ? roundValue(avg)
-                            : '-'}
-                        </UI.Label>
-                      )}
-                      {aggregatedLine === 'median' && (
-                        <UI.Label
-                          className='ContextBox__table__item-aggregated_label aggLine'
-                          iconLeft='median'
-                          outline
-                          rounded
-                        >
-                          {med !== null && med !== undefined
-                            ? roundValue(med)
-                            : '-'}
-                        </UI.Label>
-                      )}
+                      <UI.Label
+                        className='ContextBox__table__item-aggregated_label aggLine'
+                        iconLeft={aggLineLabel}
+                        outline
+                        rounded
+                      >
+                        {aggLine !== null && aggLine !== undefined
+                          ? roundValue(aggLine)
+                          : '-'}
+                      </UI.Label>
                     </div>
                   ),
                   className: `value-${getCSSSelectorFromString(

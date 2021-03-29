@@ -3,14 +3,18 @@ import UI from '../../../../../../../ui';
 import PropTypes from 'prop-types';
 import { classNames } from '../../../../../../../ui/utils';
 import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
+import { chart } from 'highcharts';
 
 function Aggregate(props) {
   let [opened, setOpened] = useState(false);
   let popupRef = useRef();
 
-  const { aggregated, aggregatedArea, aggregatedLine, disabled } = props;
+  const { settings, aggregatedArea, aggregatedLine, disabled } = props;
 
-  const { setContextFilter } = HubMainScreenModel.emitters;
+  const {
+    setContextFilter,
+    setChartSettingsState,
+  } = HubMainScreenModel.emitters;
 
   useEffect(() => {
     if (opened && popupRef.current) {
@@ -29,17 +33,25 @@ function Aggregate(props) {
   return (
     <div className='ControlsSidebar__item__wrapper'>
       <UI.Tooltip
-        tooltip={aggregated ? 'Deaggregate metrics' : 'Aggregate metrics'}
+        tooltip={
+          settings.persistent.aggregated
+            ? 'Deaggregate metrics'
+            : 'Aggregate metrics'
+        }
       >
         <div
           className={classNames({
             ControlsSidebar__item: true,
-            active: aggregated,
+            active: settings.persistent.aggregated,
             disabled: disabled,
           })}
           onClick={(evt) =>
-            setContextFilter({
-              aggregated: !aggregated,
+            setChartSettingsState({
+              ...settings,
+              persistent: {
+                ...settings.persistent,
+                aggregated: !settings.persistent.aggregated,
+              },
             })
           }
         >
@@ -150,7 +162,7 @@ function Aggregate(props) {
 }
 
 Aggregate.propTypes = {
-  aggregated: PropTypes.bool,
+  settings: PropTypes.object,
   aggregatedArea: PropTypes.string,
   aggregatedLine: PropTypes.string,
   disabled: PropTypes.bool,

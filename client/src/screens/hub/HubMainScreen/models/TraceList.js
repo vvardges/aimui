@@ -159,6 +159,8 @@ export default class TraceList {
     isHidden,
     smoothingAlgorithm,
     smoothFactor,
+    aggregatedLine,
+    aggregatedArea,
   ) => {
     let subGroup = this.groups;
     this.groupingFields.forEach((g) => {
@@ -370,15 +372,32 @@ export default class TraceList {
     if (alignBy === 'epoch' && this.grouping.chart.includes('context.subset')) {
       alignment = 'step';
     }
-    traceModel.addSeries(seriesModel, aggregate);
-    this.setAxisValues(alignBy, aggregate, scale);
+    traceModel.addSeries(
+      seriesModel,
+      aggregate,
+      aggregatedLine,
+      aggregatedArea,
+    );
+    this.setAxisValues(
+      alignBy,
+      aggregate,
+      scale,
+      aggregatedLine,
+      aggregatedArea,
+    );
   };
 
   getChartsNumber = () => {
     return this.groupingConfigMap.charts.length;
   };
 
-  setAxisValues = (alignBy, aggregate, scale) => {
+  setAxisValues = (
+    alignBy,
+    aggregate,
+    scale,
+    aggregatedLine,
+    aggregatedArea,
+  ) => {
     let chartSteps;
     switch (alignBy) {
       case 'step':
@@ -407,7 +426,7 @@ export default class TraceList {
         this.chartSteps = chartSteps;
 
         if (aggregate) {
-          this.aggregate(alignBy, scale);
+          this.aggregate(scale, aggregatedLine, aggregatedArea);
         }
         break;
       case 'epoch':
@@ -517,7 +536,7 @@ export default class TraceList {
         });
 
         if (aggregate) {
-          this.aggregate(alignBy, scale);
+          this.aggregate(scale, aggregatedLine, aggregatedArea);
         }
         break;
       case 'relative_time':
@@ -574,7 +593,7 @@ export default class TraceList {
         this.chartSteps = chartSteps;
 
         if (aggregate) {
-          this.aggregate(alignBy, scale);
+          this.aggregate(scale, aggregatedLine, aggregatedArea);
         }
         break;
       case 'absolute_time':
@@ -603,284 +622,158 @@ export default class TraceList {
         this.chartSteps = chartSteps;
 
         if (aggregate) {
-          this.aggregate(alignBy, scale);
+          this.aggregate(scale, aggregatedLine, aggregatedArea);
         }
         break;
     }
   };
 
-  aggregate = (alignBy, scale = { xScale: 0, yScale: 0 }) => {
-    switch (alignBy) {
-      case 'step':
-      case 'epoch':
-        this.traces.forEach((traceModel) => {
-          const valuesByStep = {};
-          const axisValues = this.chartSteps[traceModel.chart];
-          traceModel.series.forEach((series) => {
-            const { run, trace } = series;
-            if (trace !== undefined && trace !== null && !run.metricIsHidden) {
-              for (let i = 0; i < trace.axisValues.length - 1; i++) {
-                const step = trace.axisValues[i];
-                const point = trace.data[i];
-                const nextStep = trace.axisValues[i + 1];
-                const nextPoint = trace.data[i + 1];
+  aggregate = (
+    scale = { xScale: 0, yScale: 0 },
+    aggregatedLine,
+    aggregatedArea,
+  ) => {
+    this.traces.forEach((traceModel) => {
+      const valuesByStep = {};
+      const axisValues = this.chartSteps[traceModel.chart];
+      traceModel.series.forEach((series) => {
+        const { run, trace } = series;
+        if (trace !== undefined && trace !== null && !run.metricIsHidden) {
+          for (let i = 0; i < trace.axisValues.length - 1; i++) {
+            const step = trace.axisValues[i];
+            const point = trace.data[i];
+            const nextStep = trace.axisValues[i + 1];
+            const nextPoint = trace.data[i + 1];
 
-                const stepsInBetween = nextStep - step;
-                for (let value of axisValues.slice(
-                  axisValues.indexOf(step),
-                  axisValues.indexOf(nextStep) + 1,
-                )) {
-                  let y;
-                  let x0 = value - step;
-                  let x2 = stepsInBetween;
-                  let point1 = point[0];
-                  let point2 = nextPoint[0];
+            const stepsInBetween = nextStep - step;
+            for (let value of axisValues.slice(
+              axisValues.indexOf(step),
+              axisValues.indexOf(nextStep) + 1,
+            )) {
+              let y;
+              let x0 = value - step;
+              let x2 = stepsInBetween;
+              let point1 = point[0];
+              let point2 = nextPoint[0];
 
-                  if (x0 === 0) {
-                    y = point1;
-                  } else if (x0 === x2) {
-                    y = point2;
-                  } else {
-                    if (scale.xScale === 1) {
-                      x0 = Math.log(value) - Math.log(step);
-                      x2 = Math.log(nextStep) - Math.log(step);
-                    }
-                    if (scale.yScale === 1) {
-                      point1 = Math.log(point1);
-                      point2 = Math.log(point2);
-                    }
-                    if (point1 > point2) {
-                      y = point1 - ((point1 - point2) * x0) / x2;
-                    } else {
-                      y = ((point2 - point1) * x0) / x2 + point1;
-                    }
-                    if (scale.yScale === 1) {
-                      y = Math.exp(y);
-                    }
+              if (x0 === 0) {
+                y = point1;
+              } else if (x0 === x2) {
+                y = point2;
+              } else {
+                if (scale.xScale === 1) {
+                  x0 = Math.log(value) - Math.log(step);
+                  x2 = Math.log(nextStep) - Math.log(step);
+                }
+                if (scale.yScale === 1) {
+                  point1 = Math.log(point1);
+                  point2 = Math.log(point2);
+                }
+                if (point1 > point2) {
+                  y = point1 - ((point1 - point2) * x0) / x2;
+                } else {
+                  y = ((point2 - point1) * x0) / x2 + point1;
+                }
+                if (scale.yScale === 1) {
+                  y = Math.exp(y);
+                }
+              }
+              if (
+                (scale.xScale === 0 ||
+                  (value !== 0 && step !== 0 && nextStep !== 0)) &&
+                (scale.yScale === 0 || y > 0)
+              ) {
+                if (valuesByStep.hasOwnProperty(value)) {
+                  if (!valuesByStep[value].includes(y)) {
+                    valuesByStep[value].push(y);
                   }
-                  if (
-                    (scale.xScale === 0 ||
-                      (value !== 0 && step !== 0 && nextStep !== 0)) &&
-                    (scale.yScale === 0 || y > 0)
-                  ) {
-                    if (valuesByStep.hasOwnProperty(value)) {
-                      if (!valuesByStep[value].includes(y)) {
-                        valuesByStep[value].push(y);
-                      }
-                    } else {
-                      valuesByStep[value] = [y];
-                    }
-                  }
+                } else {
+                  valuesByStep[value] = [y];
                 }
               }
             }
-          });
+          }
+        }
+      });
 
-          if (!!traceModel.aggregation) {
-            const stepTicks = Object.keys(valuesByStep).sort((a, b) => a - b);
-            traceModel.aggregation.min.trace.data = stepTicks.map((step) => [
-              _.min(valuesByStep[step]),
-              +step,
-            ]);
-            traceModel.aggregation.max.trace.data = stepTicks.map((step) => [
-              _.max(valuesByStep[step]),
-              +step,
-            ]);
-            traceModel.aggregation.avg.trace.data = stepTicks.map((step) => [
-              _.sum(valuesByStep[step]) / valuesByStep[step].length,
-              +step,
-            ]);
-            traceModel.aggregation.med.trace.data = stepTicks.map((step) => [
-              getValuesMedian(valuesByStep[step]),
-              +step,
-            ]);
-            let stdDev = {};
-            let stdErr = {};
-            stepTicks.forEach((step) => {
-              const avg = _.sum(valuesByStep[step]) / valuesByStep[step].length;
-              const distancesFromAvg = valuesByStep[step].map((value) =>
-                Math.pow(avg - value, 2),
-              );
-              const sum = _.sum(distancesFromAvg);
-              const stdDevValue = Math.sqrt(
-                sum / (valuesByStep[step].length - 1 || 1),
-              );
+      if (!!traceModel.aggregation) {
+        const stepTicks = Object.keys(valuesByStep).sort((a, b) => a - b);
+        if (
+          aggregatedLine === 'min' ||
+          aggregatedArea === 'min_max' ||
+          aggregatedArea === 'none'
+        ) {
+          traceModel.aggregation.min.trace.data = stepTicks.map((step) => [
+            _.min(valuesByStep[step]),
+            +step,
+          ]);
+        }
+        if (
+          aggregatedLine === 'max' ||
+          aggregatedArea === 'min_max' ||
+          aggregatedArea === 'none'
+        ) {
+          traceModel.aggregation.max.trace.data = stepTicks.map((step) => [
+            _.max(valuesByStep[step]),
+            +step,
+          ]);
+        }
+        if (aggregatedLine === 'avg') {
+          traceModel.aggregation.avg.trace.data = stepTicks.map((step) => [
+            _.sum(valuesByStep[step]) / valuesByStep[step].length,
+            +step,
+          ]);
+        } else if (aggregatedLine === 'median') {
+          traceModel.aggregation.med.trace.data = stepTicks.map((step) => [
+            getValuesMedian(valuesByStep[step]),
+            +step,
+          ]);
+        }
+
+        if (aggregatedArea === 'std_dev' || aggregatedArea === 'std_err') {
+          let setpValues = {};
+          stepTicks.forEach((step) => {
+            const avg = _.sum(valuesByStep[step]) / valuesByStep[step].length;
+            const distancesFromAvg = valuesByStep[step].map((value) =>
+              Math.pow(avg - value, 2),
+            );
+            const sum = _.sum(distancesFromAvg);
+            const stdDevValue = Math.sqrt(
+              sum / (valuesByStep[step].length - 1 || 1),
+            );
+
+            if (aggregatedArea === 'std_dev') {
+              setpValues[step] = {
+                min: avg - stdDevValue,
+                max: avg + stdDevValue,
+              };
+            } else {
               const stdErrValue =
                 stdDevValue / Math.sqrt(valuesByStep[step].length);
-              stdDev[step] = {
-                min: avg - stdDevValue,
-                max: avg + stdDevValue,
-              };
-              stdErr[step] = {
+              setpValues[step] = {
                 min: avg - stdErrValue,
                 max: avg + stdErrValue,
               };
-            });
+            }
+          });
+
+          if (aggregatedArea === 'std_dev') {
             traceModel.aggregation.stdDevMin.trace.data = stepTicks.map(
-              (step) => {
-                return [stdDev[step].min, +step];
-              },
+              (step) => [setpValues[step].min, +step],
             );
             traceModel.aggregation.stdDevMax.trace.data = stepTicks.map(
-              (step) => {
-                return [stdDev[step].max, +step];
-              },
+              (step) => [setpValues[step].max, +step],
             );
+          } else {
             traceModel.aggregation.stdErrMin.trace.data = stepTicks.map(
-              (step) => {
-                return [stdErr[step].min, +step];
-              },
+              (step) => [setpValues[step].min, +step],
             );
             traceModel.aggregation.stdErrMax.trace.data = stepTicks.map(
-              (step) => {
-                return [stdErr[step].max, +step];
-              },
+              (step) => [setpValues[step].max, +step],
             );
           }
-        });
-        break;
-      case 'relative_time':
-      case 'absolute_time':
-        let chartAxisValues = {};
-        this.traces.forEach((traceModel) => {
-          if (!chartAxisValues.hasOwnProperty(traceModel.chart)) {
-            chartAxisValues[traceModel.chart] = [];
-          }
-          traceModel.series.forEach((series) => {
-            const { trace } = series;
-            if (trace !== undefined && trace !== null) {
-              chartAxisValues[traceModel.chart] = _.uniq(
-                _.concat(chartAxisValues[traceModel.chart], trace.axisValues),
-              ).sort((a, b) => a - b);
-            }
-          });
-        });
-        this.traces.forEach((traceModel) => {
-          const valuesByTime = {};
-          traceModel.series.forEach((series) => {
-            const { run, trace } = series;
-            if (trace !== undefined && trace !== null && !run.metricIsHidden) {
-              for (let i = 0; i < trace.axisValues.length - 1; i++) {
-                const time = trace.axisValues[i];
-                const point = trace.data[i];
-                const nextTime = trace.axisValues[i + 1];
-                const nextPoint = trace.data[i + 1];
-
-                const timeTicksInBetween = nextTime - time;
-
-                const axisValues = this.chartSteps[traceModel.chart];
-                for (let value of axisValues.slice(
-                  axisValues.indexOf(time),
-                  axisValues.indexOf(nextTime) + 1,
-                )) {
-                  let y;
-                  let x0 = value - time;
-                  let x2 = timeTicksInBetween;
-                  let point1 = point[0];
-                  let point2 = nextPoint[0];
-                  if (x0 === 0) {
-                    y = point1;
-                  } else if (x0 === x2) {
-                    y = point2;
-                  } else {
-                    if (scale.xScale === 1) {
-                      x0 = Math.log(value) - Math.log(time);
-                      x2 = Math.log(nextTime) - Math.log(time);
-                    }
-                    if (scale.yScale === 1) {
-                      point1 = Math.log(point1);
-                      point2 = Math.log(point2);
-                    }
-                    if (point1 > point2) {
-                      y = point1 - ((point1 - point2) * x0) / x2;
-                    } else {
-                      y = ((point2 - point1) * x0) / x2 + point1;
-                    }
-                    if (scale.yScale === 1) {
-                      y = Math.exp(y);
-                    }
-                  }
-                  if (
-                    (scale.xScale === 0 ||
-                      (value !== 0 && time !== 0 && nextTime !== 0)) &&
-                    (scale.yScale === 0 || y > 0)
-                  ) {
-                    if (valuesByTime.hasOwnProperty(value)) {
-                      if (!valuesByTime[value].includes(y)) {
-                        valuesByTime[value].push(y);
-                      }
-                    } else {
-                      valuesByTime[value] = [y];
-                    }
-                  }
-                }
-              }
-            }
-          });
-
-          if (!!traceModel.aggregation) {
-            const timeTicks = Object.keys(valuesByTime).sort((a, b) => a - b);
-            traceModel.aggregation.min.trace.data = timeTicks.map((time) => [
-              _.min(valuesByTime[time]),
-              +time,
-            ]);
-            traceModel.aggregation.max.trace.data = timeTicks.map((time) => [
-              _.max(valuesByTime[time]),
-              +time,
-            ]);
-            traceModel.aggregation.avg.trace.data = timeTicks.map((time) => [
-              _.sum(valuesByTime[time]) / valuesByTime[time].length,
-              +time,
-            ]);
-            traceModel.aggregation.med.trace.data = timeTicks.map((time) => [
-              getValuesMedian(valuesByTime[time]),
-              +time,
-            ]);
-            let stdDev = {};
-            let stdErr = {};
-            timeTicks.forEach((time) => {
-              const avg = _.sum(valuesByTime[time]) / valuesByTime[time].length;
-              const distancesFromAvg = valuesByTime[time].map((value) =>
-                Math.pow(avg - value, 2),
-              );
-              const sum = _.sum(distancesFromAvg);
-              const stdDevValue = Math.sqrt(
-                sum / (valuesByTime[time].length - 1 || 1),
-              );
-              const stdErrValue =
-                stdDevValue / Math.sqrt(valuesByTime[time].length);
-              stdDev[time] = {
-                min: avg - stdDevValue,
-                max: avg + stdDevValue,
-              };
-              stdErr[time] = {
-                min: avg - stdErrValue,
-                max: avg + stdErrValue,
-              };
-            });
-            traceModel.aggregation.stdDevMin.trace.data = timeTicks.map(
-              (time) => {
-                return [stdDev[time].min, +time];
-              },
-            );
-            traceModel.aggregation.stdDevMax.trace.data = timeTicks.map(
-              (time) => {
-                return [stdDev[time].max, +time];
-              },
-            );
-            traceModel.aggregation.stdErrMin.trace.data = timeTicks.map(
-              (time) => {
-                return [stdErr[time].min, +time];
-              },
-            );
-            traceModel.aggregation.stdErrMax.trace.data = timeTicks.map(
-              (time) => {
-                return [stdErr[time].max, +time];
-              },
-            );
-          }
-        });
-        break;
-    }
+        }
+      }
+    });
   };
 }

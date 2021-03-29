@@ -136,9 +136,7 @@ function GroupByChart(props) {
                   }
                 >
                   <UI.Text type={!against ? 'primary' : 'grey-dark'} small>
-                    <UI.Tooltip tooltip='Divide by selected'>
-                      Divide
-                    </UI.Tooltip>
+                    <UI.Tooltip tooltip='Divide by selected'>Divide</UI.Tooltip>
                   </UI.Text>
                   <span
                     className={classNames({

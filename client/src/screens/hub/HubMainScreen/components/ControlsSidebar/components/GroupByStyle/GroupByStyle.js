@@ -137,9 +137,7 @@ function GroupByStyle(props) {
                   }
                 >
                   <UI.Text type={!against ? 'primary' : 'grey-dark'} small>
-                    <UI.Tooltip tooltip='Divide by selected'>
-                      Divide
-                    </UI.Tooltip>
+                    <UI.Tooltip tooltip='Group by selected'>Group</UI.Tooltip>
                   </UI.Text>
                   <span
                     className={classNames({
@@ -153,7 +151,7 @@ function GroupByStyle(props) {
                     />
                   </span>
                   <UI.Text type={against ? 'primary' : 'grey-dark'} small>
-                    <UI.Tooltip tooltip='Divide by all except selected'>
+                    <UI.Tooltip tooltip='Group by all except selected'>
                       Reverse
                     </UI.Tooltip>
                   </UI.Text>

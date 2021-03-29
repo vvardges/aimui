@@ -37,7 +37,7 @@ export default class Trace {
     return traceClone;
   };
 
-  addSeries = (series, aggregate = false) => {
+  addSeries = (series, aggregate = false, aggregatedLine, aggregatedArea) => {
     this.series.push(series);
 
     this.setExperiments(series.run.experiment_name);
@@ -45,7 +45,7 @@ export default class Trace {
     if (series.trace !== null) this.setContexts(series.trace.context);
 
     if (aggregate) {
-      this.aggregate();
+      this.aggregate(aggregatedLine, aggregatedArea);
     }
   };
 
@@ -54,15 +54,33 @@ export default class Trace {
     this.aggregate();
   };
 
-  aggregate = () => {
-    this.aggregation.min = this.aggregateSeries();
-    this.aggregation.max = this.aggregateSeries();
-    this.aggregation.avg = this.aggregateSeries();
-    this.aggregation.med = this.aggregateSeries();
-    this.aggregation.stdDevMin = this.aggregateSeries();
-    this.aggregation.stdDevMax = this.aggregateSeries();
-    this.aggregation.stdErrMin = this.aggregateSeries();
-    this.aggregation.stdErrMax = this.aggregateSeries();
+  aggregate = (aggregatedLine, aggregatedArea) => {
+    if (
+      aggregatedLine === 'min' ||
+      aggregatedArea === 'min_max' ||
+      aggregatedArea === 'none'
+    ) {
+      this.aggregation.min = this.aggregateSeries();
+    }
+    if (
+      aggregatedLine === 'max' ||
+      aggregatedArea === 'min_max' ||
+      aggregatedArea === 'none'
+    ) {
+      this.aggregation.max = this.aggregateSeries();
+    }
+    if (aggregatedLine === 'avg') {
+      this.aggregation.avg = this.aggregateSeries();
+    } else if (aggregatedLine === 'median') {
+      this.aggregation.med = this.aggregateSeries();
+    }
+    if (aggregatedArea === 'std_dev') {
+      this.aggregation.stdDevMin = this.aggregateSeries();
+      this.aggregation.stdDevMax = this.aggregateSeries();
+    } else if (aggregatedArea === 'std_err') {
+      this.aggregation.stdErrMin = this.aggregateSeries();
+      this.aggregation.stdErrMax = this.aggregateSeries();
+    }
   };
 
   aggregateSeries = () => {

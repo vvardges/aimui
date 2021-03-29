@@ -149,9 +149,7 @@ function GroupByColor(props) {
                   }
                 >
                   <UI.Text type={!against ? 'primary' : 'grey-dark'} small>
-                    <UI.Tooltip tooltip='Group by selected'>
-                      Group
-                    </UI.Tooltip>
+                    <UI.Tooltip tooltip='Group by selected'>Group</UI.Tooltip>
                   </UI.Text>
                   <span
                     className={classNames({
