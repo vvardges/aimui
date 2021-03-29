@@ -15,6 +15,7 @@ import Color from 'color';
 import { COLORS } from '../../../../constants/colors';
 import TraceList from './TraceList';
 import { ContextTableModel } from '../../../../components/hub/ContextTable/models/ContextTableModel';
+import { getGroupingOptions } from '../components/ControlsSidebar/helpers';
 
 // Events
 
@@ -102,6 +103,11 @@ const state = {
     groupByColor: [],
     groupByStyle: [],
     groupByChart: [],
+    groupAgainst: {
+      color: false,
+      style: false,
+      chart: false,
+    },
     aggregated: false,
     aggregatedArea: 'min_max',
     aggregatedLine: 'avg',
@@ -153,6 +159,11 @@ const initialControls = {
     groupByColor: [],
     groupByStyle: [],
     groupByChart: [],
+    groupAgainst: {
+      color: false,
+      style: false,
+      chart: false,
+    },
     aggregated: false,
     aggregatedArea: 'min_max',
     aggregatedLine: 'avg',
@@ -274,10 +285,49 @@ function setTraceList() {
   const seed = getState().contextFilter.seed;
   const persist = getState().contextFilter.persist;
   const colorPalette = getState().colorPalette;
+  const groupAgainst = getState().contextFilter.groupAgainst;
+  let groupByColor;
+  let groupByStyle;
+  let groupByChart;
+
+  const groupingAvailableOptions = getGroupingOptions(
+    getAllParamsPaths(),
+    [],
+    false,
+    false,
+  );
+  const groupingAvailableFields = groupingAvailableOptions
+    .map((category) => category.options.map((option) => option.value).flat())
+    .flat();
+
+  if (getState().contextFilter.groupByColor.length > 0 && groupAgainst.color) {
+    groupByColor = _.difference(
+      groupingAvailableFields,
+      getState().contextFilter.groupByColor,
+    );
+  } else {
+    groupByColor = getState().contextFilter.groupByColor;
+  }
+  if (getState().contextFilter.groupByStyle.length > 0 && groupAgainst.style) {
+    groupByStyle = _.difference(
+      groupingAvailableFields,
+      getState().contextFilter.groupByStyle,
+    );
+  } else {
+    groupByStyle = getState().contextFilter.groupByStyle;
+  }
+  if (getState().contextFilter.groupByChart.length > 0 && groupAgainst.chart) {
+    groupByChart = _.difference(
+      groupingAvailableFields,
+      getState().contextFilter.groupByChart,
+    );
+  } else {
+    groupByChart = getState().contextFilter.groupByChart;
+  }
   const grouping = {
-    color: getState().contextFilter.groupByColor,
-    stroke: getState().contextFilter.groupByStyle,
-    chart: getState().contextFilter.groupByChart,
+    color: groupByColor,
+    stroke: groupByStyle,
+    chart: groupByChart,
   };
   const xAlignment = getState().chart.settings.persistent.xAlignment;
   const scale = {

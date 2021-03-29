@@ -203,12 +203,11 @@
 .ControlsSidebar__item__popup__toggle {
   display: flex;
   align-items: center;
-  margin-right: 8px;
+  margin: 0 var(--component-spacing-xs);
   cursor: pointer;
-  color: var(--grey-dark);
+  color: var(--primary);
 
   &.on {
-    color: var(--primary);
   }
 }
 
@@ -310,6 +309,19 @@
 
 .ControlsSidebar__item__popup__overline--align {
   padding-top: var(--component-spacing-sm);
+}
+
+.ControlsSidebar__item__popup__body__groupAgainst {
+  border-top: none;
+}
+
+.ControlsSidebar__item__popup__body__groupAgainst__switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--component-spacing-xs) 0 0;
+  cursor: pointer;
+  user-select: none;
 }
 
 .ControlsSidebar__item__popup__range__wrapper {

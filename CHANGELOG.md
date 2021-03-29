@@ -1,5 +1,6 @@
 # Changelog
 
+- Add ability to group metrics against given fields (roubkar)
 - Add ability to reset columns order (roubkar)
 - Add std dev and std err aggregation modes (roubkar)
 - Add ability to apply smoothing on line charts (roubkar)

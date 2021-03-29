@@ -8,7 +8,7 @@ import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 function GroupByChart(props) {
   let [opened, setOpened] = useState(false);
 
-  const { groupByChart } = props;
+  const { groupByChart, against } = props;
 
   let popupRef = useRef();
   let dropdownRef = useRef();
@@ -33,12 +33,14 @@ function GroupByChart(props) {
     }
   }, [opened]);
 
-  const options = getGroupingOptions(
-    getAllParamsPaths(),
-    getAllContextKeys(),
-    isExploreMetricsModeEnabled(),
-    isExploreParamsModeEnabled(),
-  );
+  const options = against
+    ? getGroupingOptions(getAllParamsPaths(), [], false, false)
+    : getGroupingOptions(
+      getAllParamsPaths(),
+      getAllContextKeys(),
+      isExploreMetricsModeEnabled(),
+      isExploreParamsModeEnabled(),
+    );
 
   return (
     <div className='ControlsSidebar__item__wrapper'>
@@ -84,6 +86,7 @@ function GroupByChart(props) {
           </div>
           <div className='ControlsSidebar__item__popup__body'>
             <UI.Dropdown
+              key={`${against}`}
               className='ControlsSidebar__groupingDropdown'
               options={options}
               inline={false}
@@ -114,6 +117,48 @@ function GroupByChart(props) {
               isOpen
               multi
             />
+            <div className='ControlsSidebar__item__popup__body__actionContainer'>
+              <div className='ControlsSidebar__item__popup__body__action ControlsSidebar__item__popup__body__groupAgainst'>
+                <UI.Text overline bold center type='primary'>
+                  Select dividing mode
+                </UI.Text>
+                <div
+                  className='ControlsSidebar__item__popup__body__groupAgainst__switch'
+                  onClick={() =>
+                    setContextFilter({
+                      groupByChart: [],
+                      groupAgainst: {
+                        ...HubMainScreenModel.getState().contextFilter
+                          .groupAgainst,
+                        chart: !against,
+                      },
+                    })
+                  }
+                >
+                  <UI.Text type={!against ? 'primary' : 'grey-dark'} small>
+                    <UI.Tooltip tooltip='Divide by selected'>
+                      Divide
+                    </UI.Tooltip>
+                  </UI.Text>
+                  <span
+                    className={classNames({
+                      ControlsSidebar__item__popup__toggle: true,
+                      on: against,
+                    })}
+                  >
+                    <UI.Icon
+                      i={`toggle_${against ? 'on' : 'off'}`}
+                      scale={1.5}
+                    />
+                  </span>
+                  <UI.Text type={against ? 'primary' : 'grey-dark'} small>
+                    <UI.Tooltip tooltip='Divide by all except selected'>
+                      Reverse
+                    </UI.Tooltip>
+                  </UI.Text>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

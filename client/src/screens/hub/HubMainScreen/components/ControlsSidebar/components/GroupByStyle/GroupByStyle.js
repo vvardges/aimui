@@ -9,7 +9,7 @@ function GroupByStyle(props) {
   let [opened, setOpened] = useState(false);
   let [advanceOpened, setAdvanceOpened] = useState(false);
 
-  const { groupByStyle, seed, persist } = props;
+  const { groupByStyle, seed, persist, against } = props;
 
   let popupRef = useRef();
   let dropdownRef = useRef();
@@ -38,12 +38,14 @@ function GroupByStyle(props) {
     }
   }, [opened]);
 
-  const options = getGroupingOptions(
-    getAllParamsPaths(),
-    getAllContextKeys(),
-    isExploreMetricsModeEnabled(),
-    isExploreParamsModeEnabled(),
-  );
+  const options = against
+    ? getGroupingOptions(getAllParamsPaths(), [], false, false)
+    : getGroupingOptions(
+      getAllParamsPaths(),
+      getAllContextKeys(),
+      isExploreMetricsModeEnabled(),
+      isExploreParamsModeEnabled(),
+    );
 
   return (
     <div className='ControlsSidebar__item__wrapper'>
@@ -89,6 +91,7 @@ function GroupByStyle(props) {
           </div>
           <div className='ControlsSidebar__item__popup__body'>
             <UI.Dropdown
+              key={`${against}`}
               className='ControlsSidebar__groupingDropdown'
               options={options}
               inline={false}
@@ -115,6 +118,48 @@ function GroupByStyle(props) {
               isOpen
               multi
             />
+            <div className='ControlsSidebar__item__popup__body__actionContainer'>
+              <div className='ControlsSidebar__item__popup__body__action ControlsSidebar__item__popup__body__groupAgainst'>
+                <UI.Text overline bold center type='primary'>
+                  Select grouping mode
+                </UI.Text>
+                <div
+                  className='ControlsSidebar__item__popup__body__groupAgainst__switch'
+                  onClick={() =>
+                    setContextFilter({
+                      groupByStyle: [],
+                      groupAgainst: {
+                        ...HubMainScreenModel.getState().contextFilter
+                          .groupAgainst,
+                        style: !against,
+                      },
+                    })
+                  }
+                >
+                  <UI.Text type={!against ? 'primary' : 'grey-dark'} small>
+                    <UI.Tooltip tooltip='Divide by selected'>
+                      Divide
+                    </UI.Tooltip>
+                  </UI.Text>
+                  <span
+                    className={classNames({
+                      ControlsSidebar__item__popup__toggle: true,
+                      on: against,
+                    })}
+                  >
+                    <UI.Icon
+                      i={`toggle_${against ? 'on' : 'off'}`}
+                      scale={1.5}
+                    />
+                  </span>
+                  <UI.Text type={against ? 'primary' : 'grey-dark'} small>
+                    <UI.Tooltip tooltip='Divide by all except selected'>
+                      Reverse
+                    </UI.Tooltip>
+                  </UI.Text>
+                </div>
+              </div>
+            </div>
             <div className='ControlsSidebar__item__popup__body__actionContainer'>
               <UI.Tooltip
                 tooltip={

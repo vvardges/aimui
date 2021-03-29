@@ -42,6 +42,7 @@ function ControlsSidebar() {
     groupByColor,
     groupByStyle,
     groupByChart,
+    groupAgainst,
     aggregated,
     aggregatedArea,
     aggregatedLine,
@@ -71,13 +72,18 @@ function ControlsSidebar() {
             seed={seed.color}
             persist={persist.color}
             colorPalette={colorPalette}
+            against={groupAgainst.color}
           />
           <GroupByStyle
             groupByStyle={groupByStyle}
             seed={seed.style}
             persist={persist.style}
+            against={groupAgainst.style}
           />
-          <GroupByChart groupByChart={groupByChart} />
+          <GroupByChart
+            groupByChart={groupByChart}
+            against={groupAgainst.chart}
+          />
           {isExploreMetricsModeEnabled() && (
             <>
               <Aggregate

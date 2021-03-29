@@ -12,7 +12,7 @@ function GroupByColor(props) {
   let [opened, setOpened] = useState(false);
   let [advanceOpened, setAdvanceOpened] = useState(false);
 
-  const { groupByColor, seed, persist, colorPalette } = props;
+  const { groupByColor, seed, persist, colorPalette, against } = props;
 
   let popupRef = useRef();
   let dropdownRef = useRef();
@@ -42,12 +42,14 @@ function GroupByColor(props) {
     }
   }, [opened]);
 
-  const options = getGroupingOptions(
-    getAllParamsPaths(),
-    getAllContextKeys(),
-    isExploreMetricsModeEnabled(),
-    isExploreParamsModeEnabled(),
-  );
+  const options = against
+    ? getGroupingOptions(getAllParamsPaths(), [], false, false)
+    : getGroupingOptions(
+      getAllParamsPaths(),
+      getAllContextKeys(),
+      isExploreMetricsModeEnabled(),
+      isExploreParamsModeEnabled(),
+    );
 
   return (
     <div className='ControlsSidebar__item__wrapper'>
@@ -94,7 +96,6 @@ function GroupByColor(props) {
           <div className='ControlsSidebar__item__popup__body'>
             <UI.Text
               overline
-              spacing
               bold
               type='primary'
               className='GroupByColor__title'
@@ -102,6 +103,7 @@ function GroupByColor(props) {
               Select fields for grouping by color
             </UI.Text>
             <UI.Dropdown
+              key={`${against}`}
               className='ControlsSidebar__groupingDropdown'
               options={options}
               inline={false}
@@ -128,6 +130,48 @@ function GroupByColor(props) {
               isOpen
               multi
             />
+            <div className='ControlsSidebar__item__popup__body__actionContainer'>
+              <div className='ControlsSidebar__item__popup__body__action ControlsSidebar__item__popup__body__groupAgainst'>
+                <UI.Text overline bold center type='primary'>
+                  Select grouping mode
+                </UI.Text>
+                <div
+                  className='ControlsSidebar__item__popup__body__groupAgainst__switch'
+                  onClick={() =>
+                    setContextFilter({
+                      groupByColor: [],
+                      groupAgainst: {
+                        ...HubMainScreenModel.getState().contextFilter
+                          .groupAgainst,
+                        color: !against,
+                      },
+                    })
+                  }
+                >
+                  <UI.Text type={!against ? 'primary' : 'grey-dark'} small>
+                    <UI.Tooltip tooltip='Group by selected'>
+                      Group
+                    </UI.Tooltip>
+                  </UI.Text>
+                  <span
+                    className={classNames({
+                      ControlsSidebar__item__popup__toggle: true,
+                      on: against,
+                    })}
+                  >
+                    <UI.Icon
+                      i={`toggle_${against ? 'on' : 'off'}`}
+                      scale={1.5}
+                    />
+                  </span>
+                  <UI.Text type={against ? 'primary' : 'grey-dark'} small>
+                    <UI.Tooltip tooltip='Group by all except selected'>
+                      Reverse
+                    </UI.Tooltip>
+                  </UI.Text>
+                </div>
+              </div>
+            </div>
             <div className='ControlsSidebar__item__popup__body__actionContainer'>
               <UI.Tooltip
                 tooltip={
@@ -249,6 +293,7 @@ GroupByColor.propTypes = {
   seed: PropTypes.number,
   persist: PropTypes.bool,
   colorPalette: PropTypes.number,
+  against: PropTypes.bool,
 };
 
 export default GroupByColor;
