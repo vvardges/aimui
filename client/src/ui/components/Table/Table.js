@@ -559,11 +559,15 @@ function Cell({
       {...(typeof item === 'object' && item.props)}
     >
       {metadata && <div className='Table__cell__rowMeta'>{metadata}</div>}
-      {isConfigColumn || placeholder
-        ? ''
-        : typeof item === 'object' && item.hasOwnProperty('content')
-          ? item.content
-          : item ?? '-'}
+      {isConfigColumn || placeholder ? (
+        ''
+      ) : (
+        <div className='Table__cell__value'>
+          {typeof item === 'object' && item.hasOwnProperty('content')
+            ? item.content
+            : item ?? '-'}
+        </div>
+      )}
     </div>
   );
 }

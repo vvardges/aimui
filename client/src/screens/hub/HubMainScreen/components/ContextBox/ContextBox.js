@@ -1269,7 +1269,7 @@ function ContextBox(props) {
                     run.run_hash,
                     metric?.name,
                     contextHash,
-                  )}`,
+                  )} .Table__cell__value`,
                 );
                 if (!!valueCell) {
                   valueCell.textContent =
@@ -1282,7 +1282,7 @@ function ContextBox(props) {
                     run.run_hash,
                     metric?.name,
                     contextHash,
-                  )}`,
+                  )} .Table__cell__value`,
                 );
                 if (!!stepCell) {
                   stepCell.textContent =
@@ -1296,7 +1296,7 @@ function ContextBox(props) {
                     run.run_hash,
                     metric?.name,
                     contextHash,
-                  )}`,
+                  )} .Table__cell__value`,
                 );
                 if (!!epochCell) {
                   epochCell.textContent =
@@ -1310,7 +1310,7 @@ function ContextBox(props) {
                     run.run_hash,
                     metric?.name,
                     contextHash,
-                  )}`,
+                  )} .Table__cell__value`,
                 );
                 if (!!timeCell) {
                   timeCell.textContent =
