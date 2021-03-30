@@ -11,6 +11,7 @@ import {
   searchNestedObject,
   removeObjectEmptyKeys,
   excludeObjectPaths,
+  formatSystemMetricName,
 } from '../../../../../../../utils';
 import * as storeUtils from '../../../../../../../storeUtils';
 import * as classes from '../../../../../../../constants/classes';
@@ -199,10 +200,15 @@ function SelectInput(props) {
 
   function _renderMetrics(
     metrics,
+    system = false,
     replaceOnClick = false,
     itemOnClickCB = null,
     addTrailingComma = false,
   ) {
+    if (!metrics || !metrics.length) {
+      return null;
+    }
+
     const selectedAttrs = getSelectedAttrs();
 
     return (
@@ -217,13 +223,13 @@ function SelectInput(props) {
           <div className='SelectInput__dropdown__group__title'>
             <div className='SelectInput__dropdown__group__title__placeholder' />
             <div className='SelectInput__dropdown__group__title__label'>
-              metrics
+              {system ? 'system' : 'metrics'}
             </div>
           </div>
         </div>
         <div className='SelectInput__dropdown__group__body'>
           {!!metrics &&
-            metrics.map((metric) => (
+            metrics.sort().map((metric) => (
               <div
                 className={classNames({
                   SelectInput__dropdown__group__item: true,
@@ -239,12 +245,16 @@ function SelectInput(props) {
                   )
                 }
               >
-                <div className='SelectInput__dropdown__group__item__icon__wrapper metric'>
+                <div className={classNames({
+                  SelectInput__dropdown__group__item__icon__wrapper: true,
+                  metric: true,
+                  system: system,
+                })}>
                   {selectedAttrs.indexOf(metric) !== -1 ? (
                     <UI.Icon i='done' />
                   ) : (
                     <div className='SelectInput__dropdown__group__item__icon__letter'>
-                      M
+                      {system ? 'S' : 'M'}
                     </div>
                   )}
                 </div>
@@ -265,6 +275,11 @@ function SelectInput(props) {
                     <span className='SelectInput__dropdown__group__item__name__short'>
                       {metric}
                     </span>
+                    {system &&
+                      <span className='SelectInput__dropdown__group__item__name__full'>
+                        {formatSystemMetricName(metric)}
+                      </span>
+                    }
                   </div>
                 </div>
               </div>
@@ -404,7 +419,7 @@ function SelectInput(props) {
     const metrics = [];
     props.project?.metrics?.map(
       (m) =>
-        m.startsWith(suggestionsPrefix) &&
+        m.indexOf(suggestionsPrefix) !== -1 &&
         selectedFields.indexOf(m) === -1 &&
         metrics.push(m),
     );
@@ -432,7 +447,11 @@ function SelectInput(props) {
           Suggestions
         </UI.Text>
         {!!metrics?.length &&
-          _renderMetrics(metrics, true, resetSuggestionsPrefix, true)}
+          <>
+            {_renderMetrics(metrics.filter(m => !m.startsWith('__system__')), false, true, resetSuggestionsPrefix, true)}
+            {_renderMetrics(metrics.filter(m => m.startsWith('__system__')), true, true, resetSuggestionsPrefix, true)}
+          </>
+        }
         {!!metrics?.length && !!params && Object.keys(params).length > 0 && (
           <div className='SelectInput__dropdown__divider' />
         )}
@@ -606,8 +625,8 @@ function SelectInput(props) {
                 >
                   Available fields
                 </UI.Text>
-                {!!props.project?.metrics?.length &&
-                  _renderMetrics(props.project.metrics)}
+                {!!props.project?.metrics?.length && _renderMetrics(props.project.metrics.filter(m => !m.startsWith('__system__')))}
+                {!!props.project?.metrics?.length && _renderMetrics(props.project.metrics.filter(m => m.startsWith('__system__')), true)}
                 {!!props.project?.metrics?.length &&
                   !!props.project?.params &&
                   Object.keys(props.project?.params).length > 0 && (

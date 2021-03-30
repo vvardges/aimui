@@ -18,7 +18,7 @@ import {
   buildUrl,
   classNames,
   formatDuration,
-  formatSize,
+  formatSize, formatSystemMetricName,
 } from '../../../utils';
 import { SERVER_HOST, SERVER_API_HOST, WS_HOST } from '../../../config';
 import * as screens from '../../../constants/screens';
@@ -446,12 +446,18 @@ class HubExperimentScreen extends React.Component {
   };
 
   _renderMetric = (metric, key) => {
+    let name = metric.name;
+
+    if (name.startsWith('__system__')) {
+      name = formatSystemMetricName(metric.name);
+    }
+
     return (
       <>
         {metric.traces.map((trace, traceKey) => (
           <ExperimentCell
             header='metric'
-            footerTitle={metric.name}
+            footerTitle={name}
             footerLabels={
               !!trace.context
                 ? Object.keys(trace.context).map(
@@ -630,7 +636,7 @@ class HubExperimentScreen extends React.Component {
   };
 
   _renderParameters = () => {
-    if (!this.state.experiment?.maps?.length) {
+    if (!this.state.experiment?.maps?.filter(m => m.data && Object.keys(m.data).length).length) {
       return (
         <UI.Text type='grey' center>
           No logged parameters
@@ -671,7 +677,9 @@ class HubExperimentScreen extends React.Component {
   };
 
   _renderMetrics = () => {
-    if (!this.state.experiment?.metrics?.length) {
+    const metrics = this.state.experiment?.metrics?.filter(m => !m?.name?.startsWith('__system__'));
+
+    if (!metrics || !metrics.length) {
       return (
         <UI.Text type='grey' center>
           No tracked metrics
@@ -682,13 +690,35 @@ class HubExperimentScreen extends React.Component {
     return (
       <div className='HubExperimentScreen__grid'>
         <div className='HubExperimentScreen__grid__wrapper'>
-          {this.state.experiment.metrics.map((item, key) =>
+          {metrics.map((item, key) =>
             this._renderMetric(item, key),
           )}
         </div>
       </div>
     );
   };
+
+  _renderSystemMetrics = () => {
+    const metrics = this.state.experiment?.metrics?.filter(m => m?.name?.startsWith('__system__'));
+
+    if (!metrics || !metrics.length) {
+      return (
+        <UI.Text type='grey' center>
+          No tracked system metrics
+        </UI.Text>
+      );
+    }
+
+    return (
+      <div className='HubExperimentScreen__grid'>
+        <div className='HubExperimentScreen__grid__wrapper'>
+          {metrics.map((item, key) =>
+            this._renderMetric(item, key),
+          )}
+        </div>
+      </div>
+    );
+  }
 
   _renderSettings = () => {
     return (
@@ -760,6 +790,13 @@ class HubExperimentScreen extends React.Component {
               </UI.Tab>
               <UI.Tab
                 className=''
+                active={this.state.activeTab === 'system'}
+                onClick={() => this.setState({ activeTab: 'system' })}
+              >
+                System
+              </UI.Tab>
+              <UI.Tab
+                className=''
                 active={this.state.activeTab === 'settings'}
                 onClick={() => this.setState({ activeTab: 'settings' })}
               >
@@ -771,6 +808,7 @@ class HubExperimentScreen extends React.Component {
         <div className='HubExperimentScreen__body'>
           {this.state.activeTab === 'parameters' && this._renderParameters()}
           {this.state.activeTab === 'metrics' && this._renderMetrics()}
+          {this.state.activeTab === 'system' && this._renderSystemMetrics()}
           {this.state.activeTab === 'settings' && this._renderSettings()}
         </div>
       </>

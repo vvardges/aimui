@@ -1,5 +1,6 @@
 # Changelog
 
+- Implement system resource tracking visualization (gorarakelyan)
 - Optimize group aggregation performance (roubkar)
 - Add ability to group metrics against given fields (roubkar)
 - Add ability to reset columns order (roubkar)
