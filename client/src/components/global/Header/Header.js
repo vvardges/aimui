@@ -107,7 +107,7 @@ class Header extends React.Component {
               <div className='Header__item__wrapper'>
                 <a
                   className='link'
-                  href='https://github.com/aimhubio/aim#contents'
+                  href='https://github.com/aimhubio/aim#overview'
                   target='_blank'
                   rel='noreferrer noopener'
                 >
