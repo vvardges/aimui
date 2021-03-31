@@ -1,5 +1,7 @@
 # Changelog
 
+- Fix Y axis domain min value detection (roubkar)
+
 ## 1.4.0 Mar 24 2021
 - Add ability to toggle metric visibility in explore panel (roubkar)
 - Add ability to hide columns which values are all the same (roubkar)
