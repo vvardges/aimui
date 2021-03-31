@@ -71,17 +71,17 @@ function ControlsSidebar() {
             seed={seed.color}
             persist={persist.color}
             colorPalette={colorPalette}
-            against={groupAgainst.color}
+            against={groupAgainst?.color ?? false}
           />
           <GroupByStyle
             groupByStyle={groupByStyle}
             seed={seed.style}
             persist={persist.style}
-            against={groupAgainst.style}
+            against={groupAgainst?.style ?? false}
           />
           <GroupByChart
             groupByChart={groupByChart}
-            against={groupAgainst.chart}
+            against={groupAgainst?.chart ?? false}
           />
           {isExploreMetricsModeEnabled() && (
             <>

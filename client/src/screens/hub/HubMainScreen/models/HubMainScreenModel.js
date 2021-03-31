@@ -309,7 +309,7 @@ function setTraceList() {
     .map((category) => category.options.map((option) => option.value).flat())
     .flat();
 
-  if (getState().contextFilter.groupByColor.length > 0 && groupAgainst.color) {
+  if (getState().contextFilter.groupByColor.length > 0 && groupAgainst?.color) {
     groupByColor = _.difference(
       groupingAvailableFields,
       getState().contextFilter.groupByColor,
@@ -317,7 +317,7 @@ function setTraceList() {
   } else {
     groupByColor = getState().contextFilter.groupByColor;
   }
-  if (getState().contextFilter.groupByStyle.length > 0 && groupAgainst.style) {
+  if (getState().contextFilter.groupByStyle.length > 0 && groupAgainst?.style) {
     groupByStyle = _.difference(
       groupingAvailableFields,
       getState().contextFilter.groupByStyle,
@@ -325,7 +325,7 @@ function setTraceList() {
   } else {
     groupByStyle = getState().contextFilter.groupByStyle;
   }
-  if (getState().contextFilter.groupByChart.length > 0 && groupAgainst.chart) {
+  if (getState().contextFilter.groupByChart.length > 0 && groupAgainst?.chart) {
     groupByChart = _.difference(
       groupingAvailableFields,
       getState().contextFilter.groupByChart,
