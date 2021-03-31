@@ -359,19 +359,25 @@ function PanelChart(props) {
             return;
           }
           const { run, metric, trace } = series;
-          const traceMax =
-            trace && trace.data
-              ? Math.max(...trace.data.map((elem) => elem[0]))
-              : null;
-          const traceMin =
-            trace && trace.data
-              ? Math.min(...trace.data.map((elem) => elem[0]))
-              : null;
-          if (yMax == null || traceMax > yMax) {
+          const traceValues =
+            trace && trace.data.map((elem) => elem[0]).sort((a, b) => a - b);
+          const traceMax = traceValues?.[traceValues?.length - 1];
+          let traceMin = traceValues?.[0];
+          if (
+            scaleOptions[chart.settings.persistent.yScale] === 'log' &&
+            traceMin === 0
+          ) {
+            traceMin = traceValues?.[1] ?? 0.1;
+          }
+          if (yMax === null || traceMax > yMax) {
             yMax = traceMax;
           }
-          if (yMin == null || traceMin < yMin) {
-            yMin = traceMin === 0 ? 1 : traceMin;
+          if (yMin === null || traceMin < yMin) {
+            if (scaleOptions[chart.settings.persistent.yScale] === 'log') {
+              yMin = traceMin === 0 ? 0.1 : traceMin;
+            } else {
+              yMin = traceMin;
+            }
           }
         }),
       );
@@ -407,7 +413,13 @@ function PanelChart(props) {
       maxData = maxData.map((e) => Math.max(...e));
       maxData = removeOutliers(maxData, 4);
 
-      yMin = minData[0] === 0 ? 1 : minData[0];
+      yMin = minData[0];
+      if (
+        scaleOptions[chart.settings.persistent.yScale] === 'log' &&
+        yMin === 0
+      ) {
+        yMin = minData[1];
+      }
       yMax = maxData[maxData.length - 1];
     }
 
@@ -423,6 +435,9 @@ function PanelChart(props) {
       }
       yScaleBase = d3.scaleLinear();
     } else if (scaleOptions[chart.settings.persistent.yScale] === 'log') {
+      if (yMin === 0) {
+        yMin = 0.1;
+      }
       yScaleBase = d3.scaleLog();
     }
 

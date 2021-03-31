@@ -1,5 +1,6 @@
 # Changelog
 
+- Fix y-axis domain min value detection (roubkar)
 - Implement system resource tracking visualization (gorarakelyan)
 - Optimize group aggregation performance (roubkar)
 - Add ability to group metrics against given fields (roubkar)
