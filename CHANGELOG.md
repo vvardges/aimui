@@ -1,5 +1,6 @@
 # Changelog
 
+## 1.4.1 Mar 31 2021
 - Fix Y axis domain min value detection (roubkar)
 
 ## 1.4.0 Mar 24 2021
