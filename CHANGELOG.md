@@ -1,11 +1,16 @@
 # Changelog
 
+## Unreleased
+
 - Implement system resource tracking visualization (gorarakelyan)
 - Optimize group aggregation performance (roubkar)
 - Add ability to group metrics against given fields (roubkar)
 - Add ability to reset columns order (roubkar)
 - Add std dev and std err aggregation modes (roubkar)
 - Add ability to apply smoothing on line charts (roubkar)
+
+## 1.4.1 Mar 31 2021
+- Fix Y axis domain min value detection (roubkar)
 
 ## 1.4.0 Mar 24 2021
 - Add ability to toggle metric visibility in explore panel (roubkar)
