@@ -245,11 +245,13 @@ function SelectInput(props) {
                   )
                 }
               >
-                <div className={classNames({
-                  SelectInput__dropdown__group__item__icon__wrapper: true,
-                  metric: true,
-                  system: system,
-                })}>
+                <div
+                  className={classNames({
+                    SelectInput__dropdown__group__item__icon__wrapper: true,
+                    metric: true,
+                    system: system,
+                  })}
+                >
                   {selectedAttrs.indexOf(metric) !== -1 ? (
                     <UI.Icon i='done' />
                   ) : (
@@ -275,11 +277,11 @@ function SelectInput(props) {
                     <span className='SelectInput__dropdown__group__item__name__short'>
                       {metric}
                     </span>
-                    {system &&
+                    {system && (
                       <span className='SelectInput__dropdown__group__item__name__full'>
                         {formatSystemMetricName(metric)}
                       </span>
-                    }
+                    )}
                   </div>
                 </div>
               </div>
@@ -446,12 +448,24 @@ function SelectInput(props) {
         >
           Suggestions
         </UI.Text>
-        {!!metrics?.length &&
+        {!!metrics?.length && (
           <>
-            {_renderMetrics(metrics.filter(m => !m.startsWith('__system__')), false, true, resetSuggestionsPrefix, true)}
-            {_renderMetrics(metrics.filter(m => m.startsWith('__system__')), true, true, resetSuggestionsPrefix, true)}
+            {_renderMetrics(
+              metrics.filter((m) => !m.startsWith('__system__')),
+              false,
+              true,
+              resetSuggestionsPrefix,
+              true,
+            )}
+            {_renderMetrics(
+              metrics.filter((m) => m.startsWith('__system__')),
+              true,
+              true,
+              resetSuggestionsPrefix,
+              true,
+            )}
           </>
-        }
+        )}
         {!!metrics?.length && !!params && Object.keys(params).length > 0 && (
           <div className='SelectInput__dropdown__divider' />
         )}
@@ -625,8 +639,19 @@ function SelectInput(props) {
                 >
                   Available fields
                 </UI.Text>
-                {!!props.project?.metrics?.length && _renderMetrics(props.project.metrics.filter(m => !m.startsWith('__system__')))}
-                {!!props.project?.metrics?.length && _renderMetrics(props.project.metrics.filter(m => m.startsWith('__system__')), true)}
+                {!!props.project?.metrics?.length &&
+                  _renderMetrics(
+                    props.project.metrics.filter(
+                      (m) => !m.startsWith('__system__'),
+                    ),
+                  )}
+                {!!props.project?.metrics?.length &&
+                  _renderMetrics(
+                    props.project.metrics.filter((m) =>
+                      m.startsWith('__system__'),
+                    ),
+                    true,
+                  )}
                 {!!props.project?.metrics?.length &&
                   !!props.project?.params &&
                   Object.keys(props.project?.params).length > 0 && (

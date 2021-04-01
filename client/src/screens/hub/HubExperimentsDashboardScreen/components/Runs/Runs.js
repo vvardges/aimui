@@ -746,6 +746,11 @@ class Runs extends React.Component {
             </>
           ),
           topHeader: metricName,
+          sortableKey: `${metricName} ${
+            Object.entries(metricContext ?? {})
+              .map((metric) => `${metric[0]}="${metric[1]}"`)
+              .join(', ') || 'No context'
+          }`,
         });
       }),
     );
@@ -793,6 +798,7 @@ class Runs extends React.Component {
             </>
           ),
           topHeader: paramKey,
+          sortableKey: `${paramKey}.${key}`,
         });
       }),
     );

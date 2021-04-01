@@ -141,12 +141,15 @@
 }
 
 .Table__action__popup__item {
-  padding: var(--component-spacing-xs) var(--component-spacing-sm);
+  padding: var(--space-xxs) var(--space-xs);
   border-bottom: 1px solid var(--grey-lighter);
   text-transform: capitalize;
   cursor: pointer;
   display: flex;
   align-items: center;
+  color: var(--primary);
+  transition: background-color 110ms ease;
+  user-select: none;
 
   &:last-of-type {
     border-bottom: none;
@@ -157,8 +160,12 @@
   }
 
   &:active {
-    background-color: var(--primary);
-    color: #fff;
+    background-color: var(--primary-lighter);
+    color: var(--primary-darker);
+  }
+
+  .Icon {
+    margin-right: var(--space-xxs);
   }
 }
 

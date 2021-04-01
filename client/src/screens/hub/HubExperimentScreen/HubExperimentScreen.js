@@ -18,7 +18,8 @@ import {
   buildUrl,
   classNames,
   formatDuration,
-  formatSize, formatSystemMetricName,
+  formatSize,
+  formatSystemMetricName,
 } from '../../../utils';
 import { SERVER_HOST, SERVER_API_HOST, WS_HOST } from '../../../config';
 import * as screens from '../../../constants/screens';
@@ -636,7 +637,11 @@ class HubExperimentScreen extends React.Component {
   };
 
   _renderParameters = () => {
-    if (!this.state.experiment?.maps?.filter(m => m.data && Object.keys(m.data).length).length) {
+    if (
+      !this.state.experiment?.maps?.filter(
+        (m) => m.data && Object.keys(m.data).length,
+      ).length
+    ) {
       return (
         <UI.Text type='grey' center>
           No logged parameters
@@ -677,7 +682,9 @@ class HubExperimentScreen extends React.Component {
   };
 
   _renderMetrics = () => {
-    const metrics = this.state.experiment?.metrics?.filter(m => !m?.name?.startsWith('__system__'));
+    const metrics = this.state.experiment?.metrics?.filter(
+      (m) => !m?.name?.startsWith('__system__'),
+    );
 
     if (!metrics || !metrics.length) {
       return (
@@ -690,16 +697,16 @@ class HubExperimentScreen extends React.Component {
     return (
       <div className='HubExperimentScreen__grid'>
         <div className='HubExperimentScreen__grid__wrapper'>
-          {metrics.map((item, key) =>
-            this._renderMetric(item, key),
-          )}
+          {metrics.map((item, key) => this._renderMetric(item, key))}
         </div>
       </div>
     );
   };
 
   _renderSystemMetrics = () => {
-    const metrics = this.state.experiment?.metrics?.filter(m => m?.name?.startsWith('__system__'));
+    const metrics = this.state.experiment?.metrics?.filter((m) =>
+      m?.name?.startsWith('__system__'),
+    );
 
     if (!metrics || !metrics.length) {
       return (
@@ -712,13 +719,11 @@ class HubExperimentScreen extends React.Component {
     return (
       <div className='HubExperimentScreen__grid'>
         <div className='HubExperimentScreen__grid__wrapper'>
-          {metrics.map((item, key) =>
-            this._renderMetric(item, key),
-          )}
+          {metrics.map((item, key) => this._renderMetric(item, key))}
         </div>
       </div>
     );
-  }
+  };
 
   _renderSettings = () => {
     return (

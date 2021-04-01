@@ -151,6 +151,32 @@ function Table(props) {
     props.updateColumns(columnsOrderClone);
   }
 
+  function moveColumn(colKey, pane, from, direction) {
+    const columnsOrderClone = _.cloneDeep(props.columnsOrder);
+    let to;
+    switch (direction) {
+      case 'left':
+        to = from - 1;
+        break;
+      case 'right':
+        to = from + 1;
+        break;
+      case 'start':
+        to = 0;
+        break;
+      case 'end':
+        to = columnsOrderClone[pane].length - 1;
+        break;
+    }
+    columnsOrderClone[pane].splice(from, 1);
+    columnsOrderClone[pane].splice(to, 0, colKey);
+    props.updateColumns(columnsOrderClone);
+  }
+
+  function sortByColumn(colKey, order) {
+    props.setSortFields([...props.sortFields, [colKey, order]]);
+  }
+
   return (
     <div
       className={classNames({
@@ -202,6 +228,20 @@ function Table(props) {
                 width={props.columnsWidth[col.key]}
                 updateColumnWidth={props.updateColumnsWidth}
                 headerMeta={props.headerMeta}
+                isAlwaysVisible={props.alwaysVisibleColumns.includes(col.key)}
+                hideColumn={() =>
+                  props.setExcludedFields([...props.excludedFields, col.key])
+                }
+                paneFirstColumn={index === 0}
+                paneLastColumn={index === leftPane.length - 1}
+                moveColumn={(dir) => moveColumn(col.key, 'left', index, dir)}
+                sortable={
+                  col.sortableKey &&
+                  props.sortFields.findIndex(
+                    (f) => f[0] === col.sortableKey,
+                  ) === -1
+                }
+                sortByColumn={(order) => sortByColumn(col.sortableKey, order)}
               />
             ))}
           </div>
@@ -232,6 +272,19 @@ function Table(props) {
               width={props.columnsWidth[col.key]}
               updateColumnWidth={props.updateColumnsWidth}
               headerMeta={props.headerMeta}
+              isAlwaysVisible={props.alwaysVisibleColumns.includes(col.key)}
+              hideColumn={() =>
+                props.setExcludedFields([...props.excludedFields, col.key])
+              }
+              paneFirstColumn={index === 0}
+              paneLastColumn={index === middlePane.length - 1}
+              moveColumn={(dir) => moveColumn(col.key, 'middle', index, dir)}
+              sortable={
+                col.sortableKey &&
+                props.sortFields.findIndex((f) => f[0] === col.sortableKey) ===
+                  -1
+              }
+              sortByColumn={(order) => sortByColumn(col.sortableKey, order)}
             />
           ))}
         </div>
@@ -274,6 +327,20 @@ function Table(props) {
                 width={props.columnsWidth[col.key]}
                 updateColumnWidth={props.updateColumnsWidth}
                 headerMeta={props.headerMeta}
+                isAlwaysVisible={props.alwaysVisibleColumns.includes(col.key)}
+                hideColumn={() =>
+                  props.setExcludedFields([...props.excludedFields, col.key])
+                }
+                paneFirstColumn={index === 0}
+                paneLastColumn={index === rightPane.length - 1}
+                moveColumn={(dir) => moveColumn(col.key, 'right', index, dir)}
+                sortable={
+                  col.sortableKey &&
+                  props.sortFields.findIndex(
+                    (f) => f[0] === col.sortableKey,
+                  ) === -1
+                }
+                sortByColumn={(order) => sortByColumn(col.sortableKey, order)}
               />
             ))}
           </div>
@@ -308,6 +375,13 @@ function Column({
   width,
   updateColumnWidth,
   headerMeta,
+  isAlwaysVisible,
+  hideColumn,
+  paneFirstColumn,
+  paneLastColumn,
+  moveColumn,
+  sortable,
+  sortByColumn,
 }) {
   const [maxWidth, setMaxWidth] = useState(width);
   const [isResizing, setIsResizing] = useState(false);
@@ -403,6 +477,18 @@ function Column({
           tooltip='Column actions'
           content={(opened, setOpened) => (
             <div className='Table__action__popup__body'>
+              {!isAlwaysVisible && (
+                <div
+                  className='Table__action__popup__item'
+                  onClick={(evt) => {
+                    hideColumn();
+                    setOpened(false);
+                  }}
+                >
+                  <UI.Icon i='visibility_off' />
+                  <UI.Text small>Hide column</UI.Text>
+                </div>
+              )}
               {(pinnedTo === 'left' || pinnedTo === 'right') && (
                 <div
                   className='Table__action__popup__item'
@@ -411,6 +497,7 @@ function Column({
                     setOpened(false);
                   }}
                 >
+                  <UI.Icon i='push_pin' />
                   <UI.Text small>Unpin</UI.Text>
                 </div>
               )}
@@ -422,6 +509,7 @@ function Column({
                     setOpened(false);
                   }}
                 >
+                  <UI.Icon i='push_pin' rotate={30} />
                   <UI.Text small>Pin to left</UI.Text>
                 </div>
               )}
@@ -433,7 +521,84 @@ function Column({
                     setOpened(false);
                   }}
                 >
+                  <UI.Icon i='push_pin' rotate={-30} />
                   <UI.Text small>Pin to right</UI.Text>
+                </div>
+              )}
+              {!paneFirstColumn && (
+                <div
+                  className='Table__action__popup__item'
+                  onClick={(evt) => {
+                    moveColumn('left');
+                    setOpened(false);
+                  }}
+                >
+                  <UI.Icon i='chevron_left' />
+                  <UI.Text small>Move left</UI.Text>
+                </div>
+              )}
+              {!paneLastColumn && (
+                <div
+                  className='Table__action__popup__item'
+                  onClick={(evt) => {
+                    moveColumn('right');
+                    setOpened(false);
+                  }}
+                >
+                  <UI.Icon i='chevron_right' />
+                  <UI.Text small>Move right</UI.Text>
+                </div>
+              )}
+              {pinnedTo === null && !paneFirstColumn && (
+                <div
+                  className='Table__action__popup__item'
+                  onClick={(evt) => {
+                    moveColumn('start');
+                    setOpened(false);
+                  }}
+                >
+                  <UI.Icon i='first_page' />
+                  <UI.Text small>Move to start</UI.Text>
+                </div>
+              )}
+              {pinnedTo === null && !paneLastColumn && (
+                <div
+                  className='Table__action__popup__item'
+                  onClick={(evt) => {
+                    moveColumn('end');
+                    setOpened(false);
+                  }}
+                >
+                  <UI.Icon i='last_page' />
+                  <UI.Text small>Move to end</UI.Text>
+                </div>
+              )}
+              {sortable && (
+                <div
+                  className='Table__action__popup__item'
+                  onClick={(evt) => {
+                    sortByColumn('asc');
+                    setOpened(false);
+                  }}
+                >
+                  <UI.Icon i='import_export' />
+                  <UI.Text small>
+                    Sort by <em>ASC</em>
+                  </UI.Text>
+                </div>
+              )}
+              {sortable && (
+                <div
+                  className='Table__action__popup__item'
+                  onClick={(evt) => {
+                    sortByColumn('desc');
+                    setOpened(false);
+                  }}
+                >
+                  <UI.Icon i='import_export' />
+                  <UI.Text small>
+                    Sort by <em>DESC</em>
+                  </UI.Text>
                 </div>
               )}
               {width !== undefined && (
@@ -444,6 +609,7 @@ function Column({
                     setOpened(false);
                   }}
                 >
+                  <UI.Icon i='vertical_align_center' rotate={90} />
                   <UI.Text small>Reset width</UI.Text>
                 </div>
               )}
@@ -662,6 +828,7 @@ function GroupConfig({ config, expand, expanded, groupKeys, groupKey }) {
                 setOpened(false);
               }}
             >
+              <UI.Icon i={expanded[groupKey] ? 'unfold_less' : 'unfold_more'} />
               <UI.Text small>
                 {expanded[groupKey] ? 'Collapse group' : 'Expand group'}
               </UI.Text>
@@ -675,6 +842,7 @@ function GroupConfig({ config, expand, expanded, groupKeys, groupKey }) {
                   setOpened(false);
                 }}
               >
+                <UI.Icon i='compress' />
                 <UI.Text small>Collapse all</UI.Text>
               </div>
             )}
@@ -687,6 +855,7 @@ function GroupConfig({ config, expand, expanded, groupKeys, groupKey }) {
                   setOpened(false);
                 }}
               >
+                <UI.Icon i='expand' />
                 <UI.Text small>Expand all</UI.Text>
               </div>
             )}

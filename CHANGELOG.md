@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Enhance context table column actions (roubkar)
 - Implement system resource tracking visualization (gorarakelyan)
 - Optimize group aggregation performance (roubkar)
 - Add ability to group metrics against given fields (roubkar)

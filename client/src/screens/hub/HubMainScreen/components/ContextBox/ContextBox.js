@@ -382,6 +382,11 @@ function ContextBox(props) {
             </div>
           ),
           topHeader: metricKey,
+          sortableKey: `${metricKey} ${
+            Object.entries(metricContext ?? {})
+              .map((metric) => `${metric[0]}="${metric[1]}"`)
+              .join(', ') || 'No context'
+          }`,
         });
       });
     }
@@ -402,6 +407,7 @@ function ContextBox(props) {
             </>
           ),
           topHeader: paramKey,
+          sortableKey: `${paramKey}.${key}`,
         });
       }),
     );

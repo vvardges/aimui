@@ -249,11 +249,15 @@ function ContextTable(props) {
       <div className='ContextTable__table'>
         <UI.Table
           excludedFields={excludedFields}
+          setExcludedFields={setExcludedFields}
+          alwaysVisibleColumns={props.alwaysVisibleColumns}
           rowHeightMode={rowHeightMode}
           columnsOrder={columnsOrder}
           updateColumns={updateColumns}
           columnsWidth={columnsWidth}
           updateColumnsWidth={updateColumnsWidth}
+          sortFields={props.sortFields}
+          setSortFields={props.setSortFields}
           {...props}
         />
       </div>
