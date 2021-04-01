@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add routes for experiment page tabs (gorarakelyan)
 - Set default timezone to GMT (gorarakelyan)
 - Enhance context table column actions (roubkar)
 - Implement system resource tracking visualization (gorarakelyan)

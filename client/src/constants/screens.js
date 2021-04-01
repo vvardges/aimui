@@ -20,3 +20,7 @@ export const HUB_PROJECT_EXPERIMENT_DASHBOARD_SEARCH =
 export const HUB_PROJECT_EXPERIMENT_DEFAULT = '/experiment/default/latest';
 export const HUB_PROJECT_EXPERIMENT_INDEX = '/experiment/default/index';
 export const HUB_PROJECT_EXPERIMENT = '/experiment/:experiment_name/:commit_id';
+export const HUB_PROJECT_EXPERIMENT_PARAMS_TAB = '/experiment/:experiment_name/:commit_id/parameters';
+export const HUB_PROJECT_EXPERIMENT_METRICS_TAB = '/experiment/:experiment_name/:commit_id/metrics';
+export const HUB_PROJECT_EXPERIMENT_SYSTEM_TAB = '/experiment/:experiment_name/:commit_id/system';
+export const HUB_PROJECT_EXPERIMENT_SETTINGS_TAB = '/experiment/:experiment_name/:commit_id/settings';

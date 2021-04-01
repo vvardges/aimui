@@ -3,7 +3,7 @@ import './ExperimentDiff.css';
 
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import { Redirect, Link } from 'react-router-dom';
+import { Redirect, Link, withRouter } from 'react-router-dom';
 import ReactSVG from 'react-svg';
 import { parseDiff, Diff, Hunk, Decoration } from 'react-diff-view';
 import moment from 'moment';
@@ -20,6 +20,7 @@ import {
   formatDuration,
   formatSize,
   formatSystemMetricName,
+  rightStrip,
 } from '../../../utils';
 import { SERVER_HOST, SERVER_API_HOST, WS_HOST } from '../../../config';
 import * as screens from '../../../constants/screens';
@@ -46,7 +47,7 @@ class HubExperimentScreen extends React.Component {
       metricsData: {},
       tags: [],
       tagsAreLoading: true,
-      activeTab: 'parameters',
+      activeTab: props.tab,
       archivationBtn: {
         loading: false,
         disabled: false,
@@ -56,6 +57,8 @@ class HubExperimentScreen extends React.Component {
     this.contentRef = React.createRef();
 
     this.WSClient = null;
+    // Tabs, first tab is the default one
+    this.tabs = ['parameters', 'metrics', 'system', 'settings'];
 
     props.resetProgress();
   }
@@ -75,22 +78,65 @@ class HubExperimentScreen extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.location.pathname !== this.props.location.pathname) {
-      this.WSClose();
-      this.setState(
-        {
-          isLoading: true,
-          notFound: false,
-          experiment: null,
-          annotations: null,
-          expandCluster: {},
-          selectedModel: false,
-          selectBranch: null,
-          tags: [],
-        },
-        () => {
-          this.getExperiment();
-        },
-      );
+      const currentPath = rightStrip(this.props.location.pathname, '/');
+      const prevPath = rightStrip(prevProps.location.pathname, '/');
+      const currentPathSplit = currentPath.split('/');
+
+      let currentHash = currentPath;
+      let prevHash = prevPath;
+      this.tabs.forEach(tab => {
+        currentHash = rightStrip(currentHash, tab);
+        prevHash = rightStrip(prevHash, tab);
+      });
+      currentHash = rightStrip(currentHash, '/');
+      prevHash = rightStrip(prevHash, '/');
+
+      let currentTab = this.tabs[0];
+      if (!!currentPathSplit && currentPathSplit.length
+        && this.tabs.indexOf(currentPathSplit[currentPathSplit.length - 1]) !== -1) {
+        currentTab = currentPathSplit[currentPathSplit.length - 1];
+      }
+
+      if (currentHash !== prevHash) {
+        // Navigate to another experiment
+        this.WSClose();
+        this.setState(
+          {
+            isLoading: true,
+            notFound: false,
+            experiment: null,
+            annotations: null,
+            expandCluster: {},
+            selectedModel: false,
+            selectBranch: null,
+            tags: [],
+            activeTab: currentTab,
+          },
+          () => {
+            this.getExperiment();
+          },
+        );
+      } else {
+        // Navigate to another tab
+        this.setState({
+          activeTab: currentTab,
+        });
+      }
+    }
+
+    if (prevState.activeTab !== this.state.activeTab) {
+      const currentPath = rightStrip(this.props.location.pathname, '/');
+      if (currentPath.endsWith(this.state.activeTab)) {
+        return;
+      }
+
+      let currentHash = currentPath;
+      this.tabs.forEach(tab => {
+        currentHash = rightStrip(currentHash, tab);
+      });
+      currentHash = rightStrip(currentHash, '/');
+
+      this.props.history.push(`${currentHash}/${this.state.activeTab}`);
     }
   }
 
@@ -317,7 +363,6 @@ class HubExperimentScreen extends React.Component {
     this.props
       .getExperiment(experimentName, commitId)
       .then((data) => {
-        console.log(data.maps);
         if (data.maps && Array.isArray(data.maps)) {
           data.maps.forEach((m) => {
             if ('__METRICS__' in m.data) {
@@ -861,7 +906,9 @@ class HubExperimentScreen extends React.Component {
   }
 }
 
-export default storeUtils.getWithState(
-  classes.HUB_PROJECT_EXPERIMENT_SCREEN,
-  HubExperimentScreen,
+export default withRouter(
+  storeUtils.getWithState(
+    classes.HUB_PROJECT_EXPERIMENT_SCREEN,
+    HubExperimentScreen,
+  ),
 );

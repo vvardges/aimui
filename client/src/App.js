@@ -124,8 +124,28 @@ class App extends React.Component {
           />
           <Route
             exact
+            path={screens.HUB_PROJECT_EXPERIMENT_PARAMS_TAB}
+            render={(props) => <HubExperimentScreen {...props} tab='parameters' />}
+          />
+          <Route
+            exact
+            path={screens.HUB_PROJECT_EXPERIMENT_METRICS_TAB}
+            render={(props) => <HubExperimentScreen {...props} tab='metrics' />}
+          />
+          <Route
+            exact
+            path={screens.HUB_PROJECT_EXPERIMENT_SYSTEM_TAB}
+            render={(props) => <HubExperimentScreen {...props} tab='system' />}
+          />
+          <Route
+            exact
+            path={screens.HUB_PROJECT_EXPERIMENT_SETTINGS_TAB}
+            render={(props) => <HubExperimentScreen {...props} tab='settings' />}
+          />
+          <Route
+            exact
             path={screens.HUB_PROJECT_EXPERIMENT}
-            component={HubExperimentScreen}
+            render={(props) => <HubExperimentScreen {...props} tab='parameters' />}
           />
           <Route component={SiteNotFoundScreen} />
         </Switch>

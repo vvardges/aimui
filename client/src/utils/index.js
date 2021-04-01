@@ -515,6 +515,13 @@ export function calculateCentralMovingAverage(data, smoothFactor) {
   return smoothedData;
 }
 
+export function rightStrip(str, remove) {
+  while (str.length > 0 && remove.indexOf(str.charAt(str.length - 1)) !== -1) {
+    str = str.substr(0, str.length - 1);
+  }
+  return str;
+}
+
 export function formatSystemMetricName(metric) {
   let name = metric;
 
