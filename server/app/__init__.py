@@ -32,7 +32,8 @@ class App(metaclass=Singleton):
             if tz:
                 request.tz = parse.unquote(tz)
             else:
-                request.tz = None
+                # Set default timezone to GMT
+                request.tz = 'gmt'
 
         CORS(api,
              origins='*',

@@ -91,9 +91,16 @@ class ProjectActivityApi(Resource):
             .all()
 
         experiments = {r.experiment_name for r in all_runs}
+
+        try:
+            timezone = pytz.timezone(request.tz)
+        except:
+            timezone = None
+        if not timezone:
+            timezone = pytz.timezone('gmt')
+
         activity_counter = Counter([
-            datetime.fromtimestamp(r.session_started_at,
-                                   pytz.timezone(request.tz))
+            datetime.fromtimestamp(r.session_started_at, timezone)
                     .strftime('%Y-%m-%d')
             if r.session_started_at > 0 else 0
             for r in all_runs

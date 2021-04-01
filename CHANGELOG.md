@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Set default timezone to GMT (gorarakelyan)
 - Enhance context table column actions (roubkar)
 - Implement system resource tracking visualization (gorarakelyan)
 - Optimize group aggregation performance (roubkar)
