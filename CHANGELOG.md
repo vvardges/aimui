@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Display popover with run information when selecting ParPlot point (roubkar)
 - Add routes for experiment page tabs (gorarakelyan)
 - Set default timezone to GMT (gorarakelyan)
 - Enhance context table column actions (roubkar)

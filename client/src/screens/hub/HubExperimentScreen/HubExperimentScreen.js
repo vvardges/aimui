@@ -84,7 +84,7 @@ class HubExperimentScreen extends React.Component {
 
       let currentHash = currentPath;
       let prevHash = prevPath;
-      this.tabs.forEach(tab => {
+      this.tabs.forEach((tab) => {
         currentHash = rightStrip(currentHash, tab);
         prevHash = rightStrip(prevHash, tab);
       });
@@ -92,8 +92,11 @@ class HubExperimentScreen extends React.Component {
       prevHash = rightStrip(prevHash, '/');
 
       let currentTab = this.tabs[0];
-      if (!!currentPathSplit && currentPathSplit.length
-        && this.tabs.indexOf(currentPathSplit[currentPathSplit.length - 1]) !== -1) {
+      if (
+        !!currentPathSplit &&
+        currentPathSplit.length &&
+        this.tabs.indexOf(currentPathSplit[currentPathSplit.length - 1]) !== -1
+      ) {
         currentTab = currentPathSplit[currentPathSplit.length - 1];
       }
 
@@ -131,7 +134,7 @@ class HubExperimentScreen extends React.Component {
       }
 
       let currentHash = currentPath;
-      this.tabs.forEach(tab => {
+      this.tabs.forEach((tab) => {
         currentHash = rightStrip(currentHash, tab);
       });
       currentHash = rightStrip(currentHash, '/');

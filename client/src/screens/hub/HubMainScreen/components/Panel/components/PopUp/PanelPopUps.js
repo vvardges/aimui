@@ -12,7 +12,12 @@ import {
   HUB_PROJECT_CREATE_TAG,
 } from '../../../../../../../constants/screens';
 import UI from '../../../../../../../ui';
-import { classNames, buildUrl } from '../../../../../../../utils';
+import {
+  classNames,
+  buildUrl,
+  getObjectValueByPath,
+  formatValue,
+} from '../../../../../../../utils';
 
 const popUpDefaultWidth = 250;
 const popUpDefaultHeight = 250;
@@ -64,6 +69,7 @@ function PanelPopUps(props) {
     isAimRun,
     isTFSummaryScalar,
     getTraceData,
+    isExploreParamsModeEnabled,
   } = HubMainScreenModel.helpers;
 
   function positionPopUp(
@@ -286,13 +292,14 @@ function PanelPopUps(props) {
   function updatePopUpPosition() {
     const focusedCircle = chart.focused.circle;
     if (focusedCircle.active) {
+      const isParamMode = isExploreParamsModeEnabled();
       const line = getTraceData(
         focusedCircle.runHash,
         focusedCircle.metricName,
         focusedCircle.traceContext,
       );
       hideActionPopUps(true);
-      if (line !== null && line.data !== null) {
+      if (isParamMode || (line !== null && line.data !== null)) {
         setTimeout(() => {
           const activeCircle = document.querySelector('circle.focus');
           if (activeCircle) {
@@ -319,18 +326,69 @@ function PanelPopUps(props) {
     }
   }
 
+  function formatParamName(type, name) {
+    if (type === 'param') {
+      return <strong>{name}</strong>;
+    }
+
+    let metric = name.split('-{');
+    return (
+      <>
+        <strong>{metric[0].replace('metric-', '')}</strong>{' '}
+        <em>{metric[1].slice(0, -1).replaceAll(':', '=')}</em>
+      </>
+    );
+  }
+
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
   useEffect(() => {
     const focusedCircle = chart.focused.circle;
     if (focusedCircle.active) {
+      const isParamMode = isExploreParamsModeEnabled();
       const line = getTraceData(
         focusedCircle.runHash,
         focusedCircle.metricName,
         focusedCircle.traceContext,
       );
       hideActionPopUps(true);
-      if (line !== null && line.data !== null) {
-        const point =
-          line?.data?.[line?.axisValues?.indexOf(focusedCircle.step)] ?? [];
+      if (isParamMode || (line !== null && line.data !== null)) {
+        let point = isParamMode
+          ? [focusedCircle.contentType, focusedCircle.param]
+          : line?.data?.[line?.axisValues?.indexOf(focusedCircle.step)] ?? [];
+        if (isParamMode) {
+          HubMainScreenModel.getState().traceList?.traces.forEach(
+            (traceModel) => {
+              _.uniqBy(traceModel.series, 'run.run_hash').forEach((series) => {
+                if (series.run.run_hash !== focusedCircle.runHash) {
+                  return;
+                }
+                if (focusedCircle.contentType === 'metric') {
+                  if (focusedCircle.param) {
+                    const metric = focusedCircle.param.replace('metric-', '');
+                    const dashIndex = metric.indexOf('-');
+                    const metricKey = metric.slice(0, dashIndex);
+                    const metricContext = JSON.parse(
+                      metric.slice(dashIndex + 1),
+                    );
+                    point.push(
+                      series.getAggregatedMetricValue(metricKey, metricContext),
+                    );
+                  }
+                } else {
+                  point.push(
+                    getObjectValueByPath(
+                      series.run.params,
+                      focusedCircle.param,
+                    ),
+                  );
+                }
+              });
+            },
+          );
+        }
         setChartPopUp((cp) => ({
           ...cp,
           selectedTags: [],
@@ -363,8 +421,8 @@ function PanelPopUps(props) {
             }));
           }
         }, 100);
-        if (isAimRun(line.run)) {
-          getCommitTags(line.run.run_hash);
+        if (isAimRun(line.run ?? {})) {
+          getCommitTags(focusedCircle.runHash);
         }
       } else {
         hideActionPopUps(false);
@@ -404,27 +462,49 @@ function PanelPopUps(props) {
           xGap={true}
         >
           <div>
-            {isAimRun(chartPopUp.run) && (
-              <div>
-                <UI.Text type='grey-dark'>
-                  <span>
-                    Value: {Math.round(chartPopUp.point[0] * 10e9) / 10e9}
-                  </span>
-                </UI.Text>
-                {chartPopUp.point[2] !== null && (
-                  <UI.Text type='grey' small>
-                    Epoch: {chartPopUp.point[2]}
-                  </UI.Text>
+            {isAimRun(chartPopUp.run ?? {}) && (
+              <>
+                {isExploreParamsModeEnabled() && chartPopUp.point[0] ? (
+                  <div>
+                    <UI.Text type='grey-dark'>
+                      <span>
+                        Value:{' '}
+                        {typeof chartPopUp.point[2] === 'number'
+                          ? Math.round(chartPopUp.point[2] * 10e9) / 10e9
+                          : formatValue(chartPopUp.point[2])}
+                      </span>
+                    </UI.Text>
+                    <UI.Text type='grey' small>
+                      {capitalize(chartPopUp.point[0])}:{' '}
+                      {formatParamName(
+                        chartPopUp.point[0],
+                        chartPopUp.point[1],
+                      )}
+                    </UI.Text>
+                  </div>
+                ) : (
+                  <div>
+                    <UI.Text type='grey-dark'>
+                      <span>
+                        Value: {Math.round(chartPopUp.point[0] * 10e9) / 10e9}
+                      </span>
+                    </UI.Text>
+                    {chartPopUp.point[2] !== null && (
+                      <UI.Text type='grey' small>
+                        Epoch: {chartPopUp.point[2]}
+                      </UI.Text>
+                    )}
+                    <UI.Text type='grey' small>
+                      Step: {chartPopUp.point[1]}
+                      {isTFSummaryScalar(chartPopUp.run) && (
+                        <> (local step: {chartPopUp.point[4]}) </>
+                      )}
+                    </UI.Text>
+                  </div>
                 )}
-                <UI.Text type='grey' small>
-                  Step: {chartPopUp.point[1]}
-                  {isTFSummaryScalar(chartPopUp.run) && (
-                    <> (local step: {chartPopUp.point[4]}) </>
-                  )}
-                </UI.Text>
-              </div>
+              </>
             )}
-            {isAimRun(chartPopUp.run) && (
+            {isAimRun(chartPopUp.run ?? {}) && (
               <>
                 <UI.Line />
                 <Link

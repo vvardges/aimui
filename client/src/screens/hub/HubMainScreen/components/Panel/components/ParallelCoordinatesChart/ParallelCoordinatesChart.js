@@ -810,6 +810,20 @@ function ParallelCoordinatesChart(props) {
                 focusedCircle.runHash === run.run_hash ||
                 closestAxis.current === p[0]
               ) {
+                const param = dimensions.current[i];
+                let val;
+                if (param.contentType === 'param') {
+                  // check if data element has property and contains a value
+                  if (!(param.key in params) || params[param.key] === null) {
+                    val = null;
+                  }
+                  val = params[param.key];
+                } else {
+                  val = series.getAggregatedMetricValue(
+                    param.metricName,
+                    param.context,
+                  );
+                }
                 circles.current
                   .append('circle')
                   .attr(
@@ -819,20 +833,21 @@ function ParallelCoordinatesChart(props) {
                       null,
                       null,
                     )} ${
-                      !focusedCircle.runHash &&
-                      focusedMetric.runHash === run.run_hash &&
-                      closestValue.current === p[1]
-                        ? 'active'
+                      focusedMetric.runHash === run.run_hash ? 'active' : ''
+                    } ${
+                      focusedCircle.runHash === run.run_hash &&
+                      (focusedCircle.param ?? param.key) === param.key
+                        ? 'focus'
                         : ''
-                    } ${focusedCircle.runHash === run.run_hash ? 'focus' : ''}`,
+                    }`,
                   )
                   .attr('cx', p[0])
                   .attr('cy', p[1])
                   .attr(
                     'r',
-                    !focusedCircle.runHash &&
-                      focusedMetric.runHash === run.run_hash &&
-                      closestValue.current === p[1]
+                    focusedMetric.runHash === run.run_hash ||
+                      (focusedCircle.runHash === run.run_hash &&
+                        (focusedCircle.param ?? param.key) === param.key)
                       ? circleActiveRadius
                       : circleRadius,
                   )
@@ -840,7 +855,11 @@ function ParallelCoordinatesChart(props) {
                   .attr('data-y', p[1])
                   .style('fill', strokeStyle)
                   .on('click', function () {
-                    handlePointClick(run.run_hash, null, null);
+                    handlePointClick(
+                      run.run_hash,
+                      param.key,
+                      param.contentType,
+                    );
                   });
               }
               if (lines[lineIndex][0] === null) {
@@ -886,161 +905,6 @@ function ParallelCoordinatesChart(props) {
         });
       });
     });
-    // traces.current.forEach((traceModel) =>
-    //   _.uniqBy(traceModel.series, 'run.run_hash').forEach((series) => {
-    //     const params = series.getParamsFlatDict();
-
-    //     const coords = dimensions.current.map((p, i) => {
-    //       let val;
-
-    //       if (p.contentType === 'param') {
-    //         // check if data element has property and contains a value
-    //         if (!(p.key in params) || params[p.key] === null) {
-    //           return null;
-    //         }
-    //         val = params[p.key];
-    //       } else {
-    //         val = series.getAggregatedMetricValue(p.metricName, p.context);
-    //       }
-
-    //       return p.scale(val) === undefined
-    //         ? null
-    //         : [chartOptions.current.xScale(i), p.scale(val)];
-    //     });
-
-    //     let colorVal;
-    //     if (lastDim?.contentType === 'metric') {
-    //       colorVal = series.getAggregatedMetricValue(
-    //         lastDim.metricName,
-    //         lastDim.context,
-    //       );
-    //     } else {
-    //       colorVal = params[lastDim.key];
-    //     }
-
-    //     const strokeStyle = displayParamsIndicator()
-    //       ? lastDim?.key && !!color(colorVal)
-    //         ? color(colorVal)
-    //         : '#999999'
-    //       : traceList?.grouping?.color?.length > 0
-    //         ? traceModel.color
-    //         : getMetricColor(series.run, null, null, runIndex);
-
-    //     runIndex++;
-
-    //     const strokeDashArray =
-    //       traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0';
-
-    //     const lineFunction = d3
-    //       .line()
-    //       .x((d) => d[0])
-    //       .y((d) => d[1])
-    //       .curve(
-    //         d3[curveOptions[chart.settings.persistent.interpolate ? 5 : 0]],
-    //       );
-
-    //     let lines = [[]];
-    //     let lineIndex = 0;
-
-    //     const { run } = series;
-
-    //     coords.forEach((p, i) => {
-    //       const prev = coords[i - 1];
-    //       if (p === null) {
-    //         if (i !== 0) {
-    //           lineIndex++;
-    //           lines[lineIndex] = [null];
-    //           if (prev !== null) {
-    //             lines[lineIndex].push([prev[0], prev[1]]);
-    //           }
-    //         }
-    //       } else {
-    //         if (p[0] === undefined || p[1] === undefined) {
-    //           lineIndex++;
-    //           lines[lineIndex] = [];
-    //         } else {
-    //           lines[lineIndex].push(p);
-    //           if (
-    //             focusedMetric.runHash === run.run_hash ||
-    //             focusedCircle.runHash === run.run_hash ||
-    //             closestAxis.current === p[0]
-    //           ) {
-    //             circles.current
-    //               .append('circle')
-    //               .attr(
-    //                 'class',
-    //                 `ParCoordsCircle ParCoordsCircle-${traceToHash(
-    //                   run.run_hash,
-    //                   null,
-    //                   null,
-    //                 )} ${
-    //                   !focusedCircle.runHash &&
-    //                   focusedMetric.runHash === run.run_hash &&
-    //                   closestValue.current === p[1]
-    //                     ? 'active'
-    //                     : ''
-    //                 } ${focusedCircle.runHash === run.run_hash ? 'focus' : ''}`,
-    //               )
-    //               .attr('cx', p[0])
-    //               .attr('cy', p[1])
-    //               .attr(
-    //                 'r',
-    //                 !focusedCircle.runHash &&
-    //                   focusedMetric.runHash === run.run_hash &&
-    //                   closestValue.current === p[1]
-    //                   ? circleActiveRadius
-    //                   : circleRadius,
-    //               )
-    //               .attr('data-x', p[0])
-    //               .attr('data-y', p[1])
-    //               .style('fill', strokeStyle)
-    //               .on('click', function () {
-    //                 handlePointClick(run.run_hash, null, null);
-    //               });
-    //           }
-    //           if (lines[lineIndex][0] === null) {
-    //             lineIndex++;
-    //             lines[lineIndex] = [];
-    //             lines[lineIndex].push(p);
-    //           }
-    //         }
-    //       }
-    //     });
-
-    //     lines.forEach((line) => {
-    //       if (line[0] === null) {
-    //         paths.current
-    //           .append('path')
-    //           .attr('d', lineFunction(line.slice(1)))
-    //           .attr(
-    //             'class',
-    //             `ParCoordsLine ParCoordsLine-${traceToHash(
-    //               run.run_hash,
-    //               null,
-    //               null,
-    //             )} silhouette`,
-    //           )
-    //           .style('fill', 'none');
-    //       } else {
-    //         paths.current
-    //           .append('path')
-    //           .attr('d', lineFunction(line))
-    //           .attr(
-    //             'class',
-    //             `ParCoordsLine ParCoordsLine-${traceToHash(
-    //               run.run_hash,
-    //               null,
-    //               null,
-    //             )}`,
-    //           )
-    //           .style('fill', 'none')
-    //           .style('stroke', strokeStyle)
-    //           .style('stroke-dasharray', strokeDashArray)
-    //           .moveToFront();
-    //       }
-    //     });
-    //   }),
-    // );
 
     if (focusedCircle.runHash !== null || focusedMetric.runHash !== null) {
       const focusedLineAttr =
@@ -1059,8 +923,8 @@ function ParallelCoordinatesChart(props) {
             null,
           )}`,
         )
-        .classed('active', true)
-        .attr('r', circleActiveRadius)
+        // .classed('active', true)
+        // .attr('r', circleActiveRadius)
         .moveToFront();
     }
   }
@@ -1080,13 +944,15 @@ function ParallelCoordinatesChart(props) {
     );
   }
 
-  function handlePointClick(runHash, metricName, traceContext) {
+  function handlePointClick(runHash, param, contentType) {
     setChartFocusedActiveState({
       circle: {
         active: true,
         runHash,
-        metricName,
-        traceContext,
+        metricName: null,
+        traceContext: null,
+        param,
+        contentType,
       },
       metric: {
         runHash: null,

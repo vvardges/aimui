@@ -15,6 +15,7 @@ import {
   formatValue,
   roundValue,
   getCSSSelectorFromString,
+  getObjectValueByPath,
 } from '../../../../../utils';
 import UI from '../../../../../ui';
 import ContextTable from '../../../../../components/hub/ContextTable/ContextTable';
@@ -124,6 +125,64 @@ function ContextBox(props) {
     }
 
     if (isExploreParamsModeEnabled()) {
+      const { runs, traceList } = HubMainScreenModel.getState();
+      let param;
+      let value;
+      let contentType;
+      for (let metricKey in runs?.aggMetrics) {
+        runs?.aggMetrics[metricKey].forEach((metricContext) => {
+          if (value !== undefined) {
+            return;
+          }
+          traceList?.traces.forEach((traceModel) => {
+            if (value !== undefined) {
+              return;
+            }
+            _.uniqBy(traceModel.series, 'run.run_hash').forEach((series) => {
+              if (series.run.run_hash !== runHash) {
+                return;
+              }
+              let metricValue = series.getAggregatedMetricValue(
+                metricKey,
+                metricContext,
+              );
+              if (metricValue !== undefined) {
+                value = metricValue;
+                param = `metric-${metricKey}-${JSON.stringify(metricContext)}`;
+                contentType = 'metric';
+                return;
+              }
+            });
+          });
+        });
+        if (value !== undefined) {
+          break;
+        }
+      }
+      if (value === undefined) {
+        runs.params.forEach((paramKey) => {
+          traceList?.traces.forEach((traceModel) => {
+            if (value !== undefined) {
+              return;
+            }
+            _.uniqBy(traceModel.series, 'run.run_hash').forEach((series) => {
+              if (series.run.run_hash !== runHash) {
+                return;
+              }
+              let paramValue = getObjectValueByPath(
+                series.run.params,
+                paramKey,
+              );
+              if (paramValue !== undefined) {
+                value = paramValue;
+                param = paramKey;
+                contentType = 'param';
+                return;
+              }
+            });
+          });
+        });
+      }
       setChartFocusedActiveState({
         step: step,
         circle: {
@@ -131,6 +190,8 @@ function ContextBox(props) {
           runHash: runHash,
           metricName: null,
           traceContext: null,
+          param,
+          contentType,
         },
         metric: {
           runHash: null,

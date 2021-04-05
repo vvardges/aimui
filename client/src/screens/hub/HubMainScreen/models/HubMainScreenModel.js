@@ -960,14 +960,16 @@ function getTraceData(runHash, metricName, context) {
     data = null,
     axisValues = null;
 
+  const isParamMode = isExploreParamsModeEnabled();
   getState().traceList?.traces.forEach((traceModel) => {
     traceModel.series.forEach((series) => {
       const { run, metric, trace } = series;
       if (matchedTrace !== null) return;
       if (
-        run.run_hash === runHash &&
-        metric?.name === metricName &&
-        contextToHash(trace?.context) === context
+        (isParamMode && run.run_hash === runHash) ||
+        (run.run_hash === runHash &&
+          metric?.name === metricName &&
+          contextToHash(trace?.context) === context)
       ) {
         if (matchedTrace === null) {
           matchedRun = run;
@@ -984,8 +986,8 @@ function getTraceData(runHash, metricName, context) {
     data,
     axisValues,
     run: matchedRun,
-    metric: matchedMetric,
-    trace: matchedTrace,
+    metric: isParamMode ? null : matchedMetric,
+    trace: isParamMode ? null : matchedTrace,
   };
 }
 
