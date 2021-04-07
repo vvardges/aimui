@@ -790,31 +790,31 @@ function ContextBox(props) {
               switch (aggregatedArea) {
                 case 'std_dev':
                   aggAreaMin = getMetricStepDataByStepIdx(
-                    traceModel.aggregation.stdDevMin.trace.data,
+                    traceModel.aggregation.stdDevMin?.trace.data,
                     step,
                   )?.[0];
                   aggAreaMax = getMetricStepDataByStepIdx(
-                    traceModel.aggregation.stdDevMax.trace.data,
+                    traceModel.aggregation.stdDevMax?.trace.data,
                     step,
                   )?.[0];
                   break;
                 case 'std_err':
                   aggAreaMin = getMetricStepDataByStepIdx(
-                    traceModel.aggregation.stdErrMin.trace.data,
+                    traceModel.aggregation.stdErrMin?.trace.data,
                     step,
                   )?.[0];
                   aggAreaMax = getMetricStepDataByStepIdx(
-                    traceModel.aggregation.stdErrMax.trace.data,
+                    traceModel.aggregation.stdErrMax?.trace.data,
                     step,
                   )?.[0];
                   break;
                 default:
                   aggAreaMin = getMetricStepDataByStepIdx(
-                    traceModel.aggregation.min.trace.data,
+                    traceModel.aggregation.min?.trace.data,
                     step,
                   )?.[0];
                   aggAreaMax = getMetricStepDataByStepIdx(
-                    traceModel.aggregation.max.trace.data,
+                    traceModel.aggregation.max?.trace.data,
                     step,
                   )?.[0];
               }
@@ -822,28 +822,28 @@ function ContextBox(props) {
               switch (aggregatedLine) {
                 case 'min':
                   aggLine = getMetricStepDataByStepIdx(
-                    traceModel.aggregation.min.trace.data,
+                    traceModel.aggregation.min?.trace.data,
                     step,
                   )?.[0];
                   aggLineLabel = 'min';
                   break;
                 case 'max':
                   aggLine = getMetricStepDataByStepIdx(
-                    traceModel.aggregation.max.trace.data,
+                    traceModel.aggregation.max?.trace.data,
                     step,
                   )?.[0];
                   aggLineLabel = 'max';
                   break;
                 case 'avg':
                   aggLine = getMetricStepDataByStepIdx(
-                    traceModel.aggregation.avg.trace.data,
+                    traceModel.aggregation.avg?.trace.data,
                     step,
                   )?.[0];
                   aggLineLabel = 'mean';
                   break;
                 case 'median':
                   aggLine = getMetricStepDataByStepIdx(
-                    traceModel.aggregation.med.trace.data,
+                    traceModel.aggregation.med?.trace.data,
                     step,
                   )?.[0];
                   aggLineLabel = 'median';
@@ -1413,7 +1413,7 @@ function ContextBox(props) {
                 switch (aggregatedArea) {
                   case 'std_dev':
                     const stdDevMin = getMetricStepDataByStepIdx(
-                      traceModel.aggregation.stdDevMin.trace.data,
+                      traceModel.aggregation.stdDevMin?.trace.data,
                       step,
                     )?.[0];
                     groupValueCellMin.textContent =
@@ -1423,7 +1423,7 @@ function ContextBox(props) {
                     break;
                   case 'std_err':
                     const stdErrMin = getMetricStepDataByStepIdx(
-                      traceModel.aggregation.stdErrMin.trace.data,
+                      traceModel.aggregation.stdErrMin?.trace.data,
                       step,
                     )?.[0];
                     groupValueCellMin.textContent =
@@ -1433,7 +1433,7 @@ function ContextBox(props) {
                     break;
                   default:
                     const min = getMetricStepDataByStepIdx(
-                      traceModel.aggregation.min.trace.data,
+                      traceModel.aggregation.min?.trace.data,
                       step,
                     )?.[0];
                     groupValueCellMin.textContent =
@@ -1448,7 +1448,7 @@ function ContextBox(props) {
                 switch (aggregatedArea) {
                   case 'std_dev':
                     const stdDevMax = getMetricStepDataByStepIdx(
-                      traceModel.aggregation.stdDevMax.trace.data,
+                      traceModel.aggregation.stdDevMax?.trace.data,
                       step,
                     )?.[0];
                     groupValueCellMax.textContent =
@@ -1458,7 +1458,7 @@ function ContextBox(props) {
                     break;
                   case 'std_err':
                     const stdErrMax = getMetricStepDataByStepIdx(
-                      traceModel.aggregation.stdErrMax.trace.data,
+                      traceModel.aggregation.stdErrMax?.trace.data,
                       step,
                     )?.[0];
                     groupValueCellMax.textContent =
@@ -1468,7 +1468,7 @@ function ContextBox(props) {
                     break;
                   default:
                     const max = getMetricStepDataByStepIdx(
-                      traceModel.aggregation.max.trace.data,
+                      traceModel.aggregation.max?.trace.data,
                       step,
                     )?.[0];
                     groupValueCellMax.textContent =
@@ -1482,7 +1482,7 @@ function ContextBox(props) {
                 switch (aggregatedLine) {
                   case 'avg':
                     const avg = getMetricStepDataByStepIdx(
-                      traceModel.aggregation.avg.trace.data,
+                      traceModel.aggregation.avg?.trace.data,
                       step,
                     )?.[0];
                     groupValueCellAggLine.textContent =
@@ -1490,7 +1490,7 @@ function ContextBox(props) {
                     break;
                   case 'median':
                     const med = getMetricStepDataByStepIdx(
-                      traceModel.aggregation.med.trace.data,
+                      traceModel.aggregation.med?.trace.data,
                       step,
                     )?.[0];
                     groupValueCellAggLine.textContent =
@@ -1498,7 +1498,7 @@ function ContextBox(props) {
                     break;
                   case 'min':
                     const min = getMetricStepDataByStepIdx(
-                      traceModel.aggregation.min.trace.data,
+                      traceModel.aggregation.min?.trace.data,
                       step,
                     )?.[0];
                     groupValueCellAggLine.textContent =
@@ -1506,7 +1506,7 @@ function ContextBox(props) {
                     break;
                   case 'max':
                     const max = getMetricStepDataByStepIdx(
-                      traceModel.aggregation.max.trace.data,
+                      traceModel.aggregation.max?.trace.data,
                       step,
                     )?.[0];
                     groupValueCellAggLine.textContent =
