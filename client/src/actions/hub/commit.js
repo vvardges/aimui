@@ -1,6 +1,7 @@
 import * as actionTypes from '../actionTypes';
 import callApi from '../../services/api';
 import { SERVER_API_HOST } from '../../config';
+import { appendBuffer } from '../../utils';
 
 export function getRunsByQuery(query) {
   return (dispatch) => {
@@ -32,6 +33,8 @@ export function getCommitsMetricsByQuery(query, numPoints) {
     // });
     return new Promise((resolve, reject) => {
       let runsResult = {};
+      let buffer = new ArrayBuffer(0);
+
       fetch(
         `${SERVER_API_HOST}/commits/search/metric?p=${numPoints}&q=${encodeURI(
           query,
@@ -52,29 +55,38 @@ export function getCommitsMetricsByQuery(query, numPoints) {
                   }
 
                   controller.enqueue(value);
-                  let i = 0;
+                  let lastPushIdx = 0;
                   let cursor = 0;
 
                   while (true) {
-                    if (i === value.length) {
+                    if (cursor === value.length) {
+                      if (lastPushIdx < value.length - 1) {
+                        buffer = appendBuffer(buffer, value.slice(lastPushIdx, value.length));
+                      }
+
                       break;
                     }
 
-                    if (value[i] === 10) {
+                    if (value[cursor] === 10) {
+                      buffer = appendBuffer(buffer, value.slice(lastPushIdx, cursor));
+
                       try {
-                        const decodedValue = JSON.parse(
-                          new TextDecoder().decode(value.slice(cursor, i)),
-                        );
+                        const decodedText = new TextDecoder().decode(buffer);
+                        const decodedValue = JSON.parse(decodedText);
                         if (decodedValue.hasOwnProperty('header')) {
                           runsResult = decodedValue['header'];
                         } else if (decodedValue.hasOwnProperty('run')) {
                           runsResult?.['runs']?.push(decodedValue['run']);
                         }
-                      } catch (e) {}
-                      cursor = i;
+                      } catch (e) {
+                        console.log('metric parse error', lastPushIdx, cursor, e);
+                      }
+
+                      lastPushIdx = cursor;
+                      buffer = new ArrayBuffer(0);
                     }
 
-                    i += 1;
+                    cursor += 1;
                   }
 
                   push();

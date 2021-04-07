@@ -516,10 +516,21 @@ export function calculateCentralMovingAverage(data, smoothFactor) {
 }
 
 export function rightStrip(str, remove) {
-  while (str.length > 0 && remove.indexOf(str.charAt(str.length - 1)) !== -1) {
-    str = str.substr(0, str.length - 1);
+  if (!remove.length) {
+    return str;
+  }
+
+  while (str.length > 0 && str.substr(str.length - remove.length) === remove) {
+    str = str.substr(0, str.length - remove.length);
   }
   return str;
+}
+
+export function appendBuffer(buffer1, buffer2) {
+  const tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
+  tmp.set(new Uint8Array(buffer1), 0);
+  tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
+  return tmp;
 }
 
 export function formatSystemMetricName(metric) {
