@@ -1,5 +1,6 @@
 import datetime
 import pytz
+import math
 
 
 def default_created_at():
@@ -23,3 +24,16 @@ def normalize_type(val):
             except:
                 pass
     return val
+
+
+def unsupported_float_type(value) -> bool:
+    if not isinstance(value, (int, float)):
+        return True
+
+    if math.isinf(value):
+        return True
+
+    if math.isnan(value):
+        return True
+
+    return False

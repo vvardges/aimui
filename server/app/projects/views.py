@@ -18,6 +18,7 @@ from flask_restful import Api, Resource
 from sqlalchemy import func
 
 from app.db import db
+from app.utils import unsupported_float_type
 from app.projects.utils import (
     read_artifact_log,
     get_branch_commits,
@@ -271,7 +272,7 @@ class ProjectExperimentApi(Resource):
                         step = (num // steps) or 1
                         for r in trace.read_records(slice(0, num, step)):
                             base, metric_record = MetricRecord.deserialize(r)
-                            if metric_record.value is None:
+                            if unsupported_float_type(metric_record.value):
                                 continue
                             trace.append((
                                 base.step,  # 0 => step
@@ -280,7 +281,7 @@ class ProjectExperimentApi(Resource):
                         if (num - 1) % steps != 0:
                             for r in trace.read_records(num-1):
                                 base, metric_record = MetricRecord.deserialize(r)
-                                if metric_record.value is None:
+                                if unsupported_float_type(metric_record.value):
                                     continue
                                 trace.append((
                                     base.step,  # 0 => step

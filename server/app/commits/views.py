@@ -16,6 +16,7 @@ from services.executables.action import Action
 from app.db import db
 from adapters.tf_summary_adapter import TFSummaryAdapter
 from artifacts.artifact import Metric as MetricRecord
+from app.utils import unsupported_float_type
 from app.commits.utils import (
     select_tf_summary_scalars,
     scale_trace_steps,
@@ -204,7 +205,7 @@ class CommitMetricSearchApi(Resource):
                                 trace_steps = slice(0, trace.num_records, step)
                                 for r in trace.read_records(trace_steps):
                                     base, metric_record = MetricRecord.deserialize(r)
-                                    if metric_record.value is None:
+                                    if unsupported_float_type(metric_record.value):
                                         continue
                                     trace.append((
                                         metric_record.value,
@@ -215,7 +216,7 @@ class CommitMetricSearchApi(Resource):
                                 if (trace.num_records - 1) % step != 0:
                                     for r in trace.read_records(trace.num_records-1):
                                         base, metric_record = MetricRecord.deserialize(r)
-                                        if metric_record.value is None:
+                                        if unsupported_float_type(metric_record.value):
                                             continue
                                         trace.append((
                                             metric_record.value,

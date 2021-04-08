@@ -846,7 +846,7 @@ class Runs extends React.Component {
             content: formatValue(
               typeof metricValue === 'number'
                 ? roundValue(metricValue)
-                : undefined,
+                : metricValue,
             ),
             style: {
               backgroundColor: color,

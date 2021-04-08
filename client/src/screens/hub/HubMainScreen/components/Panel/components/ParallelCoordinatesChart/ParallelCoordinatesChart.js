@@ -298,9 +298,19 @@ function ParallelCoordinatesChart(props) {
 
     Object.keys(runs.aggMetrics).forEach((metric) => {
       runs.aggMetrics[metric].forEach((context) => {
+        let allNum = true;
+        traces.forEach((traceModel) =>
+          traceModel.series.forEach((series) => {
+            const aggValue = series.getAggregatedMetricValue(metric, context);
+            if (typeof aggValue !== 'number') {
+              allNum = false;
+              return;
+            }
+          }),
+        );
         dimensions.push({
           key: `metric-${metric}-${JSON.stringify(context)}`,
-          type: types['number'],
+          type: allNum ? types['number'] : types['string'],
           contentType: 'metric',
           context: context,
           metricName: metric,

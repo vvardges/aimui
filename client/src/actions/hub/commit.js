@@ -61,14 +61,20 @@ export function getCommitsMetricsByQuery(query, numPoints) {
                   while (true) {
                     if (cursor === value.length) {
                       if (lastPushIdx < value.length - 1) {
-                        buffer = appendBuffer(buffer, value.slice(lastPushIdx, value.length));
+                        buffer = appendBuffer(
+                          buffer,
+                          value.slice(lastPushIdx, value.length),
+                        );
                       }
 
                       break;
                     }
 
                     if (value[cursor] === 10) {
-                      buffer = appendBuffer(buffer, value.slice(lastPushIdx, cursor));
+                      buffer = appendBuffer(
+                        buffer,
+                        value.slice(lastPushIdx, cursor),
+                      );
 
                       try {
                         const decodedText = new TextDecoder().decode(buffer);
@@ -79,7 +85,12 @@ export function getCommitsMetricsByQuery(query, numPoints) {
                           runsResult?.['runs']?.push(decodedValue['run']);
                         }
                       } catch (e) {
-                        console.log('metric parse error', lastPushIdx, cursor, e);
+                        console.log(
+                          'metric parse error',
+                          lastPushIdx,
+                          cursor,
+                          e,
+                        );
                       }
 
                       lastPushIdx = cursor;

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Handle inf and nan values of metrics (gorarakelyan)
 - Fix problem with fetching runs data in explore screen (gorarakelyan)
 - Display popover with run information when selecting ParPlot point (roubkar)
 - Add routes for experiment page tabs (gorarakelyan)
