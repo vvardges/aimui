@@ -243,7 +243,10 @@ function ParallelCoordinatesChart(props) {
       string: {
         key: 'string',
         coerce: String,
-        extent: (data) => data.sort(),
+        extent: (data) =>
+          data.sort((a, b) =>
+            `${b}`.localeCompare(`${a}`, 'en', { numeric: true }),
+          ),
         within: (d, extent, dim) =>
           extent[0] <= dim.scale(d) && dim.scale(d) <= extent[1],
         defaultScale: (height) => d3.scalePoint().range([0, height]),
@@ -302,7 +305,10 @@ function ParallelCoordinatesChart(props) {
         traces.forEach((traceModel) =>
           traceModel.series.forEach((series) => {
             const aggValue = series.getAggregatedMetricValue(metric, context);
-            if (typeof aggValue !== 'number') {
+            if (
+              typeof aggValue !== 'undefined' &&
+              typeof aggValue !== 'number'
+            ) {
               allNum = false;
               return;
             }
@@ -676,9 +682,13 @@ function ParallelCoordinatesChart(props) {
         .flat()
         .filter((v) => v !== undefined);
 
+      const interpolationValues = lastDimValues.filter(
+        (v) => typeof v === 'number',
+      );
+
       color = d3
         .scaleSequential()
-        .domain([_.min(lastDimValues), _.max(lastDimValues)])
+        .domain([_.min(interpolationValues), _.max(interpolationValues)])
         .interpolator(d3.interpolateRgb(gradientStartColor, gradientEndColor));
     } else {
       color = d3

@@ -775,7 +775,11 @@ function PanelChart(props) {
               focusedLineAttr?.traceContext,
           );
 
-      if (contextFilter.aggregatedArea !== 'none') {
+      if (
+        contextFilter.aggregatedArea !== 'none' &&
+        !!areaTraceMin &&
+        !!areaTraceMax
+      ) {
         let traceMinData;
         let traceMaxData;
         traceMinData = areaTraceMin?.trace.data.filter(
@@ -822,46 +826,55 @@ function PanelChart(props) {
           });
       }
 
-      const aggLineFunc = d3
-        .line()
-        .x((d) => chartOptions.current.xScale(d[1]))
-        .y((d) => chartOptions.current.yScale(d[0]))
-        .curve(d3[curveOptions[0]]);
+      const lineTraceData = lineTrace?.trace?.data.filter(
+        (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+      );
 
-      lines.current
-        .append('path')
-        .attr(
-          'class',
-          `PlotLine PlotLine-${traceToHash(
-            lineTrace.run.run_hash,
-            lineTrace.metric.name,
-            lineTrace.trace.context,
-          )} active`,
-        )
-        .datum(
-          lineTrace.trace.data.filter(
-            (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
-          ),
-        )
-        .attr('d', aggLineFunc)
-        .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
-        .style('fill', 'none')
-        .style(
-          'stroke',
-          traceList?.grouping?.color?.length > 0
-            ? traceModel.color
-            : getMetricColor(lineTrace.run, lineTrace.metric, lineTrace.trace),
-        )
-        .style(
-          'stroke-dasharray',
-          traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0',
-        )
-        .attr('data-run-hash', lineTrace.run.run_hash)
-        .attr('data-metric-name', lineTrace.metric.name)
-        .attr('data-trace-context-hash', contextToHash(lineTrace.trace.context))
-        .on('click', function () {
-          handleLineClick(d3.mouse(this));
-        });
+      if (!!lineTraceData) {
+        const aggLineFunc = d3
+          .line()
+          .x((d) => chartOptions.current.xScale(d[1]))
+          .y((d) => chartOptions.current.yScale(d[0]))
+          .curve(d3[curveOptions[0]]);
+
+        lines.current
+          .append('path')
+          .attr(
+            'class',
+            `PlotLine PlotLine-${traceToHash(
+              lineTrace.run.run_hash,
+              lineTrace.metric.name,
+              lineTrace.trace.context,
+            )} active`,
+          )
+          .datum(lineTraceData)
+          .attr('d', aggLineFunc)
+          .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
+          .style('fill', 'none')
+          .style(
+            'stroke',
+            traceList?.grouping?.color?.length > 0
+              ? traceModel.color
+              : getMetricColor(
+                lineTrace.run,
+                lineTrace.metric,
+                lineTrace.trace,
+              ),
+          )
+          .style(
+            'stroke-dasharray',
+            traceList?.grouping?.stroke?.length > 0 ? traceModel.stroke : '0',
+          )
+          .attr('data-run-hash', lineTrace.run.run_hash)
+          .attr('data-metric-name', lineTrace.metric.name)
+          .attr(
+            'data-trace-context-hash',
+            contextToHash(lineTrace.trace.context),
+          )
+          .on('click', function () {
+            handleLineClick(d3.mouse(this));
+          });
+      }
 
       if (!noSelectedRun) {
         let runIndex = 0;

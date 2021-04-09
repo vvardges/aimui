@@ -245,11 +245,10 @@ function setRunsState(runsState, callback = null) {
         },
       },
       contextFilter: {
+        ...getState().contextFilter,
         groupByColor: [],
         groupByStyle: [],
         groupByChart: [],
-        seed: getState().contextFilter.seed,
-        persist: getState().contextFilter.persist,
       },
     }),
   });
@@ -368,11 +367,19 @@ function setTraceList() {
                   .join(', ');
                 const context = value === '' ? 'No context' : `${value}`;
                 if (field[0] === `${key} ${context}`) {
-                  return run.params[paramKey][key][i].values?.last ?? '';
+                  let val =
+                    run.params[paramKey][key][i].values?.last ?? -Infinity;
+                  return val === 'inf'
+                    ? Infinity
+                    : val === '-inf'
+                      ? -Infinity
+                      : val === 'nan'
+                        ? NaN
+                        : val;
                 }
               }
             }
-            return '';
+            return -Infinity;
           }
           return _.get(run, `params.${field[0]}`) ?? '';
         },
