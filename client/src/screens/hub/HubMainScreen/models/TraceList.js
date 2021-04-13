@@ -343,10 +343,11 @@ export default class TraceList {
     }
 
     let traceClone = _.cloneDeep(trace);
-    if (!isHidden) {
+
+    if (traceClone !== null && !isHidden) {
       // Apply smoothing
+      const data = traceClone.data.map((p) => p[0]);
       if ((smoothingAlgorithm || 'ema') === 'ema' && smoothFactor > 0) {
-        const data = traceClone.data.map((p) => p[0]);
         const smoothedData = calculateExponentianlMovingAvergae(
           data,
           smoothFactor,
@@ -356,7 +357,6 @@ export default class TraceList {
           return [smoothedData[i], ...rest];
         });
       } else if (smoothingAlgorithm === 'cma' && smoothFactor > 1) {
-        const data = traceClone.data.map((p) => p[0]);
         const smoothedData = calculateCentralMovingAverage(data, smoothFactor);
         traceClone.data = traceClone.data.map((p, i) => {
           let [value, ...rest] = p;

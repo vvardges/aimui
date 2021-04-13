@@ -113,7 +113,8 @@ function ControlsSidebarSmoothingOptions(props) {
                     min={(smoothingAlgorithm || 'ema') === 'ema' ? 0 : 1}
                     max={(smoothingAlgorithm || 'ema') === 'ema' ? 0.99 : 99}
                     value={
-                      smoothFactor ?? (smoothingAlgorithm === 'ema' ? 0 : 1)
+                      smoothFactor ??
+                      ((smoothingAlgorithm || 'ema') === 'ema' ? 0 : 1)
                     }
                     step={(smoothingAlgorithm || 'ema') === 'ema' ? 0.01 : 2}
                     onChange={changeSmoothFactor}
