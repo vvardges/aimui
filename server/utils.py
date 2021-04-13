@@ -20,15 +20,20 @@ def get_module(name, required=True):
         return None
 
 
-def ls_dir(paths):
+def ls_dir(path):
     """
     List the files in directories
     """
-    if len(paths) == 0:
+    if not path or not os.path.exists:
         return []
 
-    if os.path.isdir(paths[0]):
-        ls_head = [os.path.join(paths[0], i) for i in os.listdir(paths[0])]
-        return ls_dir(ls_head + (paths[1:] if len(paths) > 1 else []))
-    else:
-        return [paths[0]] + (ls_dir(paths[1:]) if len(paths) > 1 else [])
+    if os.path.isfile(path):
+        return [path]
+
+    ls = []
+
+    for root, _, file_names in os.walk(path):
+        for file_name in file_names:
+            ls.append(os.path.join(root, file_name))
+
+    return ls

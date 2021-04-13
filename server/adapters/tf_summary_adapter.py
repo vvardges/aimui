@@ -23,7 +23,7 @@ class TFSummaryAdapter:
         if not cls.exists(root_path):
             return []
 
-        all_files = ls_dir([root_path])
+        all_files = ls_dir(root_path)
         tfevent_files = filter(lambda f: 'tfevents' in f, all_files)
         tfevent_file_paths = set()
         for f in tfevent_files:

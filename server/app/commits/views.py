@@ -160,7 +160,7 @@ class CommitMetricSearchApi(Resource):
                 response['meta']['metrics_selected'] = True
                 response['agg_metrics'] = aim_selected_metrics
                 retrieve_agg_metrics = True
-        elif len(aim_selected_metrics):
+        elif len(aim_selected_metrics) or len(tf_logs):
             response['meta']['metrics_selected'] = True
             retrieve_traces = True
 
