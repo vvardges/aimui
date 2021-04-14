@@ -8,6 +8,7 @@ import {
   EXPLORE_PANEL_SORT_FIELDS,
   EXPLORE_PANEL_COLOR_PALETTE,
   EXPLORE_PANEL_HIDDEN_METRICS,
+  EXPLORE_PANEL_SINGLE_ZOOM_MODE,
 } from '../../../../config';
 import { getItem, removeItem, setItem } from '../../../../services/storage';
 import { flattenObject, sortOnKeys } from '../../../../utils';
@@ -59,6 +60,8 @@ const state = {
     settings: {
       yScale: 0,
       zoomMode: false,
+      singleZoomMode:
+        (getItem(EXPLORE_PANEL_SINGLE_ZOOM_MODE) || 'true') === 'true',
       zoomHistory: [],
       highlightMode: getItem(EXPLORE_METRIC_HIGHLIGHT_MODE) ?? 'run',
       persistent: {
@@ -139,6 +142,7 @@ const initialControls = {
   chart: {
     settings: {
       zoomMode: false,
+      singleZoomMode: true,
       zoomHistory: [],
       highlightMode: getItem(EXPLORE_METRIC_HIGHLIGHT_MODE) ?? 'run',
       persistent: {
@@ -664,6 +668,7 @@ function resetControls() {
   setChartSettingsState(initialControls.chart.settings);
   setContextFilter(initialControls.contextFilter);
   removeItem(USER_LAST_EXPLORE_CONFIG);
+  removeItem(EXPLORE_PANEL_SINGLE_ZOOM_MODE);
 }
 
 function setSearchState(

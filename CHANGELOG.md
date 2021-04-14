@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add ability to select zoom mode for better UX (roubkar)
+
 ## 1.5.0 Apr 10 2021
 - Handle inf and nan values of metrics (gorarakelyan)
 - Fix problem with fetching runs data in explore screen (gorarakelyan)

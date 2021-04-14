@@ -186,16 +186,18 @@ function PanelChart(props) {
       .attr('height', height)
       .attr('xmlns', 'http://www.w3.org/2000/svg'); // .attr('id', 'panel_svg');
 
+    const titleMarginTop = 5;
+    const titleMarginBottom = 2;
+    const titleHeight = margin.top - titleMarginTop - titleMarginBottom;
+    const isZoomed = !!chart.settings.persistent.zoom?.[props.index];
+
     if (traceList?.grouping.chart) {
-      const titleMarginTop = 5;
-      const titleMarginBottom = 2;
-      const titleHeight = margin.top - titleMarginTop - titleMarginBottom;
       svg.current
         .append('foreignObject')
         .attr('x', 0)
         .attr('y', titleMarginTop)
         .attr('height', titleHeight)
-        .attr('width', width)
+        .attr('width', width - (isZoomed ? titleHeight : 0))
         .html((d) => {
           const title =
             traceList?.grouping.chart.length > 0
@@ -226,6 +228,50 @@ function PanelChart(props) {
               <div class='ChartTitle__text'>${title}</div>
             </div>`;
         })
+        .moveToFront();
+    }
+
+    if (isZoomed) {
+      function zoomOut() {
+        let historyIndex = _.findIndex(
+          chart.settings.zoomHistory,
+          (item) => item[0] === +props.index,
+        );
+        setChartSettingsState({
+          ...chart.settings,
+          zoomMode: false,
+          zoomHistory: chart.settings.zoomHistory.filter(
+            (item, index) => index !== historyIndex,
+          ),
+          persistent: {
+            ...chart.settings.persistent,
+            zoom: {
+              ...(chart.settings.persistent.zoom ?? {}),
+              [props.index]:
+                chart.settings.zoomHistory[historyIndex]?.[1] ?? null,
+            },
+          },
+        });
+      }
+      svg.current
+        .append('foreignObject')
+        .attr('x', width - 30)
+        .attr('y', titleMarginTop)
+        .attr('height', titleHeight)
+        .attr('width', titleHeight)
+        .html((d) => {
+          return `
+            <div 
+              class='ChartTitle ChartTitle--zoom' 
+              style='width: ${titleHeight}px; height: ${titleHeight}px;' 
+              title='Click to zoom out'
+            >
+              <span class='Icon zoom_out material-icons-outlined no_spacing_right'>
+                zoom_out
+              </span>
+            </>`;
+        })
+        .on('click', zoomOut)
         .moveToFront();
     }
 
@@ -1255,7 +1301,7 @@ function PanelChart(props) {
 
       setChartSettingsState({
         ...chart.settings,
-        zoomMode: false,
+        zoomMode: !chart.settings.singleZoomMode,
         zoomHistory: [
           [props.index, chart.settings.persistent.zoom?.[props.index] ?? null],
         ].concat(chart.settings.zoomHistory),

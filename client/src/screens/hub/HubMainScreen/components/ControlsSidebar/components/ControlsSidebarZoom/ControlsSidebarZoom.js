@@ -5,10 +5,14 @@ import UI from '../../../../../../../ui';
 import { classNames } from '../../../../../../../utils';
 import * as _ from 'lodash';
 import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
+import { setItem } from '../../../../../../../services/storage';
+import { EXPLORE_PANEL_SINGLE_ZOOM_MODE } from '../../../../../../../config';
 
 function ControlsSidebarZoom(props) {
-  let [opened, setOpened] = useState(false);
-  let popupRef = useRef();
+  let [openedZoomOptions, setOpenedZoomOptions] = useState(false);
+  let [openedZoomOut, setOpenedZoomOut] = useState(false);
+  let zoomOptionsPopupRef = useRef();
+  let zoomOutPopupRef = useRef();
 
   const { setChartSettingsState } = HubMainScreenModel.emitters;
 
@@ -16,6 +20,7 @@ function ControlsSidebarZoom(props) {
     persistent: { zoom },
     zoomHistory,
     zoomMode,
+    singleZoomMode,
   } = props.settings;
 
   let zoomedChartIndices = Object.keys(zoom || {}).filter(
@@ -24,37 +29,127 @@ function ControlsSidebarZoom(props) {
   );
 
   useEffect(() => {
-    if (opened && popupRef.current) {
-      popupRef.current.focus();
-      const { top } = popupRef.current.getBoundingClientRect();
-      popupRef.current.style.maxHeight = `${window.innerHeight - top - 10}px`;
+    if (openedZoomOptions && zoomOptionsPopupRef.current) {
+      zoomOptionsPopupRef.current.focus();
+      const { top } = zoomOptionsPopupRef.current.getBoundingClientRect();
+      zoomOptionsPopupRef.current.style.maxHeight = `${
+        window.innerHeight - top - 10
+      }px`;
     }
-  }, [opened]);
+    if (openedZoomOut && zoomOutPopupRef.current) {
+      zoomOutPopupRef.current.focus();
+      const { top } = zoomOutPopupRef.current.getBoundingClientRect();
+      zoomOutPopupRef.current.style.maxHeight = `${
+        window.innerHeight - top - 10
+      }px`;
+    }
+  }, [openedZoomOptions, openedZoomOut]);
 
   useEffect(() => {
     if (zoomedChartIndices.length === 0) {
-      setOpened(false);
+      setOpenedZoomOptions(false);
+      setOpenedZoomOut(false);
     }
   }, [zoom]);
 
   return (
     <>
-      <UI.Tooltip tooltip='Zoom in'>
+      <div className='ControlsSidebar__item__wrapper'>
+        <UI.Tooltip tooltip='Zoom in'>
+          <div
+            className={classNames({
+              ControlsSidebar__item: true,
+              active: zoomMode,
+            })}
+            onClick={(evt) =>
+              setChartSettingsState({
+                ...props.settings,
+                zoomMode: !zoomMode,
+              })
+            }
+          >
+            <UI.Icon i='zoom_in' scale={1.7} />
+          </div>
+        </UI.Tooltip>
         <div
           className={classNames({
-            ControlsSidebar__item: true,
-            active: zoomMode,
+            ControlsSidebar__item__popup__opener: true,
+            active: openedZoomOptions,
           })}
-          onClick={(evt) =>
-            setChartSettingsState({
-              ...props.settings,
-              zoomMode: !zoomMode,
-            })
-          }
+          onClick={(evt) => setOpenedZoomOptions(!openedZoomOptions)}
         >
-          <UI.Icon i='zoom_in' scale={1.7} />
+          <UI.Icon i='chevron_left' />
         </div>
-      </UI.Tooltip>
+        {openedZoomOptions && (
+          <div
+            className='ControlsSidebar__item__popup list'
+            tabIndex={0}
+            ref={zoomOptionsPopupRef}
+            onBlur={(evt) => {
+              const currentTarget = evt.currentTarget;
+              if (openedZoomOptions) {
+                window.setTimeout(() => {
+                  if (!currentTarget.contains(document.activeElement)) {
+                    setOpenedZoomOptions(false);
+                  }
+                }, 100);
+              }
+            }}
+          >
+            <div className='ControlsSidebar__item__popup__header'>
+              <UI.Text overline bold>
+                Select zoom mode
+              </UI.Text>
+            </div>
+            <div className='ControlsSidebar__item__popup__list'>
+              <div
+                className={classNames({
+                  ControlsSidebar__item__popup__list__item: true,
+                  active: singleZoomMode,
+                })}
+                onClick={(evt) => {
+                  setChartSettingsState({
+                    ...props.settings,
+                    zoomMode: true,
+                    singleZoomMode: true,
+                  });
+                  setItem(EXPLORE_PANEL_SINGLE_ZOOM_MODE, true);
+                  setOpenedZoomOptions(false);
+                }}
+              >
+                <UI.Text small>Single zooming</UI.Text>
+                <span className='ControlsSidebar__item__popup__list__item__icon'>
+                  <UI.Tooltip tooltip='Switches off after each zoom'>
+                    <UI.Icon i='help_outline' />
+                  </UI.Tooltip>
+                </span>
+              </div>
+              <div
+                className={classNames({
+                  ControlsSidebar__item__popup__list__item: true,
+                  active: !singleZoomMode,
+                })}
+                onClick={(evt) => {
+                  setChartSettingsState({
+                    ...props.settings,
+                    zoomMode: true,
+                    singleZoomMode: false,
+                  });
+                  setItem(EXPLORE_PANEL_SINGLE_ZOOM_MODE, false);
+                  setOpenedZoomOptions(false);
+                }}
+              >
+                <UI.Text small>Multiple zooming</UI.Text>
+                <span className='ControlsSidebar__item__popup__list__item__icon'>
+                  <UI.Tooltip tooltip='Manually switch off'>
+                    <UI.Icon i='help_outline' />
+                  </UI.Tooltip>
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
       <div className='ControlsSidebar__item__wrapper'>
         <UI.Tooltip tooltip='Zoom out'>
           <div
@@ -79,7 +174,7 @@ function ControlsSidebarZoom(props) {
                         },
                   },
                 });
-                setOpened(false);
+                setOpenedZoomOut(false);
               }
             }}
           >
@@ -90,24 +185,24 @@ function ControlsSidebarZoom(props) {
           <div
             className={classNames({
               ControlsSidebar__item__popup__opener: true,
-              active: opened,
+              active: openedZoomOut,
             })}
-            onClick={(evt) => setOpened(!opened)}
+            onClick={(evt) => setOpenedZoomOut(!openedZoomOut)}
           >
             <UI.Icon i='chevron_left' />
           </div>
         )}
-        {opened && (
+        {openedZoomOut && (
           <div
             className='ControlsSidebar__item__popup list'
             tabIndex={0}
-            ref={popupRef}
+            ref={zoomOutPopupRef}
             onBlur={(evt) => {
               const currentTarget = evt.currentTarget;
-              if (opened) {
+              if (openedZoomOut) {
                 window.setTimeout(() => {
                   if (!currentTarget.contains(document.activeElement)) {
-                    setOpened(false);
+                    setOpenedZoomOut(false);
                   }
                 }, 100);
               }
@@ -162,7 +257,7 @@ function ControlsSidebarZoom(props) {
                       zoom: null,
                     },
                   });
-                  setOpened(false);
+                  setOpenedZoomOut(false);
                 }}
               >
                 <UI.Text small>Reset zooming</UI.Text>
