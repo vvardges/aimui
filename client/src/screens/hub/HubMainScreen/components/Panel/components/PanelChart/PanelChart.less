@@ -230,9 +230,36 @@
 
   .HoverLine {
     stroke: var(--grey-light);
+    z-index: -1;
   }
 
   .Lines {
     overflow: hidden;
+  }
+}
+
+.ChartMouseValue {
+  position: absolute;
+  box-sizing: border-box;
+  padding: var(--space-xxs) var(--space-xs);
+  background-color: var(--primary-bg);
+  border: 1px solid var(--primary-light);
+  color: var(--primary-dark);
+  font-size: var(--text-xs);
+  font-weight: normal;
+  white-space: nowrap;
+
+  &.xAxis {
+    transform: translateX(-50%);
+    border-radius: 0 0 6px 6px;
+    border-top: none;
+  }
+
+  &.yAxis {
+    transform: translateY(-50%);
+    border-radius: 6px 0 0 6px;
+    border-right: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

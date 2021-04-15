@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Display horizontal hoverline and cursor position value on axes (roubkar)
 - Add ability to select zoom mode for better UX (roubkar)
 
 ## 1.5.0 Apr 10 2021

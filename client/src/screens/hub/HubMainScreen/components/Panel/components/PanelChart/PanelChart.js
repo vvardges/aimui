@@ -90,8 +90,6 @@ function PanelChart(props) {
     traceToHash,
     getTraceData,
     getMetricColor,
-    isAimRun,
-    isTFSummaryScalar,
     getClosestStepData,
   } = HubMainScreenModel.helpers;
 
@@ -100,13 +98,15 @@ function PanelChart(props) {
   const svg = useRef(null);
   const plot = useRef(null);
   const bgRect = useRef(null);
-  const hoverLine = useRef(null);
   const axes = useRef(null);
   const lines = useRef(null);
   const circles = useRef(null);
   const attributes = useRef(null);
   const brush = useRef(null);
   const idleTimeout = useRef(null);
+  const xAxisValue = useRef();
+  const yAxisValue = useRef();
+  const humanizerConfig = useRef();
 
   function initD3() {
     d3.selection.prototype.moveToFront = function () {
@@ -552,11 +552,15 @@ function PanelChart(props) {
         });
       }
 
+      humanizerConfig.current = {
+        units: [formatUnit],
+      };
+
       xAxisTicks
         .ticks(ticksCount)
         .tickValues(tickValues)
         .tickFormat((d, i) =>
-          shortEnglishHumanizer(Math.round(+d * 1000), { units: [formatUnit] }),
+          shortEnglishHumanizer(Math.round(+d * 1000), humanizerConfig.current),
         );
     } else if (xAlignment === 'absolute_time') {
       let ticksCount = Math.floor(plotBox.current.width / 120);
@@ -1034,15 +1038,17 @@ function PanelChart(props) {
 
     let x = chartOptions.current.xScale(step);
 
-    const { height } = plotBox.current;
+    const { height, width } = plotBox.current;
     const isXLogScale =
       scaleOptions[chart.settings.persistent.xScale] === 'log';
     const isYLogScale =
       scaleOptions[chart.settings.persistent.yScale] === 'log';
 
+    const visArea = d3.select(visRef.current);
+
     if (!isXLogScale || step > 0) {
-      // Draw hover line
-      hoverLine.current = attributes.current
+      // Draw vertical hover line
+      attributes.current
         .append('line')
         .attr('x1', x)
         .attr('y1', 0)
@@ -1052,6 +1058,57 @@ function PanelChart(props) {
         .style('stroke-width', 1)
         .style('stroke-dasharray', '4 2')
         .style('fill', 'none');
+
+      if (xAxisValue.current) {
+        xAxisValue.current.remove();
+        xAxisValue.current = null;
+      }
+
+      const xAlignment = chart.settings.persistent.xAlignment;
+      let xAxisValueText;
+
+      switch (xAlignment) {
+        case 'epoch':
+          xAxisValueText = Object.values(
+            traceList.epochSteps[props.index],
+          ).findIndex((epoch) => epoch.includes(+step));
+          break;
+        case 'relative_time':
+          xAxisValueText = shortEnglishHumanizer(Math.round(+step * 1000), {
+            ...humanizerConfig.current,
+            maxDecimalPoints: 2,
+          });
+          break;
+        case 'absolute_time':
+          xAxisValueText = moment.unix(+step).format('HH:mm:ss D MMM, YY');
+          break;
+        default:
+          xAxisValueText = step;
+      }
+
+      xAxisValue.current = visArea
+        .append('div')
+        .attr('class', 'ChartMouseValue xAxis')
+        .style(
+          'top',
+          `${
+            visBox.current.height -
+            (visBox.current.margin.bottom + (isXLogScale ? 5 : 0)) +
+            1
+          }px`,
+        )
+        .text(xAxisValueText);
+
+      const axisLeftEdge = visBox.current.width - visBox.current.margin.right;
+      const xAxisValueWidth = xAxisValue.current.node().offsetWidth;
+      xAxisValue.current.style(
+        'left',
+        `${
+          x + visBox.current.margin.left + xAxisValueWidth / 2 > axisLeftEdge
+            ? axisLeftEdge - xAxisValueWidth / 2
+            : x + visBox.current.margin.left
+        }px`,
+      );
     }
 
     // Draw circles
@@ -1108,6 +1165,45 @@ function PanelChart(props) {
               focusedLineAttr.traceContext === traceContext;
           } else {
             shouldHighlightCircle = false;
+          }
+
+          let shoudDrawHorizontalHoverLine =
+            focusedLineAttr.runHash === run.run_hash &&
+            focusedLineAttr.metricName === metric?.name &&
+            focusedLineAttr.traceContext === traceContext;
+
+          if (shoudDrawHorizontalHoverLine) {
+            // Draw horizontal hover line
+            attributes.current
+              .append('line')
+              .attr('x1', 0)
+              .attr('y1', y)
+              .attr('x2', width)
+              .attr('y2', y)
+              .attr('class', 'HoverLine')
+              .style('stroke-width', 1)
+              .style('stroke-dasharray', '4 2')
+              .style('fill', 'none');
+
+            circles.current.moveToFront();
+
+            if (yAxisValue.current) {
+              yAxisValue.current.remove();
+              yAxisValue.current = null;
+            }
+
+            const formattedValue = Math.round(val * 10e9) / 10e9;
+            yAxisValue.current = visArea
+              .append('div')
+              .attr('class', 'ChartMouseValue yAxis')
+              .attr('title', formattedValue)
+              .style('max-width', `${visBox.current.margin.left - 5}px`)
+              .style(
+                'right',
+                `${visBox.current.width - visBox.current.margin.left - 2}px`,
+              )
+              .style('top', `${y + visBox.current.margin.top}px`)
+              .text(formattedValue);
           }
 
           const circle = circles.current
@@ -1442,35 +1538,34 @@ function PanelChart(props) {
           // Circles
           let nearestCircle = [];
 
-          circles.current
-            .selectAll(`.HoverCircle[data-step='${step}']`)
-            .each(function () {
-              const elem = d3.select(this);
-              const elemY = parseFloat(elem.attr('data-y'));
-              const r = Math.abs(elemY - y);
+          circles.current.selectAll('.HoverCircle').each(function () {
+            const elem = d3.select(this);
+            const elemX = parseFloat(elem.attr('data-x'));
+            const elemY = parseFloat(elem.attr('data-y'));
+            const rX = Math.abs(elemX - x);
+            const rY = Math.abs(elemY - y);
+            const r = Math.sqrt(Math.pow(rX, 2) + Math.pow(rY, 2));
 
-              if (nearestCircle.length === 0 || r < nearestCircle[0].r) {
-                nearestCircle = [
-                  {
-                    r: r,
-                    nearestCircleRunHash: elem.attr('data-run-hash'),
-                    nearestCircleMetricName: elem.attr('data-metric-name'),
-                    nearestCircleTraceContext: elem.attr(
-                      'data-trace-context-hash',
-                    ),
-                  },
-                ];
-              } else if (nearestCircle.length && r === nearestCircle[0].r) {
-                nearestCircle.push({
+            if (nearestCircle.length === 0 || r < nearestCircle[0].r) {
+              nearestCircle = [
+                {
                   r: r,
                   nearestCircleRunHash: elem.attr('data-run-hash'),
                   nearestCircleMetricName: elem.attr('data-metric-name'),
                   nearestCircleTraceContext: elem.attr(
                     'data-trace-context-hash',
                   ),
-                });
-              }
-            });
+                },
+              ];
+            } else if (nearestCircle.length && r === nearestCircle[0].r) {
+              nearestCircle.push({
+                r: r,
+                nearestCircleRunHash: elem.attr('data-run-hash'),
+                nearestCircleMetricName: elem.attr('data-metric-name'),
+                nearestCircleTraceContext: elem.attr('data-trace-context-hash'),
+              });
+            }
+          });
 
           nearestCircle.sort((a, b) => {
             const aHash = traceToHash(
@@ -1559,6 +1654,10 @@ function PanelChart(props) {
           lines.current?.selectAll('path').remove();
           attributes.current?.selectAll('g').remove();
           attributes.current?.selectAll('line').remove();
+          if (yAxisValue.current) {
+            yAxisValue.current.remove();
+            yAxisValue.current = null;
+          }
           drawData();
         });
       },
