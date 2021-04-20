@@ -641,6 +641,8 @@ function PanelChart(props) {
           : 'steps',
       );
 
+    plot.current.moveToFront();
+
     const yAxisTicks = d3.axisLeft(yScale);
     const ticksCount = Math.floor(plotBox.current.height / 20);
     yAxisTicks.ticks(ticksCount > 3 ? (ticksCount < 20 ? ticksCount : 20) : 3);
