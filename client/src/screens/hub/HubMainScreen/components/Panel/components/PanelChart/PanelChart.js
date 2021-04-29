@@ -7,11 +7,7 @@ import * as _ from 'lodash';
 import * as moment from 'moment';
 import humanizeDuration from 'humanize-duration';
 
-import {
-  removeOutliers,
-  formatValue,
-  classNames,
-} from '../../../../../../../utils';
+import { removeOutliers, formatValue } from '../../../../../../../utils';
 import { HubMainScreenModel } from '../../../../models/HubMainScreenModel';
 
 const d3 = require('d3');
@@ -107,6 +103,245 @@ function PanelChart(props) {
   const xAxisValue = useRef();
   const yAxisValue = useRef();
   const humanizerConfig = useRef();
+
+  function getValueInLine({ x1, x2, y1, y2, x, y, scale }) {
+    if (x === undefined) {
+      let value;
+      let dx1;
+      let dx2;
+      let dy1;
+      let dy2;
+      if (x1 === x2) {
+        value = x1;
+      } else {
+        if (scale.xScale === 0) {
+          dx1 = x1;
+          dx2 = x2;
+        } else {
+          dx1 = Math.log(x1);
+          dx2 = Math.log(x2);
+        }
+        if (scale.yScale === 0) {
+          dy1 = y - y1;
+          dy2 = y2 - y1;
+        } else {
+          dy1 = Math.log(y) - Math.log(y1);
+          dy2 = Math.log(y2) - Math.log(y1);
+        }
+        if (dx1 > dx2) {
+          value = dx1 - ((dx1 - dx2) * dy1) / dy2;
+        } else {
+          value = ((dx2 - dx1) * dy1) / dy2 + dx1;
+        }
+        if (scale.xScale === 1) {
+          value = Math.exp(value);
+        }
+      }
+      return value;
+    } else {
+      let value;
+      let dx1;
+      let dx2;
+      let dy1;
+      let dy2;
+      if (x1 === x2 || x === x1) {
+        value = y1;
+      } else if (x === x2) {
+        value = y2;
+      } else {
+        if (scale.xScale === 0) {
+          dx1 = x - x1;
+          dx2 = x2 - x1;
+        } else {
+          dx1 = Math.log(x) - Math.log(x1);
+          dx2 = Math.log(x2) - Math.log(x1);
+        }
+        if (scale.yScale === 0) {
+          dy1 = y1;
+          dy2 = y2;
+        } else {
+          dy1 = Math.log(y1);
+          dy2 = Math.log(y2);
+        }
+        if (dy1 > dy2) {
+          value = dy1 - ((dy1 - dy2) * dx1) / dx2;
+        } else {
+          value = ((dy2 - dy1) * dx1) / dx2 + dy1;
+        }
+        if (scale.yScale === 1) {
+          value = Math.exp(value);
+        }
+      }
+      return value;
+    }
+  }
+
+  function calculateLineValues({
+    axisValues,
+    traceData,
+    xMin,
+    xMax,
+    yMin,
+    yMax,
+    scale,
+  }) {
+    let prevValue = {};
+    const xMinScaled = chartOptions.current.xScale(xMin);
+    const xMaxScaled = chartOptions.current.xScale(xMax);
+    const yMinScaled = chartOptions.current.yScale(yMin);
+    const yMaxScaled = chartOptions.current.yScale(yMax);
+    const offsetScaled = 50;
+    const minEdge = chartOptions.current.yScale.invert(
+      yMinScaled + offsetScaled,
+    );
+    const maxEdge = chartOptions.current.yScale.invert(
+      yMaxScaled - offsetScaled,
+    );
+    let leftEdge = _.findLastIndex(axisValues, (v) => v <= xMin);
+    let rightEdge = _.findIndex(axisValues, (v) => v >= xMax) + 1;
+    if (leftEdge === -1) {
+      leftEdge = 0;
+    }
+    if (rightEdge === 0) {
+      rightEdge = axisValues.length;
+    }
+    let visibleAxisValues = axisValues.slice(leftEdge, rightEdge);
+    let visibleTraceData = traceData.slice(leftEdge, rightEdge);
+
+    let lineData = visibleAxisValues.map((xValue, i) => {
+      let yValue = visibleTraceData[i][0];
+      let x;
+      let y = yValue < minEdge ? minEdge : yValue > maxEdge ? maxEdge : yValue;
+      let value;
+      if (y === yValue) {
+        x = xValue;
+        prevValue = { x, y };
+        value = { x, y };
+      } else {
+        const nextX = visibleAxisValues[i + 1];
+        const nextYValue = visibleTraceData[i + 1]?.[0];
+        let nextY =
+          nextYValue < minEdge
+            ? minEdge
+            : nextYValue > maxEdge
+              ? maxEdge
+              : nextYValue;
+        if (i === 0) {
+          x = xValue;
+          if (visibleAxisValues.length > 1) {
+            let x2 = getValueInLine({
+              x1: x,
+              x2: nextX,
+              y1: yValue,
+              y2: nextY,
+              y: y,
+              scale,
+            });
+            value = [
+              { x, y },
+              { x: x2, y },
+            ];
+            prevValue = {
+              x: x2,
+              y,
+            };
+          } else {
+            prevValue = { x, y };
+            value = { x, y };
+          }
+        } else {
+          x = getValueInLine({
+            x1: prevValue.x,
+            x2: xValue,
+            y1: prevValue.y,
+            y2: yValue,
+            y: y,
+            scale,
+          });
+          if (i !== visibleAxisValues.length - 1) {
+            let x2 = getValueInLine({
+              x1: xValue,
+              x2: nextX,
+              y1: yValue,
+              y2: nextY,
+              y: y,
+              scale,
+            });
+            value = [
+              { x, y },
+              { x: x2, y },
+            ];
+            prevValue = {
+              x: x2,
+              y,
+            };
+          } else {
+            value = { x, y };
+          }
+        }
+      }
+
+      return Array.isArray(value)
+        ? value.map((v) => ({
+          x: chartOptions.current.xScale(v.x),
+          y: chartOptions.current.yScale(v.y),
+        }))
+        : {
+          x: chartOptions.current.xScale(value.x),
+          y: chartOptions.current.yScale(value.y),
+        };
+    });
+    let result = lineData.flat().sort((a, b) => a.x - b.x);
+    let minIndex = -1;
+    let maxIndex = result.length;
+
+    for (let i = 0; i < result.length; i++) {
+      const d = result[i];
+      if (d.x < xMinScaled && i > minIndex) {
+        minIndex = i;
+      }
+      if (d.x > xMaxScaled && i < maxIndex) {
+        maxIndex = i;
+      }
+    }
+
+    if (minIndex >= maxIndex) {
+      result = [];
+    } else {
+      if (minIndex > -1 && minIndex < result.length - 1) {
+        result[minIndex] = {
+          x: xMinScaled,
+          y: chartOptions.current.yScale(
+            getValueInLine({
+              x1: chartOptions.current.xScale.invert(result[minIndex].x),
+              x2: chartOptions.current.xScale.invert(result[minIndex + 1].x),
+              y1: chartOptions.current.yScale.invert(result[minIndex].y),
+              y2: chartOptions.current.yScale.invert(result[minIndex + 1].y),
+              x: xMin,
+              scale,
+            }),
+          ),
+        };
+      }
+      if (maxIndex < result.length && maxIndex > 0) {
+        result[maxIndex] = {
+          x: xMaxScaled,
+          y: chartOptions.current.yScale(
+            getValueInLine({
+              x1: chartOptions.current.xScale.invert(result[maxIndex - 1].x),
+              x2: chartOptions.current.xScale.invert(result[maxIndex].x),
+              y1: chartOptions.current.yScale.invert(result[maxIndex - 1].y),
+              y2: chartOptions.current.yScale.invert(result[maxIndex].y),
+              x: xMax,
+              scale,
+            }),
+          ),
+        };
+      }
+    }
+
+    return result.slice(minIndex > -1 ? minIndex : 0, maxIndex + 1);
+  }
 
   function initD3() {
     d3.selection.prototype.moveToFront = function () {
@@ -405,25 +640,19 @@ function PanelChart(props) {
             return;
           }
           const { run, metric, trace } = series;
-          const traceValues =
+          let traceValues =
             trace && trace.data.map((elem) => elem[0]).sort((a, b) => a - b);
-          const traceMax = traceValues?.[traceValues?.length - 1];
-          let traceMin = traceValues?.[0];
-          if (
-            scaleOptions[chart.settings.persistent.yScale] === 'log' &&
-            traceMin === 0
-          ) {
-            traceMin = traceValues?.[1] ?? 0.1;
+          if (scaleOptions[chart.settings.persistent.yScale] === 'log') {
+            traceValues = traceValues?.filter((v) => v > 0);
           }
-          if (yMax === null || traceMax > yMax) {
+          const traceMax = traceValues?.[traceValues?.length - 1];
+          const traceMin = traceValues?.[0];
+
+          if ((yMax === null && traceMax !== undefined) || traceMax > yMax) {
             yMax = traceMax;
           }
-          if (yMin === null || traceMin < yMin) {
-            if (scaleOptions[chart.settings.persistent.yScale] === 'log') {
-              yMin = traceMin === 0 ? 0.1 : traceMin;
-            } else {
-              yMin = traceMin;
-            }
+          if ((yMin === null && traceMin !== undefined) || traceMin < yMin) {
+            yMin = traceMin;
           }
         }),
       );
@@ -438,15 +667,20 @@ function PanelChart(props) {
           const { run, metric, trace } = series;
           if (trace?.data) {
             trace.data.forEach((elem, elemIdx) => {
-              if (minData.length > elemIdx) {
-                minData[elemIdx].push(elem[0]);
-              } else {
-                minData.push([elem[0]]);
-              }
-              if (maxData.length > elemIdx) {
-                maxData[elemIdx].push(elem[0]);
-              } else {
-                maxData.push([elem[0]]);
+              if (
+                scaleOptions[chart.settings.persistent.yScale] !== 'log' ||
+                elem[0] > 0
+              ) {
+                if (minData.length > elemIdx) {
+                  minData[elemIdx].push(elem[0]);
+                } else {
+                  minData.push([elem[0]]);
+                }
+                if (maxData.length > elemIdx) {
+                  maxData[elemIdx].push(elem[0]);
+                } else {
+                  maxData.push([elem[0]]);
+                }
               }
             });
           }
@@ -703,10 +937,24 @@ function PanelChart(props) {
           }
           return true;
         });
+
+        const lineData = calculateLineValues({
+          axisValues: axisValues,
+          traceData: traceData,
+          xMin: chartOptions.current.xScale.domain()[0],
+          xMax: chartOptions.current.xScale.domain()[1],
+          yMin: chartOptions.current.yScale.domain()[0],
+          yMax: chartOptions.current.yScale.domain()[1],
+          scale: {
+            xScale: chart.settings.persistent.xScale,
+            yScale: chart.settings.persistent.yScale,
+          },
+        });
+
         const line = d3
           .line()
-          .x((d, i) => chartOptions.current.xScale(axisValues[i]))
-          .y((d) => chartOptions.current.yScale(d[0]))
+          .x((d) => d.x)
+          .y((d) => d.y)
           .curve(
             d3[
               curveOptions[
@@ -739,7 +987,7 @@ function PanelChart(props) {
               current ? 'current' : ''
             }`,
           )
-          .datum(traceData)
+          .datum(lineData)
           .attr('d', line)
           .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
           .style('fill', 'none')
@@ -835,16 +1083,58 @@ function PanelChart(props) {
         let traceMinData;
         let traceMaxData;
         traceMinData = areaTraceMin?.trace.data.filter(
-          (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+          (point) =>
+            !Number.isNaN(chartOptions.current.xScale(point[1])) &&
+            !Number.isNaN(chartOptions.current.yScale(point[0])),
         );
         traceMaxData = areaTraceMax?.trace.data.filter(
-          (point) => !Number.isNaN(chartOptions.current.xScale(point[1])),
+          (point) =>
+            !Number.isNaN(chartOptions.current.xScale(point[1])) &&
+            !Number.isNaN(chartOptions.current.yScale(point[0])),
         );
+
+        const minLineData = calculateLineValues({
+          axisValues: traceMinData.map((d) => d[1]),
+          traceData: traceMinData,
+          xMin: chartOptions.current.xScale.domain()[0],
+          xMax: chartOptions.current.xScale.domain()[1],
+          yMin: chartOptions.current.yScale.domain()[0],
+          yMax: chartOptions.current.yScale.domain()[1],
+          scale: {
+            xScale: chart.settings.persistent.xScale,
+            yScale: chart.settings.persistent.yScale,
+          },
+        });
+
+        const maxLineData = calculateLineValues({
+          axisValues: traceMaxData.map((d) => d[1]),
+          traceData: traceMaxData,
+          xMin: chartOptions.current.xScale.domain()[0],
+          xMax: chartOptions.current.xScale.domain()[1],
+          yMin: chartOptions.current.yScale.domain()[0],
+          yMax: chartOptions.current.yScale.domain()[1],
+          scale: {
+            xScale: chart.settings.persistent.xScale,
+            yScale: chart.settings.persistent.yScale,
+          },
+        });
+
+        const areaMinMax = [];
+        const len = Math.max(minLineData.length, maxLineData.length);
+
+        for (let i = 0; i < len; i++) {
+          areaMinMax.push({
+            min: minLineData[i] ?? minLineData[minLineData.length - 1],
+            max: maxLineData[i] ?? maxLineData[maxLineData.length - 1],
+          });
+        }
+
         const area = d3
           .area()
-          .x((d, i) => chartOptions.current.xScale(d[1]))
-          .y0((d, i) => chartOptions.current.yScale(d[0]))
-          .y1((d, i) => chartOptions.current.yScale(traceMinData[i][0]))
+          .x0((d) => d.max.x)
+          .x1((d) => d.min.x)
+          .y0((d) => d.max.y)
+          .y1((d) => d.min.y)
           .curve(d3[curveOptions[0]]);
 
         lines.current
@@ -855,7 +1145,7 @@ function PanelChart(props) {
               active ? 'active' : ''
             }`,
           )
-          .datum(traceMaxData)
+          .datum(areaMinMax)
           .attr('d', area)
           .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
           .attr(
@@ -883,12 +1173,23 @@ function PanelChart(props) {
       );
 
       if (!!lineTraceData) {
+        const aggLineTraceData = calculateLineValues({
+          axisValues: lineTraceData.map((d) => d[1]),
+          traceData: lineTraceData,
+          xMin: chartOptions.current.xScale.domain()[0],
+          xMax: chartOptions.current.xScale.domain()[1],
+          yMin: chartOptions.current.yScale.domain()[0],
+          yMax: chartOptions.current.yScale.domain()[1],
+          scale: {
+            xScale: chart.settings.persistent.xScale,
+            yScale: chart.settings.persistent.yScale,
+          },
+        });
         const aggLineFunc = d3
           .line()
-          .x((d) => chartOptions.current.xScale(d[1]))
-          .y((d) => chartOptions.current.yScale(d[0]))
+          .x((d) => d.x)
+          .y((d) => d.y)
           .curve(d3[curveOptions[0]]);
-
         lines.current
           .append('path')
           .attr(
@@ -899,7 +1200,7 @@ function PanelChart(props) {
               lineTrace.trace.context,
             )} active`,
           )
-          .datum(lineTraceData)
+          .datum(aggLineTraceData)
           .attr('d', aggLineFunc)
           .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
           .style('fill', 'none')
@@ -973,10 +1274,23 @@ function PanelChart(props) {
               }
               return true;
             });
+
+            const lineData = calculateLineValues({
+              axisValues: axisValues,
+              traceData: traceData,
+              xMin: chartOptions.current.xScale.domain()[0],
+              xMax: chartOptions.current.xScale.domain()[1],
+              yMin: chartOptions.current.yScale.domain()[0],
+              yMax: chartOptions.current.yScale.domain()[1],
+              scale: {
+                xScale: chart.settings.persistent.xScale,
+                yScale: chart.settings.persistent.yScale,
+              },
+            });
             const focusedLine = d3
               .line()
-              .x((d, i) => chartOptions.current.xScale(axisValues[i]))
-              .y((d) => chartOptions.current.yScale(d[0]))
+              .x((d) => d.x)
+              .y((d) => d.y)
               .curve(
                 d3[
                   curveOptions[
@@ -1000,7 +1314,7 @@ function PanelChart(props) {
                   focusedLineAttr?.traceContext,
                 )} ${activeRun ? 'active' : ''} ${current ? 'current' : ''}`,
               )
-              .datum(traceData)
+              .datum(lineData)
               .attr('d', focusedLine)
               .attr('clip-path', 'url(#lines-rect-clip-' + props.index + ')')
               .style('fill', 'none')
@@ -1050,11 +1364,13 @@ function PanelChart(props) {
 
     if (!isXLogScale || step > 0) {
       // Draw vertical hover line
+      const [xMin, xMax] = chartOptions.current.xScale.range();
+      const lineX = x < xMin ? xMin : x > xMax ? xMax : x;
       attributes.current
         .append('line')
-        .attr('x1', x)
+        .attr('x1', lineX)
         .attr('y1', 0)
-        .attr('x2', x)
+        .attr('x2', lineX)
         .attr('y2', height)
         .attr('class', 'HoverLine')
         .style('stroke-width', 1)
@@ -1176,12 +1492,14 @@ function PanelChart(props) {
 
           if (shoudDrawHorizontalHoverLine) {
             // Draw horizontal hover line
+            const [yMax, yMin] = chartOptions.current.yScale.range();
+            const lineY = y < yMin ? yMin : y > yMax ? yMax : y;
             attributes.current
               .append('line')
               .attr('x1', 0)
-              .attr('y1', y)
+              .attr('y1', lineY)
               .attr('x2', width)
-              .attr('y2', y)
+              .attr('y2', lineY)
               .attr('class', 'HoverLine')
               .style('stroke-width', 1)
               .style('stroke-dasharray', '4 2')
@@ -1204,46 +1522,57 @@ function PanelChart(props) {
                 'right',
                 `${visBox.current.width - visBox.current.margin.left - 2}px`,
               )
-              .style('top', `${y + visBox.current.margin.top}px`)
+              .style('top', `${lineY + visBox.current.margin.top}px`)
               .text(formattedValue);
           }
 
-          const circle = circles.current
-            .append('circle')
-            .attr(
-              'class',
-              `HoverCircle HoverCircle-${closestStep} ${
-                shouldHighlightCircle ? '' : 'inactive'
-              } HoverCircle-${traceToHash(
-                run.run_hash,
-                metric?.name,
-                traceContext,
-              )}`,
-            )
-            .attr('cx', x)
-            .attr('cy', y)
-            .attr('r', circleRadius)
-            .attr('data-x', x)
-            .attr('data-y', y)
-            .attr('data-step', closestStep)
-            .attr('data-run-hash', run.run_hash)
-            .attr('data-metric-name', metric?.name)
-            .attr('data-trace-context-hash', contextToHash(trace?.context))
-            .attr('clip-path', 'url(#circles-rect-clip-' + props.index + ')')
-            .style(
-              'fill',
-              traceList?.grouping?.color?.length > 0
-                ? traceModel.color
-                : getMetricColor(run, metric, trace, runIndex),
-            )
-            .on('click', function () {
-              handlePointClick(
-                closestStep,
-                run.run_hash,
-                metric?.name,
-                traceContext,
-              );
-            });
+          const [xMin, xMax] = chartOptions.current.xScale.range();
+          const [yMax, yMin] = chartOptions.current.yScale.range();
+
+          let circle = null;
+          if (
+            x > xMin - circleActiveRadius &&
+            x < xMax + circleActiveRadius &&
+            y > yMin - circleActiveRadius &&
+            y < yMax + circleActiveRadius
+          ) {
+            circle = circles.current
+              .append('circle')
+              .attr(
+                'class',
+                `HoverCircle HoverCircle-${closestStep} ${
+                  shouldHighlightCircle ? '' : 'inactive'
+                } HoverCircle-${traceToHash(
+                  run.run_hash,
+                  metric?.name,
+                  traceContext,
+                )}`,
+              )
+              .attr('cx', x)
+              .attr('cy', y)
+              .attr('r', circleRadius)
+              .attr('data-x', x)
+              .attr('data-y', y)
+              .attr('data-step', closestStep)
+              .attr('data-run-hash', run.run_hash)
+              .attr('data-metric-name', metric?.name)
+              .attr('data-trace-context-hash', contextToHash(trace?.context))
+              .attr('clip-path', 'url(#circles-rect-clip-' + props.index + ')')
+              .style(
+                'fill',
+                traceList?.grouping?.color?.length > 0
+                  ? traceModel.color
+                  : getMetricColor(run, metric, trace, runIndex),
+              )
+              .on('click', function () {
+                handlePointClick(
+                  closestStep,
+                  run.run_hash,
+                  metric?.name,
+                  traceContext,
+                );
+              });
+          }
 
           runIndex++;
 
