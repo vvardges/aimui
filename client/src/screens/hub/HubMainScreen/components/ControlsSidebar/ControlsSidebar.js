@@ -12,10 +12,10 @@ import Aggregate from './components/Aggregate/Aggregate';
 import ControlsSidebarZoom from './components/ControlsSidebarZoom/ControlsSidebarZoom';
 import ToggleParPlotIndicator from './components/ToggleParPlotIndicator/ToggleParPlotIndicator';
 import ControlsSidebarSmoothingOptions from './components/ControlsSidebarSmoothingOptions/ControlsSidebarSmoothingOptions';
-import ControlsSidebarExport from './components/ControlsSidebarExport/ControlsSidebarExport';
 import ControlsSidebarHighlightMode from './components/ControlsSidebarHighlightMode/ControlsSidebarHighlightMode';
 import { HubMainScreenModel } from '../../models/HubMainScreenModel';
 import ControlsSidebarAxesProperties from './components/ControlsSidebarAxesProperties/ControlsSidebarAxesProperties';
+import ExportChart from './components/ExportChart/ExportChart';
 
 function ControlsSidebar() {
   let {
@@ -138,6 +138,10 @@ function ControlsSidebar() {
               />
             </>
           )}
+          <>
+            <UI.Line />
+            <ExportChart />
+          </>
 
           {/* <ControlsSidebarExport
                 disabled={runs.isLoading || runs.isEmpty}
