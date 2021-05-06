@@ -24,27 +24,23 @@ function useOnClickOutside(ref, handler) {
 
 function Modal({toggle, children, footer}) {
   const ref = useRef();
-
   useOnClickOutside(ref, () => toggle(false));
 
-
   return ReactDOM.createPortal(
-        <>
-          <div className="modal-backdrop fade show"/>
-          <div className="modal fade show d-block">
-            <div className="modal-dialog" ref={ref}>
-              <div className="modal-content">
-                <div className="modal-body">
-                  {children}
-                </div>
-                <div className="modal-footer pt-0">
-                  {footer}
-                </div>
-              </div>
-            </div>
+    <>
+      <div className="modal__backdrop"/>
+      <div className="modal">
+        <div className="modal__content" ref={ref}>
+          <div className="modal__body">
+            {children}
           </div>
-        </>,
-        document.querySelector('body')
+          <div className="modal__footer">
+            {footer}
+          </div>
+        </div>
+      </div>
+    </>,
+    document.querySelector('body')
   );
 }
 
