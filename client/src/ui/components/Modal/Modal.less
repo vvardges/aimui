@@ -1,29 +1,21 @@
-.modal {
+.Modal {
   position: fixed;
   top: 0;
   left: 0;
   z-index: 10050;
-  width: 100%;
-  height: 100%;
   overflow: hidden;
   outline: 0;
-
-  &__backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 10040;
-    width: 100vw;
-    height: 100vh;
-    background-color: black;
-    opacity: 0.5;
-  }
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   &__content {
     position: relative;
     display: flex;
     flex-direction: column;
-    width: 100%;
     pointer-events: auto;
     background-color: white;
     background-clip: padding-box;
@@ -31,7 +23,6 @@
     outline: 0;
     border-radius: 0.2rem;
     max-width: 1000px;
-    margin: 3rem auto;
   }
 
   &__body {
